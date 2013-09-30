@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,12 +26,12 @@ namespace Yodii.Model
             }
         }
 
-        public ConfigurationManager( ConfigurationLayer system )
+        public ConfigurationManager()
         {
             _configurationLayerCollection = new Dictionary<string, ConfigurationLayer>();
         }
 
-        public ConfigurationManager(ConfigurationLayer system)
+        public ConfigurationManager( ConfigurationLayer system )
         {
             _configurationLayerCollection = new Dictionary<string, ConfigurationLayer>();
             _configurationLayerCollection.Add(system.ConfigurationName, ResolveSystemConfiguration(system));
