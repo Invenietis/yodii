@@ -1,20 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    class ConfigurationManager
+    class ConfigurationManager : INotifyPropertyChanged
     {
-        private List<ConfigurationLayer> _configurationLayerCollection;
+        private static readonly string FINAL_LAYER_NAME = "Final Layer";
+
+
+        private Dictionary<string,ConfigurationLayer> _configurationLayerCollection;
         private ConfigurationLayer _finalConfigurationLayer;
+
+        public ConfigurationLayer FinalConfigurationLayer
+        {
+            get { return _finalConfigurationLayer; }
+            private set
+            {
+                _finalConfigurationLayer = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public ConfigurationManager( ConfigurationLayer system )
+        {
+            _configurationLayerCollection = new Dictionary<string, ConfigurationLayer>();
+        }
 
         public ConfigurationManager(ConfigurationLayer system)
         {
-            _configurationLayerCollection = new List<ConfigurationLayer>();
-            _configurationLayerCollection.Add(ResolveSystemConfiguration(system));
+            _configurationLayerCollection = new Dictionary<string, ConfigurationLayer>();
+            _configurationLayerCollection.Add(system.ConfigurationName, ResolveSystemConfiguration(system));
+            FinalConfigurationLayer = CreateFinaleConfigurationLayer();
         }
 
         public bool SetConfiguration(Guid pluginGuid, ConfigurationStatus pluginStatus)
@@ -34,8 +54,9 @@ namespace Yodii.Model
 
         //demander si on doit remove par une reference d'un objet present dans la collection directement ou plutot par le name
         //du layer ( plus pertinent je pense) de plus si il faut bien renvoyer un bool quand le remove a fonctionné. comme pour le remove d'un dictionnaire par exemple
-        public bool RemoveLayer(ConfigurationLayer configurationLayer)
+        public bool RemoveLayer(string configurationLayerName)
         {
+
             throw new NotImplementedException();
         }
 
@@ -48,5 +69,44 @@ namespace Yodii.Model
         {
             throw new NotImplementedException();
         }
+
+        //need performance test
+        private ConfigurationLayer CreateFinaleConfigurationLayer()
+        {
+            Dictionary<string, ConfigurationItem> temp = new Dictionary<string, ConfigurationItem>();
+            foreach( ConfigurationLayer layer in _configurationLayerCollection.Values )
+            {
+                foreach( ConfigurationItem item in layer.ConfigurationItemCollection )
+                {
+                    if( temp.ContainsKey( item.ServiceOrPluginName ) )
+                    {
+                        if( temp[item.ServiceOrPluginName].CanChangeStatus( item.Status ) )
+                        {
+                            temp[item.ServiceOrPluginName] = item;
+                        }
+                    }
+                    else
+                    {
+                        temp.Add( item.ServiceOrPluginName, item );
+                    }
+                }
+            }
+            //use a internal constructor because...
+            return new ConfigurationLayer(FINAL_LAYER_NAME, temp.Values.ToList(), this);
+        }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged( [CallerMemberName] String propertyName = "" )
+        {
+            if( PropertyChanged != null )
+            {
+                PropertyChanged( this, new PropertyChangedEventArgs( propertyName ) );
+            }
+        }
+
+        #endregion INotifyPropertyChanged
     }
 }

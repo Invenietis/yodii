@@ -22,7 +22,7 @@ namespace Yodii.Model
         public ConfigurationStatus Status
         {
             get { return _status; }
-            private set
+            internal set
             {
                 _status = value;
                 NotifyPropertyChanged();
@@ -55,7 +55,7 @@ namespace Yodii.Model
             throw new NotImplementedException();
         }
 
-        private bool CanChangeStatus(ConfigurationStatus newStatus)
+        internal bool CanChangeStatus(ConfigurationStatus newStatus)
         {
             return (_status == ConfigurationStatus.Runnable) ?
                 newStatus == ConfigurationStatus.Running :
