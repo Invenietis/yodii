@@ -35,17 +35,7 @@ namespace Yodii.Model
         {
             _configurationLayerCollection = new Dictionary<string, ConfigurationLayer>();
             _configurationLayerCollection.Add(system.ConfigurationName, ResolveSystemConfiguration(system));
-            FinalConfigurationLayer = CreateFinaleConfigurationLayer();
-        }
-
-        public bool SetConfiguration(Guid pluginGuid, ConfigurationStatus pluginStatus)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SetConfiguration(string serviceFullName, ConfigurationStatus serviceStatus)
-        {
-            throw new NotImplementedException();
+            FinalConfigurationLayer = CreateFinalConfigurationLayer();
         }
 
         public bool AddLayer(ConfigurationLayer configurationLayer)
@@ -57,8 +47,17 @@ namespace Yodii.Model
         //du layer ( plus pertinent je pense) de plus si il faut bien renvoyer un bool quand le remove a fonctionné. comme pour le remove d'un dictionnaire par exemple
         public bool RemoveLayer(string configurationLayerName)
         {
+            if( string.IsNullOrEmpty( configurationLayerName ) ) throw new ArgumentNullException( "configurationLayerName is null" );
 
-            throw new NotImplementedException();
+            if( _configurationLayerCollection.Remove( configurationLayerName ) )
+            {
+                FinalConfigurationLayer = CreateFinalConfigurationLayer();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         internal bool OnConfigurationLayerChanged( ConfigurationItem configurationItem, ConfigurationStatus newStatus)
@@ -72,7 +71,7 @@ namespace Yodii.Model
         }
 
         //need performance test
-        private ConfigurationLayer CreateFinaleConfigurationLayer()
+        private ConfigurationLayer CreateFinalConfigurationLayer()
         {
             Dictionary<string, ConfigurationItem> temp = new Dictionary<string, ConfigurationItem>();
             foreach( ConfigurationLayer layer in _configurationLayerCollection.Values )

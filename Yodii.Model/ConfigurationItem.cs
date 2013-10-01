@@ -51,14 +51,11 @@ namespace Yodii.Model
                 return false;
             }
             return false;
-            
-            throw new NotImplementedException();
         }
 
         internal bool CanChangeStatus(ConfigurationStatus newStatus)
         {
-            return (_status == ConfigurationStatus.Runnable) ?
-                newStatus == ConfigurationStatus.Running :
+            return (_status == ConfigurationStatus.Runnable) ? newStatus == ConfigurationStatus.Running :
                 _status != ConfigurationStatus.Disable && _status != ConfigurationStatus.Running;
         }
 

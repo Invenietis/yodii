@@ -7,7 +7,7 @@ using CK.Core;
 
 namespace Yodii.Model
 {
-    //ToDo : removeItem, Obersable
+    //ToDo : removeItem, Obersable, ienumerable, 
     public class ConfigurationLayer
     {
         #region fields

@@ -43,7 +43,10 @@
     <Compile Include="ConfigurationItem.cs" />
     <Compile Include="ConfigurationLayer.cs" />
     <Compile Include="ConfigurationManager.cs" />
+    <Compile Include="ConfigurationResult.cs" />
     <Compile Include="ConfigurationStatus.cs" />
+    <Compile Include="IConfigurationLayerCollection.cs" />
+    <Compile Include="ConfigurationLayerCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
