@@ -21,7 +21,7 @@ namespace Yodii.Model
         #region properties
 
         public string ConfigurationName
-        { 
+        {
             get { return _configurationName; }
         }
         public IReadOnlyList<ConfigurationItem> ConfigurationItemCollection
@@ -36,9 +36,9 @@ namespace Yodii.Model
 
         #endregion properties
 
-        public ConfigurationLayer(string configurationName)
+        public ConfigurationLayer( string configurationName )
         {
-            if( string.IsNullOrEmpty( configurationName ) ) throw new ArgumentNullException("configurationName is null");
+            if( string.IsNullOrEmpty( configurationName ) ) throw new ArgumentNullException( "configurationName is null" );
 
             _configurationName = configurationName;
             _configurationItemCollection = new Dictionary<string, ConfigurationItem>();
@@ -126,6 +126,16 @@ namespace Yodii.Model
                 _configurationItemCollection.Add( serviceOrPluginName, new ConfigurationItem( serviceOrPluginName, status, this ) );
                 return true;
             }
+        }
+
+        public ConfigurationItem this[string key]
+        {
+            get { return this._configurationItemCollection[key]; }
+        }
+
+        public int Count
+        {
+            get { return this._configurationItemCollection.Count; }
         }
     }
 }
