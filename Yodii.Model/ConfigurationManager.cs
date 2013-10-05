@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    class ConfigurationManager : INotifyPropertyChanged
+    public class ConfigurationManager : INotifyPropertyChanged
     {
         private static readonly string FINAL_LAYER_NAME = "Final Layer";
 
