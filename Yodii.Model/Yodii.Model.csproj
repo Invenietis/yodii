@@ -41,6 +41,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationItem.cs" />
+    <Compile Include="ConfigurationItemCollection.cs" />
     <Compile Include="ConfigurationLayer.cs" />
     <Compile Include="ConfigurationManager.cs" />
     <Compile Include="ConfigurationResult.cs" />
