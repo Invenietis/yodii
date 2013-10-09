@@ -1,6 +1,10 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
@@ -8,7 +12,7 @@ using CK.Core;
 namespace Yodii.Model
 {
     //ToDo : removeItem, Obersable, ienumerable, 
-    public class ConfigurationLayer
+    public class ConfigurationLayer : INotifyPropertyChanged
     {
         #region fields
 
@@ -23,43 +27,161 @@ namespace Yodii.Model
         public string ConfigurationName
         {
             get { return _configurationName; }
+            set
+            {
+                if( value == null ) throw new NullReferenceException();
+                _configurationName = value;
+                NotifyPropertyChanged();
+            }
         }
         public ConfigurationItemCollection Items
         {
             get { return _configurationItemCollection; }
         }
 
-        internal ConfigurationManager ConfigurationManagerParent
+        public ConfigurationManager ConfigurationManagerParent
         {
             get { return _configurationManagerParent; }
-            set { _configurationManagerParent = value; }
         }
 
         #endregion properties
 
-        public ConfigurationLayer( string configurationName )
+        public ConfigurationLayer()
         {
-            if( string.IsNullOrEmpty( configurationName ) ) throw new ArgumentNullException( "configurationName is null" );
-
-            _configurationName = configurationName;
-            _configurationItemCollection = new Dictionary<string, ConfigurationItem>();
+            _configurationName = string.Empty;
+            _configurationItemCollection = new ConfigurationItemCollection( this );
         }
 
-        //use to create a finalConfigurationLayer
-        internal ConfigurationLayer( string configurationName, IList<ConfigurationItem> items, ConfigurationManager parent )
+        public ConfigurationLayer( string configurationName )
+            : this()
         {
+            if( configurationName == null ) throw new ArgumentNullException( "configurationName" );
+
             _configurationName = configurationName;
-            foreach( ConfigurationItem item in items )
-            {
-                _configurationItemCollection.Items.Add( item.ServiceOrPluginName, item );
-            }
-            _configurationManagerParent = parent;
         }
 
         internal bool OnConfigurationItemChanged( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
             _configurationManagerParent.OnConfigurationLayerChanged( configurationItem, newStatus );
             return true;
+        }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged( [CallerMemberName] String propertyName = "" )
+        {
+            if( PropertyChanged != null )
+            {
+                PropertyChanged( this, new PropertyChangedEventArgs( propertyName ) );
+            }
+        }
+
+        #endregion INotifyPropertyChanged
+
+        //SortedArrayList from CK.Core
+
+        public class ConfigurationItemCollection : IEnumerable
+        {
+            CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
+            private ConfigurationLayer _parent;
+
+            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
+            {
+                get { return _items; }
+            }
+
+            internal ConfigurationItemCollection( ConfigurationLayer parent )
+            {
+                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
+                _parent = parent;
+            }
+
+            public bool Add( string serviceOrPluginName, ConfigurationStatus status )
+            {
+                if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
+
+                //the layer is in a manager
+                if( _parent._configurationManagerParent != null )
+                {
+                    return AddItemWithParent( serviceOrPluginName, status );
+                }
+                else
+                {
+                    return AddItemWithoutParent( serviceOrPluginName, status );
+                }
+            }
+
+            public bool Remove( string serviceOrPluginName )
+            {
+                return _items.Remove( serviceOrPluginName );
+            }
+
+            private bool AddItemWithParent( string serviceOrPluginName, ConfigurationStatus status )
+            {
+                //if the service or plugin already exist, we update his status
+                if( _items.Contains( serviceOrPluginName ) )
+                {
+                    if( _items.GetByKey( serviceOrPluginName ).Status != status )
+                    {
+                        //ConfigurationItem.SetStatus check if we can change the status
+                        return _items.GetByKey( serviceOrPluginName ).SetStatus( status );
+                    }
+                    return true;
+                }
+                else
+                {
+                    ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent );
+                    if( _parent.ConfigurationManagerParent.OnConfigurationLayerChanged( newConfigurationItem, status ) )
+                    {
+                        _items.Add( newConfigurationItem );
+                        return true;
+                    }
+                    return false;
+                }
+            }
+
+            private bool AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
+            {
+                //if the service or plugin already exist, we update his status
+                if( _items.Contains( serviceOrPluginName ) )
+                {
+                    if( _items.GetByKey( serviceOrPluginName ).Status != status )
+                    {
+                        if( _items.GetByKey( serviceOrPluginName ).CanChangeStatus( status ) )
+                        {
+                            _items.GetByKey( serviceOrPluginName ).Status = status;
+                            return true;
+                        }
+                        return false;
+                    }
+                    return true;
+                }
+                else
+                {
+                    _items.Add( new ConfigurationItem( serviceOrPluginName, status, _parent ) );
+                    return true;
+                }
+            }
+
+            public ConfigurationItem this[string key]
+            {
+                get { return this._items.GetByKey( key ); }
+            }
+
+            public int Count
+            {
+                get { return this._items.Count; }
+            }
+
+            #region IEnumerable Members
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+            #endregion
         }
     }
 }

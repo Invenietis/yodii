@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    public class ConfigurationItem : INotifyPropertyChanged
+    public class ConfigurationItem : IConfigurationItem, INotifyPropertyChanged
     {
         private string _serviceOrPluginName;
         private ConfigurationStatus _status;
+        private string _statusReason;
         private readonly ConfigurationLayer _configurationLayerParent;
 
         public string ServiceOrPluginName
@@ -29,11 +30,22 @@ namespace Yodii.Model
             }
         }
 
-        internal ConfigurationItem( string serviceOrPluginName, ConfigurationStatus status, ConfigurationLayer configurationLayer )
+        public string StatusReason
+        {
+            get { return _statusReason; }
+            set 
+            {
+                _statusReason = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        internal ConfigurationItem( string serviceOrPluginName, ConfigurationStatus status, ConfigurationLayer configurationLayer, string statusReason = "" )
         {
             if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentException( "serviceOrPluginID is null or empty" );
-            if( configurationLayer == null ) throw new ArgumentNullException( "configurationLayer is null" );
+            if( configurationLayer == null ) throw new ArgumentNullException( "configurationLayer" );
 
+            _statusReason = statusReason;
             _serviceOrPluginName = serviceOrPluginName;
             _status = status;
             _configurationLayerParent = configurationLayer;
@@ -53,7 +65,7 @@ namespace Yodii.Model
             return false;
         }
 
-        internal bool CanChangeStatus(ConfigurationStatus newStatus)
+        public bool CanChangeStatus(ConfigurationStatus newStatus)
         {
             return (_status == ConfigurationStatus.Runnable) ? newStatus == ConfigurationStatus.Running :
                 _status != ConfigurationStatus.Disable && _status != ConfigurationStatus.Running;

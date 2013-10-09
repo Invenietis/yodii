@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    interface IConfigurationLayerCollection
+    public enum FinalConfigurationChange
     {
+        StatusChanged,
+        ItemAdded,
+        ItemRemoved,
+        LayerAdded,
+        LayerRemoved
     }
 }
