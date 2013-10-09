@@ -61,9 +61,9 @@ namespace Yodii.Model
             _configurationName = configurationName;
         }
 
-        internal bool OnConfigurationItemChanged( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        internal bool OnConfigurationItemChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
-            _configurationManagerParent.OnConfigurationLayerChanged( configurationItem, newStatus );
+            _configurationManagerParent.OnConfigurationLayerChanging(change, configurationItem, newStatus );
             return true;
         }
 
@@ -80,81 +80,6 @@ namespace Yodii.Model
         }
 
         #endregion INotifyPropertyChanged
-
-        //SortedArrayList from CK.Core
-
-        public class ConfigurationItemCollection : IEnumerable
-        {
-            CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
-            private ConfigurationLayer _parent;
-
-            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
-            {
-                get { return _items; }
-            }
-
-            internal ConfigurationItemCollection( ConfigurationLayer parent )
-            {
-                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
-                _parent = parent;
-            }
-
-            public bool Add( string serviceOrPluginName, ConfigurationStatus status )
-            {
-                if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
-
-                //the layer is in a manager
-                if( _parent._configurationManagerParent != null )
-                {
-                    return AddItemWithParent( serviceOrPluginName, status );
-                }
-                else
-                {
-                    return AddItemWithoutParent( serviceOrPluginName, status );
-                }
-            }
-
-            public bool Remove( string serviceOrPluginName )
-            {
-                return _items.Remove( serviceOrPluginName );
-            }
-
-            private bool AddItemWithParent( string serviceOrPluginName, ConfigurationStatus status )
-            {
-                //if the service or plugin already exist, we update his status
-                if( _items.Contains( serviceOrPluginName ) )
-                {
-                    if( _items.GetByKey( serviceOrPluginName ).Status != status )
-                    {
-                        //ConfigurationItem.SetStatus check if we can change the status
-                        return _items.GetByKey( serviceOrPluginName ).SetStatus( status );
-                    }
-                    return true;
-                }
-                else
-                {
-                    ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent );
-                    if( _parent.ConfigurationManagerParent.OnConfigurationLayerChanged( newConfigurationItem, status ) )
-                    {
-                        _items.Add( newConfigurationItem );
-                        return true;
-                    }
-                    return false;
-                }
-            }
-
-            private bool AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
-            {
-                //if the service or plugin already exist, we update his status
-                if( _items.Contains( serviceOrPluginName ) )
-                {
-                    if( _items.GetByKey( serviceOrPluginName ).Status != status )
-                    {
-                        if( _items.GetByKey( serviceOrPluginName ).CanChangeStatus( status ) )
-                        {
-                            _items.GetByKey( serviceOrPluginName ).Status = status;
-                            return true;
-        }
 
         //SortedArrayList from CK.Core
 
@@ -209,7 +134,7 @@ namespace Yodii.Model
                 else
                 {
                     ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent );
-                    if( _parent.ConfigurationManagerParent.OnConfigurationLayerChanged( newConfigurationItem, status ) )
+                    if( _parent.ConfigurationManagerParent.OnConfigurationLayerChanging(FinalConfigurationChange.ItemAdded, newConfigurationItem, status ) )
                     {
                         _items.Add( newConfigurationItem );
                         return true;
