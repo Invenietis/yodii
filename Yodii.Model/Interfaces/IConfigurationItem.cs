@@ -8,8 +8,8 @@ namespace Yodii.Model
 {
     interface IConfigurationItem
     {
-        public string ServiceOrPluginName { get; }
-        public ConfigurationStatus Status { get; }
-        public bool CanChangeStatus( ConfigurationStatus newStatus );
+        string ServiceOrPluginName { get; }
+        ConfigurationStatus Status { get; }
+        bool CanChangeStatus( ConfigurationStatus newStatus );
     }
 }

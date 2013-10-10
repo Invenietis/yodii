@@ -38,38 +38,16 @@ namespace Yodii.Model
         public ConfigurationManager()
         {
             _configurationLayerCollection = new ConfigurationLayerCollection(this);
-
         }
 
-        //public ConfigurationManager( ConfigurationLayer system )
-        //{
-        //    _configurationLayerCollection = new Dictionary<string, ConfigurationLayer>();
-        //    _configurationLayerCollection.Add(system.ConfigurationName, ResolveSystemConfiguration(system));
-        //    FinalConfigurationLayer = CreateFinalConfigurationLayer();
-        //}
-
-        public bool AddLayer(ConfigurationLayer configurationLayer)
+        internal void OnConfigurationItemChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
-            throw new NotImplementedException();
-        }
-
-        public bool RemoveLayer(ConfigurationLayer configurationLayer)
-        {
-            if( configurationLayer == null ) throw new ArgumentNullException( "configurationLayer" );
-
-            if( _configurationLayerCollection.Remove( configurationLayer ) )
-            {
-                FinalConfiguration = GenerateFinalConfiguration();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            _finalConfiguration = GenerateFinalConfiguration();
+            RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationItem ) );
         }
 
         //WARNING : check if this isn't call without layer in ConfigurationManager
-        internal bool OnConfigurationLayerChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus)
+        internal ConfigurationResult OnConfigurationLayerChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus)
         {
             switch( change )
             {
@@ -79,10 +57,9 @@ namespace Yodii.Model
                     return OnConfigurationItemAdding( configurationItem, newStatus );
                 case FinalConfigurationChange.ItemRemoved :
                     return OnConfigurationItemRemoving( configurationItem, newStatus );
+                default :
+                    return new ConfigurationResult( "" ); //ecriremessage d'erreur
             }
-            
-            
-            throw new NotImplementedException();
         }
 
         private ConfigurationResult OnConfigurationItemStatusChanging( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
@@ -95,21 +72,49 @@ namespace Yodii.Model
                 finalConfiguration.Items.GetByKey( configurationItem.ServiceOrPluginName ).Status = newStatus;
                 ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.StatusChanged, configurationItem );
                 RaiseConfigurationChanging( e );
-                //generate configurationresult
+                if( e.IsCanceled )
+                {
+                    return new ConfigurationResult( e.Causes );
+                }
+                else
+                {
+                    _finalConfiguration = finalConfiguration;
+                    return new ConfigurationResult();
+                }
             }
             else
             {
-                //generate configurationresult
-                return false;
+                return new ConfigurationResult( "A new ConfigurationItem, or a ConfigurationStatus change, conflicts with another item in the FinalConfiguration" );
             }
         }
+
         private ConfigurationResult OnConfigurationItemAdding( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
-            FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
-            finalConfiguration.Items.Add( new FinalConfigurationItem( configurationItem ) );
-            ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.ItemAdded, configurationItem );
-            RaiseConfigurationChanging( e );
-            //generate configurationresult
+            if( _finalConfiguration.Items.Contains( configurationItem.ServiceOrPluginName ) )
+            {
+                return OnConfigurationItemStatusChanging( configurationItem, newStatus );
+            }
+            else
+            {
+                FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
+                finalConfiguration.Items.Add( new FinalConfigurationItem( configurationItem ) );
+                ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.ItemAdded, configurationItem );
+                RaiseConfigurationChanging( e );
+                if( e.IsCanceled )
+                {
+                    return new ConfigurationResult( e.Causes );
+                }
+                else
+                {
+                    _finalConfiguration = finalConfiguration;
+                    return new ConfigurationResult();
+                }
+            }
+        }
+
+        private ConfigurationResult OnConfigurationItemRemoving( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        {
+            return new ConfigurationResult();
         }
 
         private FinalConfiguration GenerateFinalConfiguration()
@@ -151,6 +156,15 @@ namespace Yodii.Model
                 ConfigurationChanging( this, e );
             }
         }
+
+        private void RaiseConfigurationChanged( ConfigurationChangedEventArgs e )
+        {
+            if( ConfigurationChanged != null )
+            {
+                ConfigurationChanged( this, e );
+            }
+        }
+
         public class ConfigurationLayerCollection : IEnumerable
         {
             private CKObservableSortedArrayKeyList<ConfigurationLayer,string> _layers;
@@ -161,6 +175,50 @@ namespace Yodii.Model
                 _parent = parent;
                 _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.ConfigurationName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), true );
             }
+
+            public bool Add( ConfigurationLayer layer )
+            {
+                throw new NotImplementedException();
+            }
+
+            public ConfigurationResult Remove( ConfigurationLayer layer )
+            {
+                if( layer == null ) throw new ArgumentNullException( "configurationLayer" );
+
+                if( _layers.Remove( layer ) )
+                {
+                    
+                    return true;
+                }
+                else
+                {
+                    return new ConfigurationResult("The layer could not be removed because it could not be found");
+                }
+            }
+
+            public bool RemoveLayer( ConfigurationLayer configurationLayer )
+            {
+                if( configurationLayer == null ) throw new ArgumentNullException( "configurationLayer" );
+
+                if( _configurationLayerCollection.Remove( configurationLayer ) )
+                {
+                    FinalConfiguration = GenerateFinalConfiguration();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            #region IEnumerable Members
+
+            public IEnumerator GetEnumerator()
+            {
+                return _layers.GetEnumerator();
+            }
+
+            #endregion
         }
     }
 
@@ -173,7 +231,7 @@ namespace Yodii.Model
         private ConfigurationItem _configurationItemChanged;
         private ConfigurationLayer _configurationLayerChanged;
 
-        public bool IsCancel
+        public bool IsCanceled
         {
             get { return _isCanceled; }
         }

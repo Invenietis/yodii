@@ -35,6 +35,7 @@ namespace Yodii.Model
                 NotifyPropertyChanged();
             }
         }
+
         public ConfigurationItemCollection Items
         {
             get { return _configurationItemCollection; }
@@ -61,10 +62,14 @@ namespace Yodii.Model
             _configurationName = configurationName;
         }
 
-        internal bool OnConfigurationItemChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        internal ConfigurationResult OnConfigurationItemChanging( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
-            _configurationManagerParent.OnConfigurationLayerChanging(change, configurationItem, newStatus );
-            return true;
+            return _configurationManagerParent.OnConfigurationLayerChanging( change, configurationItem, newStatus );
+        }
+
+        internal void OnConfigurationItemChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        {
+            _configurationManagerParent.OnConfigurationItemChanged( change, configurationItem, newStatus );
         }
 
         #region INotifyPropertyChanged
@@ -83,7 +88,7 @@ namespace Yodii.Model
 
         //SortedArrayList from CK.Core
 
-        public class ConfigurationItemCollection : IEnumerable, INotifyCollectionChanged, INotifyPropertyChanged
+        public class ConfigurationItemCollection : IEnumerable
         {
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
             private ConfigurationLayer _parent;
@@ -95,16 +100,16 @@ namespace Yodii.Model
 
             internal ConfigurationItemCollection( ConfigurationLayer parent )
             {
-                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>(e => e.ServiceOrPluginName, (x,y) => StringComparer.Ordinal.Compare(x,y));
+                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
                 _parent = parent;
             }
 
-            public bool AddConfigurationItem( string serviceOrPluginName, ConfigurationStatus status )
+            public bool Add( string serviceOrPluginName, ConfigurationStatus status )
             {
                 if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
 
                 //the layer is in a manager
-                if( _parent != null )
+                if( _parent.ConfigurationManagerParent != null )
                 {
                     return AddItemWithParent( serviceOrPluginName, status );
                 }
@@ -114,7 +119,7 @@ namespace Yodii.Model
                 }
             }
 
-            public bool RemoveConfigurationItem( string serviceOrPluginName )
+            public bool Remove( string serviceOrPluginName )
             {
                 throw new NotImplementedException();
             }
@@ -124,91 +129,99 @@ namespace Yodii.Model
                 //if the service or plugin already exist, we update his status
                 if( _items.Contains( serviceOrPluginName ) )
                 {
-                    if( _items.GetByKey(serviceOrPluginName).Status != status )
+                    if( _items.GetByKey( serviceOrPluginName ).Status != status )
                     {
                         //ConfigurationItem.SetStatus check if we can change the status
-                        return _items.GetByKey(serviceOrPluginName).SetStatus( status );
+                        return _items.GetByKey( serviceOrPluginName ).SetStatus( status );
                     }
-                    return true;
+                    return new ConfigurationResult();
                 }
                 else
                 {
                     ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent );
-                    if( _parent.ConfigurationManagerParent.OnConfigurationLayerChanging(FinalConfigurationChange.ItemAdded, newConfigurationItem, status ) )
+                    ConfigurationResult result = _parent.OnConfigurationItemChanging( FinalConfigurationChange.ItemAdded, newConfigurationItem, status );
+                    if( result )
                     {
                         _items.Add( newConfigurationItem );
-                        return true;
+                        return new ConfigurationResult();
                     }
-                    return false;
+                    return result;
                 }
-        }
+            }
 
-        private bool AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
-        {
-            //if the service or plugin already exist, we update his status
-            if( _items.Contains( serviceOrPluginName ) )
+            private ConfigurationResult AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
             {
-                if( _items.GetByKey(serviceOrPluginName).Status != status )
+                //if the service or plugin already exist, we update his status
+                if( _items.Contains( serviceOrPluginName ) )
                 {
-                    if( _items.GetByKey(serviceOrPluginName).CanChangeStatus( status ) )
+                    ConfigurationItem item = _items.GetByKey( serviceOrPluginName );
+                    if( item.Status != status )
                     {
-                        _items.GetByKey(serviceOrPluginName).Status = status;
-                        return true;
+                        if( item.CanChangeStatus( status ) )
+                        {
+                            item.Status = status;
+                            return new ConfigurationResult();
+                        }
+                        return new ConfigurationResult( string.Format( "{0} already exists and cannot switch from {1} to {2}", item.ServiceOrPluginName, item.Status, status ) );
                     }
-                    return false;
+                    return new ConfigurationResult();
                 }
-                return true;
+                else
+                {
+                    if( _items.Add( new ConfigurationItem( serviceOrPluginName, status, _parent ) ) )
+                    {
+                        return new ConfigurationResult();
+                    }
+                    else
+                    {
+                        return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationItem in the collection" );
+                    }
+                }
             }
-            else
+
+            public ConfigurationItem this[string key]
             {
-                _items.Add(  new ConfigurationItem( serviceOrPluginName, status, _parent ) );
-                return true;
+                get { return this._items.GetByKey( key ); }
             }
-        }
 
-        public ConfigurationItem this[string key]
-        {
-            get { return this._items.GetByKey(key); }
-        }
-
-        public int Count
-        {
-            get { return this._items.Count; }
-        }
-        public event CollectionChangeEventHandler CollectionChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-        /*    
-        _items.PropertyChanged += (s, e) 
-        {
-
-        };
-        _items.CollectionChanged += (s, e) 
-        {
-
-        };
-            */
-        private void FirePropertyChanged( PropertyChangedEventArgs e )
-        {
-            if ( this.PropertyChanged != null )
+            public int Count
             {
-                this.PropertyChanged ( this, e );
+                get { return this._items.Count; }
             }
-        }
-        private void FireCollectionChanged(CollectionChangeEventArgs e)
-        {
-            if ( this.CollectionChanged != null )
+            public event CollectionChangeEventHandler CollectionChanged;
+            public event PropertyChangedEventHandler PropertyChanged;
+            /*    
+            _items.PropertyChanged += (s, e) 
             {
-                this.CollectionChanged ( this, e );
-            }
-        }
-       
-        #region IEnumerable Members
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _items.GetEnumerator();
-        }
-        #endregion
+            };
+            _items.CollectionChanged += (s, e) 
+            {
+
+            };
+                */
+            private void FirePropertyChanged( PropertyChangedEventArgs e )
+            {
+                if( this.PropertyChanged != null )
+                {
+                    this.PropertyChanged( this, e );
+                }
+            }
+            private void FireCollectionChanged( CollectionChangeEventArgs e )
+            {
+                if( this.CollectionChanged != null )
+                {
+                    this.CollectionChanged( this, e );
+                }
+            }
+
+            #region IEnumerable Members
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+            #endregion
         }
     }
 }

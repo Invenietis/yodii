@@ -35,6 +35,7 @@ namespace Yodii.Model
             get { return _statusReason; }
             set 
             {
+                if( value == null ) throw new NullReferenceException();
                 _statusReason = value;
                 NotifyPropertyChanged();
             }
@@ -44,6 +45,7 @@ namespace Yodii.Model
         {
             if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentException( "serviceOrPluginID is null or empty" );
             if( configurationLayer == null ) throw new ArgumentNullException( "configurationLayer" );
+            if( statusReason == null ) throw new ArgumentNullException( "statusReason" );
 
             _statusReason = statusReason;
             _serviceOrPluginName = serviceOrPluginName;
@@ -51,18 +53,23 @@ namespace Yodii.Model
             _configurationLayerParent = configurationLayer;
         }
 
-        public bool SetStatus( ConfigurationStatus newStatus )
+        public ConfigurationResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
         {
+            if( statusReason == null ) throw new ArgumentNullException( "statusReason" );
+
             if( CanChangeStatus( newStatus ) )
             {
-                if( _configurationLayerParent.OnConfigurationItemChanged( this, newStatus ) )
+                ConfigurationResult configurationResult = _configurationLayerParent.OnConfigurationItemChanging(FinalConfigurationChange.StatusChanged, this, newStatus );
+                if( configurationResult )
                 {
                     Status = newStatus;
-                    return true;
+                    StatusReason = statusReason;
+                    _configurationLayerParent.OnConfigurationItemChanged( FinalConfigurationChange.StatusChanged, this, newStatus );
+                    return configurationResult;
                 }
-                return false;
+                return configurationResult;
             }
-            return false;
+            return new ConfigurationResult( String.Format( "{2}({0}) could not be changed in {1}", _status, newStatus, _serviceOrPluginName ) );
         }
 
         public bool CanChangeStatus(ConfigurationStatus newStatus)
