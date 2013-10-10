@@ -132,17 +132,17 @@ namespace Yodii.Engine.Tests
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
-            Assert.That( cm.FinalConfigurationLayer == null, "Initial FinalConfiguration is null." );
+            Assert.That( cm.FinalConfiguration == null, "Initial FinalConfiguration is null." );
 
-            cm.Changing += delegate( object sender, ConfigurationManagerChangingEventArgs e )
+            cm.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
             {
-                Assert.That( e.Cancel == false, "Configuration manager does not cancel by default." );
+                Assert.That( e.IsCanceled == false, "Configuration manager does not cancel by default." );
                 Assert.That( e.FinalConfiguration != null, "Proposed FinalConfiguration exists." );
 
                 managerChangingCount++;
             };
 
-            cm.Changed += delegate( object sender, ConfigurationManagerChangedEventArgs e )
+            cm.ConfigurationChanged += delegate( object sender, ConfigurationChangedEventArgs e )
             {
                 Assert.That( e.FinalConfiguration != null, "FinalConfiguration exists." );
 
@@ -161,7 +161,7 @@ namespace Yodii.Engine.Tests
             Assert.That( managerChangingCount == 1 );
             Assert.That( managerChangedCount == 1 );
 
-            Assert.That( cm.FinalConfigurationLayer != null, "Non-cancelled FinalConfiguration exists." );
+            Assert.That( cm.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
         }
     }
 }
