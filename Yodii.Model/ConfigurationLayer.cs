@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
@@ -13,7 +11,7 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     //ToDo : removeItem, Obersable, ienumerable, 
-    public class ConfigurationLayer : INotifyPropertyChanged
+    public class ConfigurationLayer
     {
         #region fields
 
@@ -28,21 +26,16 @@ namespace Yodii.Model
         public string ConfigurationName
         {
             get { return _configurationName; }
-            set
-            {
-                if( value == null ) throw new NullReferenceException();
-                _configurationName = value;
-                NotifyPropertyChanged();
-            }
         }
         public ConfigurationItemCollection Items
         {
             get { return _configurationItemCollection; }
         }
 
-        public ConfigurationManager ConfigurationManagerParent
+        internal ConfigurationManager ConfigurationManagerParent
         {
             get { return _configurationManagerParent; }
+            set { _configurationManagerParent = value; }
         }
 
         #endregion properties
@@ -56,32 +49,27 @@ namespace Yodii.Model
         public ConfigurationLayer( string configurationName )
             : this()
         {
-            if( configurationName == null ) throw new ArgumentNullException( "configurationName" );
+            if ( configurationName == null ) throw new ArgumentNullException( "configurationName" );
 
             _configurationName = configurationName;
         }
 
-        internal bool OnConfigurationItemChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        //use to create a finalConfigurationLayer
+        internal ConfigurationLayer( string configurationName, IList<ConfigurationItem> items, ConfigurationManager parent )
         {
-            _configurationManagerParent.OnConfigurationLayerChanging(change, configurationItem, newStatus );
+            _configurationName = configurationName;
+            foreach ( ConfigurationItem item in items )
+            {
+                _configurationItemCollection.Items.Add( item.ServiceOrPluginName, item );
+            }
+            _configurationManagerParent = parent;
+        }
+
+        internal bool OnConfigurationItemChanged( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        {
+            _configurationManagerParent.OnConfigurationLayerChanged( configurationItem, newStatus );
             return true;
         }
-
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void NotifyPropertyChanged( [CallerMemberName] String propertyName = "" )
-        {
-            if( PropertyChanged != null )
-            {
-                PropertyChanged( this, new PropertyChangedEventArgs( propertyName ) );
-            }
-        }
-
-        #endregion INotifyPropertyChanged
-
-        //SortedArrayList from CK.Core
 
         public class ConfigurationItemCollection : IEnumerable, INotifyCollectionChanged, INotifyPropertyChanged
         {
@@ -95,16 +83,28 @@ namespace Yodii.Model
 
             internal ConfigurationItemCollection( ConfigurationLayer parent )
             {
-                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>(e => e.ServiceOrPluginName, (x,y) => StringComparer.Ordinal.Compare(x,y));
+                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
                 _parent = parent;
+                _items.PropertyChanged += RetrievePropertyEvent;
+                _items.CollectionChanged += RetrieveCollectionEvent;
+            }
+
+            private void RetrieveCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
+            {
+                FireCollectionChanged( e );
+            }
+
+            private void RetrievePropertyEvent( object sender, PropertyChangedEventArgs e )
+            {
+                FirePropertyChanged( e );
             }
 
             public bool AddConfigurationItem( string serviceOrPluginName, ConfigurationStatus status )
             {
-                if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
+                if ( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
 
                 //the layer is in a manager
-                if( _parent != null )
+                if ( _parent != null )
                 {
                     return AddItemWithParent( serviceOrPluginName, status );
                 }
@@ -122,93 +122,85 @@ namespace Yodii.Model
             private bool AddItemWithParent( string serviceOrPluginName, ConfigurationStatus status )
             {
                 //if the service or plugin already exist, we update his status
-                if( _items.Contains( serviceOrPluginName ) )
+                if ( _items.Contains( serviceOrPluginName ) )
                 {
-                    if( _items.GetByKey(serviceOrPluginName).Status != status )
+                    if ( _items.GetByKey( serviceOrPluginName ).Status != status )
                     {
                         //ConfigurationItem.SetStatus check if we can change the status
-                        return _items.GetByKey(serviceOrPluginName).SetStatus( status );
+                        return _items.GetByKey( serviceOrPluginName ).SetStatus( status );
                     }
                     return true;
                 }
                 else
                 {
                     ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent );
-                    if( _parent.ConfigurationManagerParent.OnConfigurationLayerChanging(FinalConfigurationChange.ItemAdded, newConfigurationItem, status ) )
+                    if ( _parent.ConfigurationManagerParent.OnConfigurationLayerChanged( newConfigurationItem, status ) )
                     {
                         _items.Add( newConfigurationItem );
                         return true;
                     }
                     return false;
                 }
-        }
+            }
 
-        private bool AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
-        {
-            //if the service or plugin already exist, we update his status
-            if( _items.Contains( serviceOrPluginName ) )
+            private bool AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
             {
-                if( _items.GetByKey(serviceOrPluginName).Status != status )
+                //if the service or plugin already exist, we update his status
+                if ( _items.Contains( serviceOrPluginName ) )
                 {
-                    if( _items.GetByKey(serviceOrPluginName).CanChangeStatus( status ) )
+                    if ( _items.GetByKey( serviceOrPluginName ).Status != status )
                     {
-                        _items.GetByKey(serviceOrPluginName).Status = status;
-                        return true;
+                        if ( _items.GetByKey( serviceOrPluginName ).CanChangeStatus( status ) )
+                        {
+                            _items.GetByKey( serviceOrPluginName ).Status = status;
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
+                    return true;
                 }
-                return true;
+                else
+                {
+                    _items.Add( new ConfigurationItem( serviceOrPluginName, status, _parent ) );
+                    return true;
+                }
             }
-            else
+
+            public ConfigurationItem this[string key]
             {
-                _items.Add(  new ConfigurationItem( serviceOrPluginName, status, _parent ) );
-                return true;
+                get { return this._items.GetByKey( key ); }
             }
-        }
 
-        public ConfigurationItem this[string key]
-        {
-            get { return this._items.GetByKey(key); }
-        }
-
-        public int Count
-        {
-            get { return this._items.Count; }
-        }
-        public event CollectionChangeEventHandler CollectionChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-        /*    
-        _items.PropertyChanged += (s, e) 
-        {
-
-        };
-        _items.CollectionChanged += (s, e) 
-        {
-
-        };
-            */
-        private void FirePropertyChanged( PropertyChangedEventArgs e )
-        {
-            if ( this.PropertyChanged != null )
+            public int Count
             {
-                this.PropertyChanged ( this, e );
+                get { return this._items.Count; }
             }
-        }
-        private void FireCollectionChanged(CollectionChangeEventArgs e)
-        {
-            if ( this.CollectionChanged != null )
-            {
-                this.CollectionChanged ( this, e );
-            }
-        }
-       
-        #region IEnumerable Members
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _items.GetEnumerator();
-        }
-        #endregion
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            private void FirePropertyChanged( PropertyChangedEventArgs e )
+            {
+                if ( this.PropertyChanged != null )
+                {
+                    this.PropertyChanged( this, e );
+                }
+            }
+            private void FireCollectionChanged( NotifyCollectionChangedEventArgs e )
+            {
+                if ( this.CollectionChanged != null )
+                {
+                    this.CollectionChanged( this, e );
+                }
+            }
+
+            #region IEnumerable Members
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+            #endregion
         }
     }
 }
