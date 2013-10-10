@@ -112,11 +112,11 @@ namespace Yodii.Engine.Tests
             Assert.That( layer.Items.Count == 1, "Adding the same plugin twice, in the same state, does not actually add it and increment the count." );
 
             result = layer.Items.Add( pluginId, ConfigurationStatus.Runnable );
-            Assert.That( result, Is.True, "Layer override precedence: Optional -> Runnable is a valid operation." );
+            Assert.That( result, Is.False, "Layer override precedence: Optional -> Runnable is a valid operation." );
             Assert.That( layer.Items[pluginId].Status == ConfigurationStatus.Runnable );
             
             result = layer.Items.Add( pluginId, ConfigurationStatus.Running );
-            Assert.That( result, Is.True, "Layer override precedence: Runnable -> Running is a valid operation." );
+            Assert.That( result, Is.False, "Layer override precedence: Runnable -> Running is a valid operation." );
             Assert.That( layer.Items[pluginId].Status == ConfigurationStatus.Running );
 
             Assert.That( layer.Items.Count == 1, "Adding the same plugin over and over does not actually increment the count." );
@@ -132,17 +132,17 @@ namespace Yodii.Engine.Tests
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
-            Assert.That( cm.FinalConfiguration == null, "Initial FinalConfiguration is null." );
+            Assert.That( cm.FinalConfigurationLayer == null, "Initial FinalConfiguration is null." );
 
-            cm.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
+            cm.Changing += delegate( object sender, ConfigurationManagerChangingEventArgs e )
             {
-                Assert.That( e.IsCanceled == false, "Configuration manager does not cancel by default." );
+                Assert.That( e.Cancel == false, "Configuration manager does not cancel by default." );
                 Assert.That( e.FinalConfiguration != null, "Proposed FinalConfiguration exists." );
 
                 managerChangingCount++;
             };
 
-            cm.ConfigurationChanged += delegate( object sender, ConfigurationChangedEventArgs e )
+            cm.Changed += delegate( object sender, ConfigurationManagerChangedEventArgs e )
             {
                 Assert.That( e.FinalConfiguration != null, "FinalConfiguration exists." );
 
@@ -161,7 +161,44 @@ namespace Yodii.Engine.Tests
             Assert.That( managerChangingCount == 1 );
             Assert.That( managerChangedCount == 1 );
 
-            Assert.That( cm.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
+            Assert.That( cm.FinalConfigurationLayer != null, "Non-cancelled FinalConfiguration exists." );
+        }
+    }
+    [TestFixture]
+    public class Testout
+    {
+        [Test]
+        public void Testout()
+        {
+            ConfigurationLayer cl = new ConfigurationLayer();
+            
+            ConfigurationItem item1 = new ConfigurationItem();
+            cl.Items.AddConfigurationItem("plugin1", ConfigurationStatus.Running);
+
+            Assert.That( item1.Status == ConfigurationStatus.Running );
+            Assert.That( item1.ServiceOrPluginName == "plugin1" );
+
+            ConfigurationItem item2 = new ConfigurationItem();
+            cl.Items.AddConfigurationItem( "service1", ConfigurationStatus.Running );
+
+            Assert.That( item1.Status == ConfigurationStatus.Running );
+            Assert.That( item1.ServiceOrPluginName == "service1" );
+            
+            ConfigurationManager cm = new ConfigurationManager();
+            
+            cm.AddLayer( cl );
+            
+            Objectgraph Og = new ObjectGraph( cm );
+
+            Og.Resolve();
+
+            Og.Release();
+        }
+
+        [Test]
+        public void Testout2()
+        {
+
         }
     }
 }

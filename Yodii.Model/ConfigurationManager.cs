@@ -30,7 +30,6 @@ namespace Yodii.Model
             private set
             {
                 _finalConfiguration = value;
-
                 NotifyPropertyChanged();
             }
         }
@@ -40,11 +39,18 @@ namespace Yodii.Model
             _configurationLayerCollection = new ConfigurationLayerCollection(this);
         }
 
-        internal void OnConfigurationItemChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        internal void OnConfigurationManagerChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
-            _finalConfiguration = GenerateFinalConfiguration();
+            FinalConfiguration = GenerateFinalConfiguration();
             RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationItem ) );
         }
+
+        internal void OnConfigurationManagerChanged( FinalConfigurationChange change, ConfigurationLayer configurationLayer )
+        {
+            FinalConfiguration = GenerateFinalConfiguration();
+            RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationLayer ) );
+        }
+        
 
         //WARNING : check if this isn't call without layer in ConfigurationManager
         internal ConfigurationResult OnConfigurationLayerChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus)
@@ -69,16 +75,17 @@ namespace Yodii.Model
             if( _finalConfiguration.Items.GetByKey( configurationItem.ServiceOrPluginName ).CanChangeStatus( newStatus ) )
             {
                 FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
-                finalConfiguration.Items.GetByKey( configurationItem.ServiceOrPluginName ).Status = newStatus;
+                finalConfiguration.ChangeStatusItem( configurationItem.ServiceOrPluginName, configurationItem.Status );
+
                 ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.StatusChanged, configurationItem );
                 RaiseConfigurationChanging( e );
+
                 if( e.IsCanceled )
                 {
                     return new ConfigurationResult( e.Causes );
                 }
                 else
                 {
-                    _finalConfiguration = finalConfiguration;
                     return new ConfigurationResult();
                 }
             }
@@ -98,15 +105,16 @@ namespace Yodii.Model
             {
                 FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
                 finalConfiguration.Items.Add( new FinalConfigurationItem( configurationItem ) );
+
                 ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.ItemAdded, configurationItem );
                 RaiseConfigurationChanging( e );
+
                 if( e.IsCanceled )
                 {
                     return new ConfigurationResult( e.Causes );
                 }
                 else
                 {
-                    _finalConfiguration = finalConfiguration;
                     return new ConfigurationResult();
                 }
             }
@@ -117,22 +125,66 @@ namespace Yodii.Model
             return new ConfigurationResult();
         }
 
+        internal ConfigurationResult OnConfigurationManagerChanging( FinalConfigurationChange change, ConfigurationLayer configurationLayer )
+        {
+            if( change == FinalConfigurationChange.LayerAdded )
+            {
+                if( _finalConfiguration == null )
+                {
+                    FinalConfiguration = ResolveBasicConfiguration( configurationLayer );
+                    return new ConfigurationResult();
+                }
+                else
+                {
+                    FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
+                    finalConfiguration.ConcatLayer( configurationLayer );
+
+                    ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.LayerAdded, configurationLayer );
+                    RaiseConfigurationChanging( e );
+
+                    if( e.IsCanceled )
+                    {
+                        return new ConfigurationResult( e.Causes );
+                    }
+                    else
+                    {
+                        return new ConfigurationResult();
+                    }
+                }
+            }
+            else
+            {
+                return new ConfigurationResult();
+            }
+        }
+
         private FinalConfiguration GenerateFinalConfiguration()
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration();
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
-                foreach( ConfigurationItem item in layer.Items )
-                {
-                    finalConfiguration.Items.Add( new FinalConfigurationItem( item ) );
-                }
+                finalConfiguration.ConcatLayer( layer );
             }
             return finalConfiguration;
         }
 
-        private ConfigurationLayer ResolveSystemConfiguration(ConfigurationLayer system)
+        private FinalConfiguration ResolveBasicConfiguration(ConfigurationLayer firstLayer)
         {
-            throw new NotImplementedException();
+            FinalConfiguration finalConfiguration = new FinalConfiguration();
+            finalConfiguration.ConcatLayer( firstLayer );
+
+            ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.LayerAdded, firstLayer );
+            RaiseConfigurationChanging( e );
+
+            if( e.IsCanceled )
+            {
+                firstLayer.Items.Remove( firstLayer.Items[firstLayer.Items.Count].ServiceOrPluginName );
+                return ResolveBasicConfiguration( firstLayer );
+            }
+            else
+            {
+                return finalConfiguration;
+            }
         }
 
         #region INotifyPropertyChanged
@@ -176,9 +228,57 @@ namespace Yodii.Model
                 _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.ConfigurationName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), true );
             }
 
-            public bool Add( ConfigurationLayer layer )
+            public ConfigurationResult Add( ConfigurationLayer layer )
             {
-                throw new NotImplementedException();
+                if( layer == null ) throw new ArgumentNullException( "layer" );
+
+                ConfigurationResult result = CanAddLayer( layer );
+
+                if( result )
+                {
+                    result = _parent.OnConfigurationManagerChanging( FinalConfigurationChange.LayerAdded, layer );
+                    if( result )
+                    {
+                        if( _layers.Add( layer ) )
+                        {
+                            _parent.OnConfigurationManagerChanged( FinalConfigurationChange.LayerAdded, layer );
+                            return result;
+                        }
+                        else 
+                        {
+                            return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationLayer in the collection" );
+                        }
+                    }
+                    else
+                    {
+                        return result;
+                    }
+                }
+                else
+                {
+                    return result;
+                }
+            }
+
+            private ConfigurationResult CanAddLayer( ConfigurationLayer layer )
+            {
+                if( _layers.Count == 0 ) return new ConfigurationResult();
+                bool exist;
+                FinalConfigurationItem finalItem;
+                foreach( ConfigurationItem item in layer.Items )
+                {
+                    finalItem = _parent._finalConfiguration.Items.GetByKey( item.ServiceOrPluginName, out exist );
+                    if( exist )
+                    {
+                        if( !finalItem.CanChangeStatus( item.Status ) )
+                        {
+                            return new ConfigurationResult(
+                                string.Format( "{0}({3}) est en conflit avec {1}({4}) contenu dans {2}",
+                                        item.ServiceOrPluginName, finalItem.ServiceOrPluginName, layer.ConfigurationName, item.Status, finalItem.Status ) );
+                        }
+                    }
+                }
+                return new ConfigurationResult();
             }
 
             public ConfigurationResult Remove( ConfigurationLayer layer )
@@ -187,27 +287,12 @@ namespace Yodii.Model
 
                 if( _layers.Remove( layer ) )
                 {
-                    
-                    return true;
+                    _parent.OnConfigurationManagerChanged( FinalConfigurationChange.LayerRemoved, layer );
+                    return new ConfigurationResult();
                 }
                 else
                 {
                     return new ConfigurationResult("The layer could not be removed because it could not be found");
-                }
-            }
-
-            public bool RemoveLayer( ConfigurationLayer configurationLayer )
-            {
-                if( configurationLayer == null ) throw new ArgumentNullException( "configurationLayer" );
-
-                if( _configurationLayerCollection.Remove( configurationLayer ) )
-                {
-                    FinalConfiguration = GenerateFinalConfiguration();
-                    return true;
-                }
-                else
-                {
-                    return false;
                 }
             }
 

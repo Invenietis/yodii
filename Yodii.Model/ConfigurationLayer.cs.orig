@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Yodii.Model
 {
@@ -51,11 +50,12 @@ namespace Yodii.Model
         public ConfigurationLayer( string configurationName )
             : this()
         {
-            if( configurationName == null ) throw new ArgumentNullException( "configurationName" );
+            if ( configurationName == null ) throw new ArgumentNullException( "configurationName" );
 
             _configurationName = configurationName;
         }
 
+<<<<<<< HEAD
         internal ConfigurationResult OnConfigurationItemChanging( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
             return _configurationManagerParent.OnConfigurationLayerChanging( change, configurationItem, newStatus );
@@ -63,7 +63,7 @@ namespace Yodii.Model
 
         internal void OnConfigurationItemChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
         {
-            _configurationManagerParent.OnConfigurationManagerChanged( change, configurationItem, newStatus );
+            _configurationManagerParent.OnConfigurationItemChanged( change, configurationItem, newStatus );
         }
 
         #region INotifyPropertyChanged
@@ -71,16 +71,26 @@ namespace Yodii.Model
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged( [CallerMemberName] String propertyName = "" )
+=======
+        //use to create a finalConfigurationLayer
+        internal ConfigurationLayer( string configurationName, IList<ConfigurationItem> items, ConfigurationManager parent )
+>>>>>>> origin/f-configuration-manager
         {
-            if( PropertyChanged != null )
+            _configurationName = configurationName;
+            foreach ( ConfigurationItem item in items )
             {
-                PropertyChanged( this, new PropertyChangedEventArgs( propertyName ) );
+                _configurationItemCollection.Items.Add( item.ServiceOrPluginName, item );
             }
+            _configurationManagerParent = parent;
         }
 
-        #endregion
+        internal bool OnConfigurationItemChanged( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        {
+            _configurationManagerParent.OnConfigurationLayerChanged( configurationItem, newStatus );
+            return true;
+        }
 
-        public class ConfigurationItemCollection : IEnumerable, INotifyCollectionChanged, INotifyPropertyChanged
+        public class ConfigurationItemCollection : IEnumerable
         {
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
             private ConfigurationLayer _parent;
@@ -108,81 +118,75 @@ namespace Yodii.Model
                 FirePropertyChanged( e );
             }
 
-            public ConfigurationResult Add( string serviceOrPluginName, ConfigurationStatus status, string statusReason = "" )
+            public bool Add( string serviceOrPluginName, ConfigurationStatus status )
             {
-                if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
-                if( statusReason == null ) throw new NullReferenceException();
+                if ( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentNullException( "serviceOrPluginName is null" );
 
                 //the layer is in a manager
+<<<<<<< HEAD
                 if( _parent.ConfigurationManagerParent != null )
+=======
+                if ( _parent != null )
+>>>>>>> origin/f-configuration-manager
                 {
-                    return AddItemWithParent( serviceOrPluginName, status, statusReason );
+                    return AddItemWithParent( serviceOrPluginName, status );
                 }
                 else
                 {
-                    return AddItemWithoutParent( serviceOrPluginName, status, statusReason );
+                    return AddItemWithoutParent( serviceOrPluginName, status );
                 }
             }
 
-            public ConfigurationResult Remove( string serviceOrPluginName )
+            public bool Remove( string serviceOrPluginName )
             {
-                if( string.IsNullOrEmpty( serviceOrPluginName ) ) throw new ArgumentException( "serviceOrPluginID is null or empty" );
-                if( _parent.ConfigurationManagerParent != null )
-                {
-                    return RemoveWithParent( serviceOrPluginName );
-                }
-                else
-                {
-                    return RemoveWithoutParent( serviceOrPluginName );
-                }
+                throw new NotImplementedException();
             }
 
-            private ConfigurationResult AddItemWithParent( string serviceOrPluginName, ConfigurationStatus status, string statusReason )
+            private bool AddItemWithParent( string serviceOrPluginName, ConfigurationStatus status )
             {
-                bool itemExist;
-                ConfigurationItem item = _items.GetByKey( serviceOrPluginName, out itemExist );
                 //if the service or plugin already exist, we update his status
-                if( itemExist )
+                if ( _items.Contains( serviceOrPluginName ) )
                 {
-                    if( item.Status != status )
+<<<<<<< HEAD
+                    if( _items.GetByKey( serviceOrPluginName ).Status != status )
+=======
+                    if ( _items.GetByKey( serviceOrPluginName ).Status != status )
+>>>>>>> origin/f-configuration-manager
                     {
                         //ConfigurationItem.SetStatus check if we can change the status
-                        return item.SetStatus( status, statusReason );
+                        return _items.GetByKey( serviceOrPluginName ).SetStatus( status );
                     }
                     return new ConfigurationResult();
                 }
                 else
                 {
-                    ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent, statusReason );
+                    ConfigurationItem newConfigurationItem = new ConfigurationItem( serviceOrPluginName, status, _parent );
+<<<<<<< HEAD
                     ConfigurationResult result = _parent.OnConfigurationItemChanging( FinalConfigurationChange.ItemAdded, newConfigurationItem, status );
                     if( result )
+=======
+                    if ( _parent.ConfigurationManagerParent.OnConfigurationLayerChanged( newConfigurationItem, status ) )
+>>>>>>> origin/f-configuration-manager
                     {
-                        if( _items.Add( newConfigurationItem ) )
-                        {
-                            return result;
-                        }
-                        else
-                        {
-                            return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationItem in the collection" );
-                        }
+                        _items.Add( newConfigurationItem );
+                        return new ConfigurationResult();
                     }
                     return result;
                 }
             }
 
-            private ConfigurationResult AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status, string statusReason )
+<<<<<<< HEAD
+            private ConfigurationResult AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
             {
-                bool itemExist;
-                ConfigurationItem item = _items.GetByKey( serviceOrPluginName, out itemExist );
                 //if the service or plugin already exist, we update his status
-                if( itemExist )
+                if( _items.Contains( serviceOrPluginName ) )
                 {
+                    ConfigurationItem item = _items.GetByKey( serviceOrPluginName );
                     if( item.Status != status )
                     {
                         if( item.CanChangeStatus( status ) )
                         {
                             item.Status = status;
-                            item.StatusReason = statusReason;
                             return new ConfigurationResult();
                         }
                         return new ConfigurationResult( string.Format( "{0} already exists and cannot switch from {1} to {2}", item.ServiceOrPluginName, item.Status, status ) );
@@ -191,7 +195,7 @@ namespace Yodii.Model
                 }
                 else
                 {
-                    if( _items.Add( new ConfigurationItem( serviceOrPluginName, status, _parent, statusReason ) ) )
+                    if( _items.Add( new ConfigurationItem( serviceOrPluginName, status, _parent ) ) )
                     {
                         return new ConfigurationResult();
                     }
@@ -199,48 +203,28 @@ namespace Yodii.Model
                     {
                         return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationItem in the collection" );
                     }
-                }
-            }
-
-            private ConfigurationResult RemoveWithParent( string serviceOrPluginName )
+=======
+            private bool AddItemWithoutParent( string serviceOrPluginName, ConfigurationStatus status )
             {
-                bool itemExist;
-                ConfigurationItem item = _items.GetByKey( serviceOrPluginName, out itemExist );
                 //if the service or plugin already exist, we update his status
-                if( itemExist )
+                if ( _items.Contains( serviceOrPluginName ) )
                 {
-                    ConfigurationResult result = _parent.ConfigurationManagerParent.OnConfigurationLayerChanging( FinalConfigurationChange.ItemRemoved, item, ConfigurationStatus.Optional );
-                    if( result )
+                    if ( _items.GetByKey( serviceOrPluginName ).Status != status )
                     {
-                        if( _items.Remove( serviceOrPluginName ) )
+                        if ( _items.GetByKey( serviceOrPluginName ).CanChangeStatus( status ) )
                         {
-                            return result;
+                            _items.GetByKey( serviceOrPluginName ).Status = status;
+                            return true;
                         }
-                        else
-                        {
-                            return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationItem in the collection" );
-                        }
+                        return false;
                     }
-                    else
-                    {
-                        return result;
-                    }
+                    return true;
                 }
                 else
                 {
-                    return new ConfigurationResult( string.Format("{1} doesn't exist in the collection", serviceOrPluginName ) );
-                }
-            }
-
-            private ConfigurationResult RemoveWithoutParent( string serviceOrPluginName )
-            {
-                if( _items.Remove( serviceOrPluginName ) )
-                {
-                    return new ConfigurationResult();
-                }
-                else
-                {
-                    return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationItem in the collection" );
+                    _items.Add( new ConfigurationItem( serviceOrPluginName, status, _parent ) );
+                    return true;
+>>>>>>> origin/f-configuration-manager
                 }
             }
 
@@ -248,29 +232,49 @@ namespace Yodii.Model
             {
                 get { return this._items.GetByKey( key ); }
             }
-            public ConfigurationItem this[int index]
-            {
-                get { return this._items[index]; }
-            }
 
             public int Count
             {
                 get { return this._items.Count; }
             }
+<<<<<<< HEAD
+            public event CollectionChangeEventHandler CollectionChanged;
+            public event PropertyChangedEventHandler PropertyChanged;
+            /*    
+            _items.PropertyChanged += (s, e) 
+            {
+
+            };
+            _items.CollectionChanged += (s, e) 
+            {
+
+            };
+                */
+            private void FirePropertyChanged( PropertyChangedEventArgs e )
+            {
+                if( this.PropertyChanged != null )
+=======
 
             public event NotifyCollectionChangedEventHandler CollectionChanged;
             public event PropertyChangedEventHandler PropertyChanged;
 
             private void FirePropertyChanged( PropertyChangedEventArgs e )
             {
-                if( this.PropertyChanged != null )
+                if ( this.PropertyChanged != null )
+>>>>>>> origin/f-configuration-manager
                 {
                     this.PropertyChanged( this, e );
                 }
             }
-            private void FireCollectionChanged( NotifyCollectionChangedEventArgs e )
+<<<<<<< HEAD
+            private void FireCollectionChanged( CollectionChangeEventArgs e )
             {
                 if( this.CollectionChanged != null )
+=======
+            private void FireCollectionChanged( NotifyCollectionChangedEventArgs e )
+            {
+                if ( this.CollectionChanged != null )
+>>>>>>> origin/f-configuration-manager
                 {
                     this.CollectionChanged( this, e );
                 }
