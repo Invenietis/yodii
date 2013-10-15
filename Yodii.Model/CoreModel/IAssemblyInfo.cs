@@ -8,17 +8,10 @@ namespace Yodii.Model
 {
     public interface IAssemblyInfo
     {
+        /// <summary>
+        /// 
+        /// </summary>
         string AssemblyFileName { get; }
-
-        /// <summary>
-        /// Gets the size of the assembly file.
-        /// </summary>
-        int AssemblyFileSize { get; }
-
-        /// <summary>
-        /// Gets the <see cref="AssemblyName"/> of the assembly.
-        /// </summary>
-        //AssemblyName AssemblyName { get; }
 
         /// <summary>
         /// Gets that the assembly contains plugins or services.
