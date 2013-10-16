@@ -125,7 +125,15 @@ namespace Yodii.Model
             {
                 if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentNullException( "serviceOrPluginId" );
 
-                throw new NotImplementedException();
+                ConfigurationItem target = _items.GetByKey( serviceOrPluginId );
+                if ( target != null )
+                {
+                    target.SetStatus(ConfigurationStatus.Optional);
+                    _items.Remove( target );
+                    _layer._configurationManagerParent.OnConfigurationItemRemoving(target);
+                    return true;
+                }
+                else return false;
             }
 
             public ConfigurationItem this[string key]
