@@ -46,6 +46,14 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationManagerTests.cs" />
+    <Compile Include="MockInfoTests.cs" />
+    <Compile Include="Mocks\AssemblyInfoHelper.cs" />
+    <Compile Include="Mocks\MockAssemblyInfo.cs" />
+    <Compile Include="Mocks\MockInfoFactory.cs" />
+    <Compile Include="Mocks\MockServiceReferenceInfo.cs" />
+    <Compile Include="Mocks\NullAssemblyInfo.cs" />
+    <Compile Include="Mocks\PluginInfo.cs" />
+    <Compile Include="Mocks\ServiceInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
