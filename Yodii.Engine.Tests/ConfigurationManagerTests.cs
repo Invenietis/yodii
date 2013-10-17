@@ -16,7 +16,7 @@ namespace Yodii.Engine.Tests
         {
             ConfigurationLayer layer = new ConfigurationLayer( "TestConfig" );
             Assert.That( layer.Items.Count == 0 );
-            Assert.That( layer.ConfigurationName == "TestConfig" );
+            Assert.That( layer.LayerName == "TestConfig" );
 
             string pluginIdentifier;
             bool result;
@@ -67,11 +67,11 @@ namespace Yodii.Engine.Tests
             Assert.That( layer.Items.Count == 1, "Adding the same plugin twice, in the same state, does not actually add it and increment the count." );
 
             result = layer.Items.Add( pluginId, ConfigurationStatus.Optional );
-            Assert.That( result, Is.False, "Layer override precedence: changing Disabled status is not valid." );
+            Assert.That( result, Is.True );
             result = layer.Items.Add( pluginId, ConfigurationStatus.Runnable );
-            Assert.That( result, Is.False, "Layer override precedence: changing Disabled status is not valid." );
+            Assert.That( result, Is.True );
             result = layer.Items.Add( pluginId, ConfigurationStatus.Running );
-            Assert.That( result, Is.False, "Layer override precedence: changing Disabled status is not valid." );
+            Assert.That( result, Is.True );
 
             result = layer.Items.Add( pluginId, ConfigurationStatus.Disable );
             Assert.That( result, Is.True );
@@ -91,11 +91,11 @@ namespace Yodii.Engine.Tests
             Assert.That( layer.Items.Count == 1, "Adding the same plugin twice, in the same state, does not actually add it and increment the count." );
 
             result = layer.Items.Add( pluginId, ConfigurationStatus.Optional );
-            Assert.That( result, Is.False, "Layer override precedence: changing Running status is not valid." );
+            Assert.That( result, Is.True );
             result = layer.Items.Add( pluginId, ConfigurationStatus.Runnable );
-            Assert.That( result, Is.False, "Layer override precedence: changing Running status is not valid." );
+            Assert.That( result, Is.True );
             result = layer.Items.Add( pluginId, ConfigurationStatus.Disable );
-            Assert.That( result, Is.False, "Layer override precedence: changing Running status is not valid." );
+            Assert.That( result, Is.True );
 
             result = layer.Items.Remove( pluginId );
             Assert.That( result, Is.True, "Plugin can always be removed if it exists and layer isn't bound to a parent." );

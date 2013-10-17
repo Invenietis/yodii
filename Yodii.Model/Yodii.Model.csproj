@@ -42,15 +42,14 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ConfigurationItem.cs" />
-    <Compile Include="ConfigurationLayer.cs" />
-    <Compile Include="ConfigurationManager.cs" />
-    <Compile Include="ConfigurationResult.cs" />
-    <Compile Include="ConfigurationStatus.cs" />
-    <Compile Include="FinalConfiguration.cs" />
-    <Compile Include="FinalConfigurationChange.cs" />
-    <Compile Include="FinalConfigurationItem.cs" />
-    <Compile Include="Interfaces\IConfigurationItem.cs" />
+    <Compile Include="Configuration\ConfigurationItem.cs" />
+    <Compile Include="Configuration\ConfigurationLayer.cs" />
+    <Compile Include="Configuration\ConfigurationManager.cs" />
+    <Compile Include="Configuration\ConfigurationResult.cs" />
+    <Compile Include="Configuration\ConfigurationStatus.cs" />
+    <Compile Include="Configuration\FinalConfiguration.cs" />
+    <Compile Include="Configuration\FinalConfigurationChange.cs" />
+    <Compile Include="Configuration\FinalConfigurationItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
