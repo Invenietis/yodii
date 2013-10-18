@@ -60,6 +60,13 @@ namespace Yodii.Model
             this.AddFailureCause( failureCause );
         }
 
+        internal ConfigurationResult( IEnumerable<string> failureCauses )
+            : this()
+        {
+            foreach( string s in failureCauses )
+                this.AddFailureCause( s );
+        }
+
         /// <summary>
         /// Add a failure cause to this ConfigurationResult instance. This will mark the configuration change as failed.
         /// </summary>

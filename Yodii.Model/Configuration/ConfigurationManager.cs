@@ -11,17 +11,20 @@ using CK.Core;
 
 namespace Yodii.Model
 {
+    //remove le dernier layer ? remove le dernier item du dernier layer ?
     public class ConfigurationManager : INotifyPropertyChanged
     {
-        private ConfigurationLayerCollection _layers;
-        private FinalConfiguration _finalConfiguration;
+        readonly ConfigurationLayerCollection _configurationLayerCollection;
+        FinalConfiguration _finalConfiguration;
+
+        ConfigurationChangingEventArgs _currentEventArgs;
 
         public event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
         public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
         public ConfigurationLayerCollection Layers
         {
-            get { return _layers; }
+            get { return _configurationLayerCollection; }
         }
 
         public FinalConfiguration FinalConfiguration
@@ -36,155 +39,320 @@ namespace Yodii.Model
 
         public ConfigurationManager()
         {
-            _layers = new ConfigurationLayerCollection( this );
+            _configurationLayerCollection = new ConfigurationLayerCollection(this);
         }
 
-        internal void OnConfigurationManagerChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
-        {
-            FinalConfiguration = GenerateFinalConfiguration();
-            RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationItem ) );
-        }
+        //internal void OnConfigurationManagerChanged( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        //{
+        //    FinalConfiguration = GenerateFinalConfiguration();
+        //    RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationItem ) );
+        //}
 
-        internal void OnConfigurationManagerChanged( FinalConfigurationChange change, ConfigurationLayer configurationLayer )
-        {
-            FinalConfiguration = GenerateFinalConfiguration();
-            RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationLayer ) );
-        }
-
+        //internal void OnConfigurationManagerChanged( FinalConfigurationChange change, ConfigurationLayer configurationLayer )
+        //{
+        //    FinalConfiguration = GenerateFinalConfiguration();
+        //    RaiseConfigurationChanged( new ConfigurationChangedEventArgs( _finalConfiguration, change, configurationLayer ) );
+        //}
+        
 
         //WARNING : check if this isn't call without layer in ConfigurationManager
-        internal ConfigurationResult OnConfigurationLayerChanging( FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        //internal ConfigurationResult OnConfigurationLayerChanging(FinalConfigurationChange change, ConfigurationItem configurationItem, ConfigurationStatus newStatus)
+        //{
+        //    switch( change )
+        //    {
+        //        case FinalConfigurationChange.StatusChanged :
+        //            return OnConfigurationItemStatusChanging( configurationItem, newStatus );
+        //        case FinalConfigurationChange.ItemAdded :
+        //            return OnConfigurationItemAdding( configurationItem, newStatus );
+        //        case FinalConfigurationChange.ItemRemoved :
+        //            return OnConfigurationItemRemoving( configurationItem, newStatus );
+        //        default :
+        //            return new ConfigurationResult( "" ); //ecriremessage d'erreur
+        //    }
+        //}
+
+        //private ConfigurationResult OnConfigurationItemStatusChanging( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        //{
+        //    //on appelle CanChangeStatus sur le FinalConfiguration car il agrege l'ensemble des items
+        //    //on ressout donc les conflits entre les differents layers
+        //    if( _finalConfiguration.Items.GetByKey( configurationItem.ServiceOrPluginId ).CanChangeStatus( newStatus ) )
+        //    {
+        //        FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
+        //        finalConfiguration.ChangeStatusItem( configurationItem.ServiceOrPluginId, configurationItem.Status );
+
+        //        ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.StatusChanged, configurationItem );
+        //        RaiseConfigurationChanging( e );
+
+        //        if( e.IsCanceled )
+        //        {
+        //            return new ConfigurationResult( e.Causes );
+        //        }
+        //        else
+        //        {
+        //            return new ConfigurationResult();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return new ConfigurationResult( "A new ConfigurationItem, or a ConfigurationStatus change, conflicts with another item in the FinalConfiguration" );
+        //    }
+        //}
+
+        //private ConfigurationResult OnConfigurationItemAdding( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        //{
+        //    if( _finalConfiguration.Items.Contains( configurationItem.ServiceOrPluginId ) )
+        //    {
+        //        return OnConfigurationItemStatusChanging( configurationItem, newStatus );
+        //    }
+        //    else
+        //    {
+        //        FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
+        //        finalConfiguration.Items.Add( new FinalConfigurationItem( configurationItem ) );
+
+        //        ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.ItemAdded, configurationItem );
+        //        RaiseConfigurationChanging( e );
+
+        //        if( e.IsCanceled )
+        //        {
+        //            return new ConfigurationResult( e.Causes );
+        //        }
+        //        else
+        //        {
+        //            return new ConfigurationResult();
+        //        }
+        //    }
+        //}
+
+        //private ConfigurationResult OnConfigurationItemRemoving( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
+        //{
+        //    return new ConfigurationResult();
+        //}
+
+        //internal ConfigurationResult OnConfigurationManagerChanging( FinalConfigurationChange change, ConfigurationLayer configurationLayer )
+        //{
+        //    if( change == FinalConfigurationChange.LayerAdded )
+        //    {
+        //        if( _finalConfiguration == null )
+        //        {
+        //            FinalConfiguration = ResolveBasicConfiguration( configurationLayer );
+        //            return new ConfigurationResult();
+        //        }
+        //        else
+        //        {
+        //            FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
+        //            finalConfiguration.ConcatLayer( configurationLayer );
+
+        //            ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.LayerAdded, configurationLayer );
+        //            RaiseConfigurationChanging( e );
+
+        //            if( e.IsCanceled )
+        //            {
+        //                return new ConfigurationResult( e.Causes );
+        //            }
+        //            else
+        //            {
+        //                return new ConfigurationResult();
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return new ConfigurationResult();
+        //    }
+        //}
+
+        private FinalConfiguration ResolveBasicConfiguration(ConfigurationLayer firstLayer)
         {
-            switch( change )
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            foreach( ConfigurationItem item in firstLayer.Items )
             {
-                case FinalConfigurationChange.StatusChanged:
-                    return OnConfigurationItemStatusChanging( configurationItem, newStatus );
-                case FinalConfigurationChange.ItemAdded:
-                    return OnConfigurationItemAdding( configurationItem, newStatus );
-                case FinalConfigurationChange.ItemRemoved:
-                    return OnConfigurationItemRemoving( configurationItem, newStatus );
-                default:
-                    return new ConfigurationResult( "" ); //ecriremessage d'erreur
+                final.Add( item.ServiceOrPluginId, item.Status );
             }
-        }
 
-        private ConfigurationResult OnConfigurationItemStatusChanging( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
-        {
-            //on appelle CanChangeStatus sur le FinalConfiguration car il agrege l'ensemble des items
-            //on ressout donc les conflits entre les differents layers
-            if( _finalConfiguration.Items.GetByKey( configurationItem.ServiceOrPluginName ).CanChangeStatus( newStatus ) )
+            _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerAdded, firstLayer );
+            RaiseConfigurationChanging( _currentEventArgs );
+
+            if( _currentEventArgs.IsCanceled )
             {
-                FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
-                finalConfiguration.ChangeStatusItem( configurationItem.ServiceOrPluginName, configurationItem.Status );
-
-                ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.StatusChanged, configurationItem );
-                RaiseConfigurationChanging( e );
-
-                if( e.IsCanceled )
-                {
-                    return new ConfigurationResult( e.Causes );
-                }
-                else
-                {
-                    return new ConfigurationResult();
-                }
-            }
-            else
-            {
-                return new ConfigurationResult( "A new ConfigurationItem, or a ConfigurationStatus change, conflicts with another item in the FinalConfiguration" );
-            }
-        }
-
-        private ConfigurationResult OnConfigurationItemAdding( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
-        {
-            if( _finalConfiguration.Items.Contains( configurationItem.ServiceOrPluginName ) )
-            {
-                return OnConfigurationItemStatusChanging( configurationItem, newStatus );
-            }
-            else
-            {
-                FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
-                finalConfiguration.Items.Add( new FinalConfigurationItem( configurationItem ) );
-
-                ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.ItemAdded, configurationItem );
-                RaiseConfigurationChanging( e );
-
-                if( e.IsCanceled )
-                {
-                    return new ConfigurationResult( e.Causes );
-                }
-                else
-                {
-                    return new ConfigurationResult();
-                }
-            }
-        }
-
-        private ConfigurationResult OnConfigurationItemRemoving( ConfigurationItem configurationItem, ConfigurationStatus newStatus )
-        {
-            return new ConfigurationResult();
-        }
-
-        internal ConfigurationResult OnConfigurationManagerChanging( FinalConfigurationChange change, ConfigurationLayer configurationLayer )
-        {
-            if( change == FinalConfigurationChange.LayerAdded )
-            {
-                if( _finalConfiguration == null )
-                {
-                    FinalConfiguration = ResolveBasicConfiguration( configurationLayer );
-                    return new ConfigurationResult();
-                }
-                else
-                {
-                    FinalConfiguration finalConfiguration = GenerateFinalConfiguration();
-                    finalConfiguration.ConcatLayer( configurationLayer );
-
-                    ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.LayerAdded, configurationLayer );
-                    RaiseConfigurationChanging( e );
-
-                    if( e.IsCanceled )
-                    {
-                        return new ConfigurationResult( e.Causes );
-                    }
-                    else
-                    {
-                        return new ConfigurationResult();
-                    }
-                }
-            }
-            else
-            {
-                return new ConfigurationResult();
-            }
-        }
-
-        private FinalConfiguration GenerateFinalConfiguration()
-        {
-            FinalConfiguration finalConfiguration = new FinalConfiguration();
-            foreach( ConfigurationLayer layer in _layers )
-            {
-                finalConfiguration.ConcatLayer( layer );
-            }
-            return finalConfiguration;
-        }
-
-        private FinalConfiguration ResolveBasicConfiguration( ConfigurationLayer firstLayer )
-        {
-            FinalConfiguration finalConfiguration = new FinalConfiguration();
-            finalConfiguration.ConcatLayer( firstLayer );
-
-            ConfigurationChangingEventArgs e = new ConfigurationChangingEventArgs( finalConfiguration, FinalConfigurationChange.LayerAdded, firstLayer );
-            RaiseConfigurationChanging( e );
-
-            if( e.IsCanceled )
-            {
-                firstLayer.Items.Remove( firstLayer.Items[firstLayer.Items.Count].ServiceOrPluginName );
+                firstLayer.Items.Remove( firstLayer.Items.Last().ServiceOrPluginId );
                 return ResolveBasicConfiguration( firstLayer );
             }
             else
             {
-                return finalConfiguration;
+                return _currentEventArgs.FinalConfiguration;
             }
+        }
+
+        internal void OnLayerNameChanged( ConfigurationLayer layer)
+        {
+            _configurationLayerCollection.CheckPosition( layer );
+        }
+
+        ConfigurationResult FillFromConfiguration( Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
+        {
+            foreach( ConfigurationLayer layer in _configurationLayerCollection )
+            {
+                ConfigurationStatus status;
+                foreach( ConfigurationItem item in layer.Items )
+                {
+                    if( filter( item ) )
+                    {
+                        if( final.TryGetValue( item.ServiceOrPluginId, out status ) )
+                        {
+                            if( (status == ConfigurationStatus.Runnable) ? item.Status == ConfigurationStatus.Running :
+                                status != ConfigurationStatus.Disable && status != ConfigurationStatus.Running )
+                            {
+                                final[item.ServiceOrPluginId] = item.Status;
+                            }
+                            else
+                            {
+                                return new ConfigurationResult( String.Format( "Conflict for {0} between statuses {1} and {2}", item.ServiceOrPluginId, item.Status, status ) );
+                            }
+                        }
+                        else
+                        {
+                            final.Add( item.ServiceOrPluginId, item.Status );
+                        }
+                    }
+                }
+            }
+            return new ConfigurationResult();
+        }
+
+        internal ConfigurationResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        {
+            Debug.Assert( item != null && _finalConfiguration != null && _configurationLayerCollection.Count != 0 );
+            //if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
+
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            final.Add( item.ServiceOrPluginId, newStatus );
+
+            ConfigurationResult result = FillFromConfiguration( final, c => c != item );
+            if( result )
+            {
+                _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.StatusChanged, item );
+                RaiseConfigurationChanging( _currentEventArgs );
+
+                if( _currentEventArgs.IsCanceled )
+                {
+                    foreach( string s in _currentEventArgs.Causes ) result.AddFailureCause( s );
+                    return result;
+                }
+
+                return result;
+            }
+            result.AddFailureCause( String.Format("The status of {0} cannot be changed", item.ServiceOrPluginId) );
+            return result ;
+        }
+
+        internal ConfigurationResult OnConfigurationItemAdding( ConfigurationItem newItem )
+        {
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            final.Add( newItem.ServiceOrPluginId, newItem.Status );
+
+            ConfigurationResult result = FillFromConfiguration( final );
+            if( result )
+            {
+                _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.StatusChanged, newItem );
+                RaiseConfigurationChanging( _currentEventArgs );
+
+                if( _currentEventArgs.IsCanceled )
+                {
+                    foreach( string s in _currentEventArgs.Causes ) result.AddFailureCause( s );
+                    return result;
+                }
+                return result;
+            }
+            result.AddFailureCause( String.Format( "{0} cannot be added", newItem.ServiceOrPluginId ) );
+            return result;
+        }
+
+        internal ConfigurationResult OnConfigurationItemRemoving( ConfigurationItem item )
+        {
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+
+            if( FillFromConfiguration( final, c => c != item ) )
+            {
+                _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.StatusChanged, item );
+                RaiseConfigurationChanging( _currentEventArgs );
+
+                if( _currentEventArgs.IsCanceled )
+                {
+                    return new ConfigurationResult( _currentEventArgs.Causes );
+                }
+                return new ConfigurationResult();
+            }
+            Debug.Fail( "Removing a configuration item can not lead to an impossibility." );
+            return new ConfigurationResult("Removing a configuration item can not lead to an impossibility.");
+        }
+
+        internal ConfigurationResult OnConfigurationLayerAdding( ConfigurationLayer layer )
+        {
+            if( _finalConfiguration == null )
+            {
+                FinalConfiguration = ResolveBasicConfiguration( layer );
+                return new ConfigurationResult();
+            }
+
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            foreach( ConfigurationItem item in layer.Items )
+            {
+                final.Add( item.ServiceOrPluginId, item.Status );
+            }
+
+            ConfigurationResult result = FillFromConfiguration( final );
+
+            if( result )
+            {
+                _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.StatusChanged, layer );
+                RaiseConfigurationChanging( _currentEventArgs );
+
+                if( _currentEventArgs.IsCanceled )
+                {
+                    foreach( string s in _currentEventArgs.Causes ) result.AddFailureCause( s );
+                    return result;
+                }
+                return result;
+            }
+            result.AddFailureCause( String.Format( "{0} cannot be added", layer.LayerName ) );
+            return result;
+        }
+
+        internal ConfigurationResult OnConfigurationLayerRemoving( ConfigurationLayer layer )
+        {
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+
+            if( FillFromConfiguration( final, c => c.Layer != layer ) )
+            {
+                _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.StatusChanged, layer );
+                RaiseConfigurationChanging( _currentEventArgs );
+
+                if( _currentEventArgs.IsCanceled )
+                {
+                    return new ConfigurationResult( _currentEventArgs.Causes );
+                }
+                return new ConfigurationResult();
+            }
+            Debug.Fail( "Removing a configuration layer can not lead to an impossibility." );
+            return new ConfigurationResult( "Removing a configuration item can not lead to an impossibility." );
+        }
+
+        internal void OnConfigurationChanged()
+        {
+            Debug.Assert( _currentEventArgs != null );
+
+            FinalConfiguration = _currentEventArgs.FinalConfiguration;
+            if( _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.StatusChanged
+                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemAdded
+                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved )
+            {
+                RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationItemChanged ) );
+            }
+            else
+            {
+                RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationLayerChanged ) );
+            }
+            _currentEventArgs = null;
         }
 
         #region INotifyPropertyChanged
@@ -203,21 +371,17 @@ namespace Yodii.Model
 
         private void RaiseConfigurationChanging( ConfigurationChangingEventArgs e )
         {
-            if( ConfigurationChanging != null )
-            {
-                ConfigurationChanging( this, e );
-            }
+            var h = ConfigurationChanging;
+            if( h != null ) h( this, e ); 
         }
 
         private void RaiseConfigurationChanged( ConfigurationChangedEventArgs e )
         {
-            if( ConfigurationChanged != null )
-            {
-                ConfigurationChanged( this, e );
-            }
+            var h = ConfigurationChanged;
+            if( h != null ) h( this, e );
         }
 
-        public class ConfigurationLayerCollection : IEnumerable
+        public class ConfigurationLayerCollection : ICKObservableReadOnlyList<ConfigurationLayer>
         {
             private CKObservableSortedArrayKeyList<ConfigurationLayer,string> _layers;
             private ConfigurationManager _parent;
@@ -225,32 +389,27 @@ namespace Yodii.Model
             internal ConfigurationLayerCollection( ConfigurationManager parent )
             {
                 _parent = parent;
-                _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.ConfigurationName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), true );
+                _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.LayerName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), true );
             }
 
             public ConfigurationResult Add( ConfigurationLayer layer )
             {
                 if( layer == null ) throw new ArgumentNullException( "layer" );
 
-                ConfigurationResult result = CanAddLayer( layer );
+                if( layer.ConfigurationManager != null ) return new ConfigurationResult( "A ConfigurationManager already contains this layer" );
+
+                ConfigurationResult result = _parent.OnConfigurationLayerAdding( layer );
 
                 if( result )
                 {
-                    result = _parent.OnConfigurationManagerChanging( FinalConfigurationChange.LayerAdded, layer );
-                    if( result )
+                    if( _layers.Add( layer ) )
                     {
-                        if( _layers.Add( layer ) )
-                        {
-                            _parent.OnConfigurationManagerChanged( FinalConfigurationChange.LayerAdded, layer );
-                            return result;
-                        }
-                        else
-                        {
-                            return new ConfigurationResult( "A problem has been encountered while adding the ConfigurationLayer in the collection" );
-                        }
+                        _parent.OnConfigurationChanged();
+                        return result;
                     }
-                    else
+                    else 
                     {
+                        result.AddFailureCause( "A problem has been encountered while adding the ConfigurationLayer in the collection" );
                         return result;
                     }
                 }
@@ -260,127 +419,96 @@ namespace Yodii.Model
                 }
             }
 
-            private ConfigurationResult CanAddLayer( ConfigurationLayer layer )
-            {
-                if( _layers.Count == 0 ) return new ConfigurationResult();
-                bool exist;
-                FinalConfigurationItem finalItem;
-                foreach( ConfigurationItem item in layer.Items )
-                {
-                    finalItem = _parent._finalConfiguration.Items.GetByKey( item.ServiceOrPluginName, out exist );
-                    if( exist )
-                    {
-                        if( !finalItem.CanChangeStatus( item.Status ) )
-                        {
-                            return new ConfigurationResult(
-                                string.Format( "{0}({3}) est en conflit avec {1}({4}) contenu dans {2}",
-                                        item.ServiceOrPluginName, finalItem.ServiceOrPluginName, layer.ConfigurationName, item.Status, finalItem.Status ) );
-                        }
-                    }
-                }
-                return new ConfigurationResult();
-            }
-
             public ConfigurationResult Remove( ConfigurationLayer layer )
             {
                 if( layer == null ) throw new ArgumentNullException( "configurationLayer" );
 
+                ConfigurationResult result = _parent.OnConfigurationLayerRemoving( layer );
+
                 if( _layers.Remove( layer ) )
                 {
-                    _parent.OnConfigurationManagerChanged( FinalConfigurationChange.LayerRemoved, layer );
-                    return new ConfigurationResult();
+                    _parent.OnConfigurationChanged();
+                    return result;
                 }
                 else
                 {
-                    return new ConfigurationResult( "The layer could not be removed because it could not be found" );
+                    result.AddFailureCause("The layer could not be removed because it could not be found");
+                    return result;
                 }
             }
 
+            internal void CheckPosition( ConfigurationLayer layer )
+            {
+                _layers.CheckPosition( _layers.IndexOf( layer ) );
+            }
+
+            #region ICKReadOnlyCollection<ConfigurationLayer> Members
+
+            public bool Contains( object item )
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
+
+            #region IReadOnlyCollection<ConfigurationLayer> Members
+
+            public int Count
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            #endregion
+
+            #region IEnumerable<ConfigurationLayer> Members
+
+            public IEnumerator<ConfigurationLayer> GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
+
             #region IEnumerable Members
 
-            public IEnumerator GetEnumerator()
+            IEnumerator IEnumerable.GetEnumerator()
             {
-                return _layers.GetEnumerator();
+                throw new NotImplementedException();
+            }
+
+            #endregion
+
+            #region INotifyCollectionChanged Members
+
+            public event System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged;
+
+            #endregion
+
+            #region INotifyPropertyChanged Members
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            #endregion
+
+            #region ICKReadOnlyList<ConfigurationLayer> Members
+
+            public int IndexOf( object item )
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
+
+            #region IReadOnlyList<ConfigurationLayer> Members
+
+            public ConfigurationLayer this[int index]
+            {
+                get { throw new NotImplementedException(); }
             }
 
             #endregion
         }
-
-        bool FillFromConfiguration( Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem,bool> filter = null )
-        {
-
-        }
-
-        internal bool OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
-        {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            final.Add( item.ServiceOrPluginId, newStatus );
-            if( FillFromConfiguration( final, c => c != item ) )
-            {
-                // Raise event changing.
-                return true;
-            }
-            return false;
-        }
-
-        internal bool OnConfigurationItemAdding( ConfigurationItem newItem )
-        {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            final.Add( newItem.ServiceOrPluginId, newItem.Status );
-            if( FillFromConfiguration( final ) )
-            {
-                // Raise event changing.
-                return true;
-            }
-            return false;
-        }
-
-        internal bool OnConfigurationItemRemoving( ConfigurationItem item )
-        {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            if( FillFromConfiguration( final, c => c != item ) )
-            {
-                // Raise event changing.
-                return true;
-            }
-            Debug.Fail( "Removing a configuration item can not lead to an impossibility." );
-            return false;
-        }
-
-        internal bool OnConfigurationLayerAdding( ConfigurationLayer layer )
-        {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            foreach( ConfigurationItem item in layer.Items )
-            {
-                final.Add( item.ServiceOrPluginId, item.Status );
-            }
-            if( FillFromConfiguration( final ) )
-            {
-                // Raise event changing.
-                return true;
-            }
-            return false;
-        }
-
-        internal bool OnConfigurationLayerRemoving( ConfigurationLayer layer )
-        {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            if( FillFromConfiguration( final, c => c.Layer != layer ) )
-            {
-                // Raise and keep event changing.
-                return true;
-            }
-            Debug.Fail( "Removing a configuration layer can not lead to an impossibility." );
-            return false;
-        }
-
-        internal void OnConfigurationChanged()
-        {
-            // Creates a Changed event from the kept Changing event and raises it.
-
-        }
-
-
+        
     }
 
     public class ConfigurationChangingEventArgs : EventArgs
@@ -388,7 +516,7 @@ namespace Yodii.Model
         private bool _isCanceled;
         private List<string> _causes;
         private FinalConfiguration _finalConfiguration;
-        private FinalConfigurationChange _finalConfigurationChanged;
+        private FinalConfigurationChange _finalConfigurationChange;
         private ConfigurationItem _configurationItemChanged;
         private ConfigurationLayer _configurationLayerChanged;
 
@@ -407,9 +535,9 @@ namespace Yodii.Model
             get { return _finalConfiguration; }
         }
 
-        public FinalConfigurationChange FinalConfigurationChanged
+        public FinalConfigurationChange FinalConfigurationChange
         {
-            get { return _finalConfigurationChanged; }
+            get { return _finalConfigurationChange; }
         }
 
         public ConfigurationItem ConfigurationItemChanged
@@ -427,7 +555,7 @@ namespace Yodii.Model
             _isCanceled = false;
             _causes = new List<string>();
             _finalConfiguration = finalConfiguration;
-            _finalConfigurationChanged = finalConfigurationChanged;
+            _finalConfigurationChange = finalConfigurationChanged;
             _configurationItemChanged = configurationItem;
         }
 
@@ -436,11 +564,11 @@ namespace Yodii.Model
             _isCanceled = false;
             _causes = new List<string>();
             _finalConfiguration = finalConfiguration;
-            _finalConfigurationChanged = finalConfigurationChanged;
+            _finalConfigurationChange = finalConfigurationChanged;
             _configurationLayerChanged = configurationLayer;
         }
 
-        public void Cancel( string cause )
+        public void Cancel(string cause)
         {
             _isCanceled = true;
             _causes.Add( cause );

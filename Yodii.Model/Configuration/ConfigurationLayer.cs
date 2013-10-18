@@ -7,44 +7,28 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Diagnostics;
 
 namespace Yodii.Model
 {
     //ToDo : removeItem, Obersable, ienumerable, 
-    public class ConfigurationLayer
+    public class ConfigurationLayer : INotifyPropertyChanged
     {
         #region fields
 
         readonly ConfigurationItemCollection _configurationItemCollection;
-        string _configurationName;
-        ConfigurationManager _configurationManagerParent;
+
+        string _layerName;
+        ConfigurationManager _owner;
 
         #endregion fields
 
-        #region properties
-
-        public string ConfigurationName
-        {
-            get { return _configurationName; }
-        }
-
-        public ConfigurationItemCollection Items
-        {
-            get { return _configurationItemCollection; }
-        }
-
-        public ConfigurationManager ConfigurationManagerParent
-        {
-            get { return _configurationManagerParent; }
-            internal set { _configurationManagerParent = value; }
-        }
-
-        #endregion properties
+        #region constructors
 
         public ConfigurationLayer()
         {
-            _configurationName = string.Empty;
+            _layerName = string.Empty;
             _configurationItemCollection = new ConfigurationItemCollection( this );
         }
 
@@ -52,16 +36,58 @@ namespace Yodii.Model
             : this()
         {
             if( configurationName == null ) throw new ArgumentNullException( "configurationName" );
-            _configurationName = configurationName;
+
+            _layerName = configurationName;
         }
 
-        internal bool OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        #endregion constructors
+
+        #region properties
+
+        public string LayerName
+        {
+            get { return _layerName; }
+            set
+            {
+                if( value == null ) throw new ArgumentNullException();
+                _layerName = value;
+                if( _owner != null ) _owner.OnLayerNameChanged(this);
+                NotifyPropertyChanged();
+            }
+        }
+
+        public ConfigurationItemCollection Items
+        {
+            get { return _configurationItemCollection; }
+        }
+
+        public ConfigurationManager ConfigurationManager
+        {
+            get { return _owner; }
+            internal set { _owner = value; }
+        }
+
+        #endregion properties
+
+        internal ConfigurationResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
-            
-            if( _configurationManagerParent == null ) return true;
-            return _configurationManagerParent.OnConfigurationItemChanging( this, item, newStatus );
+
+            if( _owner == null ) return new ConfigurationResult();
+            return _owner.OnConfigurationItemChanging( item, newStatus );
         }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged( [CallerMemberName]string propertyName = "" )
+        {
+            var h = PropertyChanged;
+            if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
+        }
+
+        #endregion
 
         public class ConfigurationItemCollection : ICKObservableReadOnlyList<ConfigurationItem>
         {
@@ -91,29 +117,29 @@ namespace Yodii.Model
                 FirePropertyChanged( e );
             }
 
-            public bool Add( string serviceOrPluginId, ConfigurationStatus status )
+            public ConfigurationResult Add( string serviceOrPluginId, ConfigurationStatus status )
             {
-                if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentNullException( "serviceOrPluginId" );
+                if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
 
                 ConfigurationItem existing = _items.GetByKey( serviceOrPluginId );
                 if( existing != null ) return existing.SetStatus( status );
 
-                var newItem = new ConfigurationItem( _layer, serviceOrPluginId, status );
-                if( _layer._configurationManagerParent == null )
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginId, status );
+                if( _layer._owner == null )
                 {
                     _items.Add( newItem );
-                    _layer._configurationManagerParent.OnConfigurationItemAdded( _layer, newItem );
-                    return true;
+                    return new ConfigurationResult();
                 }
 
-                if( _layer._configurationManagerParent.OnConfigurationItemAdding( _layer, newItem ) )
+                ConfigurationResult result = _layer._owner.OnConfigurationItemAdding( newItem );
+                if( result )
                 {
                     _items.Add( newItem );
-                    _layer._configurationManagerParent.OnConfigurationItemAdded( _layer, newItem );
-                    return true;
+                    _layer._owner.OnConfigurationChanged();
+                    return result;
                 }
                 newItem.OnRemoved();
-                return false;
+                return result;
             }
 
             /// <summary>
@@ -121,19 +147,30 @@ namespace Yodii.Model
             /// </summary>
             /// <param name="serviceOrPluginId">The identifier.</param>
             /// <returns>True if the identifier has actually been removed.</returns>
-            public bool Remove( string serviceOrPluginId )
+            public ConfigurationResult Remove( string serviceOrPluginId )
             {
-                if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentNullException( "serviceOrPluginId" );
+                if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
 
                 ConfigurationItem target = _items.GetByKey( serviceOrPluginId );
-                if ( target != null )
+                if( target != null )
                 {
-                    target.SetStatus(ConfigurationStatus.Optional);
-                    _items.Remove( target );
-                    _layer._configurationManagerParent.OnConfigurationItemRemoving(target);
-                    return true;
+                    if( _layer._owner == null )
+                    {
+                        target.OnRemoved();
+                        _items.Remove( target );
+                        return new ConfigurationResult();
+                    }
+
+                    ConfigurationResult result = _layer._owner.OnConfigurationItemRemoving( target );
+                    if( result )
+                    {
+                        target.OnRemoved();
+                        _items.Remove( target );
+                        _layer._owner.OnConfigurationChanged();
+                        return result;
+                    }
                 }
-                else return false;
+                return new ConfigurationResult("item not found");
             }
 
             public ConfigurationItem this[string key]
@@ -161,14 +198,14 @@ namespace Yodii.Model
                 if( h != null ) h( this, e );
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _items.GetEnumerator();
-            }
-
             public bool Contains( object item )
             {
                 return _items.Contains( item );
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
             }
 
             IEnumerator<ConfigurationItem> IEnumerable<ConfigurationItem>.GetEnumerator()

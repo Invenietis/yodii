@@ -11,9 +11,9 @@ namespace Yodii.Model
 {
     public class ConfigurationItem : INotifyPropertyChanged
     {
-        readonly ConfigurationLayer _owner;
         readonly string _serviceOrPluginId;
-
+        readonly ConfigurationLayer _owner;
+        
         ConfigurationStatus _status;
         string _statusReason;
 
@@ -50,7 +50,7 @@ namespace Yodii.Model
         public string StatusReason
         {
             get { return _statusReason; }
-            set 
+            set
             {
                 if( _statusReason == null ) throw new InvalidOperationException();
                 _statusReason = value ?? String.Empty;
@@ -58,17 +58,18 @@ namespace Yodii.Model
             }
         }
 
-        public bool SetStatus( ConfigurationStatus newStatus )
+        public ConfigurationResult SetStatus( ConfigurationStatus newStatus )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            if( _owner.OnConfigurationItemChanging( this, newStatus ) )
+            ConfigurationResult result = _owner.OnConfigurationItemChanging( this, newStatus ); 
+            if( result )
             {
                 _status = newStatus;
                 NotifyPropertyChanged( "Status" );
-                _owner.OnConfigurationChanged();
-                return true;
+                if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
+                return result;
             }
-            return false;
+            return result;
         }
 
         internal void OnRemoved()
