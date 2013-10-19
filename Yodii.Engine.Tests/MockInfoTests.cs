@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Yodii.Engine.Tests.Mocks;
 using Yodii.Model;
+using Yodii.Model.CoreModel;
+using Yodii.Model.ConfigurationSolver;
 
 namespace Yodii.Engine.Tests
 {

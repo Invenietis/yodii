@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Yodii.Model;
 
-namespace Yodii.Model
+namespace Yodii.Model.CoreModel
 {
     /// <summary>
     /// Describes how a service or a plugin is required. 

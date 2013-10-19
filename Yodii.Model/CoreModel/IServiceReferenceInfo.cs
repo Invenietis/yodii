@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yodii.Model;
 
-namespace Yodii.Model
+namespace Yodii.Model.CoreModel
 {
     public interface IServiceReferenceInfo
     {
@@ -33,7 +34,7 @@ namespace Yodii.Model
         /// -1 otherwise.
         /// This is used by the dependency injection engine (IServiceHost and IPluginHost).
         /// </summary>
-        int ConstructorParmeterIndex { get; }
+        int ConstructorParameterIndex { get; }
 
         /// <summary>
         /// Gets whether the <see cref="Reference"/> is wrapped in <see cref="IService{T}"/>.

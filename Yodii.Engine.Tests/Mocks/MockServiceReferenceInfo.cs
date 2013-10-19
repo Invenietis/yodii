@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
+using Yodii.Model.CoreModel;
+
 
 namespace Yodii.Engine.Tests.Mocks
 {
@@ -40,12 +42,12 @@ namespace Yodii.Engine.Tests.Mocks
             get { return _requirement; }
         }
 
-        public string ConstructorParmeterOrPropertyName
+        public string ConstructorParameterOrPropertyName
         {
             get { throw new NotImplementedException(); }
         }
 
-        public int ConstructorParmeterIndex
+        public int ConstructorParameterIndex
         {
             get { throw new NotImplementedException(); }
         }

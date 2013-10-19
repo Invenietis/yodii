@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Yodii.Model.CoreModel;
 using Yodii.Model;
 
 namespace Yodii.Engine.Tests.Mocks

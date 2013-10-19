@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Yodii.Model;
 
-namespace Yodii.Model
+namespace Yodii.Model.CoreModel
 {
-    public interface IPluginInfo
+    public interface IPluginInfo : IDiscoveredInfo
     {
         /// <summary>
         /// Gets the unique identifier of the plugin. This is an alias to <see cref="IUniqueId.UniqueId"/>.
