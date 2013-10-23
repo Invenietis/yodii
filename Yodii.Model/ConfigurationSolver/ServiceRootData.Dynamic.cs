@@ -7,7 +7,7 @@ using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
-    partial class ServiceRootData : IAlternative
+    partial class ServiceRootData
     {
         ServiceData _firstRunnableService;
         ServiceData _lastRunnableService;
@@ -57,15 +57,6 @@ namespace Yodii.Model.ConfigurationSolver
                 _lastRunnableService._nextRunnableService = s;
                 _lastRunnableService = s;
             }
-        }
-
-        internal IAlternative NextAlternative;
-
-        bool IAlternative.MoveNext()
-        {
-            if( ThisMoveNext() ) return true;
-            if( NextAlternative != null ) return NextAlternative.MoveNext();
-            return false;
         }
 
         private bool ThisMoveNext()

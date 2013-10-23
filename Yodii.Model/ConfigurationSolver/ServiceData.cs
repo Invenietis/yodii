@@ -11,14 +11,14 @@ namespace Yodii.Model.ConfigurationSolver
     internal partial class ServiceData
     {
         readonly Dictionary<IServiceInfo,ServiceData> _allServices;
-        ServiceDisabledReason _disabledReason;
-        RunningRequirement _runningRequirement;
-        ServiceRunningRequirementReason _runningRequirementReason;
+        ServiceDisabledReason _configurationDisabledReason;
+        RunningRequirement _configurationRunningRequirement;
+        ServiceRunningRequirementReason _configurationRunningRequirementReason;
         ServiceData _mustExistSpecialization;
         ServiceData _directMustExistSpecialization;
         List<PluginData> _mustExistReferencer;
 
-        internal ServiceData( Dictionary<IServiceInfo, ServiceData> allServices, IServiceInfo s, ServiceData generalization, SolvedConfigStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
+        internal ServiceData( Dictionary<IServiceInfo, ServiceData> allServices, IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
         {
             _allServices = allServices;
             ServiceInfo = s;
@@ -33,41 +33,27 @@ namespace Yodii.Model.ConfigurationSolver
             {
                 GeneralizationRoot = (ServiceRootData)this;
             }
-            if( (ServiceSolvedStatus = serviceStatus) == SolvedConfigStatus.Disabled )
+            if ( (ServiceStatus = serviceStatus) == ConfigurationStatus.Disable )
             {
-                _disabledReason = ServiceDisabledReason.Config;
+                _configurationDisabledReason = ServiceDisabledReason.Config;
             }
             else if( s.HasError )
             {
-                _disabledReason = ServiceDisabledReason.ServiceInfoHasError;
+                _configurationDisabledReason = ServiceDisabledReason.ServiceInfoHasError;
             }
             else if( Generalization != null && Generalization.Disabled )
             {
-                _disabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
+                _configurationDisabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
             }
             //else if( !s.IsDynamicService && !isExternalServiceAvailable( s ) )
             //{
             //    _disabledReason = ServiceDisabledReason.ExternalServiceUnavailable;
             //}
-            if( !Disabled ) _runningRequirement = (RunningRequirement)serviceStatus;
+            if( !Disabled ) _configurationRunningRequirement = (RunningRequirement)serviceStatus;
             _runningRequirementReason = ServiceRunningRequirementReason.Config;
         }
 
         public readonly IServiceInfo ServiceInfo;
-
-        /// <summary>
-        /// True if this service should try to run thanks to its own configuration (<see cref="ServiceSolvedStatus"/> or because
-        /// of any <see cref="Generalization"/> (if any) is configured to try to run.
-        /// </summary>
-        public bool IsTryStartByConfig
-        {
-            get
-            {
-                return ServiceSolvedStatus == SolvedConfigStatus.OptionalTryStart
-                        || ServiceSolvedStatus == SolvedConfigStatus.RunnableTryStart
-                        || (Generalization != null && Generalization.IsTryStartByConfig);
-            }
-        }
 
         /// <summary>
         /// The direct generalization if any.
@@ -83,14 +69,14 @@ namespace Yodii.Model.ConfigurationSolver
         /// <summary>
         /// The SolvedConfigStatus of the Service. 
         /// </summary>
-        public readonly SolvedConfigStatus ServiceSolvedStatus;
+        public readonly ConfigurationStatus ServiceStatus;
 
         /// <summary>
         /// Gets whether this service is disabled. 
         /// </summary>
         public bool Disabled
         {
-            get { return _disabledReason != ServiceDisabledReason.None; }
+            get { return _configurationDisabledReason != ServiceDisabledReason.None; }
         }
 
         public ServiceData MustExistSpecialization
@@ -116,15 +102,15 @@ namespace Yodii.Model.ConfigurationSolver
         /// </summary>
         public ServiceDisabledReason DisabledReason
         {
-            get { return _disabledReason; }
+            get { return _configurationDisabledReason; }
         }
 
         internal virtual void SetDisabled( ServiceDisabledReason r )
         {
             Debug.Assert( r != ServiceDisabledReason.None );
-            Debug.Assert( _disabledReason == ServiceDisabledReason.None );
+            Debug.Assert( _configurationDisabledReason == ServiceDisabledReason.None );
             Debug.Assert( !GeneralizationRoot.Disabled, "A root is necessarily not disabled if one of its specialization is not disabled." );
-            _disabledReason = r;
+            _configurationDisabledReason = r;
             ServiceData spec = FirstSpecialization;
             while( spec != null )
             {
@@ -167,7 +153,7 @@ namespace Yodii.Model.ConfigurationSolver
         /// </summary>
         public RunningRequirement MinimalRunningRequirement
         {
-            get { return _mustExistSpecialization != null ? _mustExistSpecialization._runningRequirement : _runningRequirement; }
+            get { return _mustExistSpecialization != null ? _mustExistSpecialization._configurationRunningRequirement : _configurationRunningRequirement; }
         }
 
         /// <summary>
@@ -175,7 +161,7 @@ namespace Yodii.Model.ConfigurationSolver
         /// </summary>
         public RunningRequirement ThisMinimalRunningRequirement
         {
-            get { return _runningRequirement; }
+            get { return _configurationRunningRequirement; }
         }
 
         /// <summary>
@@ -198,7 +184,7 @@ namespace Yodii.Model.ConfigurationSolver
             {
                 return _mustExistSpecialization.SetRunningRequirement( r, reason );
             }
-            if( r <= _runningRequirement )
+            if( r <= _configurationRunningRequirement )
             {
                 if( r >= RunningRequirement.Runnable ) return !Disabled;
                 return true;
@@ -210,8 +196,8 @@ namespace Yodii.Model.ConfigurationSolver
             // we allow this (there will be at most 3 reentrant calls to this method). 
             // Note that we capture the reason only on the first call, not on each failing call: the reason is not necessarily 
             // associated to the running requirement.
-            var current = _runningRequirement;
-            _runningRequirement = r;
+            var current = _configurationRunningRequirement;
+            _configurationRunningRequirement = r;
             // Is it compliant with a Disabled service? If yes, it is always satisfied.
             if( r < RunningRequirement.Runnable )
             {
@@ -252,9 +238,9 @@ namespace Yodii.Model.ConfigurationSolver
         {
             if( fromMustExistPlugin )
             {
-                _runningRequirement = GeneralizationRoot.MustExistPluginByConfig.MinimalRunningRequirement;
+                _configurationRunningRequirement = GeneralizationRoot.MustExistPluginByConfig.MinimalRunningRequirement;
             }
-            Debug.Assert( _runningRequirement >= RunningRequirement.Runnable );
+            Debug.Assert( _configurationRunningRequirement >= RunningRequirement.Runnable );
             // From a non running requirement to a running requirement.
             var currentMustExist = GeneralizationRoot.MustExistService;
             //
@@ -275,9 +261,9 @@ namespace Yodii.Model.ConfigurationSolver
             // Once a MustExist is set, the _mustExistSpecialization is used to reroute the call to SetRunningRequirement and the MinimalRunningRequirement property:
             // it is useless to propagate Requirement up to the MustExist branch.
             //
-            if( currentMustExist != null && currentMustExist._runningRequirement > _runningRequirement )
+            if( currentMustExist != null && currentMustExist._configurationRunningRequirement > _configurationRunningRequirement )
             {
-                _runningRequirement = currentMustExist._runningRequirement;
+                _configurationRunningRequirement = currentMustExist._configurationRunningRequirement;
                 _runningRequirementReason = currentMustExist._runningRequirementReason;
             }
 
@@ -423,8 +409,8 @@ namespace Yodii.Model.ConfigurationSolver
                 // No specialization is required to exist, is it our case?
                 if( specMustExist == null )
                 {
-                    Debug.Assert( ServiceSolvedStatus != SolvedConfigStatus.Disabled, "Caution: Disabled is greater than MustExist." );
-                    if( ServiceSolvedStatus >= SolvedConfigStatus.Runnable ) specMustExist = _mustExistSpecialization = this;
+                    Debug.Assert( ServiceStatus != ConfigurationStatus.Disable, "Caution: Disabled is greater than MustExist." );
+                    if ( ServiceStatus >= ConfigurationStatus.Runnable ) specMustExist = _mustExistSpecialization = this;
                 }
                 else
                 {
@@ -442,9 +428,9 @@ namespace Yodii.Model.ConfigurationSolver
                     _directMustExistSpecialization = directSpecThatHasMustExist;
                     // Since there is a MustExist specialization, it concentrates the running requirements
                     // of all its generalization (here from their configurations).
-                    if( _runningRequirement > specMustExist._runningRequirement )
+                    if( _configurationRunningRequirement > specMustExist._configurationRunningRequirement )
                     {
-                        specMustExist._runningRequirement = _runningRequirement;
+                        specMustExist._configurationRunningRequirement = _configurationRunningRequirement;
                         specMustExist._runningRequirementReason = ServiceRunningRequirementReason.FromGeneralization;
                     }
                 }

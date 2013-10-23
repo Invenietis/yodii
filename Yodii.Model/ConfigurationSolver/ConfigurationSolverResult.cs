@@ -65,10 +65,5 @@ namespace Yodii.Model.ConfigurationSolver
         {
             get { return _runningPlugins; }
         }
-
-        internal void ApplyToLiveConfiguration( LiveConfiguration config )
-        {
-            Debug.Assert( ConfigurationSuccess );            
-        }
     }
 }
