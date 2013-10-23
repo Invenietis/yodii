@@ -1,0 +1,91 @@
+﻿<Fluent:RibbonWindow x:Class="Yodii.Lab.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
+        xmlns:GraphSharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
+        xmlns:WpfExtensions="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
+        xmlns:local="clr-namespace:Yodii.Lab"
+        Title="Yodii Lab" Height="600" Width="800">
+    <DockPanel>
+        <Fluent:Ribbon DockPanel.Dock="Top">
+            <Fluent:Ribbon.QuickAccessItems>
+                <Fluent:QuickAccessMenuItem Header="Save" />
+            </Fluent:Ribbon.QuickAccessItems>
+            <!--Backstage-->
+            <Fluent:Ribbon.Menu>
+                <Fluent:Backstage Header="File">
+                    <Fluent:BackstageTabControl>
+                        <Fluent:BackstageTabItem Header="New"/>
+                        <Fluent:BackstageTabItem Header="Open"/>
+                    </Fluent:BackstageTabControl>
+                </Fluent:Backstage>
+            </Fluent:Ribbon.Menu>
+            <!--Tabs-->
+            <Fluent:RibbonTabItem Header="Home">
+                <Fluent:RibbonGroupBox>
+                    <Fluent:Button Header="New service" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"/>
+                    <Fluent:Button Header="New plugin" LargeIcon="/Yodii.Lab;component/Icons/database_32xLG.png"/>
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox>
+                    <Fluent:Button Header="Delete" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png" />
+                </Fluent:RibbonGroupBox>
+            </Fluent:RibbonTabItem>
+            <!--Contextual Tabs-->
+            <Fluent:RibbonTabItem Header="Configuration" />
+            <Fluent:RibbonTabItem Header="Plugin" Group="{Binding ElementName=conditionalGroup}"/>
+            <Fluent:RibbonTabItem Header="Service" Group="{Binding ElementName=conditionalGroup}"/>
+            <!--Contextual Tab Groups-->
+            <Fluent:Ribbon.ContextualGroups>
+                <Fluent:RibbonContextualTabGroup Header="Selection" Visibility="Visible" x:Name="conditionalGroup" Background="Green" BorderBrush="Green" />
+            </Fluent:Ribbon.ContextualGroups>
+        </Fluent:Ribbon>
+        <!-- Central panel -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*" />
+                <RowDefinition Height="3" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="3" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <!-- Graph viewer -->
+            <WpfExtensions:ZoomControl
+                Grid.Column="0" Grid.Row="0"
+                Zoom="0.2"
+                ZoomBoxOpacity="0.5" Background="#ff656565">
+                <local:YodiiGraphLayout x:Name="graphLayout" Margin="10"
+                    Graph="{Binding Path=Graph}"
+                    LayoutAlgorithmType="{Binding Path=LayoutAlgorithmType, Mode=OneWay}"
+                    OverlapRemovalAlgorithmType="FSA"
+                    GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
+                    HighlightAlgorithmType="Simple">
+                </local:YodiiGraphLayout>
+            </WpfExtensions:ZoomControl>
+
+            <!-- Right panel -->
+            <GridSplitter ResizeDirection="Columns"
+                          Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Border Padding="5" Background="LightGray" Grid.Row="0" Grid.Column="2" Grid.RowSpan="3">
+                <StackPanel>
+                    <TextBlock>Right panel</TextBlock>
+                </StackPanel>
+            </Border>
+            
+            <!-- Bottom panel -->
+            <GridSplitter ResizeDirection="Rows"
+                          Grid.Row="1" Grid.Column="0"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Border Padding="5" Background="LightGray" Grid.Row="2" Grid.Column="0">
+                <StackPanel>
+                    <TextBlock>Bottom panel</TextBlock>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Fluent:RibbonWindow>
+
+
