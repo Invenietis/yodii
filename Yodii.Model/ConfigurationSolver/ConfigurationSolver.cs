@@ -30,6 +30,7 @@ namespace Yodii.Model.ConfigurationSolver
             // Registering all Services.
             _services.Clear();
             _serviceRoots.Clear();
+            
             foreach( IServiceInfo sI in services )
             {
                 // This creates services and applies solved configuration to them: directly disabled services
@@ -201,12 +202,15 @@ namespace Yodii.Model.ConfigurationSolver
             return cost;
         }
 
-        ServiceData RegisterService( Dictionary<object, ConfigurationStatus> finalConfig, IServiceInfo s )
+        ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )
         {
             ServiceData data;
             if( _services.TryGetValue( s, out data ) ) return data;
 
-            ConfigurationStatus serviceStatus = finalConfig.GetValueWithDefault( s, ConfigurationStatus.Optional );
+            //Set default status
+            ConfigurationStatus serviceStatus = ConfigurationStatus.Optional;
+
+            serviceStatus = finalConfig.GetStatus(s.ServiceFullName);
             // Handle generalization.
             ServiceData dataGen = null;
             if( s.Generalization != null )
@@ -228,12 +232,13 @@ namespace Yodii.Model.ConfigurationSolver
             return data;
         }
 
-        PluginData RegisterPlugin( Dictionary<object, ConfigurationStatus> finalConfig, IPluginInfo p )
+        PluginData RegisterPlugin( FinalConfiguration finalConfig, IPluginInfo p )
         {
             PluginData data;
             if( _plugins.TryGetValue( p, out data ) ) return data;
 
-            ConfigurationStatus pluginStatus = finalConfig.GetValueWithDefault( p, ConfigurationStatus.Optional );
+            ConfigurationStatus pluginStatus = ConfigurationStatus.Optional;
+            pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
             ServiceData service = p.Service != null ? _services[ p.Service ] : null;
             data = new PluginData( _services, p, service, pluginStatus );
             _plugins.Add( p, data );

@@ -50,7 +50,7 @@ namespace Yodii.Model.ConfigurationSolver
             //    _disabledReason = ServiceDisabledReason.ExternalServiceUnavailable;
             //}
             if( !Disabled ) _configurationRunningRequirement = (RunningRequirement)serviceStatus;
-            _runningRequirementReason = ServiceRunningRequirementReason.Config;
+            _configurationRunningRequirementReason = ServiceRunningRequirementReason.Config;
         }
 
         public readonly IServiceInfo ServiceInfo;
@@ -169,7 +169,7 @@ namespace Yodii.Model.ConfigurationSolver
         /// </summary>
         public ServiceRunningRequirementReason ThisRunningRequirementReason 
         {
-            get { return _runningRequirementReason; }
+            get { return _configurationRunningRequirementReason; }
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace Yodii.Model.ConfigurationSolver
             // Is it compliant with a Disabled service? If yes, it is always satisfied.
             if( r < RunningRequirement.Runnable )
             {
-                _runningRequirementReason = reason;
+                _configurationRunningRequirementReason = reason;
                 // Propagate TryStart.
                 PropagateRunningRequirementToOnlyPluginOrCommonReferences();
                 return true;
@@ -210,7 +210,7 @@ namespace Yodii.Model.ConfigurationSolver
             // If this is already disabled, there is nothing to do.
             if( Disabled ) return false;
 
-            _runningRequirementReason = reason;
+            _configurationRunningRequirementReason = reason;
 
             if( current < RunningRequirement.Runnable )
             {
@@ -264,7 +264,7 @@ namespace Yodii.Model.ConfigurationSolver
             if( currentMustExist != null && currentMustExist._configurationRunningRequirement > _configurationRunningRequirement )
             {
                 _configurationRunningRequirement = currentMustExist._configurationRunningRequirement;
-                _runningRequirementReason = currentMustExist._runningRequirementReason;
+                _configurationRunningRequirementReason = currentMustExist._configurationRunningRequirementReason;
             }
 
             // We must disable all sibling services (and plugins) from this up to mustExist (when mustExist is null, up to the root).
@@ -431,7 +431,7 @@ namespace Yodii.Model.ConfigurationSolver
                     if( _configurationRunningRequirement > specMustExist._configurationRunningRequirement )
                     {
                         specMustExist._configurationRunningRequirement = _configurationRunningRequirement;
-                        specMustExist._runningRequirementReason = ServiceRunningRequirementReason.FromGeneralization;
+                        specMustExist._configurationRunningRequirementReason = ServiceRunningRequirementReason.FromGeneralization;
                     }
                 }
                 Debug.Assert( !Disabled, "The fact that this service (or a specialization) must exist, can not disable this service." );
@@ -488,8 +488,8 @@ namespace Yodii.Model.ConfigurationSolver
             }
             // For raw Service (from Service container) we have nothing to do... 
             // they are available or not (and then they are Disabled).
-            if( ServiceInfo.IsDynamicService )
-            {
+            //if( ServiceInfo.IsDynamicService )
+            //{
                 // Handle the case where TotalPluginCount is zero (there is no implementation).
                 // or where TotalDisabledPluginCount is the same as TotalPluginCount.
                 if( TotalPluginCount == 0 )
@@ -505,7 +505,7 @@ namespace Yodii.Model.ConfigurationSolver
                     }
                     else InitializePropagation( nbAvailable, fromConfig: true );
                 }
-            }
+            //}
         }
 
         internal void OnPluginDisabled( PluginData p )

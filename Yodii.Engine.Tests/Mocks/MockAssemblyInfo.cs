@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
-using Yodii.Model.CoreModel;
 using Yodii.Model.ConfigurationSolver;
+using Yodii.Model.CoreModel;
 
 namespace Yodii.Engine.Tests.Mocks
 {

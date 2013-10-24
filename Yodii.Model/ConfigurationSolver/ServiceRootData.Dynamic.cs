@@ -28,26 +28,26 @@ namespace Yodii.Model.ConfigurationSolver
             get { return _runningCount; }
         }
 
-        public new void InitializeDynamicState( PlanCalculatorStrategy strategy )
-        {
-            _runningPlugin = base.InitializeDynamicState( strategy );
-            if( !Disabled && ServiceInfo.IsDynamicService )
-            {
-                for( int i = 0; i < _allRunnables.Length; ++i )
-                {
-                    _allRunnables[i].IndexInAllServiceRunnables = i;
-                }
-                Debug.Assert( MinimalRunningRequirement != RunningRequirement.Running || _runningPlugin != null, "When MustExistAndRun, then InitializeDynamicState found a first running plugin." );
-                _runningCount = TotalAvailablePluginCount;
-                if( MinimalRunningRequirement != RunningRequirement.Running )
-                {
-                    _runningCount += 1;
-                    _finallyNotRunning = true;
-                }
-                UpdateStatusFromRunningPlugin();
-                _runningIndex = 0;
-            }
-        }
+        //public new void InitializeDynamicState( PlanCalculatorStrategy strategy )
+        //{
+        //    _runningPlugin = base.InitializeDynamicState( strategy );
+        //    if( !Disabled && ServiceInfo.IsDynamicService )
+        //    {
+        //        for( int i = 0; i < _allRunnables.Length; ++i )
+        //        {
+        //            _allRunnables[i].IndexInAllServiceRunnables = i;
+        //        }
+        //        Debug.Assert( MinimalRunningRequirement != RunningRequirement.Running || _runningPlugin != null, "When MustExistAndRun, then InitializeDynamicState found a first running plugin." );
+        //        _runningCount = TotalAvailablePluginCount;
+        //        if( MinimalRunningRequirement != RunningRequirement.Running )
+        //        {
+        //            _runningCount += 1;
+        //            _finallyNotRunning = true;
+        //        }
+        //        UpdateStatusFromRunningPlugin();
+        //        _runningIndex = 0;
+        //    }
+        //}
 
         internal void AddRunnableService( ServiceData s )
         {
@@ -82,7 +82,7 @@ namespace Yodii.Model.ConfigurationSolver
 
         private void UpdateStatusFromRunningPlugin()
         {
-            Debug.Assert( ServiceInfo.IsDynamicService );
+            //Debug.Assert( ServiceInfo.IsDynamicService );
             // Mark all services as stopped if they are not RunningLocked.
             ServiceData s = _firstRunnableService;
             do

@@ -9,9 +9,9 @@ namespace Yodii.Model.LiveModel
 {
     interface ILiveConfiguration
     {
-        List<ILivePluginInfo> PluginLiveInfo { get; }
+        IReadOnlyList<ILivePluginInfo> PluginLiveInfo { get; }
 
-        List<ILiveServiceInfo> ServiceLiveInfo { get; }
+        IReadOnlyList<ILiveServiceInfo> ServiceLiveInfo { get; }
 
         IReadOnlyList<YodiiCommand> YodiiCommands { get; }
     }
