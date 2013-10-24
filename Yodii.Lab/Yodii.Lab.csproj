@@ -91,6 +91,12 @@
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphVertex.cs" />
     <Compile Include="MainWindowViewModel.cs" />
+    <Compile Include="Mock model\AssemblyInfoHelper.cs" />
+    <Compile Include="Mock model\MockAssemblyInfo.cs" />
+    <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
+    <Compile Include="Mock model\PluginInfo.cs" />
+    <Compile Include="Mock model\ServiceInfo.cs" />
+    <Compile Include="ServiceInfoManager.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ViewModelBase.cs" />

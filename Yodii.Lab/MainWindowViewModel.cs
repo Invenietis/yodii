@@ -12,16 +12,15 @@ namespace Yodii.Lab
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        CKObservableSortedArrayKeyList<IServiceInfo, string> _serviceInfos;
-        CKObservableSortedArrayKeyList<IPluginInfo, Guid> _pluginInfos;
         YodiiGraph _graph;
+        ServiceInfoManager _serviceManager;
+
+        bool _isLive;
 
         #region Constructor
         public MainWindowViewModel()
         {
-            _serviceInfos = new CKObservableSortedArrayKeyList<IServiceInfo, string>( s => s.ServiceFullName );
-            _pluginInfos = new CKObservableSortedArrayKeyList<IPluginInfo, Guid>( p => p.PluginId );
-
+            _serviceManager = new ServiceInfoManager();
             _graph = new YodiiGraph();
         }
         #endregion Constructor
@@ -35,7 +34,7 @@ namespace Yodii.Lab
         {
             get
             {
-                throw new NotImplementedException();
+                return _isLive;
             }
         }
 
@@ -44,7 +43,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IServiceInfo> ServiceInfos
         {
-            get { return _serviceInfos; }
+            get { return _serviceManager.ServiceInfos; }
         }
 
         /// <summary>
@@ -52,7 +51,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IPluginInfo> PluginInfos
         {
-            get { return _pluginInfos; }
+            get { return _serviceManager.PluginInfos; }
         }
 
         /// <summary>
@@ -78,7 +77,8 @@ namespace Yodii.Lab
         {
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
-            throw new NotImplementedException();
+            IServiceInfo newService = _serviceManager.CreateNewService( serviceName );
+            return newService;
         }
 
         /// <summary>
@@ -92,7 +92,8 @@ namespace Yodii.Lab
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
             if( generalization == null ) throw new ArgumentNullException( "generalization" );
 
-            throw new NotImplementedException();
+            IServiceInfo newService = _serviceManager.CreateNewService( serviceName, generalization );
+            return newService;
         }
 
         /// <summary>
@@ -106,7 +107,8 @@ namespace Yodii.Lab
             if( pluginGuid == null ) throw new ArgumentNullException( "pluginGuid" );
             if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
 
-            throw new NotImplementedException();
+            IPluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName );
+            return newPlugin;
         }
 
         /// <summary>
@@ -124,7 +126,8 @@ namespace Yodii.Lab
 
             if( !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
-            throw new NotImplementedException();
+            IPluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName, service );
+            return newPlugin;
         }
 
         /// <summary>
@@ -141,7 +144,7 @@ namespace Yodii.Lab
             if( !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
             if( !PluginInfos.Contains<IPluginInfo>( plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
 
-            throw new NotImplementedException();
+            _serviceManager.SetPluginDependency( plugin, service, runningRequirement );
         }
         #endregion Public methods
     }
