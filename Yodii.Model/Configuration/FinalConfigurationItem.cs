@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    public class FinalConfigurationItem
+    public struct FinalConfigurationItem
     {
         readonly string _serviceOrPluginId;
         readonly ConfigurationStatus _status;
