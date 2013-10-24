@@ -67,5 +67,15 @@ namespace Yodii.Engine.Tests.Mocks
         }
 
         #endregion
+
+        public bool HasError
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public string ErrorMessage
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

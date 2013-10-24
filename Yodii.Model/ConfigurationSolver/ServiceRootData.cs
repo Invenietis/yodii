@@ -12,7 +12,7 @@ namespace Yodii.Model.ConfigurationSolver
         ServiceData _mustExistService;
         PluginData _mustExistPluginByConfig;
 
-        internal ServiceRootData( Dictionary<IServiceInfo, ServiceData> allServices, IServiceInfo s, SolvedConfigStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
+        internal ServiceRootData( Dictionary<IServiceInfo, ServiceData> allServices, IServiceInfo s, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
             : base( allServices, s, null, serviceStatus, isExternalServiceAvailable )
         {
         }
@@ -36,7 +36,7 @@ namespace Yodii.Model.ConfigurationSolver
         {
             Debug.Assert( !Disabled );
             _mustExistService = GetMustExistService();
-            if( _mustExistService == null && ServiceSolvedStatus >= SolvedConfigStatus.Runnable ) _mustExistService = this;
+            if( _mustExistService == null && ServiceStatus >= ConfigurationStatus.Runnable ) _mustExistService = this;
         }
 
         internal override void OnAllPluginsAdded()

@@ -58,5 +58,11 @@ namespace Yodii.Engine.Tests.Mocks
         }
 
         #endregion
+
+
+        public string ConstructorParmeterOrPropertyName
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

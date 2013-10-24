@@ -204,7 +204,7 @@ namespace Yodii.Model.ConfigurationSolver
         {
             if( _theOnlyPlugin != null ) 
             {
-                if( !_theOnlyPlugin.SetRunningRequirement( _runningRequirement, PluginRunningRequirementReason.FromServiceToSinglePlugin ) 
+                if( !_theOnlyPlugin.SetRunningRequirement( _configurationRunningRequirement, PluginRunningRequirementReason.FromServiceToSinglePlugin ) 
                     && !Disabled )
                 {
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToSinglePluginFailed );
@@ -212,7 +212,7 @@ namespace Yodii.Model.ConfigurationSolver
             }
             else if( _commonReferences != null )
             {
-                if( !_commonReferences.SetRunningRequirement( _runningRequirement, ServiceRunningRequirementReason.FromServiceToCommonPluginReferences ) 
+                if( !_commonReferences.SetRunningRequirement( _configurationRunningRequirement, ServiceRunningRequirementReason.FromServiceToCommonPluginReferences ) 
                     && !Disabled )
                 {
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToCommonPluginReferencesFailed );

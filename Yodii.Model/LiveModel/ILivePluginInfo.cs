@@ -23,6 +23,5 @@ namespace Yodii.Model
         bool Start();
 
         void Stop();
-
     }
 }

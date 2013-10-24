@@ -17,27 +17,20 @@ namespace Yodii.Model.ConfigurationSolver
         List<ServiceRootData> _serviceRoots;
         Dictionary<IPluginInfo,PluginData> _plugins;
 
-        public ConfigurationSolver( Predicate<IPluginInfo> isPluginRunning )
+        public ConfigurationSolver()
         {
-            _isPluginRunning = isPluginRunning;
             _services = new Dictionary<IServiceInfo, ServiceData>();
             _serviceRoots = new List<ServiceRootData>();
 
             _plugins = new Dictionary<IPluginInfo, PluginData>();
         }
 
-        /// <summary>
-        /// Fields that stores the fact that something changed during an apply of the <see cref="LastBestPlan"/> and
-        /// that a new plan must be computed. This is stored here since the life time of this PlanCalculator is
-        /// bound to the global PluginRunner.Apply method execution and can be reused if necessary (by calling ObtainBestPlan again).
-        /// </summary>
-        public bool ReapplyNeeded;
-
-        public IConfigurationSolverResult Initialize( Dictionary<object, SolvedConfigStatus> finalConfig, IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins )
+        public IConfigurationSolverResult Initialize( FinalConfiguration finalConfig, IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins )
         {
             // Registering all Services.
             _services.Clear();
             _serviceRoots.Clear();
+            
             foreach( IServiceInfo sI in services )
             {
                 // This creates services and applies solved configuration to them: directly disabled services
@@ -84,7 +77,7 @@ namespace Yodii.Model.ConfigurationSolver
             {
                 if( p.Disabled )
                 {
-                    if( p.PluginSolvedStatus != SolvedConfigStatus.Disabled && p.MinimalRunningRequirement >= RunningRequirement.Runnable )
+                    if( p.PluginStatus != ConfigurationStatus.Disable && p.MinimalRunningRequirement >= RunningRequirement.Runnable )
                     {
                         if( blockingPlugins == null ) blockingPlugins = new List<IPluginInfo>();
                         blockingPlugins.Add( p.PluginInfo );
@@ -96,7 +89,7 @@ namespace Yodii.Model.ConfigurationSolver
             {
                 if( s.Disabled )
                 {
-                    if( s.ServiceSolvedStatus != SolvedConfigStatus.Disabled && s.MinimalRunningRequirement >= RunningRequirement.Runnable )
+                    if ( s.ServiceStatus != ConfigurationStatus.Disable && s.MinimalRunningRequirement >= RunningRequirement.Runnable )
                     {
                         if( blockingServices == null ) blockingServices = new List<IServiceInfo>();
                         blockingServices.Add( s.ServiceInfo );
@@ -176,58 +169,7 @@ namespace Yodii.Model.ConfigurationSolver
             List<IPluginInfo> stoppedPlugins = new List<IPluginInfo>();
 
             // (Temporary) brute force to find a valid configuration.
-            List<PluginData> needRunningCheckPlugins = new List<PluginData>();
-            IAlternative alternative = null;
-            long cardinality = 1;
-            foreach( PluginData p in _plugins.Values )
-            {
-                p.InitializeDynamicState( _isPluginRunning );
-                if( !p.Disabled )
-                {
-                    needRunningCheckPlugins.Add( p );
-                    if( p.Service == null && p.MinimalRunningRequirement != RunningRequirement.Running )
-                    {
-                        p.NextAlternative = alternative;
-                        alternative = p;
-                        cardinality *= 2;
-                    }
-                }
-            }
-            foreach( ServiceRootData s in _serviceRoots )
-            {
-                s.InitializeDynamicState( strategy );
-                if( !s.Disabled && s.RunningCount > 1 )
-                {
-                    cardinality *= s.RunningCount;
-                    s.NextAlternative = alternative;
-                    alternative = s;
-                }
-            }
-            if( cardinality == 1 )
-            {
-                Debug.Assert( alternative == null );
-                Debug.Assert( ComputeCurrentCost( needRunningCheckPlugins ) == 0, "Cost is necessarily optimal." );
-                CollectResult( disabledPlugins, runningPlugins, stoppedPlugins );
-            }
-            else
-            {
-                Debug.Assert( alternative != null );
-                int bestCost = Int32.MaxValue;
-                for( long i = 0; i < cardinality; ++i )
-                {
-                    int cost = ComputeCurrentCost( needRunningCheckPlugins );
-                    if( cost < 0xFFFFFF )
-                    {
-                        if( bestCost > cost )
-                        {
-                            bestCost = cost;
-                            CollectResult( disabledPlugins, runningPlugins, stoppedPlugins );
-                            if( cost == 0 || i > 255*0xFFFF ) break;
-                        }
-                    }
-                    alternative.MoveNext();
-                }
-            }
+
             return new ConfigurationSolverResult( disabledPlugins, stoppedPlugins, runningPlugins );
         }
 
@@ -260,12 +202,15 @@ namespace Yodii.Model.ConfigurationSolver
             return cost;
         }
 
-        ServiceData RegisterService( Dictionary<object, SolvedConfigStatus> finalConfig, IServiceInfo s )
+        ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )
         {
             ServiceData data;
             if( _services.TryGetValue( s, out data ) ) return data;
 
-            SolvedConfigStatus serviceStatus = finalConfig.GetValueWithDefault( s, SolvedConfigStatus.Optional );
+            //Set default status
+            ConfigurationStatus serviceStatus = ConfigurationStatus.Optional;
+
+            serviceStatus = finalConfig.GetStatus(s.ServiceFullName);
             // Handle generalization.
             ServiceData dataGen = null;
             if( s.Generalization != null )
@@ -287,18 +232,17 @@ namespace Yodii.Model.ConfigurationSolver
             return data;
         }
 
-        PluginData RegisterPlugin( Dictionary<object, SolvedConfigStatus> finalConfig, IPluginInfo p )
+        PluginData RegisterPlugin( FinalConfiguration finalConfig, IPluginInfo p )
         {
             PluginData data;
             if( _plugins.TryGetValue( p, out data ) ) return data;
-            
-            SolvedConfigStatus pluginStatus = finalConfig.GetValueWithDefault( p, SolvedConfigStatus.Optional );
+
+            ConfigurationStatus pluginStatus = ConfigurationStatus.Optional;
+            pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
             ServiceData service = p.Service != null ? _services[ p.Service ] : null;
             data = new PluginData( _services, p, service, pluginStatus );
             _plugins.Add( p, data );
             return data;
         }
-
-
     }
 }
