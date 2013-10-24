@@ -119,6 +119,8 @@ namespace Yodii.Engine.Tests
             Assert.That( item.ServiceOrPluginId, Is.EqualTo( "schmurtz" ) );
             Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Optional ) );
             Assert.That( item.StatusReason, Is.EqualTo( null ) );
+            Assert.Throws<InvalidOperationException>( () => item.StatusReason = "schmurtz" );
+            Assert.Throws<InvalidOperationException>( () => item.SetStatus( ConfigurationStatus.Runnable ) );
 
             //tests with multiple add
             result = layer.Items.Add( "schmurtz2", ConfigurationStatus.Optional, "schmurtz?" );
@@ -141,6 +143,52 @@ namespace Yodii.Engine.Tests
             Assert.That( schmurtz1, Is.EqualTo( layer.Items[1] ) );
             Assert.That( schmurtz2, Is.EqualTo( layer.Items[2] ) );
             
+        }
+
+        [Test]
+        public void ConfigurationLayerWithManagerTests()
+        {
+            ConfigurationManager manager = new ConfigurationManager();
+            ConfigurationLayer layer = new ConfigurationLayer( "system" );
+
+            ConfigurationResult result = manager.Layers.Add( layer );
+            Assert.That( result == true );
+            Assert.That( layer.ConfigurationManager, Is.EqualTo( manager ) );
+            Assert.That( layer.LayerName, Is.EqualTo( "system" ) );
+            Assert.DoesNotThrow( () => layer.LayerName = "" );
+            Assert.That( layer.LayerName, Is.EqualTo( "" ) );
+
+            result = layer.Items.Add( "schmurtz1", ConfigurationStatus.Optional );
+            Assert.That( result == true );
+
+            ConfigurationManager manager2 = new ConfigurationManager();
+            result = manager2.Layers.Add( layer );
+            Assert.That( result == false );
+
+            result = manager.Layers.Remove( layer );
+            Assert.That( result == true );
+            Assert.That( layer.ConfigurationManager, Is.EqualTo( null ) );
+
+            result = manager.Layers.Add( layer );
+            Assert.That( result == true );
+
+            manager.ConfigurationChanging += ( s, e ) => e.Cancel( "schmurtz!" );
+            result = layer.Items.Add( "schmurtz1", ConfigurationStatus.Runnable );
+            Assert.That( result == false );
+            Assert.That( result.IsSuccessful, Is.False );
+            Assert.That( result.FailureCauses[0], Is.EqualTo( "schmurtz!" ) );
+            Assert.That( layer.Items["schmurtz1"].Status, Is.EqualTo( ConfigurationStatus.Optional ) );
+
+            result = layer.Items.Add( "schmurtz2", ConfigurationStatus.Optional );
+            Assert.That( result == false );
+            Assert.That( result.IsSuccessful, Is.False );
+            Assert.That( result.FailureCauses[0], Is.EqualTo( "schmurtz!" ) );
+            Assert.That( layer.Items["schmurtz"], Is.EqualTo( null ) );
+
+            result = manager.Layers.Remove( layer );
+            Assert.That( result == false );
+            Assert.That( layer.ConfigurationManager, Is.EqualTo( manager ) );
+
         }
     }
 }

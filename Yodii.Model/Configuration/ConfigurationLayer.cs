@@ -12,7 +12,6 @@ using System.Diagnostics;
 
 namespace Yodii.Model
 {
-    //ToDo : removeItem, Obersable, ienumerable, 
     public class ConfigurationLayer : INotifyPropertyChanged
     {
         #region fields

@@ -163,5 +163,62 @@ namespace Yodii.Engine.Tests
 
             Assert.That( cm.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
         }
+
+        [Test]
+        public void ManagerTests()
+        {
+            ConfigurationLayer layer = new ConfigurationLayer( "system" );
+            layer.Items.Add( "schmurtz1", ConfigurationStatus.Running );
+            layer.Items.Add( "schmurtz2", ConfigurationStatus.Running );
+            layer.Items.Add( "schmurtz3", ConfigurationStatus.Running );
+            layer.Items.Add( "schmurtz4", ConfigurationStatus.Running );
+            layer.Items.Add( "schmurtz5", ConfigurationStatus.Running );
+            layer.Items.Add( "schmurtz6", ConfigurationStatus.Running );
+
+            ConfigurationManager manager = new ConfigurationManager();
+            manager.ConfigurationChanging += ( s, e ) => { if( e.FinalConfiguration.GetStatus( "schmurtz4" ) == ConfigurationStatus.Running )  e.Cancel( "schmurtz!" ); };
+            ConfigurationResult result = manager.Layers.Add( layer );
+            Assert.That( result == true );
+            Assert.That( manager.FinalConfiguration.Items[0].ServiceOrPluginId, Is.EqualTo( "schmurtz1" ) );
+            Assert.That( manager.FinalConfiguration.Items[1].ServiceOrPluginId, Is.EqualTo( "schmurtz2" ) );
+            Assert.That( manager.FinalConfiguration.Items[2].ServiceOrPluginId, Is.EqualTo( "schmurtz3" ) );
+
+            ConfigurationLayer conflictLayer = new ConfigurationLayer( "schmurtzConflict" );
+            conflictLayer.Items.Add( "schmurtz1", ConfigurationStatus.Disable );
+
+            result = manager.Layers.Add( conflictLayer );
+            Assert.That( result == false );
+            Assert.That( result.FailureCauses.Count, Is.EqualTo( 2 ) );
+            Assert.That( result.FailureCauses[0], Is.StringContaining( "Running" ) );
+            Assert.That( result.FailureCauses[0], Is.StringContaining( "Disable" ) );
+            Assert.That( result.FailureCauses[0], Is.StringContaining( "schmurtz1" ) );
+
+            ConfigurationLayer layer2 = new ConfigurationLayer();
+            layer2.Items.Add( "schmurtz4", ConfigurationStatus.Disable );
+            layer2.Items.Add( "schmurtz1", ConfigurationStatus.Running );
+
+            result = manager.Layers.Add( layer2 );
+            Assert.That( result == true );
+            Assert.That( manager.FinalConfiguration.Items[3].ServiceOrPluginId, Is.EqualTo( "schmurtz4" ) );
+            Assert.That( manager.Layers[0].LayerName, Is.EqualTo( "" ) );
+
+            result = manager.Layers.Remove( layer2 );
+            Assert.That( result == true );
+            Assert.Throws<IndexOutOfRangeException>( () => { FinalConfigurationItem item = manager.FinalConfiguration.Items[3]; } );
+            Assert.That( manager.FinalConfiguration.Items[0].ServiceOrPluginId, Is.EqualTo( "schmurtz1" ) );
+            Assert.That( manager.Layers[0].LayerName, Is.EqualTo( "system" ) );
+
+            result = manager.Layers.Add( layer );
+            Assert.That( result == true );
+
+            manager.ConfigurationChanging += ( s, e ) => e.Cancel("");
+            Assert.That( manager.Layers.Add( layer2 ) == false );
+            Assert.That( manager.Layers[0].Items[0].SetStatus( ConfigurationStatus.Optional ) == false );
+            Assert.That( manager.Layers[0].Items.Add( "schmurtz42", ConfigurationStatus.Optional ) == false );
+            Assert.That( manager.Layers[0].Items.Remove( "schmurtz1" ) == false );
+            Assert.That( manager.Layers.Remove( layer2 ) == false );
+        }
+
+
     }
 }
