@@ -8,7 +8,7 @@ using Yodii.Model.CoreModel;
 
 namespace Yodii.Lab.Tests
 {
-    [TestFixture]
+    [TestFixture(Category="Yodii.Lab")]
     public class MainWindowViewModelTests
     {
         [Test]
