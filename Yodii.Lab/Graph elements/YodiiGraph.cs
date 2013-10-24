@@ -6,7 +6,7 @@ using QuickGraph;
 
 namespace Yodii.Lab
 {
-    class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
+    public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
     }
 }

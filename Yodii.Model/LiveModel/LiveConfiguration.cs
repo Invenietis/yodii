@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CK.Core;
 using Yodii.Model.ConfigurationSolver;
 
 namespace Yodii.Model.LiveModel
@@ -28,10 +29,10 @@ namespace Yodii.Model.LiveModel
             _yodiiCommands.Insert( 0, command );
         }
 
-        public IReadOnlyList<ILivePluginInfo> PluginLiveInfo { get { return _pluginLiveInfo; } }
+        public IReadOnlyList<ILivePluginInfo> PluginLiveInfo { get { return _pluginLiveInfo.AsReadOnlyList(); } }
 
-        public IReadOnlyList<ILiveServiceInfo> ServiceLiveInfo { get { return _serviceLiveInfo; } }
+        public IReadOnlyList<ILiveServiceInfo> ServiceLiveInfo { get { return _serviceLiveInfo.AsReadOnlyList(); } }
 
-        public IReadOnlyList<YodiiCommand> YodiiCommands { get { return _yodiiCommands; } }
+        public IReadOnlyList<YodiiCommand> YodiiCommands { get { return _yodiiCommands.AsReadOnlyList(); } }
     }
 }

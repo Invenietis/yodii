@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CK.Core;
 using Yodii.Model;
 using Yodii.Model.CoreModel;
 using Yodii.Model.ConfigurationSolver;
@@ -55,7 +56,7 @@ namespace Yodii.Engine.Tests.Mocks
 
         public IReadOnlyList<IPluginInfo> Implementations
         {
-            get { return _implementations.AsReadOnly(); }
+            get { return _implementations.AsReadOnlyList(); }
         }
 
         #endregion

@@ -36,6 +36,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CK.Core, Version=2.8.14.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Core.2.8.14\lib\net40\CK.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Fluent">
       <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\Fluent.dll</HintPath>
     </Reference>
@@ -86,7 +90,10 @@
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphVertex.cs" />
+    <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
+    <Compile Include="Utils\RelayCommand.cs" />
+    <Compile Include="Utils\ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -134,7 +141,16 @@
   <ItemGroup>
     <Resource Include="Icons\Symbols_Critical_32xLG.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
+      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
+      <Name>Yodii.Engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
+      <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
+      <Name>Yodii.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

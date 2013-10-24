@@ -6,7 +6,7 @@ using QuickGraph;
 
 namespace Yodii.Lab
 {
-    class YodiiGraphEdge : Edge<YodiiGraphVertex>
+    public class YodiiGraphEdge : Edge<YodiiGraphVertex>
     {
         public YodiiGraphEdge( YodiiGraphVertex source, YodiiGraphVertex target )
             : base( source, target )

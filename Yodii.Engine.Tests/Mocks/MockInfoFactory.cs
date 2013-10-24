@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CK.Core;
 using Yodii.Model.CoreModel;
 using Yodii.Model;
 
@@ -69,7 +70,7 @@ namespace Yodii.Engine.Tests.Mocks
         {
             get
             {
-                return _pluginInfos.AsReadOnly();
+                return _pluginInfos.AsReadOnlyList();
             }
         }
 
@@ -77,7 +78,7 @@ namespace Yodii.Engine.Tests.Mocks
         {
             get
             {
-                return _serviceInfos.AsReadOnly();
+                return _serviceInfos.AsReadOnlyList();
             }
         }
     }

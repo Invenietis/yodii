@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yodii.Lab
 {
-    class YodiiGraphVertex
+    public class YodiiGraphVertex
     {
     }
 }
