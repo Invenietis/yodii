@@ -8,7 +8,8 @@ namespace Yodii.Lab
 {
     public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
-        public YodiiGraph()
+        internal YodiiGraph()
+            : base()
         {
         }
     }

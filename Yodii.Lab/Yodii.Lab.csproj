@@ -89,6 +89,7 @@
     </ApplicationDefinition>
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
+    <Compile Include="Graph elements\YodiiGraphEdgeType.cs" />
     <Compile Include="Graph elements\YodiiGraphVertex.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Mock model\AssemblyInfoHelper.cs" />

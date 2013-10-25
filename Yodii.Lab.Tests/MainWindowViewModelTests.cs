@@ -23,46 +23,46 @@ namespace Yodii.Lab.Tests
         {
             var vm = CreateBasePlugins();
 
-            Assert.That( vm.Graph.Vertices.Count() == 7 );
+            Assert.That( vm.Graph.Vertices.Count() == 8 );
             Assert.That( vm.Graph.Edges.Count() == 6 );
 
             /** TODO **/
-            //Assert.That( vm.Graph.Vertices.Where( v => v.Type == YodiiVertexType.Service ).Count() == 3 );
-            //Assert.That( vm.Graph.Vertices.Where( v => v.Type == YodiiVertexType.Plugin ).Count() == 4 );
+            Assert.That( vm.Graph.Vertices.Where( v => v.IsService ).Count() == 3 );
+            Assert.That( vm.Graph.Vertices.Where( v => v.IsPlugin ).Count() == 5 );
 
-            //Assert.That( vm.Graph.Edges.Where( e => e.Type == YodiiEdgeType.Implementation ).Count() == 4 );
-            //Assert.That( vm.Graph.Edges.Where( e => e.Type == YodiiEdgeType.Specialization ).Count() == 1 );
-            //Assert.That( vm.Graph.Edges.Where( e => e.Type == YodiiEdgeType.Requirement ).Count() == 1 );
+            Assert.That( vm.Graph.Edges.Where( e => e.Type == YodiiGraphEdgeType.Implementation ).Count() == 4 );
+            Assert.That( vm.Graph.Edges.Where( e => e.Type == YodiiGraphEdgeType.Specialization ).Count() == 1 );
+            Assert.That( vm.Graph.Edges.Where( e => e.Type == YodiiGraphEdgeType.ServiceReference ).Count() == 1 );
 
-            //// Check integrity, by service
-            //foreach( var serviceInfo in vm.ServiceInfos )
-            //{
-            //    Assert.That( vm.Graph.Vertices.Any( v => v.Type == YodiiVertexType.Service && v.ServiceInfo == serviceInfo ) );
-            //    if( serviceInfo.Generalization != null )
-            //    {
-            //        Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiEdgeType.Specialization && e.Source.ServiceInfo == serviceInfo && e.Target.ServiceInfo == serviceInfo.Generalization ) );
-            //    }
-            //    foreach( var p in serviceInfo.Implementations )
-            //    {
-            //        Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiEdgeType.Implementation && e.Source.PluginInfo == p && e.Target.ServiceInfo == serviceInfo ) );
-            //    }
-            //}
+            // Check integrity, by service
+            foreach( var serviceInfo in vm.ServiceInfos )
+            {
+                Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.ServiceInfo == serviceInfo ) );
+                if( serviceInfo.Generalization != null )
+                {
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Specialization && e.Source.ServiceInfo == serviceInfo && e.Target.ServiceInfo == serviceInfo.Generalization ) );
+                }
+                foreach( var p in serviceInfo.Implementations )
+                {
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Implementation && e.Source.PluginInfo == p && e.Target.ServiceInfo == serviceInfo ) );
+                }
+            }
 
-            //// Check by plugin
-            //foreach( var pluginInfo in vm.PluginInfos )
-            //{
-            //    Assert.That( vm.Graph.Vertices.Any( v => v.Type == YodiiVertexType.Plugin && v.PluginInfo == pluginInfo ) );
+            // Check by plugin
+            foreach( var pluginInfo in vm.PluginInfos )
+            {
+                Assert.That( vm.Graph.Vertices.Any( v => v.IsPlugin && v.PluginInfo == pluginInfo ) );
 
-            //    if( pluginInfo.Service != null )
-            //    {
-            //        Assert.That( vm.Graph.Vertices.Any( v => v.Type == YodiiVertexType.Service && v.ServiceInfo == pluginInfo.Service ) );
-            //    }
+                if( pluginInfo.Service != null )
+                {
+                    Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.ServiceInfo == pluginInfo.Service ) );
+                }
 
-            //    foreach( var reference in pluginInfo.ServiceReferences )
-            //    {
-            //        Assert.That( vm.Graph.Vertices.Any( v => v.Type == YodiiVertexType.Requirement && v.Source.PluginInfo == reference.Owner && v.Target.ServiceInfo == reference.Reference && v.ReferenceRequirement == reference.Requirement ) );
-            //    }
-            //}
+                foreach( var reference in pluginInfo.ServiceReferences )
+                {
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.ServiceReference && e.Source.PluginInfo == reference.Owner && e.Target.ServiceInfo == reference.Reference && e.ReferenceRequirement == reference.Requirement ) );
+                }
+            }
             
         }
 
@@ -81,9 +81,9 @@ namespace Yodii.Lab.Tests
              * +----+----+     +---------+  +---------+                +---------+
              *      |
              *      |
-             * +----+-----+
-             * |PluginAx-1|
-             * +----------+
+             * +----+-----+    +----------------------+
+             * |PluginAx-1|    |Plugin.Without.Service|
+             * +----------+    +----------------------+
              */
             MainWindowViewModel vm = new MainWindowViewModel();
 

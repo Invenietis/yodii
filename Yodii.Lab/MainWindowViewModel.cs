@@ -78,6 +78,10 @@ namespace Yodii.Lab
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
             IServiceInfo newService = _serviceManager.CreateNewService( serviceName );
+
+            YodiiGraphVertex serviceVertex = new YodiiGraphVertex( newService );
+            Graph.AddVertex( serviceVertex );
+
             return newService;
         }
 
@@ -93,6 +97,15 @@ namespace Yodii.Lab
             if( generalization == null ) throw new ArgumentNullException( "generalization" );
 
             IServiceInfo newService = _serviceManager.CreateNewService( serviceName, generalization );
+
+            YodiiGraphVertex serviceVertex = new YodiiGraphVertex( newService );
+            YodiiGraphVertex generalizationVertex = Graph.Vertices.First( v => v.ServiceInfo == generalization );
+
+            YodiiGraphEdge edge = new YodiiGraphEdge( serviceVertex, generalizationVertex, YodiiGraphEdgeType.Specialization );
+
+            Graph.AddVertex( serviceVertex );
+            Graph.AddEdge( edge );
+
             return newService;
         }
 
@@ -108,6 +121,10 @@ namespace Yodii.Lab
             if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
 
             IPluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName );
+            YodiiGraphVertex pluginVertex  = new YodiiGraphVertex( newPlugin );
+
+            Graph.AddVertex( pluginVertex );
+
             return newPlugin;
         }
 
@@ -127,6 +144,14 @@ namespace Yodii.Lab
             if( !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
             IPluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName, service );
+            YodiiGraphVertex pluginVertex  = new YodiiGraphVertex( newPlugin );
+            YodiiGraphVertex serviceVertex = Graph.Vertices.First( v => v.ServiceInfo == service );
+
+            YodiiGraphEdge edge = new YodiiGraphEdge( pluginVertex, serviceVertex, YodiiGraphEdgeType.Implementation );
+
+            Graph.AddVertex( pluginVertex );
+            Graph.AddEdge( edge );
+
             return newPlugin;
         }
 
@@ -145,7 +170,17 @@ namespace Yodii.Lab
             if( !PluginInfos.Contains<IPluginInfo>( plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
 
             _serviceManager.SetPluginDependency( plugin, service, runningRequirement );
+
+            YodiiGraphVertex serviceVertex = Graph.Vertices.First( v => v.ServiceInfo == service );
+            YodiiGraphVertex pluginVertex = Graph.Vertices.First( v => v.PluginInfo == plugin );
+
+            YodiiGraphEdge edge = new YodiiGraphEdge( pluginVertex, serviceVertex, runningRequirement );
+
+            Graph.AddEdge( edge );
         }
         #endregion Public methods
+
+        #region Private methods
+        #endregion Private methods
     }
 }
