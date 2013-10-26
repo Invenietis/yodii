@@ -25,6 +25,7 @@ namespace Yodii.Engine.Tests.Mocks
 
             _serviceFullName = serviceFullName;
             _assemblyInfo = assemblyInfo;
+            _generalization = generalization;
             _implementations = new List<IPluginInfo>();
         }
 

@@ -61,5 +61,10 @@ namespace Yodii.Lab.Mocks
         }
 
         #endregion
+
+        internal void RemovePlugin( PluginInfo pluginInfo )
+        {
+            _implementations.Remove( pluginInfo );
+        }
     }
 }

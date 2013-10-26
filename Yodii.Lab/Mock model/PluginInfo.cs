@@ -15,7 +15,7 @@ namespace Yodii.Lab.Mocks
         readonly Guid _guid;
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
-        readonly List<IServiceReferenceInfo> _serviceReferences;
+        readonly CKObservableSortedArrayList<IServiceReferenceInfo> _serviceReferences;
         readonly IServiceInfo _service;
 
         internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, IServiceInfo service = null )
@@ -29,7 +29,7 @@ namespace Yodii.Lab.Mocks
             _assemblyInfo = assemblyInfo;
 
             _service = service;
-            _serviceReferences = new List<IServiceReferenceInfo>();
+            _serviceReferences = new CKObservableSortedArrayList<IServiceReferenceInfo>();
         }
 
         internal void BindServiceRequirement( IServiceReferenceInfo reference )
@@ -38,6 +38,16 @@ namespace Yodii.Lab.Mocks
             Debug.Assert( reference.Owner == this );
 
             _serviceReferences.Add( reference );
+        }
+
+        internal void RemoveServiceRequirement( IServiceReferenceInfo reference )
+        {
+            _serviceReferences.Remove( reference );
+        }
+
+        internal ICKObservableReadOnlyCollection<IServiceReferenceInfo> ObservableServiceReferences
+        {
+            get { return _serviceReferences; }
         }
 
         #region IPluginInfo Members

@@ -26,7 +26,6 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.Graph.Vertices.Count() == 8 );
             Assert.That( vm.Graph.Edges.Count() == 6 );
 
-            /** TODO **/
             Assert.That( vm.Graph.Vertices.Where( v => v.IsService ).Count() == 3 );
             Assert.That( vm.Graph.Vertices.Where( v => v.IsPlugin ).Count() == 5 );
 
@@ -63,12 +62,82 @@ namespace Yodii.Lab.Tests
                     Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.ServiceReference && e.Source.PluginInfo == reference.Owner && e.Target.ServiceInfo == reference.Reference && e.ReferenceRequirement == reference.Requirement ) );
                 }
             }
-            
+
+            // Simple remove test
+            vm.RemovePlugin( vm.PluginInfos.Where( i => i.PluginFullName == "Plugin.Without.Service" ).First() );
+
+            Assert.That( vm.Graph.Vertices.Count() == 7 );
+            Assert.That( vm.Graph.Edges.Count() == 6 );
+            /**
+             *                 +--------+                              +--------+
+             *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
+             *     |           +---+----+       |   | Need Running     +---+----+
+             *     |               |            |   |                      |
+             *     |               |            |   |                      |
+             *     |               |            |   |                      |
+             *     |               |            |   |                      |
+             * +---+-----+     +---+-----+  +---+---*-+                +---+-----+
+             * |ServiceAx|     |PluginA-1|  |PluginA-2|                |PluginB-1|
+             * +----+----+     +---------+  +---------+                +---------+
+             *      |
+             *      |
+             * +----+-----+
+             * |PluginAx-1|
+             * +----------+
+             */
+
+
+            // Removing a service also removes its implementations
+            vm.RemoveService( vm.ServiceInfos.Where( x => x.ServiceFullName == "ServiceAx" ).First() );
+
+            Assert.That( vm.Graph.Vertices.Count() == 5 );
+            Assert.That( vm.Graph.Edges.Count() == 4 );
+            /**
+             *                 +--------+                              +--------+
+             *                 |ServiceA+-------+   *----------------->|ServiceB|
+             *                 +---+----+       |   | Need Running     +---+----+
+             *                     |            |   |                      |
+             *                     |            |   |                      |
+             *                     |            |   |                      |
+             *                     |            |   |                      |
+             *                 +---+-----+  +---+---*-+                +---+-----+
+             *                 |PluginA-1|  |PluginA-2|                |PluginB-1|
+             *                 +---------+  +---------+                +---------+
+             */
+
+
+            // Removing a plugin also removes its references
+            vm.RemovePlugin( vm.PluginInfos.Where( x => x.PluginFullName == "Plugin.A2" ).First() );
+
+            Assert.That( vm.Graph.Vertices.Count() == 4 );
+            Assert.That( vm.Graph.Edges.Count() == 2 );
+            /**
+             * +--------+     +--------+
+             * |ServiceA|     |ServiceB|
+             * +---+----+     +---+----+
+             *     |              |
+             *     |              |
+             *     |              |
+             *     |              |
+             * +---+-----+    +---+-----+
+             * |PluginA-1|    |PluginB-1|
+             * +---------+    +---------+
+             */
+
+
+            // Reset
+            vm = CreateBasePlugins();
+
+            // Deleting a root service entirely destroys its tree
+            vm.RemoveService( vm.ServiceInfos.Where( x => x.ServiceFullName == "ServiceA" ).First() );
+
+            Assert.That( vm.Graph.Vertices.Count() == 3 );
+            Assert.That( vm.Graph.Edges.Count() == 1 );
         }
 
         internal MainWindowViewModel CreateBasePlugins()
         {
-            /**
+            /** Imagine a graph like this:
              *                 +--------+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
              *     |           +---+----+       |   | Need Running     +---+----+

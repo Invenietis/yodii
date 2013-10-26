@@ -15,8 +15,8 @@ namespace Yodii.Lab
     /// </summary>
     class ServiceInfoManager
     {
-        CKObservableSortedArrayKeyList<ServiceInfo, string> _serviceInfos;
-        CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;
+        readonly CKObservableSortedArrayKeyList<ServiceInfo, string> _serviceInfos;
+        readonly CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;
 
         internal ServiceInfoManager()
         {
@@ -49,7 +49,7 @@ namespace Yodii.Lab
         /// <param name="serviceName">Name of the new service</param>
         /// <returns>New service</returns>
         /// <seealso cref="CreateNewService( string, IServiceInfo )">Create a new service, which specializes another.</seealso>
-        internal IServiceInfo CreateNewService( string serviceName )
+        internal ServiceInfo CreateNewService( string serviceName )
         {
             Debug.Assert( serviceName != null );
 
@@ -65,7 +65,7 @@ namespace Yodii.Lab
         /// <param name="serviceName">Name of the new service</param>
         /// <param name="generalization">Specialized service</param>
         /// <returns>New service</returns>
-        internal IServiceInfo CreateNewService( string serviceName, IServiceInfo generalization )
+        internal ServiceInfo CreateNewService( string serviceName, IServiceInfo generalization )
         {
             Debug.Assert( serviceName != null );
             Debug.Assert( generalization != null );
@@ -83,7 +83,7 @@ namespace Yodii.Lab
         /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <returns>New plugin</returns>
-        internal IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName )
+        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName )
         {
             Debug.Assert( pluginGuid != null );
             Debug.Assert( pluginName != null );
@@ -101,7 +101,7 @@ namespace Yodii.Lab
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        internal IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, IServiceInfo service )
+        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, IServiceInfo service )
         {
             Debug.Assert( pluginGuid != null );
             Debug.Assert( pluginName != null );
@@ -124,19 +124,55 @@ namespace Yodii.Lab
         /// <param name="plugin">Plugin</param>
         /// <param name="service">Service the plugin depends on</param>
         /// <param name="runningRequirement">How the plugin depends on the service</param>
-        internal void SetPluginDependency( IPluginInfo plugin, IServiceInfo service, RunningRequirement runningRequirement )
+        internal void SetPluginDependency( PluginInfo plugin, ServiceInfo service, RunningRequirement runningRequirement )
         {
             Debug.Assert( plugin != null );
             Debug.Assert( service != null );
             Debug.Assert( ServiceInfos.Contains( service ) );
             Debug.Assert( PluginInfos.Contains( plugin ) );
 
-            Debug.Assert( plugin is PluginInfo );
-            PluginInfo castPlugin = plugin as PluginInfo;
-
             IServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, RunningRequirement.Running );
-            castPlugin.BindServiceRequirement( reference );
+            plugin.BindServiceRequirement( reference );
         }
         #endregion Internal methods
+
+        internal void RemoveService( ServiceInfo serviceInfo )
+        {
+            // If we delete a service : Delete its entire tree.
+
+            // Delete generalized services
+            foreach( ServiceInfo s in ServiceInfos.Where( si => si.Generalization == serviceInfo ).ToList() )
+            {
+                RemoveService( s );
+            }
+
+            // Delete implementations
+            foreach( PluginInfo p in PluginInfos.Where( pi => pi.Service == serviceInfo ).ToList() )
+            {
+                RemovePlugin( p );
+            }
+
+            // Delete all other  existing service references
+
+            foreach( PluginInfo p in PluginInfos )
+            {
+                foreach( IServiceReferenceInfo reference in p.ServiceReferences.Where( r => r.Reference == serviceInfo ).ToList() )
+                {
+                    p.RemoveServiceRequirement( reference );
+                }
+            }
+
+            _serviceInfos.Remove( serviceInfo );
+        }
+
+        internal void RemovePlugin( PluginInfo pluginInfo )
+        {
+            if( pluginInfo.Service != null )
+            {
+                ((ServiceInfo)pluginInfo.Service).RemovePlugin( pluginInfo );
+            }
+
+            _pluginInfos.Remove( pluginInfo );
+        }
     }
 }
