@@ -11,17 +11,15 @@ namespace Yodii.Model.ConfigurationSolver
 
     public class ConfigurationSolver
     {
-        readonly Predicate<IPluginInfo> _isPluginRunning;
-
         Dictionary<IServiceInfo,ServiceData> _services;
         List<ServiceRootData> _serviceRoots;
         Dictionary<IPluginInfo,PluginData> _plugins;
 
         public ConfigurationSolver()
         {
+            //TO DO: Save current state into a ConfigState object (state design pattern)
             _services = new Dictionary<IServiceInfo, ServiceData>();
             _serviceRoots = new List<ServiceRootData>();
-
             _plugins = new Dictionary<IPluginInfo, PluginData>();
         }
 
@@ -60,10 +58,10 @@ namespace Yodii.Model.ConfigurationSolver
             foreach( PluginData p in _plugins.Values )
             {
                 // When a plugin is disabled because of a disabled required service reference and it implements a service, the service
-                // become disabled (if it has no more available implementations) and that triggers disabling of plugins that require
+                // becomes disabled (if it has no more available implementations) and that triggers disabling of plugins that require
                 // the service. This works because disable flag on each participant is carefully set before propagating the
                 // information to others to avoid loops and because such plugins reference themselves at the required service (AddMustExistReferencer).
-                if( !p.Disabled && p.MinimalRunningRequirement >= RunningRequirement.Runnable )
+                if( !p.Disabled && p.ConfigSolvedStatus >= RunningRequirement.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
                 }
@@ -72,24 +70,24 @@ namespace Yodii.Model.ConfigurationSolver
             List<IServiceInfo> blockingServices = null;
             
             // Time to conclude about configuration and to initialize dynamic resolution.
-            // Any Plugin that has a PluginSolvedStatus greater or equal to MustExist and is Disabled leads to an impossible configuration.
+            // Any Plugin that has a ConfigSolvedStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
             foreach( PluginData p in _plugins.Values )
             {
                 if( p.Disabled )
                 {
-                    if( p.PluginStatus != ConfigurationStatus.Disable && p.MinimalRunningRequirement >= RunningRequirement.Runnable )
+                    if( p.ConfigOriginalStatus != ConfigurationStatus.Disable && p.ConfigSolvedStatus >= RunningRequirement.Runnable )
                     {
                         if( blockingPlugins == null ) blockingPlugins = new List<IPluginInfo>();
                         blockingPlugins.Add( p.PluginInfo );
                     }
                 }
             }
-            // Any Service that has a ServiceSolvedStatus greater or equal to MustExist and is Disabled leads to an impossible configuration.
+            // Any Service that has a ConfigSolvedStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
             foreach( ServiceData s in _services.Values )
             {
                 if( s.Disabled )
                 {
-                    if ( s.ServiceStatus != ConfigurationStatus.Disable && s.MinimalRunningRequirement >= RunningRequirement.Runnable )
+                    if ( s.ConfigOriginalStatus != ConfigurationStatus.Disable && s.ConfigSolvedStatus >= RunningRequirement.Runnable )
                     {
                         if( blockingServices == null ) blockingServices = new List<IServiceInfo>();
                         blockingServices.Add( s.ServiceInfo );
@@ -187,21 +185,6 @@ namespace Yodii.Model.ConfigurationSolver
             }
         }
 
-        private static int ComputeCurrentCost( List<PluginData> needCheckPlugins )
-        {
-            int cost = 0;
-            foreach( PluginData p in needCheckPlugins )
-            {
-                if( p.Status >= RunningStatus.Running )
-                {
-                    cost += p.ComputeRunningCost();
-                    if( cost >= 0xFFFFFFF ) break;
-                }
-                else if( p.ShouldInitiallyRun ) cost += 10;
-            }
-            return cost;
-        }
-
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )
         {
             ServiceData data;
@@ -237,6 +220,7 @@ namespace Yodii.Model.ConfigurationSolver
             PluginData data;
             if( _plugins.TryGetValue( p, out data ) ) return data;
 
+            //Set default status
             ConfigurationStatus pluginStatus = ConfigurationStatus.Optional;
             pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
             ServiceData service = p.Service != null ? _services[ p.Service ] : null;

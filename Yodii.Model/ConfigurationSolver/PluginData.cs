@@ -11,9 +11,27 @@ namespace Yodii.Model.ConfigurationSolver
     partial class PluginData
     {
         readonly Dictionary<IServiceInfo,ServiceData> _allServices;
-        PluginDisabledReason _configurationDisabledReason;
-        RunningRequirement _configurationRunningRequirement;
-        PluginRunningRequirementReason _configurationRunningRequirementReason;
+        PluginDisabledReason _configDisabledReason;
+        RunningRequirement _configSolvedStatus;
+        PluginRunningRequirementReason _configSolvedStatusReason;
+
+        public readonly IPluginInfo PluginInfo;
+
+        /// <summary>
+        /// The ServiceData if this plugin implements a Service, Null otherwise.
+        /// </summary>
+        public readonly ServiceData Service;
+
+        /// <summary>
+        /// Link to the next element in the list of sibling PluginData that implement the same Service.
+        /// </summary>
+        public PluginData NextPluginForService;
+
+        /// <summary>
+        /// The original, configured, ConfigurationStatus of the plugin itself.
+        /// </summary>
+        public readonly ConfigurationStatus ConfigOriginalStatus;
+
 
         internal static readonly PluginData[] EmptyArray = new PluginData[0];
 
@@ -22,23 +40,23 @@ namespace Yodii.Model.ConfigurationSolver
             _allServices = allServices;
             PluginInfo = p;
             // Updates disabled state first so that AddPlugin can take disabled state into account.
-            if( (PluginStatus = pluginStatus) == ConfigurationStatus.Disable )
+            if( (ConfigOriginalStatus = pluginStatus) == ConfigurationStatus.Disable )
             {
-                _configurationDisabledReason = PluginDisabledReason.Config;
+                _configDisabledReason = PluginDisabledReason.Config;
             }
             else if( p.HasError )
             {
-                _configurationDisabledReason = PluginDisabledReason.PluginInfoHasError;
+                _configDisabledReason = PluginDisabledReason.PluginInfoHasError;
             }
             else if( service != null )
             {
                 if( service.Disabled )
                 {
-                    _configurationDisabledReason = PluginDisabledReason.ServiceIsDisabled;
+                    _configDisabledReason = PluginDisabledReason.ServiceIsDisabled;
                 }
                 else if( service.MustExistSpecialization != null && service.MustExistSpecialization != service )
                 {
-                    _configurationDisabledReason = PluginDisabledReason.ServiceSpecializationMustExist;
+                    _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustExist;
                 }
             }
             if( !Disabled )
@@ -67,8 +85,14 @@ namespace Yodii.Model.ConfigurationSolver
                 }
             }
             // Updates RunningRequirement so that AddPlugin can take MustExist into account.
-            _configurationRunningRequirementReason = PluginRunningRequirementReason.Config;
-            if( !Disabled ) _configurationRunningRequirement = (RunningRequirement)pluginStatus;
+            _configSolvedStatusReason = PluginRunningRequirementReason.Config;
+            if ( !Disabled )
+            {
+                Debug.Assert( (int)RunningRequirement.Optional == (int)ConfigurationStatus.Optional );
+                Debug.Assert( (int)RunningRequirement.Runnable == (int)ConfigurationStatus.Runnable );
+                Debug.Assert( (int)RunningRequirement.Running == (int)ConfigurationStatus.Running );
+                _configSolvedStatus = (RunningRequirement)pluginStatus;
+            }
             if( service != null )
             {
                 service.AddPlugin( this );
@@ -78,46 +102,31 @@ namespace Yodii.Model.ConfigurationSolver
             }
         }
 
-        public readonly IPluginInfo PluginInfo;
-
-        /// <summary>
-        /// The ServiceData if this plugin implements a Service, Null otherwise.
-        /// </summary>
-        public readonly ServiceData Service;
-
-        /// <summary>
-        /// The ConfigurationStatus of the plugin itself.
-        /// </summary>
-        public readonly ConfigurationStatus PluginStatus;
-
         /// <summary>
         /// Gets whether this plugin must exist or run. It is initialized by the configuration, but may evolve
         /// if this plugin implements a service.
+        /// This is the minimal requirement after having propagated the constraints through the graph.
         /// </summary>
-        public RunningRequirement MinimalRunningRequirement
+        public RunningRequirement ConfigSolvedStatus
         {
-            get { return _configurationRunningRequirement; }
+            get { return _configSolvedStatus; }
         }
 
         /// <summary>
-        /// Gets the strongest reason that explains this plugin MinimalRunningRequirement. 
+        /// Gets the strongest reason that explains this plugin ConfigSolvedStatus. 
         /// </summary>
-        public PluginRunningRequirementReason MinimalRunningRequirementReason
+        public PluginRunningRequirementReason ConfigSolvedStatusReason
         {
-            get { return _configurationRunningRequirementReason; }
+            get { return _configSolvedStatusReason; }
         }
         
         /// <summary>
-        /// Link to the next element in the list of sibling PluginData that implement the same Service.
-        /// </summary>
-        public PluginData NextPluginForService;
-
-        /// <summary>
-        /// Gets whether this plugin is disabled. 
+        /// Gets whether this plugin is disabled.
+        /// This is a solved configuration information.
         /// </summary>
         public bool Disabled
         {
-            get { return _configurationDisabledReason != PluginDisabledReason.None; }
+            get { return _configDisabledReason != PluginDisabledReason.None; }
         }
 
         /// <summary>
@@ -125,14 +134,14 @@ namespace Yodii.Model.ConfigurationSolver
         /// </summary>
         public PluginDisabledReason DisabledReason
         {
-            get { return _configurationDisabledReason; }
+            get { return _configDisabledReason; }
         }
 
         internal void SetDisabled( PluginDisabledReason r )
         {
             Debug.Assert( r != PluginDisabledReason.None );
-            Debug.Assert( _configurationDisabledReason == PluginDisabledReason.None );
-            _configurationDisabledReason = r;
+            Debug.Assert( _configDisabledReason == PluginDisabledReason.None );
+            _configDisabledReason = r;
             if( Service != null ) Service.OnPluginDisabled( this );
         }
 
@@ -144,17 +153,17 @@ namespace Yodii.Model.ConfigurationSolver
         /// </summary>
         internal bool SetRunningRequirement( RunningRequirement r, PluginRunningRequirementReason reason )
         {
-            if( r <= _configurationRunningRequirement )
+            if( r <= _configSolvedStatus )
             {
                 if( r >= RunningRequirement.Runnable) return !Disabled;
                 return true;
             }
             // New requirement is stronger than the previous one.
-            _configurationRunningRequirement = r;
+            _configSolvedStatus = r;
             // Is it compliant with a Disabled plugin? If yes, it is always satisfied.
             if( r < RunningRequirement.Runnable )
             {
-                _configurationRunningRequirementReason = reason;
+                _configSolvedStatusReason = reason;
                 // The new requirement is OptionalTryStart. This can always be satisfied.
                 return true;
             }
@@ -162,7 +171,7 @@ namespace Yodii.Model.ConfigurationSolver
             // If this is already disabled, there is nothing to do.
             if( Disabled ) return false;
 
-            _configurationRunningRequirementReason = reason;
+            _configSolvedStatusReason = reason;
 
             // We are always called by our service: it is useless to upgrade the running
             // requirement of our service here: once the plugin is created, its MustExist configuration
@@ -178,11 +187,11 @@ namespace Yodii.Model.ConfigurationSolver
         /// <returns></returns>
         internal bool CheckReferencesWhenMustExist()
         {
-            Debug.Assert( !Disabled && _configurationRunningRequirement >= RunningRequirement.Runnable );
+            Debug.Assert( !Disabled && _configSolvedStatus >= RunningRequirement.Runnable );
             foreach( var sRef in PluginInfo.ServiceReferences )
             {
                 RunningRequirement propagation = sRef.Requirement;
-                if( _configurationRunningRequirement < propagation ) propagation = _configurationRunningRequirement;
+                if( _configSolvedStatus < propagation ) propagation = _configSolvedStatus;
 
                 ServiceData sr = _allServices[sRef.Reference];
                 if( !sr.SetRunningRequirement( propagation, ServiceRunningRequirementReason.FromMustExistReference ) )
@@ -197,7 +206,7 @@ namespace Yodii.Model.ConfigurationSolver
         public override string ToString()
         //_status is obtained through the PluginData.Dynamic partial class
         {
-            return String.Format( "{0} - {1} - {2} => (Dynamic: {3})", PluginInfo.PluginFullName, Disabled ? DisabledReason.ToString() : "!Disabled", MinimalRunningRequirement, _status );
+            return String.Format( "{0} - {1} - {2} => (Dynamic: {3})", PluginInfo.PluginFullName, Disabled ? DisabledReason.ToString() : "!Disabled", ConfigSolvedStatus, _dynamicStatus );
         }
 
     }

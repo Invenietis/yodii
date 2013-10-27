@@ -36,7 +36,7 @@ namespace Yodii.Model.ConfigurationSolver
         {
             Debug.Assert( !Disabled );
             _mustExistService = GetMustExistService();
-            if( _mustExistService == null && ServiceStatus >= ConfigurationStatus.Runnable ) _mustExistService = this;
+            if( _mustExistService == null && ConfigOriginalStatus >= ConfigurationStatus.Runnable ) _mustExistService = this;
         }
 
         internal override void OnAllPluginsAdded()
@@ -70,7 +70,7 @@ namespace Yodii.Model.ConfigurationSolver
         internal void SetMustExistPluginByConfig( PluginData p )
         {
             Debug.Assert( !Disabled );
-            Debug.Assert( p.MinimalRunningRequirement >= RunningRequirement.Runnable );
+            Debug.Assert( p.ConfigSolvedStatus >= RunningRequirement.Runnable );
             Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData ctor, Service is not yet set." );
             if( _mustExistPluginByConfig == null )
             {

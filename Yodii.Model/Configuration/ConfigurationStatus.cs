@@ -8,12 +8,12 @@ namespace Yodii.Model
 {
     public enum ConfigurationStatus
     {
-        Optional,
+        Disable = -1,
 
-        Disable,
+        Optional = 0,
 
-        Runnable,
+        Runnable = 4,
 
-        Running
+        Running = 6
     }
 }

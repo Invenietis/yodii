@@ -51,7 +51,6 @@
     <Compile Include="ConfigurationSolver\PluginData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\PluginDisabledReason.cs" />
     <Compile Include="ConfigurationSolver\PluginRunningRequirementReason.cs" />
-    <Compile Include="ConfigurationSolver\PluginServiceRelation.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.StaticPropagation.cs" />

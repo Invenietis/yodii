@@ -87,7 +87,7 @@ namespace Yodii.Model.ConfigurationSolver
             ServiceData s = _firstRunnableService;
             do
             {
-                if( s._status != RunningStatus.RunningLocked ) s._status = RunningStatus.Stopped;
+                if( s.Status != RunningStatus.RunningLocked ) s.Status = RunningStatus.Stopped;
                 s = s._nextRunnableService;
             }
             while( s != null );
@@ -98,9 +98,9 @@ namespace Yodii.Model.ConfigurationSolver
                 {
                     p.SetStatusFromService( RunningStatus.Running );
                     ServiceData started = p.Service;
-                    while( started != null && started._status == RunningStatus.Stopped )
+                    while( started != null && started._dynamicStatus == RunningStatus.Stopped )
                     {
-                        started._status = RunningStatus.Running;
+                        started._dynamicStatus = RunningStatus.Running;
                         started = started.Generalization;
                     }
                 }
