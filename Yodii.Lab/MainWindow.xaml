@@ -43,25 +43,137 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="5*" />
-                <RowDefinition Height="3" />
+                <RowDefinition Height="3pt" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5*" />
-                <ColumnDefinition Width="3" />
+                <ColumnDefinition Width="3pt" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
+            
             <!-- Graph viewer -->
             <WpfExtensions:ZoomControl
                 Grid.Column="0" Grid.Row="0"
                 Zoom="0.2"
                 ZoomBoxOpacity="0.5" Background="#ff656565">
-                <local:YodiiGraphLayout x:Name="graphLayout" Margin="10"
+                
+                <local:YodiiGraphLayout x:Name="graphLayout" Margin="10pt"
                     Graph="{Binding Path=Graph}"
                     LayoutAlgorithmType="{Binding Path=LayoutAlgorithmType, Mode=OneWay}"
                     OverlapRemovalAlgorithmType="FSA"
                     GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
                     HighlightAlgorithmType="Simple">
+                    
+                    <local:YodiiGraphLayout.Resources>
+                        <!-- Vertex view structure/data -->
+                        <DataTemplate x:Key="YodiiVertexTemplate" DataType="{x:Type local:YodiiGraphVertex}">
+                            <ContentControl FontSize="10pt"
+                                Foreground="White"
+                                FontFamily="Segoe UI">
+                                    <StackPanel Orientation="Vertical" Margin="1pt">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image x:Name="VertexIcon" Source="" Height="12pt" Margin="0,0,3pt,0" />
+                                            <TextBlock x:Name="VertexTitle" Text="{Binding Path=Title, Mode=OneWay}" FontSize="12pt"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Height="10pt" Width="10pt">
+                                            <Path Width="10pt" Height="7pt" Stretch="Uniform" Fill="Black" Data="M 0,0 L 2.5,1.5 L 0,3" />
+                                        </Button>
+                                        <TextBlock Margin="3pt,0,0,0" x:Name="IsStartedText" Text="Stopped" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ContentControl>
+                            
+                            <DataTemplate.Triggers>
+                                <!-- Bold title on highlight -->
+                                <DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
+                                    <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
+                                </DataTrigger>
+                                
+                                <!-- Service styling -->
+                                <DataTrigger Binding="{Binding Path=IsService, Mode=OneWay}" Value="true">
+                                    <Setter TargetName="VertexIcon" Property="Source" Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
+                                </DataTrigger>
+                                <!-- Plugin styling -->
+                                <DataTrigger Binding="{Binding Path=IsPlugin, Mode=OneWay}" Value="true">
+                                    <Setter TargetName="VertexIcon" Property="Source" Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
+                                </DataTrigger>
+
+                                <!-- IsStarted text -->
+                                <DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
+                                    <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="false">
+                                    <Setter TargetName="IsStartedText" Property="Text" Value="Stopped" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                            
+                        </DataTemplate>
+                        
+                        <!-- Vertex styling -->
+
+                        <!-- Vertex style -->
+                        <Style TargetType="{x:Type GraphSharp:VertexControl}">
+                            <Style.Resources>
+                                <!-- Mouse tooltip -->
+                                <ToolTip x:Key="VertexToolTipContent">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" />
+                                    </StackPanel>
+                                </ToolTip>
+                            </Style.Resources>
+                            <Setter Property="ToolTip" Value="{StaticResource VertexToolTipContent}" />
+                            
+                            <!-- Global vertex template -->
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GraphSharp:VertexControl}">
+                                        <Border x:Name="VertexBorder"
+                                            BorderBrush="Black"
+                                            Background="Black"
+                                            BorderThickness="1"
+                                            CornerRadius="0,0,0,0"
+                                            Padding="5">
+                                            
+                                            <ContentPresenter Content="{TemplateBinding Vertex}"
+                                               ContentTemplate="{StaticResource YodiiVertexTemplate}" />
+
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="3" Color="Gray"
+                                                    Opacity="0.3" Direction="300" />
+                                            </Border.Effect>
+                                        </Border>
+                                        
+                                        <!-- Conditional vertex template -->
+                                        <ControlTemplate.Triggers>
+                                            <!-- Service styling -->
+                                            <DataTrigger Binding="{Binding Path=IsService, Mode=OneWay}" Value="true">
+                                                <Setter TargetName="VertexBorder" Property="BorderBrush" Value="Red" />
+                                            </DataTrigger>
+                                            <!-- Plugin styling -->
+                                            <DataTrigger Binding="{Binding Path=IsPlugin, Mode=OneWay}" Value="true">
+                                                <Setter TargetName="VertexBorder" Property="BorderBrush" Value="Blue" />
+                                            </DataTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                        <!-- Global edge style -->
+                        <Style TargetType="{x:Type GraphSharp:EdgeControl}">
+                            <Style.Resources>
+                                <ToolTip x:Key="ToolTipContent">
+                                    <StackPanel>
+                                        <!-- TODO -->
+                                        <TextBlock Text="{Binding Description}" />
+                                    </StackPanel>
+                                </ToolTip>
+                            </Style.Resources>
+                            <Setter Property="ToolTip" Value="{StaticResource ToolTipContent}" />
+                        </Style>
+                    </local:YodiiGraphLayout.Resources>
                 </local:YodiiGraphLayout>
             </WpfExtensions:ZoomControl>
 
@@ -86,6 +198,8 @@
             </Border>
         </Grid>
     </DockPanel>
+    <Fluent:RibbonWindow.Resources>
+    </Fluent:RibbonWindow.Resources>
 </Fluent:RibbonWindow>
 
 

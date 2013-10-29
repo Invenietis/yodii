@@ -13,8 +13,8 @@ namespace Yodii.Lab
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        YodiiGraph _graph;
-        ServiceInfoManager _serviceManager;
+        readonly YodiiGraph _graph;
+        readonly ServiceInfoManager _serviceManager;
 
         bool _isLive;
 

@@ -26,5 +26,9 @@ namespace Yodii.Lab
 
         public RunningRequirement ReferenceRequirement { get { return _referenceRequirement; } }
         public YodiiGraphEdgeType Type { get { return _type; } }
+
+        public bool IsSpecialization { get { return Type == YodiiGraphEdgeType.Specialization; } }
+        public bool IsImplementation { get { return Type == YodiiGraphEdgeType.Implementation; } }
+        public bool IsServiceReference { get { return Type == YodiiGraphEdgeType.ServiceReference; } }
     }
 }
