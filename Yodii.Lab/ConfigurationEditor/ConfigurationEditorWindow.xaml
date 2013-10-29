@@ -1,0 +1,86 @@
+﻿<Window x:Class="Yodii.Lab.ConfigurationEditor.ConfigurationEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+        xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Title="Configuration editor" Height="500" Width="600">
+    <Window.Resources>
+
+        <ObjectDataProvider MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}"
+                        x:Key="ConfigurationStatusValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="ym:ConfigurationStatus" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <DataTemplate DataType="{x:Type ym:ConfigurationLayer}">
+            <Border Margin="3" Padding="5" Background="LightGray">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteLayerButton_Click">-</Button>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Text" Value="{Binding LayerName}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=LayerName.Length, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                            <Setter Property="Text" Value="(Unnamed layer)"/>
+                                            <Setter Property="Foreground" Value="Gray" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Path=Items}">
+                    </ItemsControl>
+                    <!-- New item -->
+                    <DockPanel Margin="0,3">
+
+                        <Button DockPanel.Dock="Right" Width="15pt" Click="NewConfigurationItemButton_Click">+</Button>
+                        <ComboBox x:Name="NewConfigurationStatusValue"  DockPanel.Dock="Right"
+                              ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+                              SelectedIndex="0"
+                              Width="70pt"/>
+
+                        <!--<TextBox x:Name="NewPluginOrServiceId" Text=""/>-->
+                        <xctk:WatermarkTextBox x:Name="NewPluginOrServiceId" Watermark="Service name/Plugin ID" />
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type ym:ConfigurationItem}">
+            <DockPanel Margin="0,3">
+
+                <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteConfigurationItemButton_Click">-</Button>
+                <ComboBox x:Name="ConfigurationStatusValues"  DockPanel.Dock="Right"
+                              ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+                              SelectedItem="{Binding Path=Status, Mode=OneWay}"
+                              SelectionChanged="ConfigurationStatusValues_SelectionChanged"
+                              Width="70pt"/>
+
+                <TextBox Text="{Binding Path=ServiceOrPluginId, Mode=OneWay}" IsEnabled="False" />
+            </DockPanel>
+        </DataTemplate>
+
+    </Window.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <ItemsControl Width="Auto" ItemsSource="{Binding Path=ConfigurationManager.Layers}">
+
+            </ItemsControl>
+
+
+            <Border Margin="3" Padding="5" Background="LightGray">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Width="15pt" Click="NewLayerButton_Click">+</Button>
+                    <!--<TextBox Name="NewLayerName" />-->
+                    <xctk:WatermarkTextBox x:Name="NewLayerName" Watermark="Layer name (optional)" />
+                </DockPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

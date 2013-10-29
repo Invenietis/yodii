@@ -8,6 +8,9 @@ using Fluent;
 using Yodii.Model.CoreModel;
 using System.Timers;
 using System.Threading;
+using Yodii.Model;
+using System.Diagnostics;
+using Yodii.Lab.ConfigurationEditor;
 
 namespace Yodii.Lab
 {
@@ -17,13 +20,13 @@ namespace Yodii.Lab
     public partial class MainWindow : RibbonWindow
     {
         readonly MainWindowViewModel _vm;
+        ConfigurationEditorWindow _activeConfEditorWindow = null;
 
         public MainWindow()
         {
             _vm = new MainWindowViewModel();
             this.DataContext = _vm;
 
-            InitializeComponent();
 
             /**
              * Graph display example.
@@ -38,6 +41,20 @@ namespace Yodii.Lab
             IPluginInfo pluginB1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.B1", serviceB );
             IPluginInfo pluginAx1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
 
+            /** Manager example. **/
+            ConfigurationLayer baseLayer = new ConfigurationLayer("Base layer");
+            baseLayer.Items.Add("Service.A", ConfigurationStatus.Running);
+            baseLayer.Items.Add("Service.B", ConfigurationStatus.Runnable);
+            bool result = _vm.ConfigurationManager.Layers.Add(baseLayer);
+            Debug.Assert( result == true );
+
+            ConfigurationLayer secondaryLayer = new ConfigurationLayer();
+            secondaryLayer.Items.Add(pluginB1.PluginId.ToString(), ConfigurationStatus.Disable);
+            result = _vm.ConfigurationManager.Layers.Add(secondaryLayer);
+            Debug.Assert(result == true);
+
+            InitializeComponent();
+
             // Reorder graph after 2 sec.
             Task.Factory.StartNew(new Action(() =>
             {
@@ -49,6 +66,21 @@ namespace Yodii.Lab
         private void setLayout()
         {
             this.graphLayout.LayoutAlgorithmType = "ISOM";
+        }
+
+        private void ConfEditorButton_Click(object sender, RoutedEventArgs e)
+        {
+            if( _activeConfEditorWindow != null )
+            {
+                _activeConfEditorWindow.Activate();
+            }
+            else
+            {
+                _activeConfEditorWindow = new ConfigurationEditorWindow(_vm.ConfigurationManager);
+                _activeConfEditorWindow.Closing += (s, e2) => { _activeConfEditorWindow = null; };
+
+                _activeConfEditorWindow.Show();
+            }
         }
     }
 }

@@ -5,6 +5,7 @@
         xmlns:GraphSharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
         xmlns:WpfExtensions="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
         xmlns:local="clr-namespace:Yodii.Lab"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Title="Yodii Lab" Height="600" Width="800">
     <DockPanel>
         <Fluent:Ribbon DockPanel.Dock="Top">
@@ -29,6 +30,9 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button Header="Delete" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png" />
                 </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox>
+                    <Fluent:Button Header="Configuration editor" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png" Click="ConfEditorButton_Click" />
+                </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
             <!--Contextual Tabs-->
             <Fluent:RibbonTabItem Header="Configuration" />
@@ -51,30 +55,32 @@
                 <ColumnDefinition Width="3pt" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            
+
             <!-- Graph viewer -->
-            <WpfExtensions:ZoomControl
+            <xctk:Zoombox Grid.Column="0" Grid.Row="0" >
+                <!--<WpfExtensions:ZoomControl
                 Grid.Column="0" Grid.Row="0"
                 Zoom="0.2"
-                ZoomBoxOpacity="0.5" Background="#ff656565">
-                
+                ZoomBoxOpacity="0.5" Background="#ff656565">-->
+
                 <local:YodiiGraphLayout x:Name="graphLayout" Margin="10pt"
                     Graph="{Binding Path=Graph}"
                     LayoutAlgorithmType="{Binding Path=LayoutAlgorithmType, Mode=OneWay}"
                     OverlapRemovalAlgorithmType="FSA"
                     GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
-                    HighlightAlgorithmType="Simple">
-                    
+                    HighlightAlgorithmType="Simple"
+                                    MaxHeight="2000" MaxWidth="2000">
+
                     <local:YodiiGraphLayout.Resources>
                         <!-- Vertex view structure/data -->
                         <DataTemplate x:Key="YodiiVertexTemplate" DataType="{x:Type local:YodiiGraphVertex}">
                             <ContentControl FontSize="10pt"
                                 Foreground="White"
                                 FontFamily="Segoe UI">
-                                    <StackPanel Orientation="Vertical" Margin="1pt">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image x:Name="VertexIcon" Source="" Height="12pt" Margin="0,0,3pt,0" />
-                                            <TextBlock x:Name="VertexTitle" Text="{Binding Path=Title, Mode=OneWay}" FontSize="12pt"/>
+                                <StackPanel Orientation="Vertical" Margin="1pt">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image x:Name="VertexIcon" Source="" Height="12pt" Margin="0,0,3pt,0" />
+                                        <TextBlock x:Name="VertexTitle" Text="{Binding Path=Title, Mode=OneWay}" FontSize="12pt"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <Button Height="10pt" Width="10pt">
@@ -84,13 +90,13 @@
                                     </StackPanel>
                                 </StackPanel>
                             </ContentControl>
-                            
+
                             <DataTemplate.Triggers>
                                 <!-- Bold title on highlight -->
                                 <DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
                                 </DataTrigger>
-                                
+
                                 <!-- Service styling -->
                                 <DataTrigger Binding="{Binding Path=IsService, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexIcon" Property="Source" Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
@@ -108,9 +114,9 @@
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Stopped" />
                                 </DataTrigger>
                             </DataTemplate.Triggers>
-                            
+
                         </DataTemplate>
-                        
+
                         <!-- Vertex styling -->
 
                         <!-- Vertex style -->
@@ -124,7 +130,7 @@
                                 </ToolTip>
                             </Style.Resources>
                             <Setter Property="ToolTip" Value="{StaticResource VertexToolTipContent}" />
-                            
+
                             <!-- Global vertex template -->
                             <Setter Property="Template">
                                 <Setter.Value>
@@ -135,7 +141,7 @@
                                             BorderThickness="1"
                                             CornerRadius="0,0,0,0"
                                             Padding="5">
-                                            
+
                                             <ContentPresenter Content="{TemplateBinding Vertex}"
                                                ContentTemplate="{StaticResource YodiiVertexTemplate}" />
 
@@ -144,7 +150,7 @@
                                                     Opacity="0.3" Direction="300" />
                                             </Border.Effect>
                                         </Border>
-                                        
+
                                         <!-- Conditional vertex template -->
                                         <ControlTemplate.Triggers>
                                             <!-- Service styling -->
@@ -175,7 +181,8 @@
                         </Style>
                     </local:YodiiGraphLayout.Resources>
                 </local:YodiiGraphLayout>
-            </WpfExtensions:ZoomControl>
+                <!--</WpfExtensions:ZoomControl>-->
+            </xctk:Zoombox>
 
             <!-- Right panel -->
             <GridSplitter ResizeDirection="Columns"
@@ -186,7 +193,7 @@
                     <TextBlock>Right panel</TextBlock>
                 </StackPanel>
             </Border>
-            
+
             <!-- Bottom panel -->
             <GridSplitter ResizeDirection="Rows"
                           Grid.Row="1" Grid.Column="0"

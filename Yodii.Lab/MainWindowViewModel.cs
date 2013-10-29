@@ -15,12 +15,14 @@ namespace Yodii.Lab
     {
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceManager;
+        readonly ConfigurationManager _configurationManager;
 
         bool _isLive;
 
         #region Constructor
         public MainWindowViewModel()
         {
+            _configurationManager = new ConfigurationManager();
             _serviceManager = new ServiceInfoManager();
             _graph = new YodiiGraph( _serviceManager.ServiceInfos, _serviceManager.PluginInfos );
         }
@@ -63,6 +65,17 @@ namespace Yodii.Lab
             get
             {
                 return _graph;
+            }
+        }
+
+        /// <summary>
+        /// The Yodii ConfigurationManager linked to this Lab.
+        /// </summary>
+        public ConfigurationManager ConfigurationManager
+        {
+            get
+            {
+                return _configurationManager;
             }
         }
         #endregion Properties
