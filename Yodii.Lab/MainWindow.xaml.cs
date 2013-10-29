@@ -41,21 +41,10 @@ namespace Yodii.Lab
             IPluginInfo pluginB1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.B1", serviceB );
             IPluginInfo pluginAx1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
 
-            /** Manager example. **/
-            ConfigurationLayer baseLayer = new ConfigurationLayer("Base layer");
-            baseLayer.Items.Add("Service.A", ConfigurationStatus.Running);
-            baseLayer.Items.Add("Service.B", ConfigurationStatus.Runnable);
-            bool result = _vm.ConfigurationManager.Layers.Add(baseLayer);
-            Debug.Assert( result == true );
-
-            ConfigurationLayer secondaryLayer = new ConfigurationLayer();
-            secondaryLayer.Items.Add(pluginB1.PluginId.ToString(), ConfigurationStatus.Disable);
-            result = _vm.ConfigurationManager.Layers.Add(secondaryLayer);
-            Debug.Assert(result == true);
-
             InitializeComponent();
 
             // Reorder graph after 2 sec.
+            // TODO
             Task.Factory.StartNew(new Action(() =>
             {
                 Thread.Sleep(2000);

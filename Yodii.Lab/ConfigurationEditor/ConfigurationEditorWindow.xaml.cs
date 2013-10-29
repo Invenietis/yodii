@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 using Yodii.Model;
 
 namespace Yodii.Lab.ConfigurationEditor
@@ -41,12 +30,6 @@ namespace Yodii.Lab.ConfigurationEditor
             this.DataContext = this;
 
             InitializeComponent();
-
-            _configurationManager.ConfigurationChanging += (s, e) =>
-            {
-                // TODO
-                //e.Cancel("Test");
-            };
         }
         #endregion Constructor
 
@@ -79,10 +62,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 // Now we can change it.
                 var statusChangeResult = item.SetStatus(newStatus, "ConfigurationEditor");
 
-                if (statusChangeResult.IsSuccessful)
-                {
-                }
-                else
+                if (!statusChangeResult.IsSuccessful)
                 {
                     System.Windows.MessageBox.Show(
                         String.Format("Couldn't change status to {0}:\n{1}", newStatus, String.Join("; ", statusChangeResult.FailureCauses))
@@ -109,10 +89,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
             var deleteItemResult = item.Layer.Items.Remove(item.ServiceOrPluginId);
 
-            if (deleteItemResult.IsSuccessful)
-            {
-            }
-            else
+            if (!deleteItemResult.IsSuccessful)
             {
                 System.Windows.MessageBox.Show(
                     String.Format("Couldn't remove {0} from layer:\n{1}", item.ServiceOrPluginId, String.Join("; ", deleteItemResult.FailureCauses))
@@ -150,10 +127,7 @@ namespace Yodii.Lab.ConfigurationEditor
             isResettingSelection = true; // Won't try to update selection on true (or causes reentrancy)
             var addItemResult = layer.Items.Add(newItemId, newStatus, "ConfigurationEditor");
 
-            if (addItemResult.IsSuccessful)
-            {
-            }
-            else
+            if (!addItemResult.IsSuccessful)
             {
                 System.Windows.MessageBox.Show(
                     String.Format("Couldn't add new item {0} to layer:\n{1}", newItemId, String.Join("; ", addItemResult.FailureCauses))
@@ -177,11 +151,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
             var layerAddResult = _configurationManager.Layers.Add(newLayer);
 
-            if (layerAddResult.IsSuccessful)
-            {
-
-            }
-            else
+            if (!layerAddResult.IsSuccessful)
             {
                 System.Windows.MessageBox.Show(
                     String.Format("Couldn't add a new layer:\n{0}", String.Join("; ", layerAddResult.FailureCauses))
@@ -204,10 +174,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
             var deleteLayerResult = _configurationManager.Layers.Remove(layer);
 
-            if (deleteLayerResult.IsSuccessful)
-            {
-            }
-            else
+            if (!deleteLayerResult.IsSuccessful)
             {
                 System.Windows.MessageBox.Show(
                     String.Format("Couldn't remove layer:\n{0}", String.Join("; ", deleteLayerResult.FailureCauses))
