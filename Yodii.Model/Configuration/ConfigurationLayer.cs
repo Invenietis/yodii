@@ -63,7 +63,11 @@ namespace Yodii.Model
         public ConfigurationManager ConfigurationManager
         {
             get { return _owner; }
-            internal set { _owner = value; }
+            internal set 
+            { 
+                _owner = value;
+                NotifyPropertyChanged();
+            }
         }
 
         #endregion properties
@@ -168,6 +172,7 @@ namespace Yodii.Model
                         _layer._owner.OnConfigurationChanged();
                         return result;
                     }
+                    return result;
                 }
                 return new ConfigurationResult("Item not found");
             }
