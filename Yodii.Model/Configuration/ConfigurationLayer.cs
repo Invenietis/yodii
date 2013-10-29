@@ -12,7 +12,6 @@ using System.Diagnostics;
 
 namespace Yodii.Model
 {
-    //ToDo : removeItem, Obersable, ienumerable, 
     public class ConfigurationLayer : INotifyPropertyChanged
     {
         #region fields
@@ -117,14 +116,14 @@ namespace Yodii.Model
                 FirePropertyChanged( e );
             }
 
-            public ConfigurationResult Add( string serviceOrPluginId, ConfigurationStatus status )
+            public ConfigurationResult Add( string serviceOrPluginId, ConfigurationStatus status, string statusReason = "" )
             {
                 if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
 
                 ConfigurationItem existing = _items.GetByKey( serviceOrPluginId );
                 if( existing != null ) return existing.SetStatus( status );
 
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginId, status );
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginId, status, statusReason );
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );
@@ -170,7 +169,7 @@ namespace Yodii.Model
                         return result;
                     }
                 }
-                return new ConfigurationResult("item not found");
+                return new ConfigurationResult("Item not found");
             }
 
             public ConfigurationItem this[string key]
