@@ -11,6 +11,7 @@ namespace Yodii.Model
     public class FinalConfiguration
     {
         readonly CKSortedArrayKeyList<FinalConfigurationItem, string> _items;
+        private Dictionary<string, ConfigurationStatus> finalStatus;
 
         public IReadOnlyList<FinalConfigurationItem> Items
         {

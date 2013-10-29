@@ -46,6 +46,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationManagerTests.cs" />
+    <Compile Include="ConfigurationSolverTests\ConfigurationSolver.Static.cs" />
     <Compile Include="MockInfoTests.cs" />
     <Compile Include="Mocks\AssemblyInfoHelper.cs" />
     <Compile Include="Mocks\MockAssemblyInfo.cs" />

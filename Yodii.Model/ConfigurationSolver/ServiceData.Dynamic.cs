@@ -11,6 +11,6 @@ namespace Yodii.Model.ConfigurationSolver
     {
         RunningStatus? _dynamicStatus;
 
-        public RunningStatus? Status { get { return _dynamicStatus; } set; }
+        public RunningStatus? Status { get { return _dynamicStatus; } set { _dynamicStatus = value; } }
     }
 }

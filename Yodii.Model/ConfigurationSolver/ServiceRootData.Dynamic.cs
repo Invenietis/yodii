@@ -18,7 +18,7 @@ namespace Yodii.Model.ConfigurationSolver
         bool _finallyNotRunning;
 
 
-        public override PluginData RunningPlugin
+        public /*override*/ PluginData RunningPlugin
         {
             get { return _runningPlugin; }
         }
@@ -49,64 +49,64 @@ namespace Yodii.Model.ConfigurationSolver
         //    }
         //}
 
-        internal void AddRunnableService( ServiceData s )
-        {
-            if( _firstRunnableService == null ) _firstRunnableService = _lastRunnableService = s;
-            else
-            {
-                _lastRunnableService._nextRunnableService = s;
-                _lastRunnableService = s;
-            }
-        }
+        //internal void AddRunnableService( ServiceData s )
+        //{
+        //    if( _firstRunnableService == null ) _firstRunnableService = _lastRunnableService = s;
+        //    else
+        //    {
+        //        _lastRunnableService._nextRunnableService = s;
+        //        _lastRunnableService = s;
+        //    }
+        //}
 
-        private bool ThisMoveNext()
-        {
-            if( _runningPlugin == null ) _runningPlugin = _allRunnables[0];
-            else
-            {
-                int nextIndex = _runningPlugin.IndexInAllServiceRunnables + 1;
-                Debug.Assert( nextIndex <= _allRunnables.Length );
-                if( nextIndex == _allRunnables.Length )
-                {
-                    _runningPlugin = _finallyNotRunning ? null : _allRunnables[0];
-                }
-            }
-            UpdateStatusFromRunningPlugin();
-            if( ++_runningIndex == _runningCount )
-            {
-                _runningIndex = 0;
-                return false;
-            }
-            return true;
-        }
+        //private bool ThisMoveNext()
+        //{
+        //    if( _runningPlugin == null ) _runningPlugin = _allRunnables[0];
+        //    else
+        //    {
+        //        int nextIndex = _runningPlugin.IndexInAllServiceRunnables + 1;
+        //        Debug.Assert( nextIndex <= _allRunnables.Length );
+        //        if( nextIndex == _allRunnables.Length )
+        //        {
+        //            _runningPlugin = _finallyNotRunning ? null : _allRunnables[0];
+        //        }
+        //    }
+        //    UpdateStatusFromRunningPlugin();
+        //    if( ++_runningIndex == _runningCount )
+        //    {
+        //        _runningIndex = 0;
+        //        return false;
+        //    }
+        //    return true;
+        //}
 
-        private void UpdateStatusFromRunningPlugin()
-        {
-            //Debug.Assert( ServiceInfo.IsDynamicService );
-            // Mark all services as stopped if they are not RunningLocked.
-            ServiceData s = _firstRunnableService;
-            do
-            {
-                if( s.Status != RunningStatus.RunningLocked ) s.Status = RunningStatus.Stopped;
-                s = s._nextRunnableService;
-            }
-            while( s != null );
+        //private void UpdateStatusFromRunningPlugin()
+        //{
+        //    //Debug.Assert( ServiceInfo.IsDynamicService );
+        //    // Mark all services as stopped if they are not RunningLocked.
+        //    ServiceData s = _firstRunnableService;
+        //    do
+        //    {
+        //        if( s.Status != RunningStatus.RunningLocked ) s.Status = RunningStatus.Stopped;
+        //        s = s._nextRunnableService;
+        //    }
+        //    while( s != null );
 
-            foreach( PluginData p in _allRunnables )
-            {
-                if( p == _runningPlugin )
-                {
-                    p.SetStatusFromService( RunningStatus.Running );
-                    ServiceData started = p.Service;
-                    while( started != null && started._dynamicStatus == RunningStatus.Stopped )
-                    {
-                        started._dynamicStatus = RunningStatus.Running;
-                        started = started.Generalization;
-                    }
-                }
-                else p.SetStatusFromService( RunningStatus.Stopped );
-            }
+        //    foreach( PluginData p in _allRunnables )
+        //    {
+        //        if( p == _runningPlugin )
+        //        {
+        //            p.SetStatusFromService( RunningStatus.Running );
+        //            ServiceData started = p.Service;
+        //            while( started != null && started._dynamicStatus == RunningStatus.Stopped )
+        //            {
+        //                started._dynamicStatus = RunningStatus.Running;
+        //                started = started.Generalization;
+        //            }
+        //        }
+        //        else p.SetStatusFromService( RunningStatus.Stopped );
+        //    }
 
-        }
+        //}
     }
 }

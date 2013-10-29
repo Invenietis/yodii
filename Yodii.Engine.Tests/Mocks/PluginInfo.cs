@@ -16,6 +16,7 @@ namespace Yodii.Engine.Tests.Mocks
         readonly IAssemblyInfo _assemblyInfo;
         readonly List<IServiceReferenceInfo> _serviceReferences;
         readonly IServiceInfo _service;
+        bool _hasError = false; //Set true if an error occured with the discovery
 
         internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, IServiceInfo service = null )
         {
@@ -70,7 +71,7 @@ namespace Yodii.Engine.Tests.Mocks
 
         public bool HasError
         {
-            get { throw new NotImplementedException(); }
+            get { return _hasError; }
         }
 
         public string ErrorMessage

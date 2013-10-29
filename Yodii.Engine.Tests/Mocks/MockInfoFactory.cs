@@ -50,11 +50,12 @@ namespace Yodii.Engine.Tests.Mocks
 
             PluginInfo pluginA2 = new PluginInfo( Guid.NewGuid(), "PluginA-2", executingAssemblyInfo, serviceA );
             serviceA.BindPlugin( pluginA2 );
+
             IServiceReferenceInfo A2NeedsServiceBRunningReference = new MockServiceReferenceInfo( pluginA2, serviceB, RunningRequirement.Running );
             pluginA2.BindServiceRequirement( A2NeedsServiceBRunningReference );
 
             PluginInfo pluginAx1 = new PluginInfo( Guid.NewGuid(), "PluginAx-1", executingAssemblyInfo, serviceAx );
-            serviceA.BindPlugin( pluginAx1 );
+            serviceAx.BindPlugin( pluginAx1 );
 
             PluginInfo pluginB1 = new PluginInfo( Guid.NewGuid(), "PluginB-1", executingAssemblyInfo, serviceB );
             serviceB.BindPlugin( pluginB1 );

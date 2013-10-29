@@ -222,7 +222,8 @@ namespace Yodii.Model.ConfigurationSolver
 
             //Set default status
             ConfigurationStatus pluginStatus = ConfigurationStatus.Optional;
-            pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
+            //pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
+            pluginStatus = finalConfig.GetStatus( p.PluginFullName);
             ServiceData service = p.Service != null ? _services[ p.Service ] : null;
             data = new PluginData( _services, p, service, pluginStatus );
             _plugins.Add( p, data );
