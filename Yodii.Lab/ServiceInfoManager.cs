@@ -28,7 +28,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Services created in this Lab.
         /// </summary>
-        public ICKObservableReadOnlyCollection<IServiceInfo> ServiceInfos
+        public ICKObservableReadOnlyCollection<ServiceInfo> ServiceInfos
         {
             get { return _serviceInfos; }
         }
@@ -36,7 +36,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Plugins created in this Lab.
         /// </summary>
-        public ICKObservableReadOnlyCollection<IPluginInfo> PluginInfos
+        public ICKObservableReadOnlyCollection<PluginInfo> PluginInfos
         {
             get { return _pluginInfos; }
         }
@@ -65,7 +65,7 @@ namespace Yodii.Lab
         /// <param name="serviceName">Name of the new service</param>
         /// <param name="generalization">Specialized service</param>
         /// <returns>New service</returns>
-        internal ServiceInfo CreateNewService( string serviceName, IServiceInfo generalization )
+        internal ServiceInfo CreateNewService( string serviceName, ServiceInfo generalization )
         {
             Debug.Assert( serviceName != null );
             Debug.Assert( generalization != null );
@@ -101,19 +101,16 @@ namespace Yodii.Lab
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, IServiceInfo service )
+        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, ServiceInfo service )
         {
             Debug.Assert( pluginGuid != null );
             Debug.Assert( pluginName != null );
             Debug.Assert( service != null );
             Debug.Assert( ServiceInfos.Contains( service ) );
 
-            Debug.Assert( service is ServiceInfo );
-            ServiceInfo castService = service as ServiceInfo;
-
             PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
             _pluginInfos.Add( plugin );
-            castService.BindPlugin( plugin );
+            service.InternalImplementations.Add(plugin);
 
             return plugin;
         }
@@ -131,8 +128,8 @@ namespace Yodii.Lab
             Debug.Assert( ServiceInfos.Contains( service ) );
             Debug.Assert( PluginInfos.Contains( plugin ) );
 
-            IServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, RunningRequirement.Running );
-            plugin.BindServiceRequirement( reference );
+            MockServiceReferenceInfo reference = new MockServiceReferenceInfo(plugin, service, RunningRequirement.Running);
+            plugin.InternalServiceReferences.Add(reference);
         }
         #endregion Internal methods
 
@@ -156,9 +153,9 @@ namespace Yodii.Lab
 
             foreach( PluginInfo p in PluginInfos )
             {
-                foreach( IServiceReferenceInfo reference in p.ServiceReferences.Where( r => r.Reference == serviceInfo ).ToList() )
+                foreach (MockServiceReferenceInfo reference in p.InternalServiceReferences.Where(r => r.Reference == serviceInfo).ToList())
                 {
-                    p.RemoveServiceRequirement( reference );
+                    p.InternalServiceReferences.Remove(reference);
                 }
             }
 
@@ -169,7 +166,7 @@ namespace Yodii.Lab
         {
             if( pluginInfo.Service != null )
             {
-                ((ServiceInfo)pluginInfo.Service).RemovePlugin( pluginInfo );
+                pluginInfo.InternalService.InternalImplementations.Remove(pluginInfo);
             }
 
             _pluginInfos.Remove( pluginInfo );

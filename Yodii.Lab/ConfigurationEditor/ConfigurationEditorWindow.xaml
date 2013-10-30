@@ -16,7 +16,7 @@
         </ObjectDataProvider>
 
         <DataTemplate DataType="{x:Type ym:ConfigurationLayer}">
-            <Border Margin="3" Padding="5" Background="LightGray">
+            <Border Margin="3" Padding="5" Background="LightGray" x:Name="ConfigurationLayerBorder">
                 <StackPanel>
                     <DockPanel>
                         <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteLayerButton_Click">-</Button>
@@ -49,7 +49,37 @@
                         <xctk:WatermarkTextBox x:Name="NewPluginOrServiceId" Watermark="Service name/Plugin ID" />
                     </DockPanel>
                 </StackPanel>
+
+
+                <Border.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                    </TransformGroup>
+                </Border.RenderTransform>
+
             </Border>
+
+
+            <DataTemplate.Resources>
+                <Storyboard x:Key="ItemAnimation" AutoReverse="False">
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ConfigurationLayerBorder" Storyboard.TargetProperty="(UIElement.Opacity)">
+                        <EasingDoubleKeyFrame KeyTime="0" Value="0" />
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1" />
+                    </DoubleAnimationUsingKeyFrames>
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ConfigurationLayerBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
+                        <EasingDoubleKeyFrame KeyTime="0" Value="0" />
+                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1" />
+                    </DoubleAnimationUsingKeyFrames>
+                </Storyboard>
+            </DataTemplate.Resources>
+
+            <DataTemplate.Triggers>
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard Storyboard="{StaticResource ItemAnimation}" />
+                </EventTrigger>
+            </DataTemplate.Triggers>
+
+
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type ym:ConfigurationItem}">

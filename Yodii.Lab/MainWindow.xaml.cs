@@ -11,6 +11,7 @@ using System.Threading;
 using Yodii.Model;
 using System.Diagnostics;
 using Yodii.Lab.ConfigurationEditor;
+using Yodii.Lab.Mocks;
 
 namespace Yodii.Lab
 {

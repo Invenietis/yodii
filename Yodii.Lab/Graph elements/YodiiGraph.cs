@@ -70,7 +70,7 @@ namespace Yodii.Lab
                 this.AddEdge( refEdge );
             }
 
-            plugin.ObservableServiceReferences.CollectionChanged += ObservableServiceReferences_CollectionChanged;
+            plugin.InternalServiceReferences.CollectionChanged += ObservableServiceReferences_CollectionChanged;
 
             return pluginVertex;
         }
@@ -98,7 +98,7 @@ namespace Yodii.Lab
         {
             YodiiGraphVertex toRemove = Vertices.Where( v => v.PluginInfo == plugin ).FirstOrDefault();
 
-            plugin.ObservableServiceReferences.CollectionChanged -= ObservableServiceReferences_CollectionChanged;
+            plugin.InternalServiceReferences.CollectionChanged -= ObservableServiceReferences_CollectionChanged;
 
             if( toRemove != null )
             {

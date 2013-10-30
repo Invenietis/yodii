@@ -15,10 +15,10 @@ namespace Yodii.Lab.Mocks
         readonly Guid _guid;
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
-        readonly CKObservableSortedArrayList<IServiceReferenceInfo> _serviceReferences;
-        readonly IServiceInfo _service;
+        readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
+        readonly ServiceInfo _service;
 
-        internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, IServiceInfo service = null )
+        internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, ServiceInfo service = null )
         {
             Debug.Assert( guid != null );
             Debug.Assert( !String.IsNullOrEmpty( pluginFullName ) );
@@ -29,25 +29,17 @@ namespace Yodii.Lab.Mocks
             _assemblyInfo = assemblyInfo;
 
             _service = service;
-            _serviceReferences = new CKObservableSortedArrayList<IServiceReferenceInfo>();
+            _serviceReferences = new CKObservableSortedArrayList<MockServiceReferenceInfo>();
         }
 
-        internal void BindServiceRequirement( IServiceReferenceInfo reference )
-        {
-            Debug.Assert( !_serviceReferences.Contains( reference ) );
-            Debug.Assert( reference.Owner == this );
-
-            _serviceReferences.Add( reference );
-        }
-
-        internal void RemoveServiceRequirement( IServiceReferenceInfo reference )
-        {
-            _serviceReferences.Remove( reference );
-        }
-
-        internal ICKObservableReadOnlyCollection<IServiceReferenceInfo> ObservableServiceReferences
+        internal CKObservableSortedArrayList<MockServiceReferenceInfo> InternalServiceReferences
         {
             get { return _serviceReferences; }
+        }
+
+        internal ServiceInfo InternalService
+        {
+            get { return _service; }
         }
 
         #region IPluginInfo Members

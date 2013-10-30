@@ -8,6 +8,7 @@ using CK.Core;
 using Yodii.Model;
 using Yodii.Model.CoreModel;
 using Yodii.Model.ConfigurationSolver;
+using System.Collections;
 
 namespace Yodii.Lab.Mocks
 {
@@ -16,7 +17,7 @@ namespace Yodii.Lab.Mocks
         readonly string _serviceFullName;
         readonly IServiceInfo _generalization;
         readonly IAssemblyInfo _assemblyInfo;
-        readonly List<IPluginInfo> _implementations;
+        readonly CKObservableSortedArrayList<PluginInfo> _implementations;
 
         internal ServiceInfo( string serviceFullName, IAssemblyInfo assemblyInfo, IServiceInfo generalization = null )
         {
@@ -26,16 +27,15 @@ namespace Yodii.Lab.Mocks
             _serviceFullName = serviceFullName;
             _assemblyInfo = assemblyInfo;
             _generalization = generalization;
-            _implementations = new List<IPluginInfo>();
+            _implementations = new CKObservableSortedArrayList<PluginInfo>((a, b) => CaseInsensitiveComparer.Default.Compare(a.PluginFullName, b.PluginFullName), false);
         }
 
-        internal void BindPlugin( IPluginInfo plugin )
+        internal CKObservableSortedArrayList<PluginInfo> InternalImplementations
         {
-            Debug.Assert( plugin != null );
-            Debug.Assert( plugin.Service == this );
-            Debug.Assert( !_implementations.Contains( plugin ) );
-
-            _implementations.Add( plugin );
+            get
+            {
+                return _implementations;
+            }
         }
 
         #region IServiceInfo Members
@@ -61,10 +61,5 @@ namespace Yodii.Lab.Mocks
         }
 
         #endregion
-
-        internal void RemovePlugin( PluginInfo pluginInfo )
-        {
-            _implementations.Remove( pluginInfo );
-        }
     }
 }

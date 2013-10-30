@@ -91,7 +91,7 @@ namespace Yodii.Lab
         {
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
-            IServiceInfo newService = _serviceManager.CreateNewService( serviceName );
+            ServiceInfo newService = _serviceManager.CreateNewService( serviceName );
 
             return newService;
         }
@@ -107,7 +107,7 @@ namespace Yodii.Lab
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
             if( generalization == null ) throw new ArgumentNullException( "generalization" );
 
-            IServiceInfo newService = _serviceManager.CreateNewService( serviceName, generalization );
+            ServiceInfo newService = _serviceManager.CreateNewService( serviceName, (ServiceInfo)generalization );
 
             return newService;
         }
@@ -118,12 +118,12 @@ namespace Yodii.Lab
         /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <returns>New plugin</returns>
-        public IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName )
+        public IPluginInfo CreateNewPlugin(Guid pluginGuid, string pluginName)
         {
             if( pluginGuid == null ) throw new ArgumentNullException( "pluginGuid" );
             if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
 
-            IPluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName );
+            PluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName );
 
             return newPlugin;
         }
@@ -135,7 +135,7 @@ namespace Yodii.Lab
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        public IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, IServiceInfo service )
+        public IPluginInfo CreateNewPlugin(Guid pluginGuid, string pluginName, IServiceInfo service)
         {
             if( pluginGuid == null ) throw new ArgumentNullException( "pluginGuid" );
             if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
@@ -143,7 +143,7 @@ namespace Yodii.Lab
 
             if( !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
-            IPluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName, service );
+            PluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
 
             return newPlugin;
         }
@@ -154,13 +154,13 @@ namespace Yodii.Lab
         /// <param name="plugin">Plugin</param>
         /// <param name="service">Service the plugin depends on</param>
         /// <param name="runningRequirement">How the plugin depends on the service</param>
-        public void SetPluginDependency( IPluginInfo plugin, IServiceInfo service, RunningRequirement runningRequirement )
+        public void SetPluginDependency(IPluginInfo plugin, IServiceInfo service, RunningRequirement runningRequirement)
         {
             if( plugin == null ) throw new ArgumentNullException( "plugin" );
             if( service == null ) throw new ArgumentNullException( "service" );
 
-            if( !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
-            if( !PluginInfos.Contains<IPluginInfo>( plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
+            if( !ServiceInfos.Contains( (ServiceInfo)service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
+            if( !PluginInfos.Contains( (PluginInfo)plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
 
             _serviceManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
         }
@@ -174,7 +174,7 @@ namespace Yodii.Lab
             _serviceManager.RemovePlugin( (PluginInfo)pluginInfo );
         }
 
-        public void RemoveService( IServiceInfo serviceInfo )
+        public void RemoveService( IServiceInfo serviceInfo)
         {
             _serviceManager.RemoveService( (ServiceInfo)serviceInfo );
         }
