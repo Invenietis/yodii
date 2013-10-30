@@ -5,18 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
-using Yodii.Model.CoreModel;
 
 
 namespace Yodii.Engine.Tests.Mocks
 {
-    public class MockServiceReferenceInfo : IServiceReferenceInfo
+    public class ServiceReferenceInfo : IServiceReferenceInfo
     {
-        readonly IPluginInfo _owner;
-        readonly IServiceInfo _reference;
-        readonly RunningRequirement _requirement;
+        IPluginInfo _owner;
+        IServiceInfo _reference;
+        RunningRequirement _requirement;
+        string _ctorParamOrPropertyName;
+        int _ctorParamIndex;
+        bool _isServiceWrapped;
 
-        internal MockServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, RunningRequirement requirement )
+        internal ServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, RunningRequirement requirement )
         {
             Debug.Assert( ownerPlugin != null );
             Debug.Assert( referencedService != null );
@@ -25,40 +27,43 @@ namespace Yodii.Engine.Tests.Mocks
             _reference = referencedService;
             _requirement = requirement;
         }
-        #region IServiceReferenceInfo Members
 
         public IPluginInfo Owner
         {
             get { return _owner; }
+            set { _owner = value; }
         }
 
         public IServiceInfo Reference
         {
             get { return _reference; }
+            set { _reference = value; }
         }
 
         public RunningRequirement Requirement
         {
             get { return _requirement; }
+            set { _requirement = value; }
         }
 
         public string ConstructorParameterOrPropertyName
         {
-            get { throw new NotImplementedException(); }
+            get { return _ctorParamOrPropertyName; }
+            set { _ctorParamOrPropertyName = value; }
         }
+
 
         public int ConstructorParameterIndex
         {
-            get { throw new NotImplementedException(); }
+            get { return _ctorParamIndex; }
+            set { _ctorParamIndex = value; }
         }
 
         public bool IsIServiceWrapped
         {
-            get { throw new NotImplementedException(); }
+            get { return _isServiceWrapped; }
+            set { _isServiceWrapped = value; }
         }
-
-        #endregion
-
 
         public string ConstructorParmeterOrPropertyName
         {

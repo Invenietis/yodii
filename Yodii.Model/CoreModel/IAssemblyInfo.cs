@@ -3,30 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Yodii.Model;
 
-namespace Yodii.Model.CoreModel
+namespace Yodii.Model
 {
     public interface IAssemblyInfo
     {
         /// <summary>
-        /// 
+        /// Gets the assembly location.
         /// </summary>
-        string AssemblyFileName { get; }
-
-        /// <summary>
-        /// Gets that the assembly contains plugins or services.
-        /// </summary>
-        bool HasPluginsOrServices { get; }
-
-        /// <summary>
-        /// Gets the collections of plugins contained into the assembly.
-        /// </summary>
-        IReadOnlyList<IPluginInfo> Plugins { get; }
-
-        /// <summary>
-        /// Gets the collections of services contained into the assembly.
-        /// </summary>
-        IReadOnlyList<IServiceInfo> Services { get; }
+        Uri AssemblyLocation { get; }
     }
 }

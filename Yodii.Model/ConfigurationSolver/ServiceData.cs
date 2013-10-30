@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
@@ -90,7 +89,7 @@ namespace Yodii.Model.ConfigurationSolver
             get { return _configMustExistSpecialization; }
         }
 
-        public bool IsGeneralizationOf( ServiceData d )
+        private bool IsStrictGeneralizationOf( ServiceData d )
         {
             var g = d.Generalization;
             if( g == null || d.GeneralizationRoot != GeneralizationRoot ) return false;
@@ -218,9 +217,10 @@ namespace Yodii.Model.ConfigurationSolver
 
             _configSolvedStatusReason = reason;
 
+            // Call SetAsRunnableService only if this Service becomes Runnable or Running.
             if( current < RunningRequirement.Runnable )
             {
-                if( !SetAsMustExistService() ) return false;
+                if( !SetAsRunnableService() ) return false;
             }
             Debug.Assert( !Disabled );
             // Now, if the OnlyPlugin exists, propagate the MustExist (or more) requirement to it.
@@ -236,36 +236,36 @@ namespace Yodii.Model.ConfigurationSolver
         }
 
         /// <summary>
-        /// Called by SetRunningRequirement whenever the Requirement becomes MustExist, or by ServiceRootData.OnAllPluginsAdded
-        /// if a MustExistPluginByConfig exists for the root.
+        /// Called by SetRunningRequirement whenever the Requirement becomes Runnable, or by ServiceRootData.OnAllPluginsAdded
+        /// if a RunnablePluginByConfig exists for the root.
         /// </summary>
         /// <returns></returns>
-        internal bool SetAsMustExistService( bool fromMustExistPlugin = false )
+        internal bool SetAsRunnableService( bool fromRunnablePlugin = false )
         {
-            if( fromMustExistPlugin )
+            if( fromRunnablePlugin )
             {
-                _configSolvedStatus = GeneralizationRoot.MustExistPluginByConfig.ConfigSolvedStatus;
+                _configSolvedStatus = GeneralizationRoot.RunnablePluginByConfig.ConfigSolvedStatus;
             }
             Debug.Assert( _configSolvedStatus >= RunningRequirement.Runnable );
             // From a non running requirement to a running requirement.
             var currentMustExist = GeneralizationRoot.MustExistService;
             //
-            // Only 2 possible cases here:
+            // Only 3 possible cases here:
             //
-            // - There is no current MustExist Service for our Generalization.
+            // - There is no current Runnable Service for our Generalization.
+            // - we are the current one... We are necessarily already be Runnable.
             // - We specialize the current one.
             //
-            Debug.Assert( currentMustExist == null || currentMustExist.IsGeneralizationOf( this ) );
+            Debug.Assert( currentMustExist == null || currentMustExist == this || currentMustExist.IsStrictGeneralizationOf( this ) );
             // Note: The other cases would be:
             //    - We are a Generalization of the current one. This is not possible since SetRunningRequirement is routed to the _mustExistSpecialization if it exists.
-            //    - we are the current one... We would necessarily already be MustExist.
             //    - a specialization exists and we are not a specialization nor a generalization of it: this is not possible since we would have been disabled.
             //
-            // When a MustExist appears below a current one, the requirement of the current one (the generalization) may be stronger than
+            // When a Runnable appears below a current one, the requirement of the current one (the generalization) may be stronger than
             // the new one: the new one must be updated to honor the generalization's requirement.
             //
-            // Once a MustExist is set, the _mustExistSpecialization is used to reroute the call to SetRunningRequirement and the MinimalRunningRequirement property:
-            // it is useless to propagate Requirement up to the MustExist branch.
+            // Once a Runnable is set, the _runnableSpecialization is used to reroute the call to SetRunningRequirement and the MinimalRunningRequirement property:
+            // it is useless to propagate Requirement up to the Runnable branch.
             //
             if( currentMustExist != null && currentMustExist._configSolvedStatus > _configSolvedStatus )
             {
@@ -273,7 +273,7 @@ namespace Yodii.Model.ConfigurationSolver
                 _configSolvedStatusReason = currentMustExist._configSolvedStatusReason;
             }
 
-            // We must disable all sibling services (and plugins) from this up to mustExist (when mustExist is null, up to the root).
+            // We must disable all sibling services (and plugins) from this up to Runnable (when Runnable is null, up to the root).
             _configMustExistSpecialization = this;
             var g = Generalization;
             if( g != null )

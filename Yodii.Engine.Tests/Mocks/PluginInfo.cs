@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Engine.Tests.Mocks
 {
@@ -15,20 +14,17 @@ namespace Yodii.Engine.Tests.Mocks
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
         readonly List<IServiceReferenceInfo> _serviceReferences;
-        readonly IServiceInfo _service;
-        bool _hasError = false; //Set true if an error occured with the discovery
+        IServiceInfo _service;
+        bool _hasError; 
 
-        internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, IServiceInfo service = null )
+        internal PluginInfo( string pluginFullName, IAssemblyInfo assemblyInfo )
         {
-            Debug.Assert( guid != null );
             Debug.Assert( !String.IsNullOrEmpty( pluginFullName ) );
             Debug.Assert( assemblyInfo != null );
 
-            _guid = guid;
+            _guid = Guid.NewGuid();
             _pluginFullName = pluginFullName;
             _assemblyInfo = assemblyInfo;
-
-            _service = service;
             _serviceReferences = new List<IServiceReferenceInfo>();
         }
 
@@ -57,14 +53,27 @@ namespace Yodii.Engine.Tests.Mocks
             get { return _assemblyInfo; }
         }
 
-        public IReadOnlyList<IServiceReferenceInfo> ServiceReferences
+        public List<IServiceReferenceInfo> ServiceReferences
         {
-            get { return _serviceReferences.AsReadOnly(); }
+            get { return _serviceReferences; }
+        }
+
+        public ServiceReferenceInfo AddServiceReference( ServiceInfo service, RunningRequirement req )
+        {
+            var r = new ServiceReferenceInfo( this, service, req );
+            _serviceReferences.Add( r );
+            return r;
         }
 
         public IServiceInfo Service
         {
             get { return _service; }
+            set
+            {
+                if ( _service != null ) ((ServiceInfo)_service).RemovePlugin( this );
+                _service = value;
+                if ( _service != null ) ((ServiceInfo)_service).AddPlugin( this );
+            }
         }
 
         #endregion
@@ -72,11 +81,18 @@ namespace Yodii.Engine.Tests.Mocks
         public bool HasError
         {
             get { return _hasError; }
+            set { _hasError = value; }
         }
 
         public string ErrorMessage
         {
-            get { throw new NotImplementedException(); }
+            get { return _hasError ? "An error occured." : null; }
+        }
+
+
+        IReadOnlyList<IServiceReferenceInfo> IPluginInfo.ServiceReferences
+        {
+            get { return _serviceReferences.AsReadOnly(); }
         }
     }
 }

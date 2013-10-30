@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Yodii.Model.ConfigurationSolver;
-using Yodii.Model.CoreModel;
 using Yodii.Model;
 using Yodii.Engine.Tests.Mocks;
 
@@ -17,7 +16,6 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         [Test]
         public void ConfigurationSolverCreation()
         {
-            MockInfoFactory factory = new MockInfoFactory();
             ConfigurationManager cm = new ConfigurationManager();
           
             ConfigurationLayer cl = new ConfigurationLayer();
@@ -30,14 +28,17 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
 
             cm.Layers.Add( cl );
-            
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, factory.Services, factory.Plugins );
 
-            Assert.That( res.RunningPlugins.Count > 1 );
-            Assert.That( res.BlockingPlugins.Count == 0 && res.BlockingServices.Count == 0 );
-            Assert.That( res.ConfigurationSuccess );
-          
+            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
+
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.RunningPlugins, Is.Null );
+            Assert.That( res.BlockingServices.Count == 0 );
+            CollectionAssert.AreEquivalent( new[] { "PluginA-2", "PluginA-1" }, res.BlockingPlugins.Select( p => p.PluginFullName ) );
         }
     }
 }

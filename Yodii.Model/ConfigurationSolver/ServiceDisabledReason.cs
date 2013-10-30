@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {

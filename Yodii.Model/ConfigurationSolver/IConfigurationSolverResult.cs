@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
-using Yodii.Model.CoreModel;
 
 
 namespace Yodii.Model.ConfigurationSolver
@@ -13,14 +12,14 @@ namespace Yodii.Model.ConfigurationSolver
     {
         bool ConfigurationSuccess { get; }
 
-        ICKReadOnlyCollection<IPluginInfo> BlockingPlugins { get; }
+        IReadOnlyCollection<IPluginInfo> BlockingPlugins { get; }
 
-        ICKReadOnlyCollection<IServiceInfo> BlockingServices { get; }
+        IReadOnlyCollection<IServiceInfo> BlockingServices { get; }
 
-        ICKReadOnlyCollection<IPluginInfo> DisabledPlugins { get; }
+        IReadOnlyCollection<IPluginInfo> DisabledPlugins { get; }
 
-        ICKReadOnlyCollection<IPluginInfo> StoppedPlugins { get; }
+        IReadOnlyCollection<IPluginInfo> StoppedPlugins { get; }
 
-        ICKReadOnlyCollection<IPluginInfo> RunningPlugins { get; }
+        IReadOnlyCollection<IPluginInfo> RunningPlugins { get; }
     }
 }

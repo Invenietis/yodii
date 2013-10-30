@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
@@ -23,13 +22,13 @@ namespace Yodii.Model.ConfigurationSolver
             _plugins = new Dictionary<IPluginInfo, PluginData>();
         }
 
-        public IConfigurationSolverResult Initialize( FinalConfiguration finalConfig, IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins )
+        public IConfigurationSolverResult Initialize( FinalConfiguration finalConfig, IDiscoveredInfo info )
         {
             // Registering all Services.
             _services.Clear();
             _serviceRoots.Clear();
             
-            foreach( IServiceInfo sI in services )
+            foreach( IServiceInfo sI in info.ServiceInfos )
             {
                 // This creates services and applies solved configuration to them: directly disabled services
                 // and specializations disabled by their generalizations' configuration are handled.
@@ -44,7 +43,7 @@ namespace Yodii.Model.ConfigurationSolver
             }
             // We can now instantiate plugin data. 
             _plugins.Clear();
-            foreach( IPluginInfo p in plugins )
+            foreach( IPluginInfo p in info.PluginInfos )
             {
                 RegisterPlugin( finalConfig, p );
             }

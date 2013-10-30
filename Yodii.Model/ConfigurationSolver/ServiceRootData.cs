@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
@@ -27,7 +26,7 @@ namespace Yodii.Model.ConfigurationSolver
             get { return _theOnlyPlugin; }
         }
 
-        public PluginData MustExistPluginByConfig
+        public PluginData RunnablePluginByConfig
         {
             get { return _mustExistPluginByConfig; }
         }
@@ -45,7 +44,7 @@ namespace Yodii.Model.ConfigurationSolver
             base.OnAllPluginsAdded();
             if( !Disabled && _mustExistPluginByConfig != null )
             {
-                _mustExistPluginByConfig.Service.SetAsMustExistService( fromMustExistPlugin: true );
+                _mustExistPluginByConfig.Service.SetAsRunnableService( fromRunnablePlugin: true );
             }
         }
 
@@ -78,7 +77,7 @@ namespace Yodii.Model.ConfigurationSolver
             }
             else
             {
-                p.SetDisabled( PluginDisabledReason.AnotherPluginAlreadyExistForTheSameService );
+                p.SetDisabled( PluginDisabledReason.AnotherPluginAlreadyExistsForTheSameService );
             }
         }
     }

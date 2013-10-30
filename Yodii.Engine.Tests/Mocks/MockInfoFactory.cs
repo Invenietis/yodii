@@ -3,22 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Yodii.Model.CoreModel;
 using Yodii.Model;
 
 namespace Yodii.Engine.Tests.Mocks
 {
-    internal class MockInfoFactory
+    internal static class MockInfoFactory
     {
-        readonly List<PluginInfo> _pluginInfos;
-        readonly List<ServiceInfo> _serviceInfos;
-
-        internal MockInfoFactory()
+        public static DiscoveredInfo CreateGraph001()
         {
-            _pluginInfos = new List<PluginInfo>();
-            _serviceInfos = new List<ServiceInfo>();
-            IAssemblyInfo executingAssemblyInfo = AssemblyInfoHelper.ExecutingAssemblyInfo;
-
             /**
              *                 +--------+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
@@ -37,49 +29,25 @@ namespace Yodii.Engine.Tests.Mocks
              * +----------+
              */
 
-            ServiceInfo serviceA = new ServiceInfo( "ServiceA", executingAssemblyInfo );
-            ServiceInfo serviceB = new ServiceInfo( "ServiceB", executingAssemblyInfo );
-            ServiceInfo serviceAx = new ServiceInfo( "ServiceAx", executingAssemblyInfo, serviceA );
+            var d = new DiscoveredInfo();
 
-            _serviceInfos.Add( serviceA );
-            _serviceInfos.Add( serviceB );
-            _serviceInfos.Add( serviceAx );
+            d.ServiceInfos.Add( new ServiceInfo( "ServiceA", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "ServiceB", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "ServiceAx", d.DefaultAssembly ) );
 
-            PluginInfo pluginA1 = new PluginInfo( Guid.NewGuid(), "PluginA-1", executingAssemblyInfo, serviceA );
-            serviceA.BindPlugin( pluginA1 );
+            d.PluginInfos.Add( new PluginInfo( "PluginA-1", d.DefaultAssembly ) );
+            d.PluginInfos.Add( new PluginInfo( "PluginA-2", d.DefaultAssembly ) );
+            d.PluginInfos.Add( new PluginInfo( "PluginAx-1", d.DefaultAssembly ) );
+            d.PluginInfos.Add( new PluginInfo( "PluginB-1", d.DefaultAssembly ) );
 
-            PluginInfo pluginA2 = new PluginInfo( Guid.NewGuid(), "PluginA-2", executingAssemblyInfo, serviceA );
-            serviceA.BindPlugin( pluginA2 );
+            d.FindPlugin( "PluginA-1" ).Service = d.FindService( "ServiceA" );
+            d.FindPlugin( "PluginA-2" ).Service = d.FindService( "ServiceA" );
+            d.FindPlugin( "PluginAx-1" ).Service = d.FindService( "ServiceAx" );
+            d.FindPlugin( "PluginB-1" ).Service = d.FindService( "ServiceB" );
 
-            IServiceReferenceInfo A2NeedsServiceBRunningReference = new MockServiceReferenceInfo( pluginA2, serviceB, RunningRequirement.Running );
-            pluginA2.BindServiceRequirement( A2NeedsServiceBRunningReference );
+            d.FindPlugin( "PluginA-2" ).AddServiceReference( d.FindService( "ServiceB" ), RunningRequirement.Running );
 
-            PluginInfo pluginAx1 = new PluginInfo( Guid.NewGuid(), "PluginAx-1", executingAssemblyInfo, serviceAx );
-            serviceAx.BindPlugin( pluginAx1 );
-
-            PluginInfo pluginB1 = new PluginInfo( Guid.NewGuid(), "PluginB-1", executingAssemblyInfo, serviceB );
-            serviceB.BindPlugin( pluginB1 );
-
-            _pluginInfos.Add( pluginA1 );
-            _pluginInfos.Add( pluginA2 );
-            _pluginInfos.Add( pluginAx1 );
-            _pluginInfos.Add( pluginB1 );
-        }
-
-        public IReadOnlyList<IPluginInfo> Plugins
-        {
-            get
-            {
-                return _pluginInfos.AsReadOnly();
-            }
-        }
-
-        public IReadOnlyList<IServiceInfo> Services
-        {
-            get
-            {
-                return _serviceInfos.AsReadOnly();
-            }
+            return d;
         }
     }
 }

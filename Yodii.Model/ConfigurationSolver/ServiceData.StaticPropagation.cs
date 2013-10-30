@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {

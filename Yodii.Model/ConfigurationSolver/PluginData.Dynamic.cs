@@ -8,7 +8,6 @@ using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
 using Yodii.Model.ConfigurationSolver;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {

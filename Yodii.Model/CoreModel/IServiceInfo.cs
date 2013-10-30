@@ -1,11 +1,10 @@
 ﻿using System;
 using CK.Core;
 using System.Collections.Generic;
-using Yodii.Model;
 
-namespace Yodii.Model.CoreModel
+namespace Yodii.Model
 {
-    public interface IServiceInfo : IDiscoveredInfo
+    public interface IServiceInfo : IDiscoveredErrorInfo
     {
         /// <summary>
         /// Gets the full name of the service (namespace and interface name).
