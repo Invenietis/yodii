@@ -78,6 +78,20 @@ namespace Yodii.Lab
                 return _configurationManager;
             }
         }
+
+        /// <summary>
+        /// Available Layout algorithms.
+        /// </summary>
+        /// <remarks>
+        /// Pulled from Graph#/Algorithms/Layout/StandardLayoutAlgorithmFactory.cs
+        /// </remarks>
+        public List<String> GraphLayoutAlgorithms
+        {
+            get
+            {
+                return new List<String>() { "Circular", "Tree", "FR", "BoundedFR", "KK", "ISOM", "LinLog", "EfficientSugiyama", /*"Sugiyama",*/ "CompoundFDP" };
+            }
+        }
         #endregion Properties
 
         #region Public methods

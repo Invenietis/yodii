@@ -6,6 +6,7 @@
         xmlns:WpfExtensions="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
         xmlns:local="clr-namespace:Yodii.Lab"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
         Title="Yodii Lab" Height="600" Width="800">
     <DockPanel>
         <Fluent:Ribbon DockPanel.Dock="Top">
@@ -32,6 +33,15 @@
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button Header="Configuration editor" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png" Click="ConfEditorButton_Click" />
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox>
+                    <Fluent:DropDownButton Header="Reorder graph" ItemsSource="{Binding Path=GraphLayoutAlgorithms}" MenuItem.Click="DropDownButton_Click">
+                        <!--<Fluent:DropDownButton.ItemTemplate>
+                            <DataTemplate DataType="{x:Type sys:String}">
+                                <Fluent:MenuItem Header="{Binding}"/>
+                            </DataTemplate>
+                        </Fluent:DropDownButton.ItemTemplate>-->
+                    </Fluent:DropDownButton>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
             <!--Contextual Tabs-->

@@ -72,5 +72,14 @@ namespace Yodii.Lab
                 _activeConfEditorWindow.Show();
             }
         }
+
+        private void DropDownButton_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem item = e.OriginalSource as MenuItem;
+
+            String newSelection = item.DataContext as String;
+
+            this.graphLayout.LayoutAlgorithmType = newSelection;
+        }
     }
 }
