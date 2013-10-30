@@ -73,13 +73,36 @@ namespace Yodii.Lab
             }
         }
 
-        private void DropDownButton_Click(object sender, RoutedEventArgs e)
+        private void NewGraphLayoutButton_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = e.OriginalSource as MenuItem;
 
             String newSelection = item.DataContext as String;
 
             this.graphLayout.LayoutAlgorithmType = newSelection;
+        }
+
+        private void ReorderGraphButton_Click (object sender, RoutedEventArgs e)
+        {
+            string oldLayout = this.graphLayout.LayoutAlgorithmType;
+
+            this.graphLayout.LayoutAlgorithmType = null;
+
+            this.graphLayout.LayoutAlgorithmType = oldLayout;
+        }
+
+        private void StackPanel_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            FrameworkElement vertexPanel = sender as FrameworkElement;
+
+            YodiiGraphVertex vertex = vertexPanel.DataContext as YodiiGraphVertex;
+
+            _vm.SelectVertex(vertex);
+        }
+
+        private void graphLayout_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _vm.SelectVertex(null);
         }
     }
 }

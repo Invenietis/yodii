@@ -139,6 +139,11 @@ namespace Yodii.Lab.ConfigurationEditor
                     MessageBoxOptions.None
                     );
             }
+            else
+            {
+                newItemTextBox.Clear();
+                newItemStatusBox.SelectedIndex = 0;
+            }
 
             isResettingSelection = false;
         }
@@ -162,6 +167,10 @@ namespace Yodii.Lab.ConfigurationEditor
                     MessageBoxResult.OK,
                     MessageBoxOptions.None
                     );
+            }
+            else
+            {
+                this.NewLayerName.Clear();
             }
         }
 

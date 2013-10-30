@@ -29,19 +29,21 @@
                     <Fluent:Button Header="New plugin" LargeIcon="/Yodii.Lab;component/Icons/database_32xLG.png"/>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:Button Header="Delete" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png" />
+                    <Fluent:Button Header="Delete" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
+                                   Command="{Binding Path=RemoveSelectedVertex}"
+                                   />
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button Header="Configuration editor" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png" Click="ConfEditorButton_Click" />
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:DropDownButton Header="Reorder graph" ItemsSource="{Binding Path=GraphLayoutAlgorithms}" MenuItem.Click="DropDownButton_Click">
+                    <Fluent:SplitButton Header="Reorder graph" ItemsSource="{Binding Path=GraphLayoutAlgorithms}" MenuItem.Click="NewGraphLayoutButton_Click" Click="ReorderGraphButton_Click">
                         <!--<Fluent:DropDownButton.ItemTemplate>
                             <DataTemplate DataType="{x:Type sys:String}">
                                 <Fluent:MenuItem Header="{Binding}"/>
                             </DataTemplate>
                         </Fluent:DropDownButton.ItemTemplate>-->
-                    </Fluent:DropDownButton>
+                    </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
             <!--Contextual Tabs-->
@@ -67,7 +69,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Graph viewer -->
-            <xctk:Zoombox Grid.Column="0" Grid.Row="0" >
+            <xctk:Zoombox Grid.Column="0" Grid.Row="0" MouseDown="graphLayout_MouseDown">
                 <!--<WpfExtensions:ZoomControl
                 Grid.Column="0" Grid.Row="0"
                 Zoom="0.2"
@@ -87,14 +89,17 @@
                             <ContentControl FontSize="10pt"
                                 Foreground="White"
                                 FontFamily="Segoe UI">
-                                <StackPanel Orientation="Vertical" Margin="1pt">
+                                <StackPanel Orientation="Vertical" Margin="1pt" MouseDown="StackPanel_MouseDown">
                                     <StackPanel Orientation="Horizontal">
                                         <Image x:Name="VertexIcon" Source="" Height="12pt" Margin="0,0,3pt,0" />
                                         <TextBlock x:Name="VertexTitle" Text="{Binding Path=Title, Mode=OneWay}" FontSize="12pt"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Height="10pt" Width="10pt">
-                                            <Path Width="10pt" Height="7pt" Stretch="Uniform" Fill="Black" Data="M 0,0 L 2.5,1.5 L 0,3" />
+                                        <Button>
+                                            <Run FontFamily="Webdings">&lt;</Run>
+                                        </Button>
+                                        <Button>
+                                            <Run FontFamily="Webdings">4</Run>
                                         </Button>
                                         <TextBlock Margin="3pt,0,0,0" x:Name="IsStartedText" Text="Stopped" />
                                     </StackPanel>

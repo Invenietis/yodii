@@ -8,6 +8,7 @@ using CK.Core;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
 using Yodii.Model.CoreModel;
+using System.Windows.Input;
 
 namespace Yodii.Lab
 {
@@ -16,17 +17,45 @@ namespace Yodii.Lab
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceManager;
         readonly ConfigurationManager _configurationManager;
+        YodiiGraphVertex _selectedVertex;
 
         bool _isLive;
 
-        #region Constructor
+        #region Constructor & initializers
         public MainWindowViewModel()
         {
             _configurationManager = new ConfigurationManager();
             _serviceManager = new ServiceInfoManager();
             _graph = new YodiiGraph( _serviceManager.ServiceInfos, _serviceManager.PluginInfos );
+
+            initCommands();
         }
-        #endregion Constructor
+        private void initCommands()
+        {
+            RemoveSelectedVertex = new RelayCommand(RemoveSelectedVertexExecute, HasSelectedVertex);
+        }
+
+        #region Command handlers
+        private bool HasSelectedVertex(object obj)
+        {
+ 	        return SelectedVertex != null;
+        }
+
+        private void RemoveSelectedVertexExecute(object obj)
+        {
+            if( SelectedVertex == null ) return;
+
+ 	        if( SelectedVertex.IsPlugin )
+            {
+                this.RemovePlugin(SelectedVertex.PluginInfo);
+            } else if( SelectedVertex.IsService )
+            {
+                this.RemoveService(SelectedVertex.ServiceInfo);
+            }
+        }
+        #endregion #region Command handlers
+
+        #endregion Constructor & initializers
 
         #region Properties
         /// <summary>
@@ -92,6 +121,26 @@ namespace Yodii.Lab
                 return new List<String>() { "Circular", "Tree", "FR", "BoundedFR", "KK", "ISOM", "LinLog", "EfficientSugiyama", /*"Sugiyama",*/ "CompoundFDP" };
             }
         }
+
+        public YodiiGraphVertex SelectedVertex
+        {
+            get
+            {
+                return _selectedVertex;
+            }
+            set
+            {
+                if( value != _selectedVertex)
+                {
+                    _selectedVertex = value;
+                    RaisePropertyChanged("SelectedVertex");
+                }
+            }
+        }
+
+        #region Command properties
+        public ICommand RemoveSelectedVertex { get; private set; }
+        #endregion
         #endregion Properties
 
         #region Public methods
@@ -191,6 +240,11 @@ namespace Yodii.Lab
         public void RemoveService( IServiceInfo serviceInfo)
         {
             _serviceManager.RemoveService( (ServiceInfo)serviceInfo );
+        }
+
+        internal void SelectVertex(YodiiGraphVertex vertex)
+        {
+            SelectedVertex = vertex;
         }
     }
 }
