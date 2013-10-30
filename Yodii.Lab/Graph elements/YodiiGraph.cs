@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using QuickGraph;
 using CK.Core;
-using Yodii.Model.CoreModel;
 using System.Diagnostics;
 using System.Collections.Specialized;
 using Yodii.Lab.Mocks;
+using Yodii.Model;
 
 namespace Yodii.Lab
 {

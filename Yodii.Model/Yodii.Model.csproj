@@ -45,14 +45,12 @@
     </Compile>
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolverResult.cs" />
-    <Compile Include="ConfigurationSolver\DiscoveredInfo.cs" />
     <Compile Include="ConfigurationSolver\DynamicSolver.cs" />
     <Compile Include="ConfigurationSolver\IConfigurationSolverResult.cs" />
     <Compile Include="ConfigurationSolver\PluginData.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\PluginDisabledReason.cs" />
     <Compile Include="ConfigurationSolver\PluginRunningRequirementReason.cs" />
-    <Compile Include="ConfigurationSolver\PluginServiceRelation.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.StaticPropagation.cs" />
@@ -68,8 +66,9 @@
     <Compile Include="Configuration\FinalConfiguration.cs" />
     <Compile Include="Configuration\FinalConfigurationChange.cs" />
     <Compile Include="Configuration\FinalConfigurationItem.cs" />
-    <Compile Include="CoreModel\IAssemblyInfo.cs" />
     <Compile Include="CoreModel\IDiscoveredInfo.cs" />
+    <Compile Include="CoreModel\IAssemblyInfo.cs" />
+    <Compile Include="CoreModel\IDiscoveredErrorInfo.cs" />
     <Compile Include="CoreModel\IPluginInfo.cs" />
     <Compile Include="CoreModel\IServiceInfo.cs" />
     <Compile Include="CoreModel\IServiceReferenceInfo.cs" />

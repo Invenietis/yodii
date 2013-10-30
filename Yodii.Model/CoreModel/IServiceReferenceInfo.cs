@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yodii.Model;
 
-namespace Yodii.Model.CoreModel
+namespace Yodii.Model
 {
     public interface IServiceReferenceInfo
     {

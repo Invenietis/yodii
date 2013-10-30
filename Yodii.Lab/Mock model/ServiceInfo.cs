@@ -6,13 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using Yodii.Model;
-using Yodii.Model.CoreModel;
 using Yodii.Model.ConfigurationSolver;
 using System.Collections;
 
 namespace Yodii.Lab.Mocks
 {
-    public class ServiceInfo : DiscoveredInfo, IServiceInfo
+    public class ServiceInfo : IServiceInfo
     {
         readonly string _serviceFullName;
         readonly IServiceInfo _generalization;
@@ -61,5 +60,17 @@ namespace Yodii.Lab.Mocks
         }
 
         #endregion
+
+        public bool HasError
+        {
+            // TODO
+            get { throw new NotImplementedException(); }
+        }
+
+        public string ErrorMessage
+        {
+            // TODO
+            get { throw new NotImplementedException(); }
+        }
     }
 }

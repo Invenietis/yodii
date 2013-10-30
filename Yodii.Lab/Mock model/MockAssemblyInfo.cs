@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using CK.Core;
 using Yodii.Model;
 using Yodii.Model.ConfigurationSolver;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Lab.Mocks
 {
@@ -49,5 +48,11 @@ namespace Yodii.Lab.Mocks
         }
 
         #endregion
+
+        public Uri AssemblyLocation
+        {
+            // TODO
+            get { throw new NotImplementedException(); }
+        }
     }
 }

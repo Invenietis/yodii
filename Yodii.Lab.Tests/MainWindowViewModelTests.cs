@@ -5,7 +5,8 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using QuickGraph;
-using Yodii.Model.CoreModel;
+using Yodii.Model;
+using Yodii.Lab.Mocks;
 
 namespace Yodii.Lab.Tests
 {

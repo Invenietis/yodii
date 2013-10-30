@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
@@ -27,7 +26,7 @@ namespace Yodii.Model.ConfigurationSolver
             get { return _theOnlyPlugin; }
         }
 
-        public PluginData MustExistPluginByConfig
+        public PluginData RunnablePluginByConfig
         {
             get { return _mustExistPluginByConfig; }
         }
@@ -36,7 +35,7 @@ namespace Yodii.Model.ConfigurationSolver
         {
             Debug.Assert( !Disabled );
             _mustExistService = GetMustExistService();
-            if( _mustExistService == null && ServiceStatus >= ConfigurationStatus.Runnable ) _mustExistService = this;
+            if( _mustExistService == null && ConfigOriginalStatus >= ConfigurationStatus.Runnable ) _mustExistService = this;
         }
 
         internal override void OnAllPluginsAdded()
@@ -45,7 +44,7 @@ namespace Yodii.Model.ConfigurationSolver
             base.OnAllPluginsAdded();
             if( !Disabled && _mustExistPluginByConfig != null )
             {
-                _mustExistPluginByConfig.Service.SetAsMustExistService( fromMustExistPlugin: true );
+                _mustExistPluginByConfig.Service.SetAsRunnableService( fromRunnablePlugin: true );
             }
         }
 
@@ -70,7 +69,7 @@ namespace Yodii.Model.ConfigurationSolver
         internal void SetMustExistPluginByConfig( PluginData p )
         {
             Debug.Assert( !Disabled );
-            Debug.Assert( p.MinimalRunningRequirement >= RunningRequirement.Runnable );
+            Debug.Assert( p.ConfigSolvedStatus >= RunningRequirement.Runnable );
             Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData ctor, Service is not yet set." );
             if( _mustExistPluginByConfig == null )
             {
@@ -78,7 +77,7 @@ namespace Yodii.Model.ConfigurationSolver
             }
             else
             {
-                p.SetDisabled( PluginDisabledReason.AnotherPluginAlreadyExistForTheSameService );
+                p.SetDisabled( PluginDisabledReason.AnotherPluginAlreadyExistsForTheSameService );
             }
         }
     }

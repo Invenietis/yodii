@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
 
-namespace Yodii.Model.CoreModel
+namespace Yodii.Model
 {
     /// <summary>
     /// Describes how a service or a plugin is required. 
@@ -28,12 +28,12 @@ namespace Yodii.Model.CoreModel
         /// The service or plugin must be available (ready to run but it can be stopped if nothing else want to start it).
         /// It is guaranteed to be runnable.
         /// </summary>
-        Runnable = 2,
+        Runnable = 4,
 
         /// <summary>
         /// The service or plugin must be available and intially started. It can be stopped later.
         /// </summary>
-        RunnableTryStart = 2 + 1,
+        RunnableTryStart = 5,
 
         /// <summary>
         /// The service or plugin must be available and must be running.

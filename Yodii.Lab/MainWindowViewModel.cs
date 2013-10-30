@@ -7,7 +7,6 @@ using System.Text;
 using CK.Core;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
-using Yodii.Model.CoreModel;
 using System.Windows.Input;
 
 namespace Yodii.Lab

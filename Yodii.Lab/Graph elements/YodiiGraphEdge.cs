@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using QuickGraph;
-using Yodii.Model.CoreModel;
+using Yodii.Model;
 
 namespace Yodii.Lab
 {

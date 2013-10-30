@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -47,13 +47,11 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationManagerTests.cs" />
-    <Compile Include="ConfigurationLayerTests.cs" />
-    <Compile Include="MockInfoTests.cs" />
-    <Compile Include="Mocks\AssemblyInfoHelper.cs" />
-    <Compile Include="Mocks\MockAssemblyInfo.cs" />
+    <Compile Include="ConfigurationSolverTests\ConfigurationSolver.Static.cs" />
+    <Compile Include="Mocks\DiscoveredInfo.cs" />
+    <Compile Include="Mocks\AssemblyInfo.cs" />
     <Compile Include="Mocks\MockInfoFactory.cs" />
-    <Compile Include="Mocks\MockServiceReferenceInfo.cs" />
-    <Compile Include="Mocks\NullAssemblyInfo.cs" />
+    <Compile Include="Mocks\ServiceReferenceInfo.cs" />
     <Compile Include="Mocks\PluginInfo.cs" />
     <Compile Include="Mocks\ServiceInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -75,7 +73,7 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

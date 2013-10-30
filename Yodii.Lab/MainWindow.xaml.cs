@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Fluent;
-using Yodii.Model.CoreModel;
 using System.Timers;
 using System.Threading;
 using Yodii.Model;

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
@@ -194,7 +193,7 @@ namespace Yodii.Model.ConfigurationSolver
             {
                 RetrieveTheOnlyPlugin( fromConfig );
             }
-            else if( MinimalRunningRequirement >= RunningRequirement.Runnable )
+            else if( ConfigSolvedStatus >= RunningRequirement.Runnable )
             {
                 RetrieveOrUpdateTheCommonServiceReferences( fromConfig );
             }
@@ -204,7 +203,7 @@ namespace Yodii.Model.ConfigurationSolver
         {
             if( _theOnlyPlugin != null ) 
             {
-                if( !_theOnlyPlugin.SetRunningRequirement( _configurationRunningRequirement, PluginRunningRequirementReason.FromServiceToSinglePlugin ) 
+                if( !_theOnlyPlugin.SetRunningRequirement( _configSolvedStatus, PluginRunningRequirementReason.FromServiceToSinglePlugin ) 
                     && !Disabled )
                 {
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToSinglePluginFailed );
@@ -212,7 +211,7 @@ namespace Yodii.Model.ConfigurationSolver
             }
             else if( _commonReferences != null )
             {
-                if( !_commonReferences.SetRunningRequirement( _configurationRunningRequirement, ServiceRunningRequirementReason.FromServiceToCommonPluginReferences ) 
+                if( !_commonReferences.SetRunningRequirement( _configSolvedStatus, ServiceRunningRequirementReason.FromServiceToCommonPluginReferences ) 
                     && !Disabled )
                 {
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToCommonPluginReferencesFailed );
@@ -246,18 +245,18 @@ namespace Yodii.Model.ConfigurationSolver
             _commonReferences = null;
             // As soon as the only plugin appears, propagate our requirement to it.
             var reason = fromConfig ? PluginRunningRequirementReason.FromServiceConfigToSinglePlugin : PluginRunningRequirementReason.FromServiceToSinglePlugin;
-            _theOnlyPlugin.SetRunningRequirement( MinimalRunningRequirement, reason );
+            _theOnlyPlugin.SetRunningRequirement( ConfigSolvedStatus, reason );
         }
         
         void RetrieveOrUpdateTheCommonServiceReferences( bool fromConfig )
         {
-            Debug.Assert( !Disabled && MinimalRunningRequirement >= RunningRequirement.Runnable && TotalAvailablePluginCount > 1 );
+            Debug.Assert( !Disabled && ConfigSolvedStatus >= RunningRequirement.Runnable && TotalAvailablePluginCount > 1 );
             if( _commonReferences == null ) _commonReferences = new CommonServiceReferences();
             _commonReferences.Reset();
             if( _commonReferences.Add( this ) )
             {
                 var reason = fromConfig ? ServiceRunningRequirementReason.FromServiceConfigToCommonPluginReferences : ServiceRunningRequirementReason.FromServiceToCommonPluginReferences;
-                if( !_commonReferences.SetRunningRequirement( MinimalRunningRequirement, reason ) )
+                if( !_commonReferences.SetRunningRequirement( ConfigSolvedStatus, reason ) )
                 {
                     if( !Disabled ) SetDisabled( ServiceDisabledReason.RequirementPropagationToSinglePluginFailed );
                 }

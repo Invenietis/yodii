@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using Yodii.Lab.Mocks;
-using Yodii.Model.CoreModel;
+using Yodii.Model;
 
 namespace Yodii.Lab
 {

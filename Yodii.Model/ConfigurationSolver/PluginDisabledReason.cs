@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yodii.Model;
-using Yodii.Model.CoreModel;
 
 namespace Yodii.Model.ConfigurationSolver
 {
@@ -47,7 +46,7 @@ namespace Yodii.Model.ConfigurationSolver
         /// <summary>
         /// Set by ServiceRootData.SetMustExistPluginByConfig.
         /// </summary>
-        AnotherPluginAlreadyExistForTheSameService,
+        AnotherPluginAlreadyExistsForTheSameService,
 
         /// <summary>
         /// Sets by PluginData.SetRunningRequirement.
