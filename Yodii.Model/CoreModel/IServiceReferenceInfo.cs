@@ -26,7 +26,7 @@ namespace Yodii.Model
         /// Gets the name of the property or constructor parameter that references the service.
         /// This is used by the dependency injection engine (IServiceHost and IPluginHost).
         /// </summary>
-        string ConstructorParmeterOrPropertyName { get; }
+        string ConstructorParameterOrPropertyName { get; }
 
         /// <summary>
         /// Gets the index of the parameter in the constructor if the reference appears as a parameter constructor.

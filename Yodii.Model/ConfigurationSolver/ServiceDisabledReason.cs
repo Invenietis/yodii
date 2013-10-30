@@ -58,11 +58,6 @@ namespace Yodii.Model.ConfigurationSolver
         AnotherSpecializationMustExist,
 
         /// <summary>
-        /// Sets by ServiceData.OnSpecializationDisabled (that is called by ServiceData.SetDisabled).
-        /// </summary>
-        MustExistSpecializationIsDisabled,
-
-        /// <summary>
         /// Sets by ServiceData.OnAllPluginsAdded method.
         /// </summary>
         NoPlugin,

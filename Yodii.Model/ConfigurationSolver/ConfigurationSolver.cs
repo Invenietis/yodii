@@ -69,12 +69,12 @@ namespace Yodii.Model.ConfigurationSolver
             List<IServiceInfo> blockingServices = null;
             
             // Time to conclude about configuration and to initialize dynamic resolution.
-            // Any Plugin that has a ConfigSolvedStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
+            // Any Plugin that has a ConfigOriginalStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
             foreach( PluginData p in _plugins.Values )
             {
                 if( p.Disabled )
                 {
-                    if( p.ConfigOriginalStatus != ConfigurationStatus.Disable && p.ConfigSolvedStatus >= RunningRequirement.Runnable )
+                    if( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
                         if( blockingPlugins == null ) blockingPlugins = new List<IPluginInfo>();
                         blockingPlugins.Add( p.PluginInfo );
@@ -86,7 +86,7 @@ namespace Yodii.Model.ConfigurationSolver
             {
                 if( s.Disabled )
                 {
-                    if ( s.ConfigOriginalStatus != ConfigurationStatus.Disable && s.ConfigSolvedStatus >= RunningRequirement.Runnable )
+                    if ( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable)
                     {
                         if( blockingServices == null ) blockingServices = new List<IServiceInfo>();
                         blockingServices.Add( s.ServiceInfo );
@@ -190,9 +190,7 @@ namespace Yodii.Model.ConfigurationSolver
             if( _services.TryGetValue( s, out data ) ) return data;
 
             //Set default status
-            ConfigurationStatus serviceStatus = ConfigurationStatus.Optional;
-
-            serviceStatus = finalConfig.GetStatus(s.ServiceFullName);
+            ConfigurationStatus serviceStatus = finalConfig.GetStatus(s.ServiceFullName);
             // Handle generalization.
             ServiceData dataGen = null;
             if( s.Generalization != null )
@@ -220,9 +218,7 @@ namespace Yodii.Model.ConfigurationSolver
             if( _plugins.TryGetValue( p, out data ) ) return data;
 
             //Set default status
-            ConfigurationStatus pluginStatus = ConfigurationStatus.Optional;
-            //pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
-            pluginStatus = finalConfig.GetStatus( p.PluginFullName);
+            ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
             ServiceData service = p.Service != null ? _services[ p.Service ] : null;
             data = new PluginData( _services, p, service, pluginStatus );
             _plugins.Add( p, data );
