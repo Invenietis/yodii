@@ -31,6 +31,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>SharedKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.Core">
       <HintPath>..\packages\CK.Core.2.8.14\lib\net45\CK.Core.dll</HintPath>
@@ -42,21 +48,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
-    <Compile Include="ConfigurationSolver\ConfigurationSolverResult.cs" />
-    <Compile Include="ConfigurationSolver\DynamicSolver.cs" />
-    <Compile Include="ConfigurationSolver\IConfigurationSolverResult.cs" />
-    <Compile Include="ConfigurationSolver\PluginData.cs" />
-    <Compile Include="ConfigurationSolver\PluginData.Dynamic.cs" />
-    <Compile Include="ConfigurationSolver\PluginDisabledReason.cs" />
-    <Compile Include="ConfigurationSolver\PluginRunningRequirementReason.cs" />
-    <Compile Include="ConfigurationSolver\ServiceData.cs" />
-    <Compile Include="ConfigurationSolver\ServiceData.Dynamic.cs" />
-    <Compile Include="ConfigurationSolver\ServiceData.StaticPropagation.cs" />
-    <Compile Include="ConfigurationSolver\ServiceDisabledReason.cs" />
-    <Compile Include="ConfigurationSolver\ServiceRootData.cs" />
-    <Compile Include="ConfigurationSolver\ServiceRootData.Dynamic.cs" />
-    <Compile Include="ConfigurationSolver\ServiceRunningRequirementReason.cs" />
+    <Compile Include="IConfigurationSolverResult.cs" />
     <Compile Include="Configuration\ConfigurationItem.cs" />
     <Compile Include="Configuration\ConfigurationLayer.cs" />
     <Compile Include="Configuration\ConfigurationManager.cs" />
@@ -65,24 +57,25 @@
     <Compile Include="Configuration\FinalConfiguration.cs" />
     <Compile Include="Configuration\FinalConfigurationChange.cs" />
     <Compile Include="Configuration\FinalConfigurationItem.cs" />
-    <Compile Include="CoreModel\IDiscoveredInfo.cs" />
-    <Compile Include="CoreModel\IAssemblyInfo.cs" />
-    <Compile Include="CoreModel\IDiscoveredErrorInfo.cs" />
-    <Compile Include="CoreModel\IPluginInfo.cs" />
-    <Compile Include="CoreModel\IServiceInfo.cs" />
-    <Compile Include="CoreModel\IServiceReferenceInfo.cs" />
-    <Compile Include="CoreModel\RunningRequirement.cs" />
+    <Compile Include="IDiscoveredInfo.cs" />
+    <Compile Include="IAssemblyInfo.cs" />
+    <Compile Include="IDiscoveredErrorInfo.cs" />
+    <Compile Include="IPluginInfo.cs" />
+    <Compile Include="IServiceInfo.cs" />
+    <Compile Include="IServiceReferenceInfo.cs" />
+    <Compile Include="RunningRequirement.cs" />
     <Compile Include="LiveModel\ILiveConfiguration.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />
-    <Compile Include="LiveModel\IYodiiEngine.cs" />
+    <Compile Include="IYodiiEngine.cs" />
     <Compile Include="LiveModel\LiveConfiguration.cs" />
     <Compile Include="LiveModel\RunningStatus.cs" />
     <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Configuration\packages.config" />
+    <None Include="packages.config" />
+    <None Include="SharedKey.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

@@ -9,7 +9,7 @@ using System.Diagnostics;
 using Yodii.Model;
 using Yodii.Model.ConfigurationSolver;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Engine
 {
     partial class PluginData
     {

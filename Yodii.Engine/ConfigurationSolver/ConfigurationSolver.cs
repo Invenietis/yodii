@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using Yodii.Model;
+using Yodii.Model.ConfigurationSolver;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Engine
 {
-
     public class ConfigurationSolver
     {
         Dictionary<IServiceInfo,ServiceData> _services;
@@ -65,9 +66,9 @@ namespace Yodii.Model.ConfigurationSolver
                     p.CheckReferencesWhenMustExist();
                 }
             }
-            List<IPluginInfo> blockingPlugins = null;
-            List<IServiceInfo> blockingServices = null;
-            
+            List<IPluginSolved> blockingPlugins = null;
+            List<IServiceSolved> blockingServices = null;
+      
             // Time to conclude about configuration and to initialize dynamic resolution.
             // Any Plugin that has a ConfigOriginalStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
             foreach( PluginData p in _plugins.Values )
@@ -76,8 +77,8 @@ namespace Yodii.Model.ConfigurationSolver
                 {
                     if( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
-                        if( blockingPlugins == null ) blockingPlugins = new List<IPluginInfo>();
-                        blockingPlugins.Add( p.PluginInfo );
+                        if( blockingPlugins == null ) blockingPlugins = new List<IPluginSolved>();
+                        blockingPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
                     }
                 }
             }
@@ -88,11 +89,12 @@ namespace Yodii.Model.ConfigurationSolver
                 {
                     if ( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable)
                     {
-                        if( blockingServices == null ) blockingServices = new List<IServiceInfo>();
-                        blockingServices.Add( s.ServiceInfo );
+                        if ( blockingServices == null ) blockingServices = new List<IServiceSolved>();
+                        blockingServices.Add( new ServiceSolved( s.ServiceInfo, s.DisabledReason, s.ConfigSolvedStatus, s.ConfigOriginalStatus, s.Status ) );
                     }
                 }
             }
+        
             if( blockingPlugins != null || blockingServices != null )
             {
                 return new ConfigurationSolverResult( blockingPlugins, blockingServices );

@@ -5,16 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 
-
 namespace Yodii.Model.ConfigurationSolver
 {
     public interface IConfigurationSolverResult
     {
         bool ConfigurationSuccess { get; }
 
-        IReadOnlyCollection<IPluginInfo> BlockingPlugins { get; }
+        //IReadOnlyList<IPluginSolved> BlkPlugins { get; }
 
-        IReadOnlyCollection<IServiceInfo> BlockingServices { get; }
+        //IReadOnlyList<IServiceSolved> BlkServices { get; }
+
+        IReadOnlyList<IPluginInfo> BlockingPlugins { get; }
+
+        IReadOnlyList<IServiceInfo> BlockServices { get; }
+        ////
 
         IReadOnlyCollection<IPluginInfo> DisabledPlugins { get; }
 

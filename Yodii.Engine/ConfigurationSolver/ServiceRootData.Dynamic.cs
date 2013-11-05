@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Engine
 {
     partial class ServiceRootData
     {

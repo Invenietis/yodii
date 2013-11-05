@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Yodii.Model;
+using Yodii.Model.ConfigurationSolver;
 
-namespace Yodii.Model.ConfigurationSolver
-{
-   
+namespace Yodii.Engine
+{   
     internal partial class ServiceData
     {
         readonly Dictionary<IServiceInfo,ServiceData> _allServices;

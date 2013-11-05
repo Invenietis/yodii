@@ -99,6 +99,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingServices.Count == 1 );
             Assert.That( res.BlockingPlugins.Count == 1 );
+            
             Assert.DoesNotThrow( () => res.BlockingServices.Single( s => s.ServiceFullName == "ServiceAx" ) );
         }
     }

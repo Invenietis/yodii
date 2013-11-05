@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Engine
 {
-    enum ServiceDisabledReason
+    public enum ServiceDisabledReason
     {
         /// <summary>
         /// The service is not disabled.
