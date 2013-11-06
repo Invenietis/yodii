@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Engine.Tests.Mocks
 {
@@ -48,12 +49,12 @@ namespace Yodii.Engine.Tests.Mocks
 
         IReadOnlyList<IPluginInfo> IDiscoveredInfo.PluginInfos
         {
-            get { return (IReadOnlyList<IPluginInfo>)_plugins.AsReadOnly(); }
+            get { return _plugins.AsReadOnlyList(); }
         }
 
         IReadOnlyList<IServiceInfo> IDiscoveredInfo.ServiceInfos
         {
-            get { return (IReadOnlyList<IServiceInfo>)_services.AsReadOnly(); }
+            get { return _services.AsReadOnlyList(); }
         }
     }
 }

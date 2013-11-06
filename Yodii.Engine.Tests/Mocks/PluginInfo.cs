@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Engine.Tests.Mocks
 {
@@ -92,7 +93,7 @@ namespace Yodii.Engine.Tests.Mocks
 
         IReadOnlyList<IServiceReferenceInfo> IPluginInfo.ServiceReferences
         {
-            get { return (IReadOnlyList<IServiceReferenceInfo>)_serviceReferences.AsReadOnly(); }
+            get { return _serviceReferences.AsReadOnlyList(); }
         }
     }
 }
