@@ -4,8 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using CK.Core;
+using Yodii.Model.ConfigurationSolver;
+=======
 using Yodii.Model.LiveModel;
+>>>>>>> f-discoverer-spi
 
 namespace Yodii.Model
 {

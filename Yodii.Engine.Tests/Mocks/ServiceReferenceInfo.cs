@@ -64,10 +64,5 @@ namespace Yodii.Engine.Tests.Mocks
             get { return _isServiceWrapped; }
             set { _isServiceWrapped = value; }
         }
-
-        public string ConstructorParmeterOrPropertyName
-        {
-            get { throw new NotImplementedException(); }
-        }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Yodii.Model;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Engine
 {
     enum ServiceRunningRequirementReason
     {

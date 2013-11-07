@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 using Yodii.Model;
-using Yodii.Model.ConfigurationSolver;
 
 namespace Yodii.Engine.Tests.Mocks
 {
