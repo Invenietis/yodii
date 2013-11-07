@@ -26,6 +26,5 @@ namespace Yodii.Engine
         Exception RuntimeError { get; }
 
         bool IsCulprit { get; }
-
     }
 }

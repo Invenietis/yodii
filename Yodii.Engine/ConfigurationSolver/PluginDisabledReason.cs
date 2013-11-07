@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    enum PluginDisabledReason
+    public enum PluginDisabledReason
     {
         /// <summary>
         /// The plugin is not disabled.

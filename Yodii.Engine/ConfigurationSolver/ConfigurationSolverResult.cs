@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using CK.Core;
-using Yodii.Model.ConfigurationSolver;
 using Yodii.Model;
 
 namespace Yodii.Engine
@@ -37,17 +36,20 @@ namespace Yodii.Engine
 
         public bool ConfigurationSuccess { get { return _blockingPlugins == null; } }
 
-        public IReadOnlyList<IPluginSolved> BlockingPlugins 
+        public IReadOnlyList<IServiceInfo> BlockingServices
         {
-            get { return _blockingPlugins.AsReadOnly(); } 
+            get
+            {
+                List<IServiceInfo> l = new List<IServiceInfo>();
+                for ( int i = 0; i < _blockingServices.Count; i++ )
+                {
+                    l.Add( _blockingServices[i].ServiceInfo );
+                }
+                return l.AsReadOnly();
+            }
         }
 
-        public IReadOnlyList<IServiceSolved> BlockingServices 
-        {
-            get { return _blockingServices.AsReadOnly(); } 
-        }
-
-        public IReadOnlyList<IPluginInfo> PluginInfos
+        public IReadOnlyList<IPluginInfo> BlockingPlugins
         {
             get
             {
@@ -56,7 +58,7 @@ namespace Yodii.Engine
                 {
                     l.Add(_blockingPlugins[i].PluginInfo);
                 }
-                return l;
+                return l.AsReadOnly();
             }
         }
 

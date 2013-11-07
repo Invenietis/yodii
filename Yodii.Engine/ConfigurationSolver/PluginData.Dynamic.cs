@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
-using Yodii.Model.ConfigurationSolver;
 
 namespace Yodii.Engine
 {

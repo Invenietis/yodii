@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Yodii.Model.ConfigurationSolver;
+using Yodii.Model.LiveModel;
 
-namespace Yodii.Model.LiveModel
+namespace Yodii.Model
 {
     class LiveConfiguration : ILiveConfiguration
     {

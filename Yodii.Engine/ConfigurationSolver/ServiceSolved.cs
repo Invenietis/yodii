@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Yodii.Model;
-using Yodii.Model.ConfigurationSolver;
 
 namespace Yodii.Engine
 {
@@ -27,8 +26,8 @@ namespace Yodii.Engine
             _runningStatus = nullable;
         }
 
-        bool IsBlocking { get { return _configSolvedStatus >= RunningRequirement.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } }
-        bool IsDisabled { get { return _serviceDisabledReason != ServiceDisabledReason.None; } }
+        public bool IsBlocking { get { return _configSolvedStatus >= RunningRequirement.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } }
+        public bool IsDisabled { get { return _serviceDisabledReason != ServiceDisabledReason.None; } }
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 

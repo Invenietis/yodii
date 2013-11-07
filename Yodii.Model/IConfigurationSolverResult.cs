@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Model
 {
     public interface IConfigurationSolverResult
     {
@@ -17,7 +17,8 @@ namespace Yodii.Model.ConfigurationSolver
 
         IReadOnlyList<IPluginInfo> BlockingPlugins { get; }
 
-        IReadOnlyList<IServiceInfo> BlockServices { get; }
+        IReadOnlyList<IServiceInfo> BlockingServices { get; }
+
         ////
 
         IReadOnlyCollection<IPluginInfo> DisabledPlugins { get; }
