@@ -269,5 +269,11 @@ namespace Yodii.Lab
         #region Private methods
         #endregion Private methods
 
+
+        public void SelectService( IServiceInfo serviceInfo )
+        {
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LiveServiceInfo.ServiceInfo == serviceInfo ).First();
+            SelectedVertex = vertexToSelect;
+        }
     }
 }

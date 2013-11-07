@@ -56,7 +56,10 @@
             <!--Tabs-->
             <Fluent:RibbonTabItem Header="Home">
                 <Fluent:RibbonGroupBox>
-                    <Fluent:Button Header="Delete" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
+                    <Fluent:Button Header="Add service" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"
+                                   Click="NewServiceButton_Click"
+                                   />
+                    <Fluent:Button Header="Delete selected" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
                                    Command="{Binding Path=RemoveSelectedVertex}"
                                    />
                 </Fluent:RibbonGroupBox>
