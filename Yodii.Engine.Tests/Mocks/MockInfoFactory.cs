@@ -125,7 +125,7 @@ namespace Yodii.Engine.Tests.Mocks
              *      |        +---+---*-+
              *  +---+-----+  |PluginA-2|
              *  |PluginA-1|  |         |
-             *  |         |   +---------+
+             *  |         |  +---------+
              *  +---------+
              */
 
