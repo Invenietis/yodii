@@ -160,9 +160,11 @@ namespace Yodii.Lab
 
                 if( value != _selectedVertex)
                 {
+                    if( _selectedVertex != null ) _selectedVertex.IsSelected = false;
                     _selectedVertex = value;
                     RaisePropertyChanged( "HasSelection" );
                     RaisePropertyChanged( "SelectedVertex" );
+                    if( value != null ) value.IsSelected = true;
                 }
             }
         }

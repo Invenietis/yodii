@@ -96,8 +96,8 @@
                 Grid.Column="0" Grid.Row="0"
                 Zoom="0.2"
                 ZoomBoxOpacity="0.5" Background="#ff656565">-->
-
-                <local:YodiiGraphLayout x:Name="graphLayout" Margin="10pt"
+                <Border Padding="30pt">
+                <local:YodiiGraphLayout x:Name="graphLayout" Margin="0pt"
                     Graph="{Binding Path=Graph}"
                     LayoutAlgorithmType="EfficientSugiyama"
                     OverlapRemovalAlgorithmType="FSA"
@@ -111,7 +111,7 @@
                             <ContentControl FontSize="10pt"
                                 Foreground="White"
                                 FontFamily="Segoe UI">
-                                <StackPanel Orientation="Vertical" Margin="1pt" MouseDown="StackPanel_MouseDown">
+                                <StackPanel Orientation="Vertical" Margin="1pt">
                                     <StackPanel Orientation="Horizontal">
                                         <Image x:Name="VertexIcon" Source="" Height="12pt" Margin="0,0,3pt,0" />
                                         <TextBlock x:Name="VertexTitle" Text="{Binding Path=Title, Mode=OneWay}" FontSize="12pt"/>
@@ -142,6 +142,7 @@
                                 <DataTrigger Binding="{Binding Path=IsPlugin, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexIcon" Property="Source" Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
                                 </DataTrigger>
+
 
                                 <!-- IsStarted text -->
                                 <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
@@ -177,6 +178,7 @@
                                             Background="Black"
                                             BorderThickness="1"
                                             CornerRadius="0,0,0,0"
+                                            MouseDown="StackPanel_MouseDown"
                                             Padding="5">
 
                                             <ContentPresenter Content="{TemplateBinding Vertex}"
@@ -202,6 +204,44 @@
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
+
+                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+
+                                <!-- Selected -->
+                                <DataTrigger Binding="{Binding Path=IsSelected, Mode=OneWay}" Value="true">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard AutoReverse="False">
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                      To="1.3"
+                                      Duration="00:00:00.25"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                      To="1.3"
+                                      Duration="00:00:00.25"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard AutoReverse="False">
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                      To="1"
+                                      Duration="00:00:00.25"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                      To="1"
+                                      Duration="00:00:00.25"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
                         </Style>
 
                         <!-- Global edge style -->
@@ -217,7 +257,8 @@
                             <Setter Property="ToolTip" Value="{StaticResource ToolTipContent}" />
                         </Style>
                     </local:YodiiGraphLayout.Resources>
-                </local:YodiiGraphLayout>
+                    </local:YodiiGraphLayout>
+                </Border>
                 <!--</WpfExtensions:ZoomControl>-->
             </xctk:Zoombox>
 

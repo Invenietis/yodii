@@ -13,6 +13,7 @@ namespace Yodii.Lab
         readonly bool _isPlugin;
         readonly LiveServiceInfo _liveService;
         readonly LivePluginInfo _livePlugin;
+        bool _isSelected = false;
         #endregion
 
         #region Constructors
@@ -32,6 +33,20 @@ namespace Yodii.Lab
         #region Properties
         public bool IsPlugin { get { return _isPlugin; } }
         public bool IsService { get { return !_isPlugin; } }
+
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            internal set
+            {
+                if( value != _isSelected )
+                {
+                    _isSelected = value;
+                    RaisePropertyChanged( "IsSelected" );
+                }
+            }
+        }
+
         // Global view properties
         public string Title
         {

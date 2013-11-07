@@ -42,19 +42,6 @@ namespace Yodii.Lab
             IPluginInfo pluginAx1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
 
             InitializeComponent();
-
-            // Reorder graph after 2 sec.
-            // TODO
-            Task.Factory.StartNew( new Action( () =>
-            {
-                Thread.Sleep( 2000 );
-                Application.Current.Dispatcher.BeginInvoke( new Action( () => { setLayout(); } ) );
-            } ) );
-        }
-
-        private void setLayout()
-        {
-            this.graphLayout.LayoutAlgorithmType = "ISOM";
         }
 
         private void ConfEditorButton_Click( object sender, RoutedEventArgs e )
