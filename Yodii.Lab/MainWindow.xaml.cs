@@ -45,11 +45,11 @@ namespace Yodii.Lab
 
             // Reorder graph after 2 sec.
             // TODO
-            Task.Factory.StartNew(new Action(() =>
+            Task.Factory.StartNew( new Action( () =>
             {
-                Thread.Sleep(2000);
-                Application.Current.Dispatcher.BeginInvoke(new Action(() => { setLayout(); }));
-            }));
+                Thread.Sleep( 2000 );
+                Application.Current.Dispatcher.BeginInvoke( new Action( () => { setLayout(); } ) );
+            } ) );
         }
 
         private void setLayout()
@@ -57,7 +57,7 @@ namespace Yodii.Lab
             this.graphLayout.LayoutAlgorithmType = "ISOM";
         }
 
-        private void ConfEditorButton_Click(object sender, RoutedEventArgs e)
+        private void ConfEditorButton_Click( object sender, RoutedEventArgs e )
         {
             if( _activeConfEditorWindow != null )
             {
@@ -65,14 +65,14 @@ namespace Yodii.Lab
             }
             else
             {
-                _activeConfEditorWindow = new ConfigurationEditorWindow(_vm.ConfigurationManager);
-                _activeConfEditorWindow.Closing += (s, e2) => { _activeConfEditorWindow = null; };
+                _activeConfEditorWindow = new ConfigurationEditorWindow( _vm.ConfigurationManager );
+                _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
 
                 _activeConfEditorWindow.Show();
             }
         }
 
-        private void NewGraphLayoutButton_Click(object sender, RoutedEventArgs e)
+        private void NewGraphLayoutButton_Click( object sender, RoutedEventArgs e )
         {
             MenuItem item = e.OriginalSource as MenuItem;
 
@@ -81,7 +81,7 @@ namespace Yodii.Lab
             this.graphLayout.LayoutAlgorithmType = newSelection;
         }
 
-        private void ReorderGraphButton_Click (object sender, RoutedEventArgs e)
+        private void ReorderGraphButton_Click( object sender, RoutedEventArgs e )
         {
             string oldLayout = this.graphLayout.LayoutAlgorithmType;
 
@@ -90,18 +90,54 @@ namespace Yodii.Lab
             this.graphLayout.LayoutAlgorithmType = oldLayout;
         }
 
-        private void StackPanel_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void StackPanel_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
         {
             FrameworkElement vertexPanel = sender as FrameworkElement;
 
             YodiiGraphVertex vertex = vertexPanel.DataContext as YodiiGraphVertex;
 
-            _vm.SelectVertex(vertex);
+            _vm.SelectedVertex = vertex;
         }
 
-        private void graphLayout_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void graphLayout_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
         {
-            _vm.SelectVertex(null);
+            _vm.SelectedVertex = null;
+        }
+
+        private void NewServiceButton_Click( object sender, RoutedEventArgs e )
+        {
+            IServiceInfo selectedService = null;
+
+            if( _vm.SelectedVertex != null )
+            {
+                if( _vm.SelectedVertex.IsService )
+                {
+                    selectedService = _vm.SelectedVertex.LiveServiceInfo.ServiceInfo;
+                }
+                else if( _vm.SelectedVertex.IsPlugin )
+                {
+                    selectedService = _vm.SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                }
+            }
+
+            AddServiceWindow window = new AddServiceWindow( _vm.ServiceInfos, selectedService );
+
+            window.NewServiceCreated += ( s, nse ) =>
+            {
+                if( _vm.ServiceInfos.Any( si => si.ServiceFullName == nse.ServiceName ) )
+                {
+                    nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
+                }
+                else
+                {
+                    IServiceInfo newService = _vm.CreateNewService( nse.ServiceName, nse.Generalization );
+                    _vm.SelectService( newService );
+                }
+            };
+
+            window.Owner = this;
+
+            window.ShowDialog();
         }
     }
 }

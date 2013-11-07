@@ -8,6 +8,37 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:sys="clr-namespace:System;assembly=mscorlib" 
         Title="Yodii Lab" Height="600" Width="800">
+    <Fluent:RibbonWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
+
+        <DataTemplate x:Key="serviceVertexPropertiesTemplate">
+            <Border Padding="5pt">
+                <StackPanel DataContext="{Binding Path=LiveServiceInfo}">
+                    <TextBlock>
+                        Service
+                    </TextBlock>
+                    <TextBlock Text="{Binding Path=ServiceInfo.ServiceFullName}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="pluginVertexPropertiesTemplate">
+            <Border Padding="5pt">
+                <StackPanel DataContext="{Binding Path=LivePluginInfo}">
+                    <TextBlock>
+                        Plugin
+                    </TextBlock>
+                    <TextBlock Text="{Binding Path=PluginInfo.PluginId}" />
+                    <TextBlock Text="{Binding Path=PluginInfo.PluginFullName}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <local:VertexPropertiesTemplateSelector 
+        PluginPropertiesTemplate="{StaticResource pluginVertexPropertiesTemplate}" 
+        ServicePropertiesTemplate="{StaticResource serviceVertexPropertiesTemplate}" 
+        x:Key="vertexPropertiesTemplateSelector" />
+    </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon DockPanel.Dock="Top">
             <Fluent:Ribbon.QuickAccessItems>
@@ -17,19 +48,18 @@
             <Fluent:Ribbon.Menu>
                 <Fluent:Backstage Header="File">
                     <Fluent:BackstageTabControl>
-                        <Fluent:BackstageTabItem Header="New"/>
-                        <Fluent:BackstageTabItem Header="Open"/>
+                        <Fluent:BackstageTabItem Header="New (TODO)"/>
+                        <Fluent:BackstageTabItem Header="Open (TODO)"/>
                     </Fluent:BackstageTabControl>
                 </Fluent:Backstage>
             </Fluent:Ribbon.Menu>
             <!--Tabs-->
             <Fluent:RibbonTabItem Header="Home">
                 <Fluent:RibbonGroupBox>
-                    <Fluent:Button Header="New service" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"/>
-                    <Fluent:Button Header="New plugin" LargeIcon="/Yodii.Lab;component/Icons/database_32xLG.png"/>
-                </Fluent:RibbonGroupBox>
-                <Fluent:RibbonGroupBox>
-                    <Fluent:Button Header="Delete" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
+                    <Fluent:Button Header="Add service" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"
+                                   Click="NewServiceButton_Click"
+                                   />
+                    <Fluent:Button Header="Delete selected" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
                                    Command="{Binding Path=RemoveSelectedVertex}"
                                    />
                 </Fluent:RibbonGroupBox>
@@ -46,14 +76,6 @@
                     </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
-            <!--Contextual Tabs-->
-            <Fluent:RibbonTabItem Header="Configuration" />
-            <Fluent:RibbonTabItem Header="Plugin" Group="{Binding ElementName=conditionalGroup}"/>
-            <Fluent:RibbonTabItem Header="Service" Group="{Binding ElementName=conditionalGroup}"/>
-            <!--Contextual Tab Groups-->
-            <Fluent:Ribbon.ContextualGroups>
-                <Fluent:RibbonContextualTabGroup Header="Selection" Visibility="Visible" x:Name="conditionalGroup" Background="Green" BorderBrush="Green" />
-            </Fluent:Ribbon.ContextualGroups>
         </Fluent:Ribbon>
         <!-- Central panel -->
         <Grid>
@@ -77,11 +99,11 @@
 
                 <local:YodiiGraphLayout x:Name="graphLayout" Margin="10pt"
                     Graph="{Binding Path=Graph}"
-                    LayoutAlgorithmType="{Binding Path=LayoutAlgorithmType, Mode=OneWay}"
+                    LayoutAlgorithmType="EfficientSugiyama"
                     OverlapRemovalAlgorithmType="FSA"
                     GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
                     HighlightAlgorithmType="Simple"
-                                    MaxHeight="2000" MaxWidth="2000">
+                    MaxHeight="2000" MaxWidth="2000">
 
                     <local:YodiiGraphLayout.Resources>
                         <!-- Vertex view structure/data -->
@@ -108,9 +130,9 @@
 
                             <DataTemplate.Triggers>
                                 <!-- Bold title on highlight -->
-                                <DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
+                                <!--<DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
-                                </DataTrigger>
+                                </DataTrigger>-->
 
                                 <!-- Service styling -->
                                 <DataTrigger Binding="{Binding Path=IsService, Mode=OneWay}" Value="true">
@@ -122,12 +144,12 @@
                                 </DataTrigger>
 
                                 <!-- IsStarted text -->
-                                <DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
+                                <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="false">
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Stopped" />
-                                </DataTrigger>
+                                </DataTrigger>-->
                             </DataTemplate.Triggers>
 
                         </DataTemplate>
@@ -202,26 +224,26 @@
             <!-- Right panel -->
             <GridSplitter ResizeDirection="Columns"
                           Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            <Border Padding="5" Background="LightGray" Grid.Row="0" Grid.Column="2" Grid.RowSpan="3">
-                <StackPanel>
-                    <TextBlock>Right panel</TextBlock>
-                </StackPanel>
-            </Border>
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          />
+            <ContentControl Grid.Row="0" Grid.Column="2"
+                          Content="{Binding Path=SelectedVertex, UpdateSourceTrigger=PropertyChanged}"
+                          ContentTemplateSelector="{StaticResource ResourceKey=vertexPropertiesTemplateSelector}" />
+
+
 
             <!-- Bottom panel -->
             <GridSplitter ResizeDirection="Rows"
                           Grid.Row="1" Grid.Column="0"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          />
             <Border Padding="5" Background="LightGray" Grid.Row="2" Grid.Column="0">
                 <StackPanel>
-                    <TextBlock>Bottom panel</TextBlock>
+                    <TextBlock>Right panel</TextBlock>
                 </StackPanel>
             </Border>
         </Grid>
     </DockPanel>
-    <Fluent:RibbonWindow.Resources>
-    </Fluent:RibbonWindow.Resources>
 </Fluent:RibbonWindow>
 
 
