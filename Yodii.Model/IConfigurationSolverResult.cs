@@ -11,13 +11,9 @@ namespace Yodii.Model
     {
         bool ConfigurationSuccess { get; }
 
-        //IReadOnlyList<IPluginSolved> BlkPlugins { get; }
+        IReadOnlyList<IPluginSolved> BlockingPlugins { get; }
 
-        //IReadOnlyList<IServiceSolved> BlkServices { get; }
-
-        IReadOnlyList<IPluginInfo> BlockingPlugins { get; }
-
-        IReadOnlyList<IServiceInfo> BlockingServices { get; }
+        IReadOnlyList<IServiceSolved> BlockingServices { get; }
 
         ////
 

@@ -36,31 +36,9 @@ namespace Yodii.Engine
 
         public bool ConfigurationSuccess { get { return _blockingPlugins == null; } }
 
-        public IReadOnlyList<IServiceInfo> BlockingServices
-        {
-            get
-            {
-                List<IServiceInfo> l = new List<IServiceInfo>();
-                for ( int i = 0; i < _blockingServices.Count; i++ )
-                {
-                    l.Add( _blockingServices[i].ServiceInfo );
-                }
-                return l.AsReadOnly();
-            }
-        }
+        public IReadOnlyList<IPluginSolved> BlockingPlugins { get { return _blockingPlugins.ToReadOnlyList(); } }
 
-        public IReadOnlyList<IPluginInfo> BlockingPlugins
-        {
-            get
-            {
-                List<IPluginInfo> l = new List<IPluginInfo>();
-                for ( int i = 0; i < _blockingPlugins.Count; i++ )
-                {
-                    l.Add(_blockingPlugins[i].PluginInfo);
-                }
-                return l.AsReadOnly();
-            }
-        }
+        public IReadOnlyList<IServiceSolved> BlockingServices { get { return _blockingServices.ToReadOnlyList(); } }
 
        //////
 

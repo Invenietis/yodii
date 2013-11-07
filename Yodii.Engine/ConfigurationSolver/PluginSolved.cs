@@ -19,8 +19,6 @@ namespace Yodii.Engine
 
         public PluginSolved( IPluginInfo p, PluginDisabledReason disabledReason, RunningRequirement configSolvedStatus, ConfigurationStatus configurationStatus, RunningStatus? runningStatus )
         {
-            Debug.Assert( configSolvedStatus != null );
-
             _pluginInfo = p;
             _disabledReason = disabledReason;
             _runningStatus = runningStatus;

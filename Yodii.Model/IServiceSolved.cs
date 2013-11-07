@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Yodii.Engine;
-using Yodii.Model;
 
-namespace Yodii.Engine
+namespace Yodii.Model
 {
     public interface IServiceSolved
     {
