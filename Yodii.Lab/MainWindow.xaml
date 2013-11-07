@@ -8,6 +8,37 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:sys="clr-namespace:System;assembly=mscorlib" 
         Title="Yodii Lab" Height="600" Width="800">
+    <Fluent:RibbonWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
+
+        <DataTemplate x:Key="serviceVertexPropertiesTemplate">
+            <Border Padding="5pt">
+                <StackPanel DataContext="{Binding Path=LiveServiceInfo}">
+                    <TextBlock>
+                        Service
+                    </TextBlock>
+                    <TextBlock Text="{Binding Path=ServiceInfo.ServiceFullName}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="pluginVertexPropertiesTemplate">
+            <Border Padding="5pt">
+                <StackPanel DataContext="{Binding Path=LivePluginInfo}">
+                    <TextBlock>
+                        Plugin
+                    </TextBlock>
+                    <TextBlock Text="{Binding Path=PluginInfo.PluginId}" />
+                    <TextBlock Text="{Binding Path=PluginInfo.PluginFullName}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <local:VertexPropertiesTemplateSelector 
+        PluginPropertiesTemplate="{StaticResource pluginVertexPropertiesTemplate}" 
+        ServicePropertiesTemplate="{StaticResource serviceVertexPropertiesTemplate}" 
+        x:Key="vertexPropertiesTemplateSelector" />
+    </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon DockPanel.Dock="Top">
             <Fluent:Ribbon.QuickAccessItems>
@@ -192,6 +223,12 @@
                           Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                           />
+            <ContentControl Grid.Row="0" Grid.Column="2"
+                          Content="{Binding Path=SelectedVertex, UpdateSourceTrigger=PropertyChanged}"
+                          ContentTemplateSelector="{StaticResource ResourceKey=vertexPropertiesTemplateSelector}" />
+
+
+
             <!-- Bottom panel -->
             <GridSplitter ResizeDirection="Rows"
                           Grid.Row="1" Grid.Column="0"
@@ -204,9 +241,6 @@
             </Border>
         </Grid>
     </DockPanel>
-    <Fluent:RibbonWindow.Resources>
-        <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
-    </Fluent:RibbonWindow.Resources>
 </Fluent:RibbonWindow>
 
 

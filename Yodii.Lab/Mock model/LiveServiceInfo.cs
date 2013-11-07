@@ -18,13 +18,14 @@ namespace Yodii.Lab.Mocks
         #endregion Fields
 
         #region Constructor
-        internal LiveServiceInfo( ServiceInfo serviceInfo, RunningRequirement configRequirement = RunningRequirement.Optional)
+        internal LiveServiceInfo( ServiceInfo serviceInfo, RunningRequirement configRequirement = RunningRequirement.Optional, LiveServiceInfo generalization = null)
         {
             Debug.Assert( serviceInfo != null );
 
             _serviceInfo = serviceInfo;
             _configRequirement = configRequirement;
-            _status = RunningStatus.Stopped;
+            _status = RunningStatus.Stopped; // TODO: Status changes
+            _generalization = generalization;
         }
         #endregion
 
@@ -39,17 +40,17 @@ namespace Yodii.Lab.Mocks
             get { return _serviceInfo; }
         }
 
-        RunningRequirement ILiveServiceInfo.ConfigRequirement
+        public RunningRequirement ConfigRequirement
         {
             get { return _configRequirement; }
         }
 
-        RunningStatus ILiveServiceInfo.Status
+        public RunningStatus Status
         {
             get { return _status; }
         }
 
-        bool ILiveServiceInfo.IsRunning
+        public bool IsRunning
         {
             get { return _status == RunningStatus.Running || _status == RunningStatus.RunningLocked; }
         }
@@ -72,6 +73,14 @@ namespace Yodii.Lab.Mocks
         public LivePluginInfo RunningPlugin
         {
             get { return _runningPlugin; }
+            set
+            {
+                if( value != _runningPlugin )
+                {
+                    _runningPlugin = value;
+                    RaisePropertyChanged( "RunningPlugin" );
+                }
+            }
         }
         #endregion Properties
 

@@ -13,10 +13,10 @@ namespace Yodii.Lab
 {
     public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
-        readonly ICKObservableReadOnlyCollection<IServiceInfo> _serviceInfos;
-        readonly ICKObservableReadOnlyCollection<IPluginInfo> _pluginInfos;
+        readonly ICKObservableReadOnlyCollection<LiveServiceInfo> _serviceInfos;
+        readonly ICKObservableReadOnlyCollection<LivePluginInfo> _pluginInfos;
 
-        internal YodiiGraph( ICKObservableReadOnlyCollection<IServiceInfo> serviceInfos, ICKObservableReadOnlyCollection<IPluginInfo> pluginInfos )
+        internal YodiiGraph( ICKObservableReadOnlyCollection<LiveServiceInfo> serviceInfos, ICKObservableReadOnlyCollection<LivePluginInfo> pluginInfos )
             : base()
         {
             Debug.Assert( serviceInfos != null );
@@ -29,9 +29,9 @@ namespace Yodii.Lab
             _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
         }
 
-        private YodiiGraphVertex FindOrCreateServiceVertex( IServiceInfo service )
+        private YodiiGraphVertex FindOrCreateServiceVertex( LiveServiceInfo service )
         {
-            YodiiGraphVertex serviceVertex = this.Vertices.FirstOrDefault( v => v.ServiceInfo == service );
+            YodiiGraphVertex serviceVertex = this.Vertices.FirstOrDefault( v => v.LiveServiceInfo == service );
             if( serviceVertex == null )
             {
                 serviceVertex = CreateServiceVertex( service );
@@ -39,9 +39,9 @@ namespace Yodii.Lab
             return serviceVertex;
         }
 
-        private YodiiGraphVertex FindOrCreatePluginVertex( PluginInfo plugin )
+        private YodiiGraphVertex FindOrCreatePluginVertex( LivePluginInfo plugin )
         {
-            YodiiGraphVertex pluginVertex = this.Vertices.FirstOrDefault( v => v.PluginInfo == plugin );
+            YodiiGraphVertex pluginVertex = this.Vertices.FirstOrDefault( v => v.LivePluginInfo == plugin );
             if( plugin == null )
             {
                 pluginVertex = CreatePluginVertex( plugin );
@@ -49,12 +49,12 @@ namespace Yodii.Lab
             return pluginVertex;
         }
 
-        private YodiiGraphVertex CreatePluginVertex( PluginInfo plugin )
+        private YodiiGraphVertex CreatePluginVertex( LivePluginInfo plugin )
         {
             YodiiGraphVertex pluginVertex = new YodiiGraphVertex( plugin );
             this.AddVertex( pluginVertex );
 
-            if( plugin.Service != null )
+            if( plugin.PluginInfo.Service != null )
             {
                 YodiiGraphVertex serviceVertex = FindOrCreateServiceVertex( plugin.Service );
 
@@ -62,7 +62,7 @@ namespace Yodii.Lab
                 this.AddEdge( serviceEdge );
             }
 
-            foreach( IServiceReferenceInfo reference in plugin.ServiceReferences )
+            foreach( IServiceReferenceInfo reference in plugin.PluginInfo.ServiceReferences )
             {
                 YodiiGraphVertex refVertex = FindOrCreateServiceVertex( reference.Reference );
 
@@ -70,9 +70,25 @@ namespace Yodii.Lab
                 this.AddEdge( refEdge );
             }
 
-            plugin.InternalServiceReferences.CollectionChanged += ObservableServiceReferences_CollectionChanged;
+            plugin.PluginInfo.InternalServiceReferences.CollectionChanged += ObservableServiceReferences_CollectionChanged;
 
             return pluginVertex;
+        }
+
+        private YodiiGraphVertex FindOrCreateServiceVertex( IServiceInfo serviceInfo )
+        {
+            LiveServiceInfo info = _serviceInfos.Where( s => s.ServiceInfo == serviceInfo ).FirstOrDefault();
+            Debug.Assert( info != null );
+
+            return FindOrCreateServiceVertex( info );
+        }
+
+        private YodiiGraphVertex FindOrCreatePluginVertex( IPluginInfo pluginInfo )
+        {
+            LivePluginInfo info = _pluginInfos.Where( p => p.PluginInfo == pluginInfo ).FirstOrDefault();
+            Debug.Assert( info != null );
+
+            return FindOrCreatePluginVertex( info );
         }
 
         void ObservableServiceReferences_CollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
@@ -90,15 +106,15 @@ namespace Yodii.Lab
             {
                 IServiceReferenceInfo reference = (IServiceReferenceInfo)e.OldItems[e.OldStartingIndex];
 
-                this.RemoveEdgeIf( e2 => e2.Source.PluginInfo == reference.Owner && e2.Target.ServiceInfo == reference.Reference && e2.ReferenceRequirement == reference.Requirement );
+                this.RemoveEdgeIf( e2 => e2.Source.LivePluginInfo == reference.Owner && e2.Target.LiveServiceInfo == reference.Reference && e2.ReferenceRequirement == reference.Requirement );
             }
         }
 
-        private void RemovePluginVertex( PluginInfo plugin )
+        private void RemovePluginVertex( LivePluginInfo plugin )
         {
-            YodiiGraphVertex toRemove = Vertices.Where( v => v.PluginInfo == plugin ).FirstOrDefault();
+            YodiiGraphVertex toRemove = Vertices.Where( v => v.LivePluginInfo == plugin ).FirstOrDefault();
 
-            plugin.InternalServiceReferences.CollectionChanged -= ObservableServiceReferences_CollectionChanged;
+            plugin.PluginInfo.InternalServiceReferences.CollectionChanged -= ObservableServiceReferences_CollectionChanged;
 
             if( toRemove != null )
             {
@@ -111,7 +127,7 @@ namespace Yodii.Lab
             this.RemoveVertexIf( v => v.IsPlugin );
         }
 
-        private YodiiGraphVertex CreateServiceVertex( IServiceInfo service )
+        private YodiiGraphVertex CreateServiceVertex( LiveServiceInfo service )
         {
             YodiiGraphVertex serviceVertex = new YodiiGraphVertex( service );
             this.AddVertex( serviceVertex );
@@ -128,9 +144,9 @@ namespace Yodii.Lab
             return serviceVertex;
         }
 
-        private void RemoveServiceVertex( IServiceInfo service )
+        private void RemoveServiceVertex( LiveServiceInfo service )
         {
-            YodiiGraphVertex toRemove = Vertices.Where( v => v.ServiceInfo == service ).FirstOrDefault();
+            YodiiGraphVertex toRemove = Vertices.Where( v => v.LiveServiceInfo == service ).FirstOrDefault();
             if( toRemove != null )
             {
                 RemoveVertex( toRemove );
@@ -146,16 +162,16 @@ namespace Yodii.Lab
         {
             if( e.Action == NotifyCollectionChangedAction.Add )
             {
-                CreatePluginVertex( (PluginInfo)e.NewItems[0] );
+                CreatePluginVertex( (LivePluginInfo)e.NewItems[0] );
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
             {
-                RemovePluginVertex( (PluginInfo)e.OldItems[0] );
+                RemovePluginVertex( (LivePluginInfo)e.OldItems[0] );
             }
             else if( e.Action == NotifyCollectionChangedAction.Replace )
             {
-                RemovePluginVertex( (PluginInfo)e.OldItems[0] );
-                CreatePluginVertex( (PluginInfo)e.NewItems[0] );
+                RemovePluginVertex( (LivePluginInfo)e.OldItems[0] );
+                CreatePluginVertex( (LivePluginInfo)e.NewItems[0] );
             }
             else if( e.Action == NotifyCollectionChangedAction.Reset )
             {
@@ -167,16 +183,16 @@ namespace Yodii.Lab
         {
             if( e.Action == NotifyCollectionChangedAction.Add )
             {
-                CreateServiceVertex( (IServiceInfo)e.NewItems[0] );
+                CreateServiceVertex( (LiveServiceInfo)e.NewItems[0] );
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
             {
-                RemoveServiceVertex( (IServiceInfo)e.OldItems[0] );
+                RemoveServiceVertex( (LiveServiceInfo)e.OldItems[0] );
             }
             else if( e.Action == NotifyCollectionChangedAction.Replace )
             {
-                RemoveServiceVertex( (IServiceInfo)e.OldItems[0] );
-                CreateServiceVertex( (IServiceInfo)e.NewItems[0] );
+                RemoveServiceVertex( (LiveServiceInfo)e.OldItems[0] );
+                CreateServiceVertex( (LiveServiceInfo)e.NewItems[0] );
             }
             else if( e.Action == NotifyCollectionChangedAction.Reset )
             {

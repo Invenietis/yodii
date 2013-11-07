@@ -8,6 +8,7 @@ using CK.Core;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
 using System.Windows.Input;
+using System.Collections.Specialized;
 
 namespace Yodii.Lab
 {
@@ -16,9 +17,6 @@ namespace Yodii.Lab
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceInfoManager;
         readonly ConfigurationManager _configurationManager;
-
-        readonly CKObservableSortedArrayKeyList<LivePluginInfo, Guid> _livePlugins;
-        readonly CKObservableSortedArrayKeyList<LiveServiceInfo, string> _liveServices;
 
         YodiiGraphVertex _selectedVertex;
 
@@ -29,10 +27,11 @@ namespace Yodii.Lab
         {
             _configurationManager = new ConfigurationManager();
             _serviceInfoManager = new ServiceInfoManager();
-            _graph = new YodiiGraph( _serviceInfoManager.ServiceInfos, _serviceInfoManager.PluginInfos );
 
-            _livePlugins = new CKObservableSortedArrayKeyList<LivePluginInfo, Guid>( p => p.PluginInfo.PluginId );
-            _liveServices = new CKObservableSortedArrayKeyList<LiveServiceInfo, string>( s => s.ServiceInfo.ServiceFullName );
+            // Live plugins managed in the ServiceInfoManager.
+
+            _graph = new YodiiGraph( _serviceInfoManager.LiveServiceInfos, _serviceInfoManager.LivePluginInfos );
+
 
             initCommands();
         }
@@ -53,11 +52,13 @@ namespace Yodii.Lab
 
  	        if( SelectedVertex.IsPlugin )
             {
-                this.RemovePlugin(SelectedVertex.PluginInfo);
+                this.RemovePlugin(SelectedVertex.LivePluginInfo.PluginInfo);
             } else if( SelectedVertex.IsService )
             {
-                this.RemoveService(SelectedVertex.ServiceInfo);
+                this.RemoveService(SelectedVertex.LiveServiceInfo.ServiceInfo);
             }
+
+            SelectedVertex = null;
         }
         #endregion #region Command handlers
 
@@ -90,6 +91,22 @@ namespace Yodii.Lab
         public ICKObservableReadOnlyCollection<IPluginInfo> PluginInfos
         {
             get { return _serviceInfoManager.PluginInfos; }
+        }
+
+        /// <summary>
+        /// Services created in this Lab (live).
+        /// </summary>
+        public ICKObservableReadOnlyCollection<ILiveServiceInfo> LiveServiceInfos
+        {
+            get { return _serviceInfoManager.LiveServiceInfos; }
+        }
+
+        /// <summary>
+        /// Plugins created in this Lab (live).
+        /// </summary>
+        public ICKObservableReadOnlyCollection<ILivePluginInfo> LivePluginInfos
+        {
+            get { return _serviceInfoManager.LivePluginInfos; }
         }
 
         /// <summary>
@@ -144,8 +161,8 @@ namespace Yodii.Lab
                 if( value != _selectedVertex)
                 {
                     _selectedVertex = value;
-                    RaisePropertyChanged("HasSelection");
-                    RaisePropertyChanged("SelectedVertex");
+                    RaisePropertyChanged( "HasSelection" );
+                    RaisePropertyChanged( "SelectedVertex" );
                 }
             }
         }
@@ -186,9 +203,7 @@ namespace Yodii.Lab
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
             ServiceInfo newService = _serviceInfoManager.CreateNewService( serviceName, (ServiceInfo)generalization );
-            
-            LiveServiceInfo newLiveService = new LiveServiceInfo( newService );
-            _liveServices.Add( newLiveService ); // Throws on duplicate
+       
 
             return newService;
         }
@@ -220,9 +235,6 @@ namespace Yodii.Lab
 
             PluginInfo newPlugin = _serviceInfoManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
 
-            LivePluginInfo newLivePlugin = new LivePluginInfo( newPlugin );
-            _livePlugins.Add( newLivePlugin );
-
             return newPlugin;
         }
 
@@ -242,35 +254,20 @@ namespace Yodii.Lab
 
             _serviceInfoManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
         }
+
+        public void RemovePlugin( IPluginInfo pluginInfo )
+        {
+            _serviceInfoManager.RemovePlugin( (PluginInfo)pluginInfo );
+        }
+
+        public void RemoveService( IServiceInfo serviceInfo )
+        {
+            _serviceInfoManager.RemoveService( (ServiceInfo)serviceInfo );
+        }
         #endregion Public methods
 
         #region Private methods
         #endregion Private methods
 
-        public void RemovePlugin( ILivePluginInfo livePluginInfo )
-        {
-            _livePlugins.Remove( (LivePluginInfo)livePluginInfo );
-            _serviceInfoManager.RemovePlugin( (PluginInfo)livePluginInfo.PluginInfo );
-        }
-
-        public void RemoveService( ILiveServiceInfo liveServiceInfo )
-        {
-            _liveServices.Remove( (LiveServiceInfo)liveServiceInfo );
-            _serviceInfoManager.RemoveService( (ServiceInfo)liveServiceInfo.ServiceInfo );
-        }
-
-        public void RemovePlugin( IPluginInfo pluginInfo )
-        {
-            LivePluginInfo livePluginInfo = _livePlugins.GetByKey( pluginInfo.PluginId );
-            Debug.Assert( livePluginInfo != null, "Live plugin was found in collection" );
-            RemovePlugin( livePluginInfo );
-        }
-
-        public void RemoveService( IServiceInfo serviceInfo )
-        {
-            LiveServiceInfo liveServiceInfo = _liveServices.GetByKey( serviceInfo.ServiceFullName );
-            Debug.Assert( liveServiceInfo != null, "Live service was found in collection" );
-            RemoveService( liveServiceInfo );
-        }
     }
 }

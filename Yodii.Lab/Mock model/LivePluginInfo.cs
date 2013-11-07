@@ -19,6 +19,11 @@ namespace Yodii.Lab.Mocks
         {
             get { return _pluginInfo; }
         }
+
+        public LiveServiceInfo Service
+        {
+            get { return _service; }
+        }
         #endregion Properties
 
         internal LivePluginInfo( PluginInfo pluginInfo, RunningRequirement configRequirement = RunningRequirement.Optional, LiveServiceInfo liveServiceInfo = null )

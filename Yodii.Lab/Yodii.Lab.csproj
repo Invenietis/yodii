@@ -125,6 +125,7 @@
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ViewModelBase.cs" />
+    <Compile Include="VertexPropertiesTemplateSelector.cs" />
     <Page Include="ConfigurationEditor\ConfigurationEditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

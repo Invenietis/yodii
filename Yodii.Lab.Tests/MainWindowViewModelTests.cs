@@ -10,7 +10,7 @@ using Yodii.Lab.Mocks;
 
 namespace Yodii.Lab.Tests
 {
-    [TestFixture(Category="Yodii.Lab")]
+    [TestFixture( Category = "Yodii.Lab" )]
     public class MainWindowViewModelTests
     {
         [Test]
@@ -37,30 +37,30 @@ namespace Yodii.Lab.Tests
             // Check integrity, by service
             foreach( var serviceInfo in vm.ServiceInfos )
             {
-                Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.ServiceInfo == serviceInfo ) );
+                Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.LiveServiceInfo.ServiceInfo == serviceInfo ) );
                 if( serviceInfo.Generalization != null )
                 {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Specialization && e.Source.ServiceInfo == serviceInfo && e.Target.ServiceInfo == serviceInfo.Generalization ) );
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Specialization && e.Source.LiveServiceInfo.ServiceInfo == serviceInfo && e.Target.LiveServiceInfo.ServiceInfo == serviceInfo.Generalization ) );
                 }
                 foreach( var p in serviceInfo.Implementations )
                 {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Implementation && e.Source.PluginInfo == p && e.Target.ServiceInfo == serviceInfo ) );
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Implementation && e.Source.LivePluginInfo.PluginInfo == p && e.Target.LiveServiceInfo.ServiceInfo == serviceInfo ) );
                 }
             }
 
             // Check by plugin
             foreach( var pluginInfo in vm.PluginInfos )
             {
-                Assert.That( vm.Graph.Vertices.Any( v => v.IsPlugin && v.PluginInfo == pluginInfo ) );
+                Assert.That( vm.Graph.Vertices.Any( v => v.IsPlugin && v.LivePluginInfo.PluginInfo == pluginInfo ) );
 
                 if( pluginInfo.Service != null )
                 {
-                    Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.ServiceInfo == pluginInfo.Service ) );
+                    Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.LiveServiceInfo.ServiceInfo == pluginInfo.Service ) );
                 }
 
                 foreach( var reference in pluginInfo.ServiceReferences )
                 {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.ServiceReference && e.Source.PluginInfo == reference.Owner && e.Target.ServiceInfo == reference.Reference && e.ReferenceRequirement == reference.Requirement ) );
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.ServiceReference && e.Source.LivePluginInfo.PluginInfo == reference.Owner && e.Target.LiveServiceInfo.ServiceInfo == reference.Reference && e.ReferenceRequirement == reference.Requirement ) );
                 }
             }
 
@@ -69,6 +69,9 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 7 );
             Assert.That( vm.Graph.Edges.Count() == 6 );
+
+            Assert.That( vm.LivePluginInfos.Count == 4 );
+            Assert.That( vm.LiveServiceInfos.Count == 3 );
             /**
              *                 +--------+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
@@ -93,6 +96,9 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 5 );
             Assert.That( vm.Graph.Edges.Count() == 4 );
+
+            Assert.That( vm.LivePluginInfos.Count == 3 );
+            Assert.That( vm.LiveServiceInfos.Count == 2 );
             /**
              *                 +--------+                              +--------+
              *                 |ServiceA+-------+   *----------------->|ServiceB|
@@ -144,13 +150,13 @@ namespace Yodii.Lab.Tests
             foreach( YodiiGraphVertex v in vm.Graph.Vertices )
             {
                 vm.SelectedVertex = v;
-                Assert.That(vm.SelectedVertex == v);
-                Assert.That(vm.HasSelection);
+                Assert.That( vm.SelectedVertex == v );
+                Assert.That( vm.HasSelection );
             }
 
             vm.SelectedVertex = null;
-            Assert.That(vm.SelectedVertex == null);
-            Assert.That(!vm.HasSelection);
+            Assert.That( vm.SelectedVertex == null );
+            Assert.That( !vm.HasSelection );
         }
 
         internal static MainWindowViewModel CreateViewModelWithGraph001()
@@ -181,16 +187,28 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.ServiceInfos.Contains( serviceA ) );
             Assert.That( vm.ServiceInfos.Count == 1 );
+            Assert.That( vm.LiveServiceInfos.Count == 1 );
+            Assert.That( vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceA ).Count() == 1 );
+
+            ILiveServiceInfo liveServiceA = vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
 
             IServiceInfo serviceB = vm.CreateNewService( "ServiceB" );
 
             Assert.That( vm.ServiceInfos.Contains( serviceB ) );
             Assert.That( vm.ServiceInfos.Count == 2 );
+            Assert.That( vm.LiveServiceInfos.Count == 2 );
+            Assert.That( vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceB ).Count() == 1 );
 
             IServiceInfo serviceAx = vm.CreateNewService( "ServiceAx", serviceA );
 
             Assert.That( vm.ServiceInfos.Contains( serviceAx ) );
             Assert.That( vm.ServiceInfos.Count == 3 );
+            Assert.That( vm.LiveServiceInfos.Count == 3 );
+            Assert.That( vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceAx ).Count() == 1 );
+
+            ILiveServiceInfo liveServiceAx = vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
+
+            Assert.That( liveServiceAx.Generalization == liveServiceA );
 
             Assert.That( serviceA.Generalization == null );
             Assert.That( serviceB.Generalization == null );
