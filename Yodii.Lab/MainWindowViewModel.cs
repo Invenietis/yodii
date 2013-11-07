@@ -14,8 +14,12 @@ namespace Yodii.Lab
     public class MainWindowViewModel : ViewModelBase
     {
         readonly YodiiGraph _graph;
-        readonly ServiceInfoManager _serviceManager;
+        readonly ServiceInfoManager _serviceInfoManager;
         readonly ConfigurationManager _configurationManager;
+
+        readonly CKObservableSortedArrayKeyList<LivePluginInfo, Guid> _livePlugins;
+        readonly CKObservableSortedArrayKeyList<LiveServiceInfo, string> _liveServices;
+
         YodiiGraphVertex _selectedVertex;
 
         bool _isLive;
@@ -24,8 +28,11 @@ namespace Yodii.Lab
         public MainWindowViewModel()
         {
             _configurationManager = new ConfigurationManager();
-            _serviceManager = new ServiceInfoManager();
-            _graph = new YodiiGraph( _serviceManager.ServiceInfos, _serviceManager.PluginInfos );
+            _serviceInfoManager = new ServiceInfoManager();
+            _graph = new YodiiGraph( _serviceInfoManager.ServiceInfos, _serviceInfoManager.PluginInfos );
+
+            _livePlugins = new CKObservableSortedArrayKeyList<LivePluginInfo, Guid>( p => p.PluginInfo.PluginId );
+            _liveServices = new CKObservableSortedArrayKeyList<LiveServiceInfo, string>( s => s.ServiceInfo.ServiceFullName );
 
             initCommands();
         }
@@ -74,7 +81,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IServiceInfo> ServiceInfos
         {
-            get { return _serviceManager.ServiceInfos; }
+            get { return _serviceInfoManager.ServiceInfos; }
         }
 
         /// <summary>
@@ -82,7 +89,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IPluginInfo> PluginInfos
         {
-            get { return _serviceManager.PluginInfos; }
+            get { return _serviceInfoManager.PluginInfos; }
         }
 
         /// <summary>
@@ -121,6 +128,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// The currently selected graph vertex.
+        /// </summary>
         public YodiiGraphVertex SelectedVertex
         {
             get
@@ -129,12 +139,23 @@ namespace Yodii.Lab
             }
             set
             {
+                Debug.Assert(value == null || Graph.Vertices.Contains(value), "Graph contains vertex to select");
+
                 if( value != _selectedVertex)
                 {
                     _selectedVertex = value;
+                    RaisePropertyChanged("HasSelection");
                     RaisePropertyChanged("SelectedVertex");
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns true if a vertex is selected.
+        /// </summary>
+        public bool HasSelection
+        {
+            get { return SelectedVertex != null; }
         }
 
         #region Command properties
@@ -151,11 +172,7 @@ namespace Yodii.Lab
         /// <seealso cref="CreateNewService( string, IServiceInfo )">Create a new service, which specializes another.</seealso>
         public IServiceInfo CreateNewService( string serviceName )
         {
-            if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
-
-            ServiceInfo newService = _serviceManager.CreateNewService( serviceName );
-
-            return newService;
+            return CreateNewService( serviceName, null );
         }
 
         /// <summary>
@@ -164,12 +181,14 @@ namespace Yodii.Lab
         /// <param name="serviceName">Name of the new service</param>
         /// <param name="generalization">Specialized service</param>
         /// <returns>New service</returns>
-        public IServiceInfo CreateNewService( string serviceName, IServiceInfo generalization )
+        public IServiceInfo CreateNewService( string serviceName, IServiceInfo generalization = null )
         {
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
-            if( generalization == null ) throw new ArgumentNullException( "generalization" );
 
-            ServiceInfo newService = _serviceManager.CreateNewService( serviceName, (ServiceInfo)generalization );
+            ServiceInfo newService = _serviceInfoManager.CreateNewService( serviceName, (ServiceInfo)generalization );
+            
+            LiveServiceInfo newLiveService = new LiveServiceInfo( newService );
+            _liveServices.Add( newLiveService ); // Throws on duplicate
 
             return newService;
         }
@@ -182,12 +201,7 @@ namespace Yodii.Lab
         /// <returns>New plugin</returns>
         public IPluginInfo CreateNewPlugin(Guid pluginGuid, string pluginName)
         {
-            if( pluginGuid == null ) throw new ArgumentNullException( "pluginGuid" );
-            if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
-
-            PluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName );
-
-            return newPlugin;
+            return CreateNewPlugin( pluginGuid, pluginName, null );
         }
 
         /// <summary>
@@ -197,15 +211,17 @@ namespace Yodii.Lab
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        public IPluginInfo CreateNewPlugin(Guid pluginGuid, string pluginName, IServiceInfo service)
+        public IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, IServiceInfo service )
         {
             if( pluginGuid == null ) throw new ArgumentNullException( "pluginGuid" );
             if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
-            if( service == null ) throw new ArgumentNullException( "service" );
 
-            if( !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
+            if( service != null && !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
-            PluginInfo newPlugin = _serviceManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
+            PluginInfo newPlugin = _serviceInfoManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
+
+            LivePluginInfo newLivePlugin = new LivePluginInfo( newPlugin );
+            _livePlugins.Add( newLivePlugin );
 
             return newPlugin;
         }
@@ -224,26 +240,37 @@ namespace Yodii.Lab
             if( !ServiceInfos.Contains( (ServiceInfo)service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
             if( !PluginInfos.Contains( (PluginInfo)plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
 
-            _serviceManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
+            _serviceInfoManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
         }
         #endregion Public methods
 
         #region Private methods
         #endregion Private methods
 
+        public void RemovePlugin( ILivePluginInfo livePluginInfo )
+        {
+            _livePlugins.Remove( (LivePluginInfo)livePluginInfo );
+            _serviceInfoManager.RemovePlugin( (PluginInfo)livePluginInfo.PluginInfo );
+        }
+
+        public void RemoveService( ILiveServiceInfo liveServiceInfo )
+        {
+            _liveServices.Remove( (LiveServiceInfo)liveServiceInfo );
+            _serviceInfoManager.RemoveService( (ServiceInfo)liveServiceInfo.ServiceInfo );
+        }
+
         public void RemovePlugin( IPluginInfo pluginInfo )
         {
-            _serviceManager.RemovePlugin( (PluginInfo)pluginInfo );
+            LivePluginInfo livePluginInfo = _livePlugins.GetByKey( pluginInfo.PluginId );
+            Debug.Assert( livePluginInfo != null, "Live plugin was found in collection" );
+            RemovePlugin( livePluginInfo );
         }
 
-        public void RemoveService( IServiceInfo serviceInfo)
+        public void RemoveService( IServiceInfo serviceInfo )
         {
-            _serviceManager.RemoveService( (ServiceInfo)serviceInfo );
-        }
-
-        internal void SelectVertex(YodiiGraphVertex vertex)
-        {
-            SelectedVertex = vertex;
+            LiveServiceInfo liveServiceInfo = _liveServices.GetByKey( serviceInfo.ServiceFullName );
+            Debug.Assert( liveServiceInfo != null, "Live service was found in collection" );
+            RemoveService( liveServiceInfo );
         }
     }
 }

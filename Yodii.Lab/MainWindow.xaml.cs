@@ -96,12 +96,12 @@ namespace Yodii.Lab
 
             YodiiGraphVertex vertex = vertexPanel.DataContext as YodiiGraphVertex;
 
-            _vm.SelectVertex(vertex);
+            _vm.SelectedVertex = vertex;
         }
 
         private void graphLayout_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            _vm.SelectVertex(null);
+            _vm.SelectedVertex = null;
         }
     }
 }

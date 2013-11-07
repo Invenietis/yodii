@@ -16,13 +16,13 @@ namespace Yodii.Lab.Tests
         [Test]
         public void AddServicesPluginsTest()
         {
-            CreateBasePlugins();
+            CreateViewModelWithGraph001();
         }
 
         [Test]
         public void GraphIntegrityTest()
         {
-            var vm = CreateBasePlugins();
+            var vm = CreateViewModelWithGraph001();
 
             Assert.That( vm.Graph.Vertices.Count() == 8 );
             Assert.That( vm.Graph.Edges.Count() == 6 );
@@ -127,7 +127,7 @@ namespace Yodii.Lab.Tests
 
 
             // Reset
-            vm = CreateBasePlugins();
+            vm = CreateViewModelWithGraph001();
 
             // Deleting a root service entirely destroys its tree
             vm.RemoveService( vm.ServiceInfos.Where( x => x.ServiceFullName == "ServiceA" ).First() );
@@ -136,7 +136,24 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.Graph.Edges.Count() == 1 );
         }
 
-        internal MainWindowViewModel CreateBasePlugins()
+        [Test]
+        public void VertexSelection()
+        {
+            MainWindowViewModel vm = CreateViewModelWithGraph001();
+
+            foreach( YodiiGraphVertex v in vm.Graph.Vertices )
+            {
+                vm.SelectedVertex = v;
+                Assert.That(vm.SelectedVertex == v);
+                Assert.That(vm.HasSelection);
+            }
+
+            vm.SelectedVertex = null;
+            Assert.That(vm.SelectedVertex == null);
+            Assert.That(!vm.HasSelection);
+        }
+
+        internal static MainWindowViewModel CreateViewModelWithGraph001()
         {
             /** Imagine a graph like this:
              *                 +--------+                              +--------+

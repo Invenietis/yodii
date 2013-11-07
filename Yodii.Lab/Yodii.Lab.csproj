@@ -64,6 +64,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -118,6 +119,8 @@
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
     <Compile Include="Mock model\ServiceInfo.cs" />
+    <Compile Include="Mock model\LivePluginInfo.cs" />
+    <Compile Include="Mock model\LiveServiceInfo.cs" />
     <Compile Include="ServiceInfoManager.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
     <Compile Include="Utils\RelayCommand.cs" />

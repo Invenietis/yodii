@@ -43,21 +43,6 @@ namespace Yodii.Lab
         #endregion Properties
 
         #region Internal methods
-        /// <summary>
-        /// Creates a new named service, which does not specialize another service.
-        /// </summary>
-        /// <param name="serviceName">Name of the new service</param>
-        /// <returns>New service</returns>
-        /// <seealso cref="CreateNewService( string, IServiceInfo )">Create a new service, which specializes another.</seealso>
-        internal ServiceInfo CreateNewService( string serviceName )
-        {
-            Debug.Assert( serviceName != null );
-
-            ServiceInfo newService = new ServiceInfo( serviceName, AssemblyInfoHelper.ExecutingAssemblyInfo );
-            _serviceInfos.Add( newService ); // Throws on duplicate
-
-            return newService;
-        }
 
         /// <summary>
         /// Creates a new named service, which specializes another service.
@@ -65,33 +50,15 @@ namespace Yodii.Lab
         /// <param name="serviceName">Name of the new service</param>
         /// <param name="generalization">Specialized service</param>
         /// <returns>New service</returns>
-        internal ServiceInfo CreateNewService( string serviceName, ServiceInfo generalization )
+        internal ServiceInfo CreateNewService( string serviceName, ServiceInfo generalization = null )
         {
             Debug.Assert( serviceName != null );
-            Debug.Assert( generalization != null );
-            Debug.Assert( ServiceInfos.Contains( generalization ) );
+            if( generalization != null ) Debug.Assert( ServiceInfos.Contains( generalization ) );
 
             ServiceInfo newService = new ServiceInfo( serviceName, AssemblyInfoHelper.ExecutingAssemblyInfo, generalization );
             _serviceInfos.Add( newService ); // Throws on duplicate
 
             return newService;
-        }
-
-        /// <summary>
-        /// Creates a new named plugin, which does not implement a service.
-        /// </summary>
-        /// <param name="pluginGuid">Guid of the new plugin</param>
-        /// <param name="pluginName">Name of the new plugin</param>
-        /// <returns>New plugin</returns>
-        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName )
-        {
-            Debug.Assert( pluginGuid != null );
-            Debug.Assert( pluginName != null );
-
-            PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo );
-            _pluginInfos.Add( plugin );
-
-            return plugin;
         }
 
         /// <summary>
@@ -101,16 +68,15 @@ namespace Yodii.Lab
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, ServiceInfo service )
+        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, ServiceInfo service = null )
         {
             Debug.Assert( pluginGuid != null );
             Debug.Assert( pluginName != null );
-            Debug.Assert( service != null );
-            Debug.Assert( ServiceInfos.Contains( service ) );
+            if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
             PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
             _pluginInfos.Add( plugin );
-            service.InternalImplementations.Add(plugin);
+            if( service != null ) service.InternalImplementations.Add( plugin );
 
             return plugin;
         }
