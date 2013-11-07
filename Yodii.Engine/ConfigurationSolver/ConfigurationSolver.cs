@@ -67,30 +67,55 @@ namespace Yodii.Engine
             }
             List<IPluginSolved> blockingPlugins = null;
             List<IServiceSolved> blockingServices = null;
-      
+
+            List<IPluginSolved> disabledPlugins = null;
+            int availablePlugins = 0;
+            List<IPluginSolved> runningPlugins = null;
+
             // Time to conclude about configuration and to initialize dynamic resolution.
             // Any Plugin that has a ConfigOriginalStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
+
             foreach( PluginData p in _plugins.Values )
             {
-                if( p.Disabled )
+                if ( p.Disabled )
                 {
-                    if( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
+                    if ( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
-                        if( blockingPlugins == null ) blockingPlugins = new List<IPluginSolved>();
+                        if ( blockingPlugins == null ) blockingPlugins = new List<IPluginSolved>();
                         blockingPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
+                    }
+                    else
+                    {
+                        if(disabledPlugins == null) disabledPlugins = new List<IPluginSolved>();
+                        disabledPlugins.Add( new PluginSolved ( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
+                    }
+                }
+                else
+                {
+                    Debug.Assert( p.ConfigOriginalStatus > ConfigurationStatus.Disable && p.DisabledReason == PluginDisabledReason.None);
+                    if ( p.ConfigOriginalStatus == ConfigurationStatus.Running )
+                    {
+                        if ( runningPlugins == null ) runningPlugins = new List<IPluginSolved>();
+                        runningPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
+                    }
+                    else
+                    {
+                        //The plugin's configOriginalStatus is either Optional or Runnable
+                        availablePlugins++;
                     }
                 }
             }
             // Any Service that has a ConfigSolvedStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
+
             foreach( ServiceData s in _services.Values )
             {
-                if( s.Disabled )
+                if ( s.Disabled )
                 {
-                    if ( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable)
+                    if ( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
                         if ( blockingServices == null ) blockingServices = new List<IServiceSolved>();
                         blockingServices.Add( new ServiceSolved( s.ServiceInfo, s.DisabledReason, s.ConfigSolvedStatus, s.ConfigOriginalStatus, s.Status ) );
-                    }
+                    }                   
                 }
             }
         
@@ -98,6 +123,7 @@ namespace Yodii.Engine
             {
                 return new ConfigurationSolverResult( blockingPlugins, blockingServices );
             }
+            #region Spi-comment-res-specs
             // Plugin state first: Service plugins state will be updated while 
             // initializing services below.
 
@@ -160,15 +186,11 @@ namespace Yodii.Engine
             // Once the configuration is computed, it is transferred to the PluginHost. On success, ILiveConfiguration objects are updated. If the PluginHost fails (on exceptions, it does its best 
             // to restore the system), the ILiveConfiguration is not updated with the new plan.
             // 
+            #endregion
 
-            //
-            List<IPluginInfo> disabledPlugins = new List<IPluginInfo>();
-            List<IPluginInfo> runningPlugins = new List<IPluginInfo>();
-            List<IPluginInfo> stoppedPlugins = new List<IPluginInfo>();
 
-            // (Temporary) brute force to find a valid configuration.
 
-            return new ConfigurationSolverResult( disabledPlugins, stoppedPlugins, runningPlugins );
+            return new ConfigurationSolverResult( disabledPlugins, availablePlugins, runningPlugins );
         }
 
         private void CollectResult( List<IPluginInfo> disabledPlugins, List<IPluginInfo> runningPlugins, List<IPluginInfo> stoppedPlugins )

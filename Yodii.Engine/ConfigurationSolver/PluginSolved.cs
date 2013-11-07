@@ -43,5 +43,10 @@ namespace Yodii.Engine
         public Exception RuntimeError { get { return _runtimeError; } }
 
         public bool IsCulprit { get { return _disabledReason != PluginDisabledReason.None || _runtimeError != null; } }
+
+        public override string ToString()
+        {
+            return String.Format( "{0} - {1} - {2}", _pluginInfo.PluginFullName, IsDisabled ? _disabledReason.ToString() : "!Disabled", ConfigSolvedStatus.ToString() );
+        }
     }
 }

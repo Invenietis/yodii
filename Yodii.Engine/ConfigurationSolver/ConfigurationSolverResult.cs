@@ -13,9 +13,9 @@ namespace Yodii.Engine
         readonly List<IPluginSolved> _blockingPlugins;
         readonly List<IServiceSolved> _blockingServices;
 
-        readonly IReadOnlyCollection<IPluginInfo> _disabledPlugins;
-        readonly IReadOnlyCollection<IPluginInfo> _stoppedPlugins;
-        readonly IReadOnlyCollection<IPluginInfo> _runningPlugins;
+        readonly IReadOnlyCollection<IPluginSolved> _disabledPlugins;
+        readonly int _availablePluginsCount;
+        readonly IReadOnlyCollection<IPluginSolved> _runningPlugins;
 
         internal ConfigurationSolverResult( List<IPluginSolved> blockingPlugins, List<IServiceSolved> blockingServices )
         {
@@ -27,10 +27,10 @@ namespace Yodii.Engine
             _blockingServices = blockingServices != null ? blockingServices : new List<IServiceSolved>();
         }
 
-        public ConfigurationSolverResult( List<IPluginInfo> disabledPlugins, List<IPluginInfo> stoppedPlugins, List<IPluginInfo> runningPlugins )
+        public ConfigurationSolverResult( List<IPluginSolved> disabledPlugins, int availablePluginsCount, List<IPluginSolved> runningPlugins )
         {
             _disabledPlugins = disabledPlugins.ToReadOnlyCollection();
-            _stoppedPlugins = stoppedPlugins.ToReadOnlyCollection();
+            _availablePluginsCount = availablePluginsCount;
             _runningPlugins = runningPlugins.ToReadOnlyCollection();
         }
 
@@ -42,17 +42,17 @@ namespace Yodii.Engine
 
        //////
 
-        public IReadOnlyCollection<IPluginInfo> DisabledPlugins
+        public IReadOnlyCollection<IPluginSolved> DisabledPlugins
         {
             get { return _disabledPlugins; }
         }
 
-        public IReadOnlyCollection<IPluginInfo> StoppedPlugins
+        public int AvailablePluginsCount
         {
-            get { return _stoppedPlugins; }
+            get { return _availablePluginsCount; }
         }
 
-        public IReadOnlyCollection<IPluginInfo> RunningPlugins
+        public IReadOnlyCollection<IPluginSolved> RunningPlugins
         {
             get { return _runningPlugins; }
         }
