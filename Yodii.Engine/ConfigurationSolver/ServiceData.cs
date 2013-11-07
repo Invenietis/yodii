@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using Yodii.Model;
 
-namespace Yodii.Model.ConfigurationSolver
-{
-   
+namespace Yodii.Engine
+{   
     internal partial class ServiceData
     {
         readonly Dictionary<IServiceInfo,ServiceData> _allServices;
@@ -142,16 +142,8 @@ namespace Yodii.Model.ConfigurationSolver
             }
             _configDirectMustExistSpecialization = null;
             _configMustExistSpecialization = null;
-            if( Generalization != null && !Generalization.Disabled ) Generalization.OnSpecializationDisabled( this );
         }
 
-        void OnSpecializationDisabled( ServiceData s )
-        {
-            if( _configDirectMustExistSpecialization == s )
-            {
-                SetDisabled( ServiceDisabledReason.MustExistSpecializationIsDisabled );
-            }
-        }
 
         /// <summary>
         /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
@@ -298,7 +290,7 @@ namespace Yodii.Model.ConfigurationSolver
                     specThatMustExist = g;
                     g = g.Generalization;
                 }
-                while( g != currentMustExist );
+                while( g != null ); //changed condition g != currentMustExist with g != null 
             }
             if( Disabled ) return false;
             GeneralizationRoot.MustExistServiceChanged( this );
@@ -489,15 +481,13 @@ namespace Yodii.Model.ConfigurationSolver
             ServiceData spec = FirstSpecialization;
             while( spec != null )
             {
-                if( !spec.Disabled ) OnAllPluginsAdded();
+                if( !spec.Disabled ) spec.OnAllPluginsAdded();
                 spec = spec.NextSpecialization;
             }
             // For raw Service (from Service container) we have nothing to do... 
             // they are available or not (and then they are Disabled).
-            //if( ServiceInfo.IsDynamicService )
-            //{
-                // Handle the case where TotalPluginCount is zero (there is no implementation).
-                // or where TotalDisabledPluginCount is the same as TotalPluginCount.
+            if( !Disabled )
+            {
                 if( TotalPluginCount == 0 )
                 {
                     SetDisabled( ServiceDisabledReason.NoPlugin );
@@ -511,7 +501,7 @@ namespace Yodii.Model.ConfigurationSolver
                     }
                     else InitializePropagation( nbAvailable, fromConfig: true );
                 }
-            //}
+            }
         }
 
         internal void OnPluginDisabled( PluginData p )

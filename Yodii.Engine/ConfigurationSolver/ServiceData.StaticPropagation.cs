@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using Yodii.Model;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Engine
 {
     partial class ServiceData
     {

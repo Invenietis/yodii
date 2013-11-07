@@ -11,7 +11,6 @@ namespace Yodii.Model
     public class FinalConfiguration
     {
         readonly CKSortedArrayKeyList<FinalConfigurationItem, string> _items;
-        private Dictionary<string, ConfigurationStatus> finalStatus;
 
         public IReadOnlyList<FinalConfigurationItem> Items
         {
@@ -27,7 +26,6 @@ namespace Yodii.Model
         internal FinalConfiguration( Dictionary<string, ConfigurationStatus> finalStatus )
         {
             _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginId, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
-
             foreach( var item in finalStatus ) _items.Add( new FinalConfigurationItem( item.Key, item.Value ) );
         }
     }

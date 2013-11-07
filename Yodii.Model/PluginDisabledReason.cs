@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yodii.Model;
 
-namespace Yodii.Model.ConfigurationSolver
+namespace Yodii.Model
 {
-    enum PluginDisabledReason
+    public enum PluginDisabledReason
     {
         /// <summary>
         /// The plugin is not disabled.
