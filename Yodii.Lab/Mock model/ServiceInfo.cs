@@ -71,5 +71,9 @@ namespace Yodii.Lab.Mocks
             // TODO
             get { throw new NotImplementedException(); }
         }
+        public override string ToString()
+        {
+            return String.Format( "{0} ", _serviceFullName);
+        }
     }
 }
