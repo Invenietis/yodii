@@ -14,10 +14,49 @@
         <DataTemplate x:Key="serviceVertexPropertiesTemplate">
             <Border Padding="5pt">
                 <StackPanel DataContext="{Binding Path=LiveServiceInfo}">
-                    <TextBlock>
-                        Service
+                    <TextBlock FontWeight="Bold">
+                        Service properties
                     </TextBlock>
-                    <TextBlock Text="{Binding Path=ServiceInfo.ServiceFullName}" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0">Name</TextBlock>
+                        <TextBlock Grid.Row="1">Specialized service</TextBlock>
+                        <TextBlock Grid.Row="2">Implementations</TextBlock>
+
+                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}" IsEnabled="False" />
+                        <ComboBox Grid.Column="1" Grid.Row="1"
+                                  ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
+                                  SelectedItem="{Binding Path=ServiceInfo.Generalization, Mode=OneWay}"
+                                  IsEnabled="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <StackPanel Grid.Column="1" Grid.Row="2">
+                            <ItemsControl ItemsSource="{Binding Path=ServiceInfo.Implementations, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                        <Run Text="{Binding Path=PluginFullName, Mode=OneWay}"/> (<Run Text="{Binding Path=PluginId, Mode=OneWay}"/>)
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -25,11 +64,52 @@
         <DataTemplate x:Key="pluginVertexPropertiesTemplate">
             <Border Padding="5pt">
                 <StackPanel DataContext="{Binding Path=LivePluginInfo}">
-                    <TextBlock>
-                        Plugin
+                    <TextBlock FontWeight="Bold">
+                        Plugin properties
                     </TextBlock>
-                    <TextBlock Text="{Binding Path=PluginInfo.PluginId}" />
-                    <TextBlock Text="{Binding Path=PluginInfo.PluginFullName}" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0">GUID</TextBlock>
+                        <TextBlock Grid.Row="1">Name</TextBlock>
+                        <TextBlock Grid.Row="2">Service</TextBlock>
+                        <TextBlock Grid.Row="3">References</TextBlock>
+
+                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}" IsEnabled="False" />
+                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=PluginInfo.PluginFullName, Mode=OneWay}" IsEnabled="False" />
+                        <ComboBox Grid.Column="1" Grid.Row="2"
+                                  ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
+                                  SelectedItem="{Binding Path=PluginInfo.Service, Mode=OneWay}"
+                                  IsEnabled="False">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <StackPanel Grid.Column="1" Grid.Row="3">
+                            <ItemsControl ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                        <Run Text="{Binding Path=Reference.ServiceFullName, Mode=OneWay}"/> (<Run Text="{Binding Path=Requirement, Mode=OneWay}"/>)
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
                 </StackPanel>
             </Border>
         </DataTemplate>
