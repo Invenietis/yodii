@@ -86,7 +86,6 @@ namespace Yodii.Lab
             } else {
                 newServiceInfo = new LiveServiceInfo( newService );
             }
-            
 
             _serviceInfos.Add( newService ); // Throws on duplicate
             _liveServiceInfos.Add( newServiceInfo );
@@ -149,21 +148,21 @@ namespace Yodii.Lab
 
         internal void RemoveService( ServiceInfo serviceInfo )
         {
-            // If we delete a service : Delete its entire tree.
+            // If we delete a service : Unbind linked plugins and services.
 
-            // Delete generalized services
+            // Unbind generalized services
             foreach( ServiceInfo s in ServiceInfos.Where( si => si.Generalization == serviceInfo ).ToList() )
             {
-                RemoveService( s );
+                s.Generalization = null;
             }
 
-            // Delete implementations
+            // Unbind implementations
             foreach( PluginInfo p in PluginInfos.Where( pi => pi.Service == serviceInfo ).ToList() )
             {
-                RemovePlugin( p );
+                p.Service = null;
             }
 
-            // Delete all other  existing service references
+            // Delete all existing service references
 
             foreach( PluginInfo p in PluginInfos )
             {

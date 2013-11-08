@@ -9,18 +9,18 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
-    public class PluginInfo : IPluginInfo
+    public class PluginInfo : ViewModelBase, IPluginInfo
     {
         readonly Guid _guid;
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
-        readonly ServiceInfo _service;
+
+        ServiceInfo _service;
 
         internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, ServiceInfo service = null )
         {
             Debug.Assert( guid != null );
-            Debug.Assert( !String.IsNullOrEmpty( pluginFullName ) );
             Debug.Assert( assemblyInfo != null );
 
             _guid = guid;
@@ -63,9 +63,20 @@ namespace Yodii.Lab.Mocks
             get { return _serviceReferences.AsReadOnlyList(); }
         }
 
-        public IServiceInfo Service
+        IServiceInfo IPluginInfo.Service
         {
             get { return _service; }
+        }
+        public ServiceInfo Service {
+            get { return _service; }
+            set
+            {
+                if( value != _service )
+                {
+                    _service = value;
+                    RaisePropertyChanged( "Service" );
+                }
+            }
         }
 
         #endregion

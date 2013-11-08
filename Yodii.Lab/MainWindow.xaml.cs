@@ -126,5 +126,45 @@ namespace Yodii.Lab
 
             window.ShowDialog();
         }
+
+        private void NewPluginButton_Click( object sender, RoutedEventArgs e )
+        {
+            IServiceInfo selectedService = null;
+
+            if( _vm.SelectedVertex != null )
+            {
+                if( _vm.SelectedVertex.IsService )
+                {
+                    selectedService = _vm.SelectedVertex.LiveServiceInfo.ServiceInfo;
+                }
+                else if( _vm.SelectedVertex.IsPlugin )
+                {
+                    selectedService = _vm.SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                }
+            }
+
+            AddPluginWindow window = new AddPluginWindow( _vm.ServiceInfos, selectedService );
+
+            window.NewPluginCreated += ( s, npe ) =>
+            {
+                if( _vm.PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
+                {
+                    npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
+                }
+                else
+                {
+                    IPluginInfo newPlugin = _vm.CreateNewPlugin( npe.PluginId, npe.PluginName, npe.Service );
+                    foreach( var kvp in npe.ServiceReferences )
+                    {
+                        _vm.SetPluginDependency( newPlugin, kvp.Key, kvp.Value );
+                    }
+                    _vm.SelectPlugin( newPlugin );
+                }
+            };
+
+            window.Owner = this;
+
+            window.ShowDialog();
+        }
     }
 }

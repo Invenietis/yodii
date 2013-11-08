@@ -91,13 +91,13 @@ namespace Yodii.Lab.Tests
              */
 
 
-            // Removing a service also removes its implementations
+            // Removing a service does not remove its implementations, but does unbind them
             vm.RemoveService( vm.ServiceInfos.Where( x => x.ServiceFullName == "ServiceAx" ).First() );
 
-            Assert.That( vm.Graph.Vertices.Count() == 5 );
+            Assert.That( vm.Graph.Vertices.Count() == 6 );
             Assert.That( vm.Graph.Edges.Count() == 4 );
 
-            Assert.That( vm.LivePluginInfos.Count == 3 );
+            Assert.That( vm.LivePluginInfos.Count == 4 );
             Assert.That( vm.LiveServiceInfos.Count == 2 );
             /**
              *                 +--------+                              +--------+
@@ -107,10 +107,16 @@ namespace Yodii.Lab.Tests
              *                     |            |   |                      |
              *                     |            |   |                      |
              *                     |            |   |                      |
-             *                 +---+-----+  +---+---*-+                +---+-----+
-             *                 |PluginA-1|  |PluginA-2|                |PluginB-1|
-             *                 +---------+  +---------+                +---------+
+             *  +----------+   +---+-----+  +---+---*-+                +---+-----+
+             *  |PluginAx-1|   |PluginA-1|  |PluginA-2|                |PluginB-1|
+             *  +----------+   +---------+  +---------+                +---------+
              */
+            vm.RemovePlugin( vm.PluginInfos.Where( i => i.PluginFullName == "Plugin.Ax1" ).First() );
+
+            Assert.That( vm.Graph.Vertices.Count() == 5 );
+            Assert.That( vm.Graph.Edges.Count() == 4 );
+            Assert.That( vm.LivePluginInfos.Count == 3 );
+            Assert.That( vm.LiveServiceInfos.Count == 2 );
 
 
             // Removing a plugin also removes its references
@@ -118,6 +124,8 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 4 );
             Assert.That( vm.Graph.Edges.Count() == 2 );
+            Assert.That( vm.LivePluginInfos.Count == 2 );
+            Assert.That( vm.LiveServiceInfos.Count == 2 );
             /**
              * +--------+     +--------+
              * |ServiceA|     |ServiceB|
@@ -135,11 +143,30 @@ namespace Yodii.Lab.Tests
             // Reset
             vm = CreateViewModelWithGraph001();
 
-            // Deleting a root service entirely destroys its tree
+            // Deleting a root service unbinds but does not destroy its tree
             vm.RemoveService( vm.ServiceInfos.Where( x => x.ServiceFullName == "ServiceA" ).First() );
 
-            Assert.That( vm.Graph.Vertices.Count() == 3 );
-            Assert.That( vm.Graph.Edges.Count() == 1 );
+            Assert.That( vm.Graph.Vertices.Count() == 7 );
+            Assert.That( vm.Graph.Edges.Count() == 3 );
+
+            // Rebind service
+            vm.GetServiceInfoByName( "ServiceAx" ).Generalization = vm.GetServiceInfoByName( "ServiceB" );
+
+            Assert.That( vm.Graph.Vertices.Count() == 7 );
+            Assert.That( vm.Graph.Edges.Count() == 4 );
+
+            // Binding a plugin adds its new relationship to the graph
+
+            vm.GetPluginInfosByName( "Plugin.Without.Service" ).First().Service = vm.GetServiceInfoByName( "ServiceB" );
+
+            Assert.That( vm.Graph.Vertices.Count() == 7 );
+            Assert.That( vm.Graph.Edges.Count() == 5 );
+
+            // Remove on null
+            vm.GetPluginInfosByName( "Plugin.Without.Service" ).First().Service = null;
+
+            Assert.That( vm.Graph.Vertices.Count() == 7 );
+            Assert.That( vm.Graph.Edges.Count() == 4 );
         }
 
         [Test]

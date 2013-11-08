@@ -266,6 +266,21 @@ namespace Yodii.Lab
         {
             _serviceInfoManager.RemoveService( (ServiceInfo)serviceInfo );
         }
+
+        public ServiceInfo GetServiceInfoByName( string name )
+        {
+            return _serviceInfoManager.ServiceInfos.Where( x => x.ServiceFullName == name ).First();
+        }
+
+        public IEnumerable<PluginInfo> GetPluginInfosByName( string name )
+        {
+            return _serviceInfoManager.PluginInfos.Where( x => x.PluginFullName == name );
+        }
+
+        public PluginInfo GetPluginInfoById( Guid guid )
+        {
+            return _serviceInfoManager.PluginInfos.Where( x => x.PluginId == guid ).First();
+        }
         #endregion Public methods
 
         #region Private methods
@@ -275,6 +290,12 @@ namespace Yodii.Lab
         public void SelectService( IServiceInfo serviceInfo )
         {
             YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LiveServiceInfo.ServiceInfo == serviceInfo ).First();
+            SelectedVertex = vertexToSelect;
+        }
+
+        public void SelectPlugin( IPluginInfo pluginInfo )
+        {
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LivePluginInfo.PluginInfo == pluginInfo ).First();
             SelectedVertex = vertexToSelect;
         }
     }

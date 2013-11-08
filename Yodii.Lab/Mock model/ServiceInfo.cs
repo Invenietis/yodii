@@ -10,12 +10,13 @@ using System.Collections;
 
 namespace Yodii.Lab.Mocks
 {
-    public class ServiceInfo : IServiceInfo
+    public class ServiceInfo : ViewModelBase, IServiceInfo
     {
         readonly string _serviceFullName;
-        readonly IServiceInfo _generalization;
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<PluginInfo> _implementations;
+
+        IServiceInfo _generalization;
 
         internal ServiceInfo( string serviceFullName, IAssemblyInfo assemblyInfo, IServiceInfo generalization = null )
         {
@@ -46,6 +47,14 @@ namespace Yodii.Lab.Mocks
         public IServiceInfo Generalization
         {
             get { return _generalization; }
+            set
+            {
+                if( value != _generalization )
+                {
+                    _generalization = value;
+                    RaisePropertyChanged( "Generalization" );
+                }
+            }
         }
 
         public IAssemblyInfo AssemblyInfo

@@ -59,6 +59,9 @@
                     <Fluent:Button Header="Add service" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"
                                    Click="NewServiceButton_Click"
                                    />
+                    <Fluent:Button Header="Add plugin" LargeIcon="/Yodii.Lab;component/Icons/database_32xLG.png"
+                                   Click="NewPluginButton_Click"
+                                   />
                     <Fluent:Button Header="Delete selected" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
                                    Command="{Binding Path=RemoveSelectedVertex}"
                                    />
