@@ -129,6 +129,7 @@
     <Compile Include="Mock model\LiveServiceInfo.cs" />
     <Compile Include="ServiceInfoManager.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
+    <Compile Include="Utils\DetailedOperationResult.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ViewModelBase.cs" />
     <Compile Include="VertexPropertiesTemplateSelector.cs" />

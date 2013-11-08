@@ -12,11 +12,11 @@ namespace Yodii.Lab.Mocks
 {
     public class ServiceInfo : ViewModelBase, IServiceInfo
     {
-        readonly string _serviceFullName;
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<PluginInfo> _implementations;
 
         IServiceInfo _generalization;
+        string _serviceFullName;
 
         internal ServiceInfo( string serviceFullName, IAssemblyInfo assemblyInfo, IServiceInfo generalization = null )
         {
@@ -26,7 +26,7 @@ namespace Yodii.Lab.Mocks
             _serviceFullName = serviceFullName;
             _assemblyInfo = assemblyInfo;
             _generalization = generalization;
-            _implementations = new CKObservableSortedArrayList<PluginInfo>((a, b) => CaseInsensitiveComparer.Default.Compare(a.PluginFullName, b.PluginFullName), false);
+            _implementations = new CKObservableSortedArrayList<PluginInfo>( ( a, b ) => CaseInsensitiveComparer.Default.Compare( a.PluginFullName, b.PluginFullName ), false );
         }
 
         internal CKObservableSortedArrayList<PluginInfo> InternalImplementations
@@ -42,6 +42,14 @@ namespace Yodii.Lab.Mocks
         public string ServiceFullName
         {
             get { return _serviceFullName; }
+            set
+            {
+                if( value != _serviceFullName )
+                {
+                    _serviceFullName = value;
+                    RaisePropertyChanged( "ServiceFullName" );
+                }
+            }
         }
 
         public IServiceInfo Generalization

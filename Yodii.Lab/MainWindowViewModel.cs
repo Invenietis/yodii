@@ -9,6 +9,7 @@ using Yodii.Lab.Mocks;
 using Yodii.Model;
 using System.Windows.Input;
 using System.Collections.Specialized;
+using Yodii.Lab.Utils;
 
 namespace Yodii.Lab
 {
@@ -297,6 +298,11 @@ namespace Yodii.Lab
         {
             YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LivePluginInfo.PluginInfo == pluginInfo ).First();
             SelectedVertex = vertexToSelect;
+        }
+
+        public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
+        {
+            return _serviceInfoManager.RenameService( serviceInfo, newName );
         }
     }
 }

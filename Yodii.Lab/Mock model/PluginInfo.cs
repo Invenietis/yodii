@@ -12,11 +12,11 @@ namespace Yodii.Lab.Mocks
     public class PluginInfo : ViewModelBase, IPluginInfo
     {
         readonly Guid _guid;
-        readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
 
         ServiceInfo _service;
+        string _pluginFullName;
 
         internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, ServiceInfo service = null )
         {
@@ -51,6 +51,14 @@ namespace Yodii.Lab.Mocks
         public string PluginFullName
         {
             get { return _pluginFullName; }
+            set
+            {
+                if( value != _pluginFullName )
+                {
+                    _pluginFullName = value;
+                    RaisePropertyChanged( "PluginFullName" );
+                }
+            }
         }
 
         public IAssemblyInfo AssemblyInfo

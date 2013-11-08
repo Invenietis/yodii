@@ -21,12 +21,21 @@ namespace Yodii.Lab
         {
             _isPlugin = true;
             _livePlugin = plugin;
+
+            _livePlugin.PluginInfo.PropertyChanged += Info_PropertyChanged;
+        }
+
+        void Info_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            RaisePropertyChanged( "Title" );
         }
 
         internal YodiiGraphVertex( LiveServiceInfo service )
         {
             _isPlugin = false;
             _liveService = service;
+
+            _liveService.ServiceInfo.PropertyChanged += Info_PropertyChanged;
         }
         #endregion Constructors
 

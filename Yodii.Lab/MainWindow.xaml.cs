@@ -11,6 +11,7 @@ using Yodii.Model;
 using System.Diagnostics;
 using Yodii.Lab.ConfigurationEditor;
 using Yodii.Lab.Mocks;
+using Yodii.Lab.Utils;
 
 namespace Yodii.Lab
 {
@@ -165,6 +166,35 @@ namespace Yodii.Lab
             window.Owner = this;
 
             window.ShowDialog();
+        }
+
+        private void ServiceNamePropertyTextBox_LostFocus( object sender, RoutedEventArgs e )
+        {
+            UpdateServicePropertyNameWithTextbox( sender as System.Windows.Controls.TextBox );
+        }
+
+        private void ServiceNamePropertyTextBox_KeyDown( object sender, System.Windows.Input.KeyEventArgs e )
+        {
+            if( e.Key == System.Windows.Input.Key.Enter )
+            {
+                UpdateServicePropertyNameWithTextbox( sender as System.Windows.Controls.TextBox );
+            }
+        }
+
+        private void UpdateServicePropertyNameWithTextbox( System.Windows.Controls.TextBox textBox )
+        {
+            LiveServiceInfo liveService = textBox.DataContext as LiveServiceInfo;
+
+            if( liveService.ServiceInfo.ServiceFullName == textBox.Text ) return;
+            if( String.IsNullOrWhiteSpace( textBox.Text ) ) return;
+
+            DetailedOperationResult r = _vm.RenameService( liveService.ServiceInfo, textBox.Text );
+
+            if( !r )
+            {
+                textBox.Text = liveService.ServiceInfo.ServiceFullName;
+                MessageBox.Show( String.Format( "Couldn't change service name.\n{0}", r.Reason ), "Couldn't change service name", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
+            }
         }
     }
 }

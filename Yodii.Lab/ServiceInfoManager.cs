@@ -80,10 +80,13 @@ namespace Yodii.Lab
 
             ServiceInfo newService = new ServiceInfo( serviceName, AssemblyInfoHelper.ExecutingAssemblyInfo, generalization );
             LiveServiceInfo newServiceInfo;
-            if( generalization != null ) {
+            if( generalization != null )
+            {
                 LiveServiceInfo generalizationLiveInfo = _liveServiceInfos.GetByKey( generalization );
                 newServiceInfo = new LiveServiceInfo( newService, RunningRequirement.Optional, generalizationLiveInfo ); // TODO: Running requirement
-            } else {
+            }
+            else
+            {
                 newServiceInfo = new LiveServiceInfo( newService );
             }
 
@@ -186,6 +189,18 @@ namespace Yodii.Lab
             LivePluginInfo livePlugin = _livePluginInfos.GetByKey( pluginInfo );
             _livePluginInfos.Remove( livePlugin );
             _pluginInfos.Remove( pluginInfo );
+        }
+
+        internal Utils.DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
+        {
+            bool exists;
+            ServiceInfo existingInfo = _serviceInfos.GetByKey( newName, out exists );
+
+            if( exists ) return new Utils.DetailedOperationResult( false, "A service with this name already exists." );
+
+            serviceInfo.ServiceFullName = newName;
+
+            return new Utils.DetailedOperationResult( true );
         }
     }
 }

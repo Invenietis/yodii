@@ -32,11 +32,12 @@
                         <TextBlock Grid.Row="1">Specialized service</TextBlock>
                         <TextBlock Grid.Row="2">Implementations</TextBlock>
 
-                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}" IsEnabled="False" />
+                        <!-- TODO. ServiceFullName is key of SortedArrayKeyLists. Is it stable if we change it? -->
+                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}" LostFocus="ServiceNamePropertyTextBox_LostFocus" KeyDown="ServiceNamePropertyTextBox_KeyDown" IsEnabled="True" />
                         <ComboBox Grid.Column="1" Grid.Row="1"
                                   ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                  SelectedItem="{Binding Path=ServiceInfo.Generalization, Mode=OneWay}"
-                                  IsEnabled="False">
+                                  SelectedItem="{Binding Path=ServiceInfo.Generalization, UpdateSourceTrigger=PropertyChanged}"
+                                  IsEnabled="True">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock>
@@ -85,11 +86,11 @@
                         <TextBlock Grid.Row="3">References</TextBlock>
 
                         <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}" IsEnabled="False" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=PluginInfo.PluginFullName, Mode=OneWay}" IsEnabled="False" />
+                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
                         <ComboBox Grid.Column="1" Grid.Row="2"
                                   ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                  SelectedItem="{Binding Path=PluginInfo.Service, Mode=OneWay}"
-                                  IsEnabled="False">
+                                  SelectedItem="{Binding Path=PluginInfo.Service}"
+                                  IsEnabled="True">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock>
