@@ -506,7 +506,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
 
             Assert.That( res.ConfigurationSuccess, Is.True );
-            Assert.That( res.RunningPlugins, Is.Not.Empty );
+            Assert.That( res.RunningPlugins, Is.Empty );
             Assert.That( res.BlockingServices, Is.Null );
         }
 
