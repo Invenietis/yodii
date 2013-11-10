@@ -64,6 +64,13 @@ namespace Yodii.Lab
         #endregion Properties
 
         #region Internal methods
+        internal void ClearState()
+        {
+            _livePluginInfos.Clear();
+            _liveServiceInfos.Clear();
+            _pluginInfos.Clear();
+            _serviceInfos.Clear();
+        }
 
         /// <summary>
         /// Creates a new named service, which specializes another service.
@@ -103,10 +110,9 @@ namespace Yodii.Lab
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, ServiceInfo service = null )
+        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName = null, ServiceInfo service = null )
         {
             Debug.Assert( pluginGuid != null );
-            Debug.Assert( pluginName != null );
             if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
             PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );

@@ -196,5 +196,50 @@ namespace Yodii.Lab
                 MessageBox.Show( String.Format( "Couldn't change service name.\n{0}", r.Reason ), "Couldn't change service name", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
             }
         }
+
+        private void OpenFile_Click( object sender, RoutedEventArgs e )
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckFileExists = true;
+            dlg.CheckPathExists = true;
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = _vm.LoadState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                }
+            }
+        }
+
+        private void SaveAsFile_Click( object sender, RoutedEventArgs e )
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckPathExists = true;
+            dlg.OverwritePrompt = true;
+            dlg.AddExtension = true;
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = _vm.SaveState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+            }
+        }
     }
 }

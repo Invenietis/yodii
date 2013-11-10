@@ -122,6 +122,7 @@
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Mock model\AssemblyInfoHelper.cs" />
     <Compile Include="Mock model\MockAssemblyInfo.cs" />
+    <Compile Include="Mock model\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
     <Compile Include="Mock model\ServiceInfo.cs" />

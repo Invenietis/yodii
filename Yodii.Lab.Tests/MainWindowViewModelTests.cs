@@ -7,6 +7,9 @@ using CK.Core;
 using QuickGraph;
 using Yodii.Model;
 using Yodii.Lab.Mocks;
+using System.IO;
+using Yodii.Lab.Utils;
+using System.Xml;
 
 namespace Yodii.Lab.Tests
 {
@@ -186,6 +189,98 @@ namespace Yodii.Lab.Tests
             Assert.That( !vm.HasSelection );
         }
 
+        [Test]
+        public void XmlWriteSerializationTest()
+        {
+            var vm = CreateViewModelWithGraph001();
+            var vm2 = new MainWindowViewModel();
+
+            XmlWriterSettings ws = new XmlWriterSettings();
+            ws.NewLineHandling = NewLineHandling.None;
+
+            XmlReaderSettings rs = new XmlReaderSettings();
+
+            using( MemoryStream ms = new MemoryStream() )
+            {
+                using( XmlWriter xw = XmlWriter.Create( ms, ws ) )
+                {
+                    MockInfoXmlSerializer.SerializeLabStateToXmlWriter( vm, xw );
+                }
+
+                ms.Seek( 0, System.IO.SeekOrigin.Begin );
+
+                // Debug string
+                //using( StreamReader sr = new StreamReader( ms ) )
+                //{
+                //    string s = sr.ReadToEnd();
+                //}
+                
+                using( XmlReader r = XmlReader.Create( ms, rs ) )
+                {
+                    MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( vm2, r );
+                }
+            }
+
+            CollectionAssert.IsNotEmpty( vm2.ServiceInfos, "Deserialized service collection is not empty" );
+            CollectionAssert.IsNotEmpty( vm2.PluginInfos, "Deserialized plugin collection is not empty" );
+
+            Assert.That( vm.PluginInfos.Count == vm2.PluginInfos.Count );
+            foreach( var infoB in vm2.PluginInfos )
+            {
+                Assert.That( vm.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).Count() == 1 );
+                IPluginInfo infoA = vm.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).First();
+
+                TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
+            }
+
+            Assert.That( vm.ServiceInfos.Count == vm2.ServiceInfos.Count );
+            foreach( var infoB in vm2.ServiceInfos )
+            {
+                Assert.That( vm.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
+                var infoA = vm.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();
+
+                TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
+            }
+        }
+
+        [Test]
+        public void SaveLoadViewModelTest()
+        {
+            MainWindowViewModel _vm1 = CreateViewModelWithGraph001();
+
+            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName());
+
+            DetailedOperationResult r = _vm1.SaveState( tempFilePath );
+
+            Assert.That( r.IsSuccessful );
+
+            MainWindowViewModel _vm2 = new MainWindowViewModel();
+
+            DetailedOperationResult r2 = _vm2.LoadState( tempFilePath );
+
+            File.Delete( tempFilePath );
+
+            Assert.That( r2.IsSuccessful );
+
+            Assert.That( _vm1.PluginInfos.Count == _vm2.PluginInfos.Count );
+            foreach( var infoB in _vm2.PluginInfos )
+            {
+                Assert.That( _vm1.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).Count() == 1 );
+                IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).First();
+
+                TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
+            }
+
+            Assert.That( _vm1.ServiceInfos.Count == _vm2.ServiceInfos.Count );
+            foreach( var infoB in _vm2.ServiceInfos )
+            {
+                Assert.That( _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
+                var infoA = _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();
+
+                TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
+            }
+        }
+
         internal static MainWindowViewModel CreateViewModelWithGraph001()
         {
             /** Imagine a graph like this:
@@ -261,6 +356,16 @@ namespace Yodii.Lab.Tests
             Assert.That( serviceA.Implementations.Count == 2 );
             Assert.That( serviceB.Implementations.Count == 1 );
             Assert.That( serviceAx.Implementations.Count == 1 );
+
+            // Testing tests
+            foreach(var si in vm.ServiceInfos )
+            {
+                TestExtensions.AssertServiceEquivalence( si, si, true );
+            }
+            foreach( var pi in vm.PluginInfos )
+            {
+                TestExtensions.AssertPluginEquivalence( pi, pi, true );
+            }
 
             return vm;
         }

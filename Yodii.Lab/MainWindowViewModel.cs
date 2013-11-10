@@ -10,6 +10,8 @@ using Yodii.Model;
 using System.Windows.Input;
 using System.Collections.Specialized;
 using Yodii.Lab.Utils;
+using System.Xml;
+using System.IO;
 
 namespace Yodii.Lab
 {
@@ -38,25 +40,26 @@ namespace Yodii.Lab
         }
         private void initCommands()
         {
-            RemoveSelectedVertex = new RelayCommand(RemoveSelectedVertexExecute, HasSelectedVertex);
+            RemoveSelectedVertex = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
         }
 
         #region Command handlers
-        private bool HasSelectedVertex(object obj)
+        private bool HasSelectedVertex( object obj )
         {
- 	        return SelectedVertex != null;
+            return SelectedVertex != null;
         }
 
-        private void RemoveSelectedVertexExecute(object obj)
+        private void RemoveSelectedVertexExecute( object obj )
         {
             if( SelectedVertex == null ) return;
 
- 	        if( SelectedVertex.IsPlugin )
+            if( SelectedVertex.IsPlugin )
             {
-                this.RemovePlugin(SelectedVertex.LivePluginInfo.PluginInfo);
-            } else if( SelectedVertex.IsService )
+                this.RemovePlugin( SelectedVertex.LivePluginInfo.PluginInfo );
+            }
+            else if( SelectedVertex.IsService )
             {
-                this.RemoveService(SelectedVertex.LiveServiceInfo.ServiceInfo);
+                this.RemoveService( SelectedVertex.LiveServiceInfo.ServiceInfo );
             }
 
             SelectedVertex = null;
@@ -157,9 +160,9 @@ namespace Yodii.Lab
             }
             set
             {
-                Debug.Assert(value == null || Graph.Vertices.Contains(value), "Graph contains vertex to select");
+                Debug.Assert( value == null || Graph.Vertices.Contains( value ), "Graph contains vertex to select" );
 
-                if( value != _selectedVertex)
+                if( value != _selectedVertex )
                 {
                     if( _selectedVertex != null ) _selectedVertex.IsSelected = false;
                     _selectedVertex = value;
@@ -176,6 +179,11 @@ namespace Yodii.Lab
         public bool HasSelection
         {
             get { return SelectedVertex != null; }
+        }
+
+        internal ServiceInfoManager ServiceInfoManager
+        {
+            get { return _serviceInfoManager; }
         }
 
         #region Command properties
@@ -206,7 +214,7 @@ namespace Yodii.Lab
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
             ServiceInfo newService = _serviceInfoManager.CreateNewService( serviceName, (ServiceInfo)generalization );
-       
+
 
             return newService;
         }
@@ -217,7 +225,7 @@ namespace Yodii.Lab
         /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <returns>New plugin</returns>
-        public IPluginInfo CreateNewPlugin(Guid pluginGuid, string pluginName)
+        public IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName )
         {
             return CreateNewPlugin( pluginGuid, pluginName, null );
         }
@@ -247,7 +255,7 @@ namespace Yodii.Lab
         /// <param name="plugin">Plugin</param>
         /// <param name="service">Service the plugin depends on</param>
         /// <param name="runningRequirement">How the plugin depends on the service</param>
-        public void SetPluginDependency(IPluginInfo plugin, IServiceInfo service, RunningRequirement runningRequirement)
+        public void SetPluginDependency( IPluginInfo plugin, IServiceInfo service, RunningRequirement runningRequirement )
         {
             if( plugin == null ) throw new ArgumentNullException( "plugin" );
             if( service == null ) throw new ArgumentNullException( "service" );
@@ -303,6 +311,52 @@ namespace Yodii.Lab
         public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
         {
             return _serviceInfoManager.RenameService( serviceInfo, newName );
+        }
+
+        public DetailedOperationResult SaveState( string tempFilePath )
+        {
+            XmlWriterSettings ws = new XmlWriterSettings();
+            ws.NewLineHandling = NewLineHandling.None;
+
+            try
+            {
+                using( FileStream fs = File.Open( tempFilePath, FileMode.Create ) )
+                {
+                    using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
+                    {
+                        MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
+                    }
+                }
+            } catch ( Exception e ) // TODO: Detailed exception handling
+            {
+                return new DetailedOperationResult( false, e.Message );
+            }
+
+            return new DetailedOperationResult( true );
+        }
+
+        public DetailedOperationResult LoadState( string filePath )
+        {
+            _serviceInfoManager.ClearState();
+
+            XmlReaderSettings rs = new XmlReaderSettings();
+
+            try
+            {
+                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
+                {
+                    using( XmlReader xr = XmlReader.Create( fs, rs ) )
+                    {
+                        MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( this, xr );
+                    }
+                }
+            }
+            catch( Exception e ) // TODO: Detailed exception handling and undo
+            {
+                return new DetailedOperationResult( false, e.Message );
+            }
+
+            return new DetailedOperationResult( true );
         }
     }
 }
