@@ -19,7 +19,7 @@ namespace Yodii.Model
 
         IReadOnlyCollection<IPluginInfo> DisabledPlugins { get; }
 
-        IReadOnlyCollection<IPluginInfo> StoppedPlugins { get; }
+        //IReadOnlyCollection<IPluginInfo> StoppedPlugins { get; }
 
         IReadOnlyCollection<IPluginInfo> RunningPlugins { get; }
     }

@@ -66,15 +66,14 @@
     <Compile Include="IServiceInfo.cs" />
     <Compile Include="IServiceReferenceInfo.cs" />
     <Compile Include="IServiceSolved.cs" />
+    <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="PluginDisabledReason.cs" />
     <Compile Include="RunningRequirement.cs" />
     <Compile Include="LiveModel\ILiveConfiguration.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />
     <Compile Include="IYodiiEngine.cs" />
-    <Compile Include="LiveModel\LiveConfiguration.cs" />
     <Compile Include="LiveModel\RunningStatus.cs" />
-    <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceDisabledReason.cs" />
   </ItemGroup>
