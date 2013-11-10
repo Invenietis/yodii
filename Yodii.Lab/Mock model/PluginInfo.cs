@@ -81,7 +81,14 @@ namespace Yodii.Lab.Mocks
             {
                 if( value != _service )
                 {
+                    if( _service != null )
+                        _service.InternalImplementations.Remove( this );
+
                     _service = value;
+
+                    if( _service != null )
+                        _service.InternalImplementations.Add( this );
+
                     RaisePropertyChanged( "Service" );
                 }
             }
