@@ -202,7 +202,7 @@ namespace Yodii.Engine
             }
             return !Disabled;
         }
-
+                  
         public override string ToString()
         //_status is obtained through the PluginData.Dynamic partial class
         {

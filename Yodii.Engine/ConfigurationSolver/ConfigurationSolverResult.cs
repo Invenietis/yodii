@@ -40,8 +40,8 @@ namespace Yodii.Engine
 
         public IReadOnlyList<IServiceSolved> BlockingServices { get { return ( _blockingServices != null ) ? _blockingServices.ToReadOnlyList() : null; } }
 
-       //////
-
+       
+        //(Maybe) used later in tests, else TO BE REMOVED 
         public IReadOnlyCollection<IPluginSolved> DisabledPlugins
         {
             get { return (_disabledPlugins != null) ? _disabledPlugins.ToReadOnlyList() : null; }
@@ -52,6 +52,7 @@ namespace Yodii.Engine
             get { return _availablePluginsCount; }
         }
 
+        //(Maybe) used later in tests, else TO BE REMOVED
         public IReadOnlyCollection<IPluginSolved> RunningPlugins
         {
             get { return (_runningPlugins != null) ? _runningPlugins.ToReadOnlyList() : null; }
