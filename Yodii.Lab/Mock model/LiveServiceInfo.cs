@@ -7,6 +7,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
+    [DebuggerDisplay( "Live {ServiceInfo.ServiceFullName}" )]
     public class LiveServiceInfo : ViewModelBase, ILiveServiceInfo
     {
         #region Fields

@@ -7,6 +7,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
+    [DebuggerDisplay( "Live {PluginInfo.PluginFullName} = {PluginInfo.PluginId}" )]
     public class LivePluginInfo : ViewModelBase, ILivePluginInfo
     {
         private PluginInfo _pluginInfo;

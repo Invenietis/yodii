@@ -14,6 +14,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Yodii graph. Handles binding and converting from ServiceInfo/PluginInfo collections.
     /// </summary>
+    [DebuggerDisplay("Vertices = {Vertices.Count}, Edges = {Edges.Count}, Services = {_serviceInfos.Count}, Plugins = {_pluginInfos.Count} ")]
     public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
         readonly ICKObservableReadOnlyCollection<LiveServiceInfo> _serviceInfos;
@@ -85,11 +86,11 @@ namespace Yodii.Lab
                 this.AddEdge( serviceEdge );
             }
 
-            foreach( IServiceReferenceInfo reference in livePlugin.PluginInfo.ServiceReferences )
+            foreach( MockServiceReferenceInfo reference in livePlugin.PluginInfo.InternalServiceReferences )
             {
                 YodiiGraphVertex refVertex = FindOrCreateServiceVertex( reference.Reference );
 
-                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference.Requirement );
+                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference );
                 this.AddEdge( refEdge );
             }
 
@@ -206,18 +207,22 @@ namespace Yodii.Lab
         {
             if( e.Action == NotifyCollectionChangedAction.Add )
             {
-                IServiceReferenceInfo reference = (IServiceReferenceInfo)e.NewItems[e.NewStartingIndex];
+                MockServiceReferenceInfo reference = (MockServiceReferenceInfo)e.NewItems[0];
                 YodiiGraphVertex pluginVertex = FindOrCreatePluginVertex( (PluginInfo)reference.Owner );
                 YodiiGraphVertex refVertex = FindOrCreateServiceVertex( (IServiceInfo)reference.Reference );
 
-                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference.Requirement );
+                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference );
                 this.AddEdge( refEdge );
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
             {
-                IServiceReferenceInfo reference = (IServiceReferenceInfo)e.OldItems[e.OldStartingIndex];
+                IServiceReferenceInfo reference = (IServiceReferenceInfo)e.OldItems[0];
+                Debug.Assert( reference != null );
 
-                this.RemoveEdgeIf( e2 => e2.Source.LivePluginInfo == reference.Owner && e2.Target.LiveServiceInfo == reference.Reference && e2.ReferenceRequirement == reference.Requirement );
+                this.RemoveEdgeIf(
+                    e2 => e2.IsServiceReference &&
+                        e2.Source.IsPlugin && e2.Source.LivePluginInfo.PluginInfo == reference.Owner
+                        && e2.Target.IsService && e2.Target.LiveServiceInfo.ServiceInfo == reference.Reference );
             }
         }
 

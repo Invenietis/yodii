@@ -9,6 +9,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
+    [DebuggerDisplay( "{PluginFullName} = {PluginId}" )]
     public class PluginInfo : ViewModelBase, IPluginInfo
     {
         readonly Guid _guid;
@@ -28,7 +29,7 @@ namespace Yodii.Lab.Mocks
             _assemblyInfo = assemblyInfo;
 
             _service = service;
-            _serviceReferences = new CKObservableSortedArrayList<MockServiceReferenceInfo>();
+            _serviceReferences = new CKObservableSortedArrayList<MockServiceReferenceInfo>( ( x, y ) => String.CompareOrdinal( x.Reference.ServiceFullName, y.Reference.ServiceFullName ), false );
         }
 
         internal CKObservableSortedArrayList<MockServiceReferenceInfo> InternalServiceReferences

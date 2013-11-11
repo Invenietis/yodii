@@ -10,6 +10,7 @@ using System.Collections;
 
 namespace Yodii.Lab.Mocks
 {
+    [DebuggerDisplay( "{ServiceFullName}" )]
     public class ServiceInfo : ViewModelBase, IServiceInfo
     {
         readonly IAssemblyInfo _assemblyInfo;

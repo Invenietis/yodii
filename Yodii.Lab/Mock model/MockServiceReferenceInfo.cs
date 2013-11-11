@@ -9,13 +9,15 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
-    public class MockServiceReferenceInfo : IServiceReferenceInfo
+    [DebuggerDisplay( "=> {Reference.ServiceFullName} ({Requirement})" )]
+    public class MockServiceReferenceInfo : ViewModelBase, IServiceReferenceInfo
     {
-        readonly IPluginInfo _owner;
-        readonly IServiceInfo _reference;
-        readonly RunningRequirement _requirement;
+        readonly PluginInfo _owner;
+        readonly ServiceInfo _reference;
 
-        internal MockServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, RunningRequirement requirement )
+        RunningRequirement _requirement;
+
+        internal MockServiceReferenceInfo( PluginInfo ownerPlugin, ServiceInfo referencedService, RunningRequirement requirement )
         {
             Debug.Assert( ownerPlugin != null );
             Debug.Assert( referencedService != null );
@@ -26,7 +28,11 @@ namespace Yodii.Lab.Mocks
         }
         #region IServiceReferenceInfo Members
 
-        public IPluginInfo Owner
+        IPluginInfo IServiceReferenceInfo.Owner
+        {
+            get { return _owner; }
+        }
+        public PluginInfo Owner
         {
             get { return _owner; }
         }
@@ -36,9 +42,22 @@ namespace Yodii.Lab.Mocks
             get { return _reference; }
         }
 
+        RunningRequirement IServiceReferenceInfo.Requirement
+        {
+            get { return _requirement; }
+        }
+
         public RunningRequirement Requirement
         {
             get { return _requirement; }
+            set
+            {
+                if( value != _requirement)
+                {
+                    _requirement = value;
+                    RaisePropertyChanged( "Requirement" );
+                }
+            }
         }
 
         public string ConstructorParameterOrPropertyName
