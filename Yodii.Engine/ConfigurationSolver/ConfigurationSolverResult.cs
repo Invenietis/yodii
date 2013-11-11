@@ -13,9 +13,9 @@ namespace Yodii.Engine
         readonly List<IPluginSolved> _blockingPlugins;
         readonly List<IServiceSolved> _blockingServices;
 
-        readonly IReadOnlyCollection<IPluginSolved> _disabledPlugins;
+        readonly List<IPluginSolved> _disabledPlugins;
         readonly int _availablePluginsCount;
-        readonly IReadOnlyCollection<IPluginSolved> _runningPlugins;
+        readonly List<IPluginSolved> _runningPlugins;
 
         internal ConfigurationSolverResult( List<IPluginSolved> blockingPlugins, List<IServiceSolved> blockingServices )
         {
@@ -29,9 +29,9 @@ namespace Yodii.Engine
 
         public ConfigurationSolverResult( List<IPluginSolved> disabledPlugins, int availablePluginsCount, List<IPluginSolved> runningPlugins )
         {
-            _disabledPlugins = disabledPlugins.ToReadOnlyCollection();
+            _disabledPlugins = disabledPlugins != null ? disabledPlugins : new List<IPluginSolved>();
             _availablePluginsCount = availablePluginsCount;
-            _runningPlugins = runningPlugins.ToReadOnlyCollection();
+            _runningPlugins = runningPlugins != null ? runningPlugins : new List<IPluginSolved>();
         }
 
         public bool ConfigurationSuccess { get { return _blockingPlugins == null; } }
@@ -44,7 +44,7 @@ namespace Yodii.Engine
 
         public IReadOnlyCollection<IPluginSolved> DisabledPlugins
         {
-            get { return _disabledPlugins; }
+            get { return (_disabledPlugins != null) ? _disabledPlugins.ToReadOnlyList() : null; }
         }
 
         public int AvailablePluginsCount
@@ -54,7 +54,7 @@ namespace Yodii.Engine
 
         public IReadOnlyCollection<IPluginSolved> RunningPlugins
         {
-            get { return _runningPlugins; }
+            get { return (_runningPlugins != null) ? _runningPlugins.ToReadOnlyList() : null; }
         }
     }
 }
