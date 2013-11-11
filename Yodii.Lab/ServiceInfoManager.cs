@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using CK.Core;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
@@ -86,19 +87,10 @@ namespace Yodii.Lab
             if( generalization != null ) Debug.Assert( ServiceInfos.Contains( generalization ) );
 
             ServiceInfo newService = new ServiceInfo( serviceName, AssemblyInfoHelper.ExecutingAssemblyInfo, generalization );
-            LiveServiceInfo newServiceInfo;
-            if( generalization != null )
-            {
-                LiveServiceInfo generalizationLiveInfo = _liveServiceInfos.GetByKey( generalization );
-                newServiceInfo = new LiveServiceInfo( newService, RunningRequirement.Optional, generalizationLiveInfo ); // TODO: Running requirement
-            }
-            else
-            {
-                newServiceInfo = new LiveServiceInfo( newService );
-            }
 
             _serviceInfos.Add( newService ); // Throws on duplicate
-            _liveServiceInfos.Add( newServiceInfo );
+
+            CreateLiveService( newService );
 
             return newService;
         }
@@ -116,25 +108,47 @@ namespace Yodii.Lab
             if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
             PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
-            LivePluginInfo livePlugin;
 
             _pluginInfos.Add( plugin );
 
-            if( service != null )
-            {
-                service.InternalImplementations.Add( plugin );
-                LiveServiceInfo liveService = _liveServiceInfos.GetByKey( service );
-                livePlugin = new LivePluginInfo( plugin, RunningRequirement.Optional, liveService ); // TODO: Running requirement
-            }
-            else
-            {
-                livePlugin = new LivePluginInfo( plugin );
-            }
-
-            _livePluginInfos.Add( livePlugin );
+            CreateLivePlugin( plugin );
 
             return plugin;
         }
+
+        private void CreateLiveService( ServiceInfo s )
+        {
+            LiveServiceInfo newServiceInfo;
+            if( s.Generalization != null )
+            {
+                LiveServiceInfo generalizationLiveInfo = _liveServiceInfos.GetByKey( (ServiceInfo)s.Generalization );
+                newServiceInfo = new LiveServiceInfo( s, RunningRequirement.Optional, generalizationLiveInfo ); // TODO: Running requirement
+            }
+            else
+            {
+                newServiceInfo = new LiveServiceInfo( s );
+            }
+            _liveServiceInfos.Add( newServiceInfo );
+        }
+
+        private void CreateLivePlugin( PluginInfo p )
+        {
+            LivePluginInfo lp;
+
+            if( p.Service != null )
+            {
+                p.Service.InternalImplementations.Add( p );
+                LiveServiceInfo liveService = _liveServiceInfos.GetByKey( p.Service );
+                lp = new LivePluginInfo( p, RunningRequirement.Optional, liveService ); // TODO: Running requirement
+            }
+            else
+            {
+                lp = new LivePluginInfo( p );
+            }
+
+            _livePluginInfos.Add( lp );
+        }
+
 
         /// <summary>
         /// Set an existing plugin's dependency to an existing service.
@@ -207,6 +221,56 @@ namespace Yodii.Lab
             serviceInfo.ServiceFullName = newName;
 
             return new Utils.DetailedOperationResult( true );
+        }
+
+        internal void LoadFromXmlReader( XmlReader r )
+        {
+            // May throw
+            var state = MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( r );
+
+            ClearState();
+
+            foreach( var serviceInfo in state.ServiceInfos )
+            {
+                LoadServiceInfo( serviceInfo );
+            }
+
+            foreach( var pluginInfo in state.PluginInfos )
+            {
+                LoadPluginInfo( pluginInfo );
+            }
+        }
+
+        private void LoadServiceInfo( ServiceInfo serviceInfo )
+        {
+            if( _serviceInfos.Contains( serviceInfo ) ) return; // Already loaded
+            _serviceInfos.Add( serviceInfo );
+
+            if( serviceInfo.Generalization != null )
+            {
+                LoadServiceInfo( (ServiceInfo)serviceInfo.Generalization );
+            }
+
+            CreateLiveService( serviceInfo );
+        }
+
+        private void LoadPluginInfo( PluginInfo pluginInfo )
+        {
+            if( _pluginInfos.Contains( pluginInfo ) ) return; // Already loaded
+            _pluginInfos.Add( pluginInfo );
+
+            if( pluginInfo.Service != null )
+            {
+                LoadServiceInfo( pluginInfo.Service );
+            }
+
+            foreach( var serviceRef in pluginInfo.ServiceReferences )
+            {
+                Debug.Assert( serviceRef.Owner == pluginInfo );
+                LoadServiceInfo( (ServiceInfo)serviceRef.Reference );
+            }
+
+            CreateLivePlugin( pluginInfo );
         }
     }
 }

@@ -193,12 +193,12 @@ namespace Yodii.Lab.Tests
         public void XmlWriteSerializationTest()
         {
             var vm = CreateViewModelWithGraph001();
-            var vm2 = new MainWindowViewModel();
 
             XmlWriterSettings ws = new XmlWriterSettings();
             ws.NewLineHandling = NewLineHandling.None;
 
             XmlReaderSettings rs = new XmlReaderSettings();
+            MockInfoXmlSerializer.PluginServiceInfoState state;
 
             using( MemoryStream ms = new MemoryStream() )
             {
@@ -217,15 +217,15 @@ namespace Yodii.Lab.Tests
                 
                 using( XmlReader r = XmlReader.Create( ms, rs ) )
                 {
-                    MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( vm2, r );
+                    state = MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( r );
                 }
             }
 
-            CollectionAssert.IsNotEmpty( vm2.ServiceInfos, "Deserialized service collection is not empty" );
-            CollectionAssert.IsNotEmpty( vm2.PluginInfos, "Deserialized plugin collection is not empty" );
+            CollectionAssert.IsNotEmpty( state.ServiceInfos, "Deserialized service collection is not empty" );
+            CollectionAssert.IsNotEmpty( state.PluginInfos, "Deserialized plugin collection is not empty" );
 
-            Assert.That( vm.PluginInfos.Count == vm2.PluginInfos.Count );
-            foreach( var infoB in vm2.PluginInfos )
+            Assert.That( vm.PluginInfos.Count == state.PluginInfos.Count() );
+            foreach( var infoB in state.PluginInfos )
             {
                 Assert.That( vm.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).Count() == 1 );
                 IPluginInfo infoA = vm.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).First();
@@ -233,8 +233,8 @@ namespace Yodii.Lab.Tests
                 TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
             }
 
-            Assert.That( vm.ServiceInfos.Count == vm2.ServiceInfos.Count );
-            foreach( var infoB in vm2.ServiceInfos )
+            Assert.That( vm.ServiceInfos.Count == state.ServiceInfos.Count() );
+            foreach( var infoB in state.ServiceInfos )
             {
                 Assert.That( vm.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
                 var infoA = vm.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();

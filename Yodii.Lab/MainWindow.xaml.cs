@@ -28,6 +28,7 @@ namespace Yodii.Lab
             _vm = new MainWindowViewModel();
             this.DataContext = _vm;
 
+            _vm.PropertyChanged += _vm_PropertyChanged;
 
             /**
              * Graph display example.
@@ -43,6 +44,14 @@ namespace Yodii.Lab
             IPluginInfo pluginAx1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
 
             InitializeComponent();
+        }
+
+        void _vm_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "ConfigurationManager" && _activeConfEditorWindow != null )
+            {
+                _activeConfEditorWindow.Close();
+            }
         }
 
         private void ConfEditorButton_Click( object sender, RoutedEventArgs e )

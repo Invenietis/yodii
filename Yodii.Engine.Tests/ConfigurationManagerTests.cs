@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using NUnit.Framework;
 using Yodii.Model;
 
@@ -46,6 +48,7 @@ namespace Yodii.Engine.Tests
             Assert.That( result, Is.True );
             Assert.That( layer.Items.Count == 2 );
             Assert.That( layer.Items[pluginIdentifier], Is.InstanceOf<ConfigurationItem>() );
+
         }
 
         [Test]
@@ -114,7 +117,7 @@ namespace Yodii.Engine.Tests
             result = layer.Items.Add( pluginId, ConfigurationStatus.Runnable );
             Assert.That( result, Is.True, "Layer override precedence: Optional -> Runnable is a valid operation." );
             Assert.That( layer.Items[pluginId].Status == ConfigurationStatus.Runnable );
-            
+
             result = layer.Items.Add( pluginId, ConfigurationStatus.Running );
             Assert.That( result, Is.True, "Layer override precedence: Runnable -> Running is a valid operation." );
             Assert.That( layer.Items[pluginId].Status == ConfigurationStatus.Running );
@@ -211,12 +214,78 @@ namespace Yodii.Engine.Tests
             result = manager.Layers.Add( layer );
             Assert.That( result == true );
 
-            manager.ConfigurationChanging += ( s, e ) => e.Cancel("");
+            manager.ConfigurationChanging += ( s, e ) => e.Cancel( "" );
             Assert.That( manager.Layers.Add( layer2 ) == false );
             Assert.That( manager.Layers[0].Items[0].SetStatus( ConfigurationStatus.Optional ) == false );
             Assert.That( manager.Layers[0].Items.Add( "schmurtz42", ConfigurationStatus.Optional ) == false );
             Assert.That( manager.Layers[0].Items.Remove( "schmurtz1" ) == false );
             Assert.That( manager.Layers.Remove( layer2 ) == false );
+
+
+
+            // XML serialization test
+
+            XmlWriterSettings ws = new XmlWriterSettings();
+            ws.NewLineHandling = NewLineHandling.None;
+
+            XmlReaderSettings rs = new XmlReaderSettings();
+
+            ConfigurationManager deserializedManager;
+
+            using( MemoryStream ms = new MemoryStream() )
+            {
+                using( XmlWriter xw = XmlWriter.Create( ms, ws ) )
+                {
+                    ConfigurationManagerXmlSerializer.SerializeConfigurationManager( manager, xw );
+                }
+
+                ms.Seek( 0, System.IO.SeekOrigin.Begin );
+
+                // Debug string
+                //using( StreamReader sr = new StreamReader( ms ) )
+                //{
+                //    string s = sr.ReadToEnd();
+                //}
+
+                using( XmlReader r = XmlReader.Create( ms, rs ) )
+                {
+                    deserializedManager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( r );
+                }
+            }
+
+            AssertManagerEquivalence( manager, deserializedManager );
+
+        }
+
+        private void AssertManagerEquivalence( ConfigurationManager a, ConfigurationManager b )
+        {
+            if( a == null && b == null ) return;
+
+            Assert.That( a != null && b != null );
+
+            Assert.That( a.Layers.Count == b.Layers.Count );
+
+            for( int i = 0; i < a.Layers.Count; i++ )
+            {
+                // Consider equivalent if they're in the exact same order?
+                var layerA = a.Layers[i];
+                var layerB = b.Layers[i];
+
+                foreach( var item in layerA.Items )
+                {
+                    Assert.That( layerB.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
+                }
+            }
+
+            if( a.FinalConfiguration != null )
+            {
+                Assert.That( b.FinalConfiguration != null );
+                Assert.That( a.FinalConfiguration.Items.Count == b.FinalConfiguration.Items.Count );
+                foreach( var item in a.FinalConfiguration.Items )
+                {
+                    Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
+                }
+            }
         }
 
 

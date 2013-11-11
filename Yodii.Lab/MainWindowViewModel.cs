@@ -19,8 +19,8 @@ namespace Yodii.Lab
     {
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceInfoManager;
-        readonly ConfigurationManager _configurationManager;
-
+        
+        ConfigurationManager _configurationManager; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
 
         bool _isLive;
@@ -132,6 +132,14 @@ namespace Yodii.Lab
             get
             {
                 return _configurationManager;
+            }
+            private set
+            {
+                if( value != _configurationManager)
+                {
+                    _configurationManager = value;
+                    RaisePropertyChanged( "ConfigurationManager" );
+                }
             }
         }
 
@@ -317,6 +325,7 @@ namespace Yodii.Lab
         {
             XmlWriterSettings ws = new XmlWriterSettings();
             ws.NewLineHandling = NewLineHandling.None;
+            ws.Indent = true;
 
             try
             {
@@ -324,7 +333,23 @@ namespace Yodii.Lab
                 {
                     using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
                     {
+                        xw.WriteStartDocument( true );
+                        xw.WriteStartElement( "YodiiLabState" );
+
+                        xw.WriteStartElement( "ServicePluginInfos" );
+
                         MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
+
+                        xw.WriteEndElement();
+
+                        xw.WriteStartElement( "ConfigurationManager" );
+
+                        ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
+
+                        xw.WriteEndElement();
+
+                        xw.WriteEndElement();
+                        xw.WriteEndDocument();
                     }
                 }
             } catch ( Exception e ) // TODO: Detailed exception handling
@@ -347,7 +372,17 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( this, xr );
+                        while( xr.Read() )
+                        {
+                            if( xr.IsStartElement() && xr.Name == "ServicePluginInfos")
+                            {
+                                _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
+                            } else if (xr.IsStartElement() && xr.Name == "ConfigurationManager")
+                            {
+                                var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
+                                ConfigurationManager = manager;
+                            }
+                        }
                     }
                 }
             }
