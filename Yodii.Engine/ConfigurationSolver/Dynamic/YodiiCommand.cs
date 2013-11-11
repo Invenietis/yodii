@@ -9,8 +9,8 @@ namespace Yodii.Engine
 {
     internal abstract class YodiiCommand
     {
-        Dictionary<PluginData, IPluginInfo> _availablePlugins;
-        Dictionary<ServiceData, IServiceInfo> _services;
-        List<ServiceRootData> _servicesRootData;
+        internal Dictionary<PluginData, ILivePluginInfo> _availablePlugins;
+        internal Dictionary<ServiceData, ILiveServiceInfo> _services;
+        internal List<ServiceRootData> _servicesRootData;
     }
 }

@@ -42,7 +42,10 @@ namespace Yodii.Engine
             }
             OnPropertyChanged(); 
         }
-
+        internal void CheckForCaller()
+        {
+            throw new NotImplementedException();
+        }
         private void OnPropertyChanged( [CallerMemberName]string caller = null )
         {
             var handler = PropertyChanged;

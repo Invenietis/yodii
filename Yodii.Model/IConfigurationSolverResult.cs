@@ -17,10 +17,10 @@ namespace Yodii.Model
 
         ////
 
-        IReadOnlyCollection<IPluginInfo> DisabledPlugins { get; }
+        IReadOnlyCollection<IPluginSolved> DisabledPlugins { get; }
 
         //IReadOnlyCollection<IPluginInfo> StoppedPlugins { get; }
 
-        IReadOnlyCollection<IPluginInfo> RunningPlugins { get; }
+        IReadOnlyCollection<IPluginSolved> RunningPlugins { get; }
     }
 }

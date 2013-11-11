@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Yodii.Model;
 
 namespace Yodii.Engine
 {
@@ -18,10 +20,16 @@ namespace Yodii.Engine
 
         internal void StartPlugin( Guid id, bool start )
         {
-            
+            var target = _availablePlugins.FirstOrDefault( p => p.Value.PluginInfo.PluginId == id );
+            Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Stopped);
+            //Call PluginData.Dynamic method which dynamically starts the plugin
+            //if(target.Key != null) 
         }
         internal void StopPlugin( Guid id, bool start )
         {
+            var target = _availablePlugins.FirstOrDefault( p => p.Value.PluginInfo.PluginId == id );
+            Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Running );
+            //Call PluginData.Dynamic method which dynamically stops the plugin
         }       
     }
 }
