@@ -14,14 +14,14 @@ namespace Yodii.Model
 
         RunningRequirement ConfigRequirement { get; }
 
-        RunningStatus Status { get; }
+        RunningStatus? Status { get; }
 
         bool IsRunning { get; }
 
         ILiveServiceInfo Service { get; }
 
-        bool Start();
+        bool Start( Object caller );
 
-        void Stop();
+        void Stop( Object caller );
     }
 }

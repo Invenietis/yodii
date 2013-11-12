@@ -24,27 +24,36 @@ namespace Yodii.Engine
             _servicesLiveInfo = serviceLiveInfo;
             _yodiiCommands = YodiiCommands;
         }
-        //Adding new items at the top of the list so that the most recent command gets handled first.
-        //First command must always be satisfied. 
-        internal void AddYodiiCommand( YodiiCommand command, [CallerMemberName]string caller = null )
+        
+        /// <summary>
+        /// Adding new items at the top of the list so that the most recent command gets handled first.
+        //  First command must always be satisfied. 
+        //  A given caller can have at most one command on a given plugin/service
+        /// </summary>
+        /// <param name="command"></param>
+        internal void AddYodiiCommand( YodiiCommand command )
         {
-            //TO DO: Check for object caller in existing methods
             Debug.Assert( command != null);
-            YodiiCommand Com = _yodiiCommands.FirstOrDefault(c => c == command );
-            if (Com == null)
-            {
-                _yodiiCommands.Insert( 0, command );
-            }
-            else
+            YodiiCommand Com = _yodiiCommands.FirstOrDefault( c => c == command && c._caller == command._caller);
+            if ( Com != null )
             {
                 int i = _yodiiCommands.IndexOf( Com );
                 _yodiiCommands.Move( i, 0 );
             }
-            OnPropertyChanged(); 
+            else _yodiiCommands.Insert( 0, command );
         }
-        internal void CheckForCaller()
+      
+        internal void RevokeCaller( Object caller )
         {
-            throw new NotImplementedException();
+            if(caller.GetType() == PluginLiveInfo) { /*Need some additional verification here!*/ }
+            ObservableCollection<YodiiCommand> temp = new ObservableCollection<YodiiCommand>();
+            foreach ( YodiiCommand command in _yodiiCommands )
+            {
+                if ( command._caller != caller ) temp.Add( command );
+            }
+            _yodiiCommands.Clear();
+            _yodiiCommands = temp;
+            //Execute command list
         }
         private void OnPropertyChanged( [CallerMemberName]string caller = null )
         {
@@ -66,5 +75,11 @@ namespace Yodii.Engine
         public IReadOnlyList<ILiveServiceInfo> ServiceLiveInfo { get { return _servicesLiveInfo.AsReadOnlyList(); } }
 
         public IReadOnlyList<YodiiCommand> YodiiCommands { get { return _yodiiCommands.AsReadOnlyList(); } }
+
+
+        void ILiveConfiguration.RevokeCaller( object caller )
+        {
+            throw new NotImplementedException();
+        }
     }
 }

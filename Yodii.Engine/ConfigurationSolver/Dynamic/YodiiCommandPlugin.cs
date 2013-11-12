@@ -18,18 +18,19 @@ namespace Yodii.Engine
             _start = start;
         }  
 
-        internal void StartPlugin( Guid id, bool start )
+        internal void Execute()
         {
-            var target = _availablePlugins.FirstOrDefault( p => p.Value.PluginInfo.PluginId == id );
-            Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Stopped);
-            //Call PluginData.Dynamic method which dynamically starts the plugin
-            //if(target.Key != null) 
-        }
-        internal void StopPlugin( Guid id, bool start )
-        {
-            var target = _availablePlugins.FirstOrDefault( p => p.Value.PluginInfo.PluginId == id );
-            Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Running );
-            //Call PluginData.Dynamic method which dynamically stops the plugin
-        }       
+            var target = _availablePlugins.FirstOrDefault( p => p.Value.PluginInfo.PluginId == _pluginId );
+            if ( _start )
+            {
+                Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Stopped );
+                target.Key.DynamicStart();
+            }
+            else
+            {
+                Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Running );
+                target.Key.DynamicStop();
+            }
+        }      
     }
 }

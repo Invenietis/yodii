@@ -11,6 +11,8 @@ namespace Yodii.Engine
     {
         internal Dictionary<PluginData, ILivePluginInfo> _availablePlugins;
         internal Dictionary<ServiceData, ILiveServiceInfo> _services;
-        internal List<ServiceRootData> _servicesRootData;
+        internal Object _caller;
+
+        internal Object ObjectCaller { get { return _caller; } }
     }
 }
