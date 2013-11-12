@@ -189,7 +189,7 @@ namespace Yodii.Lab
             get { return SelectedVertex != null; }
         }
 
-        internal ServiceInfoManager ServiceInfoManager
+        public ServiceInfoManager ServiceInfoManager
         {
             get { return _serviceInfoManager; }
         }

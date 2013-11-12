@@ -64,6 +64,14 @@ namespace Yodii.Lab.Mocks
         public LiveServiceInfo Generalization
         {
             get { return _generalization; }
+            set
+            {
+                if( value != _generalization )
+                {
+                    _generalization = value;
+                    RaisePropertyChanged( "Generalization" );
+                }
+            }
         }
 
         ILivePluginInfo ILiveServiceInfo.RunningPlugin

@@ -82,10 +82,10 @@
                 <ComboBox
                     Grid.Column="1"
                     Grid.Row="2"
-                    ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}"
-                    SelectedItem="{Binding Path=PluginInfo.Service}"
-                    IsEnabled="True"
-                    ItemTemplate="{StaticResource serviceFullNameTemplate}">
+                    x:Name="PluginServiceComboBox"
+                    ItemTemplate="{StaticResource serviceFullNameTemplate}"
+                    SelectedValue="{Binding Path=PluginInfo.Service}"
+                    ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
                 </ComboBox>
                 <StackPanel
                     Grid.Column="1"
@@ -105,8 +105,8 @@
                                     <ComboBox
                                         x:Name="ReferenceRequirementComboBox"
                                         DockPanel.Dock="Right"
-                                        ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
                                         SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
+                                        ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
                                         SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
                                         Width="70pt" />
 
@@ -127,16 +127,17 @@
                         <ComboBox
                             x:Name="NewReferenceRequirementComboBox"
                             DockPanel.Dock="Right"
-                            ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
                             SelectedIndex="0"
+                            ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
                             Width="70pt" />
 
                         <ComboBox
                             x:Name="NewReferenceServiceComboBox"
-                            ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}"
-                            SelectedIndex="0">
+                            SelectedIndex="0"
+                            ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
                             <ComboBox.ItemTemplate>
-                                <DataTemplate DataType="mocks:ServiceInfo">
+                                <DataTemplate
+                                    DataType="mocks:ServiceInfo">
                                     <TextBlock>
                                         <TextBlock
                                             Text="{Binding Path=ServiceFullName, Mode=OneWay}" />

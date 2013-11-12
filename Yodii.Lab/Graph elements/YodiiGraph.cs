@@ -41,6 +41,7 @@ namespace Yodii.Lab
             YodiiGraphVertex serviceVertex = new YodiiGraphVertex( liveService );
             this.AddVertex( serviceVertex );
             liveService.ServiceInfo.PropertyChanged += ServiceInfo_PropertyChanged;
+           
 
             if( liveService.Generalization != null )
             {
@@ -243,7 +244,14 @@ namespace Yodii.Lab
                     YodiiGraphVertex newGeneralizationVertex = FindOrCreateServiceVertex( service.Generalization );
                     YodiiGraphEdge newEdge = new YodiiGraphEdge( serviceVertex, newGeneralizationVertex, YodiiGraphEdgeType.Specialization );
                     AddEdge( newEdge );
+                    serviceVertex.LiveServiceInfo.Generalization = newGeneralizationVertex.LiveServiceInfo;
                 }
+                else
+                {
+
+                    serviceVertex.LiveServiceInfo.Generalization = null;
+                }
+
             }
         }
 
