@@ -5,10 +5,15 @@
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Yodii.Lab"
     x:Name="servicePropertyControl"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300">
+    <UserControl.Resources>
+        <local:NullToBoolValueConverter
+            x:Key="NullToBoolValueConverter" />
+    </UserControl.Resources>
     <Border
         Padding="5pt">
         <StackPanel
@@ -47,20 +52,27 @@
                     LostFocus="ServiceNamePropertyTextBox_LostFocus"
                     KeyDown="ServiceNamePropertyTextBox_KeyDown"
                     IsEnabled="True" />
-                <ComboBox
+                <DockPanel
                     Grid.Column="1"
-                    Grid.Row="1"
-                    x:Name="GeneralizationComboBox"
-                    SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=TwoWay}"
-                    ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}"
-                    IsEnabled="True">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    Grid.Row="1">
+                    <CheckBox
+                        Unchecked="HasGeneralizationCheckbox_Unchecked"
+                        Margin="3pt"
+                        x:Name="HasGeneralizationCheckbox"
+                        IsChecked="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=ServiceInfo.Generalization, Mode=OneWay, ConverterParameter=true}"/>
+                    <ComboBox
+                        IsEnabled="{Binding ElementName=HasGeneralizationCheckbox, Path=IsChecked, Mode=OneWay}"
+                        x:Name="GeneralizationComboBox"
+                        SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=TwoWay}"
+                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}" >
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </DockPanel>
                 <StackPanel
                     Grid.Column="1"
                     Grid.Row="2">

@@ -90,9 +90,10 @@ namespace Yodii.Lab
             }
         }
 
-        private void ComboBox_DataContextChanged( object sender, DependencyPropertyChangedEventArgs e )
+        private void HasGeneralizationCheckbox_Unchecked( object sender, RoutedEventArgs e )
         {
-            Debug.Assert( true );
+            if( LiveServiceInfo == null ) return;
+            LiveServiceInfo.ServiceInfo.Generalization = null;
         }
     }
 }

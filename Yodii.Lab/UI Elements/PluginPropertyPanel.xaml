@@ -13,6 +13,9 @@
     d:DesignHeight="300"
     d:DesignWidth="300">
     <UserControl.Resources>
+        <local:NullToBoolValueConverter
+            x:Key="NullToBoolValueConverter" />
+
         <!-- Enum content for RunningRequirements -->
         <ObjectDataProvider
             MethodName="GetValues"
@@ -79,14 +82,22 @@
                     Grid.Column="1"
                     Grid.Row="1"
                     Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
-                <ComboBox
+                <DockPanel
                     Grid.Column="1"
-                    Grid.Row="2"
-                    x:Name="PluginServiceComboBox"
-                    ItemTemplate="{StaticResource serviceFullNameTemplate}"
-                    SelectedValue="{Binding Path=PluginInfo.Service}"
-                    ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
-                </ComboBox>
+                    Grid.Row="2">
+                    <CheckBox
+                        Unchecked="HasServiceCheckbox_Unchecked"
+                        Margin="3pt"
+                        x:Name="HasServiceCheckbox"
+                        IsChecked="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=PluginInfo.Service, Mode=OneWay, ConverterParameter=true}" />
+                    <ComboBox
+                        IsEnabled="{Binding ElementName=HasServiceCheckbox, Path=IsChecked, Mode=OneWay}"
+                        x:Name="PluginServiceComboBox"
+                        ItemTemplate="{StaticResource serviceFullNameTemplate}"
+                        SelectedValue="{Binding Path=PluginInfo.Service}"
+                        ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
+                    </ComboBox>
+                </DockPanel>
                 <StackPanel
                     Grid.Column="1"
                     Grid.Row="3">

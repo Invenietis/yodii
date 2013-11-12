@@ -132,6 +132,7 @@
     <Compile Include="UI Elements\ServicePropertyPanel.xaml.cs">
       <DependentUpon>ServicePropertyPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\NullToBoolValueConverter.cs" />
     <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
