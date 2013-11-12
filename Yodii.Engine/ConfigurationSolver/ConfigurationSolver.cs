@@ -31,7 +31,7 @@ namespace Yodii.Engine
 
             //Saving raw data, in case the static resolution fails
             _currentConfigState = new ConfigState( finalConfig, info );
-            
+
             foreach( IServiceInfo sI in info.ServiceInfos )
             {
                 // This creates services and applies solved configuration to them: directly disabled services
@@ -85,25 +85,25 @@ namespace Yodii.Engine
 
             foreach( PluginData p in _plugins.Values )
             {
-                if ( p.Disabled )
+                if( p.Disabled )
                 {
-                    if ( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
+                    if( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
-                        if ( blockingPlugins == null ) blockingPlugins = new List<IPluginSolved>();
+                        if( blockingPlugins == null ) blockingPlugins = new List<IPluginSolved>();
                         blockingPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
                     }
                     else
                     {
-                        if(disabledPlugins == null) disabledPlugins = new List<IPluginSolved>();
-                        disabledPlugins.Add( new PluginSolved ( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
+                        if( disabledPlugins == null ) disabledPlugins = new List<IPluginSolved>();
+                        disabledPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
                     }
                 }
                 else
                 {
-                    Debug.Assert( p.ConfigOriginalStatus > ConfigurationStatus.Disable && p.DisabledReason == PluginDisabledReason.None);
-                    if ( p.ConfigOriginalStatus == ConfigurationStatus.Running )
+                    Debug.Assert( p.ConfigOriginalStatus > ConfigurationStatus.Disable && p.DisabledReason == PluginDisabledReason.None );
+                    if( p.ConfigOriginalStatus == ConfigurationStatus.Running )
                     {
-                        if ( runningPlugins == null ) runningPlugins = new List<IPluginSolved>();
+                        if( runningPlugins == null ) runningPlugins = new List<IPluginSolved>();
                         runningPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
                     }
                     else
@@ -119,17 +119,17 @@ namespace Yodii.Engine
 
             foreach( ServiceData s in _services.Values )
             {
-                if ( s.Disabled )
+                if( s.Disabled )
                 {
-                    if ( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
+                    if( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
-                        if ( blockingServices == null ) blockingServices = new List<IServiceSolved>();
+                        if( blockingServices == null ) blockingServices = new List<IServiceSolved>();
                         blockingServices.Add( new ServiceSolved( s.ServiceInfo, s.DisabledReason, s.ConfigSolvedStatus, s.ConfigOriginalStatus, s.Status ) );
                     }
                 }
                 else
                 {
-                    if ( s.ConfigOriginalStatus == ConfigurationStatus.Optional || s.ConfigOriginalStatus == ConfigurationStatus.Runnable )
+                    if( s.ConfigOriginalStatus == ConfigurationStatus.Optional || s.ConfigOriginalStatus == ConfigurationStatus.Runnable )
                     {
                         //_availableServices.Add( s, s.ServiceInfo );
                     }
@@ -219,10 +219,10 @@ namespace Yodii.Engine
 
             LiveConfiguration dynamicRes = new LiveConfiguration( livePlugins, liveServices, dynamicCommands );
 
-            foreach ( YodiiCommand command in dynamicCommands )
+            foreach( YodiiCommand command in dynamicCommands )
             {
                 dynamicRes.AddYodiiCommand( command );
-            } 
+            }
 
             return new ConfigurationSolverResult( disabledPlugins, availablePluginsCount, runningPlugins );
         }
@@ -247,7 +247,7 @@ namespace Yodii.Engine
             if( _services.TryGetValue( s, out data ) ) return data;
 
             //Set default status
-            ConfigurationStatus serviceStatus = finalConfig.GetStatus(s.ServiceFullName);
+            ConfigurationStatus serviceStatus = finalConfig.GetStatus( s.ServiceFullName );
             // Handle generalization.
             ServiceData dataGen = null;
             if( s.Generalization != null )
@@ -276,7 +276,7 @@ namespace Yodii.Engine
 
             //Set default status
             ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
-            ServiceData service = p.Service != null ? _services[ p.Service ] : null;
+            ServiceData service = p.Service != null ? _services[p.Service] : null;
             data = new PluginData( _services, p, service, pluginStatus );
             _plugins.Add( p, data );
             return data;
