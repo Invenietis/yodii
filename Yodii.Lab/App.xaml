@@ -8,6 +8,9 @@
                 <!--Attach Default Fluent Control's Theme-->
                 <ResourceDictionary
                     Source="pack://application:,,,/Fluent;Component/Themes/Office2010/Silver.xaml" />
+                <!-- Icon assets -->
+                <ResourceDictionary
+                    Source="Assets/ModernUiIconsDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

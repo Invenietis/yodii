@@ -65,32 +65,62 @@
                     Header="File">
                     <Fluent:Button
                         Header="Open"
-                        LargeIcon=""
-                        Click="OpenFile_Click" />
+                        Click="OpenFile_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource FolderOpenIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Save as"
-                        LargeIcon=""
-                        Click="SaveAsFile_Click" />
+                        Click="SaveAsFile_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource DiskIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Add service"
-                        LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"
-                        Click="NewServiceButton_Click" />
+                        Click="NewServiceButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource ServiceIconBlack}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Add plugin"
-                        LargeIcon="/Yodii.Lab;component/Icons/database_32xLG.png"
-                        Click="NewPluginButton_Click" />
+                        Click="NewPluginButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource PluginIconBlack}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Delete selected"
-                        LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
-                        Command="{Binding Path=RemoveSelectedVertex}" />
+                        Command="{Binding Path=RemoveSelectedVertex}">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource DeleteIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Configuration editor"
-                        LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"
-                        Click="ConfEditorButton_Click" />
+                        Click="ConfEditorButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource LayerIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:SplitButton
@@ -98,6 +128,11 @@
                         ItemsSource="{Binding Path=GraphLayoutAlgorithms}"
                         MenuItem.Click="NewGraphLayoutButton_Click"
                         Click="ReorderGraphButton_Click">
+                        <Fluent:SplitButton.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource RefreshIcon}" />
+                        </Fluent:SplitButton.LargeIcon>
                         <!--<Fluent:DropDownButton.ItemTemplate>
                             <DataTemplate DataType="{x:Type sys:String}">
                                 <Fluent:MenuItem Header="{Binding}"/>
