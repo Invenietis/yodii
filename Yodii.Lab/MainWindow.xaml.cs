@@ -251,49 +251,6 @@ namespace Yodii.Lab
             }
         }
 
-        private void DeleteReferenceButton_Click( object sender, RoutedEventArgs e )
-        {
-            Button button = sender as Button;
-            FrameworkElement parentElement = button.Parent as FrameworkElement;
-            MockServiceReferenceInfo serviceRef = parentElement.DataContext as MockServiceReferenceInfo;
-
-            serviceRef.Owner.InternalServiceReferences.Remove( serviceRef );
-        }
-
-        private bool isResettingSelection;
-        private void ReferenceRequirementComboBox_SelectionChanged( object sender, System.Windows.Controls.SelectionChangedEventArgs e )
-        {
-            // Both at 1 if old value was replaced (and not initialized, like when the window starts up)
-            if( !isResettingSelection && e.RemovedItems.Count == 1 && e.AddedItems.Count == 1 )
-            {
-                // Find the selected item, starting from the bottom
-                ComboBox box = sender as ComboBox;
-                FrameworkElement parentElement = box.Parent as FrameworkElement;
-                MockServiceReferenceInfo serviceRef = parentElement.DataContext as MockServiceReferenceInfo;
-
-                RunningRequirement oldReq = serviceRef.Requirement;
-                RunningRequirement newReq = (RunningRequirement)e.AddedItems[0];
-
-                serviceRef.Requirement = newReq;
-            }
-            isResettingSelection = false;
-        }
-
-        private void CreateReferenceButton_Click( object sender, RoutedEventArgs e )
-        {
-            Button button = sender as Button;
-            FrameworkElement parentElement = button.Parent as FrameworkElement;
-            LivePluginInfo livePlugin = parentElement.DataContext as LivePluginInfo;
-
-            ComboBox requirementComboBox = parentElement.FindName( "NewReferenceRequirementComboBox" ) as ComboBox;
-            ComboBox serviceComboBox = parentElement.FindName( "NewReferenceServiceComboBox" ) as ComboBox;
-
-            ServiceInfo service = serviceComboBox.SelectedItem as ServiceInfo;
-            RunningRequirement req = (RunningRequirement)requirementComboBox.SelectedItem;
-
-            livePlugin.PluginInfo.InternalServiceReferences.Add( new MockServiceReferenceInfo( livePlugin.PluginInfo, service, req ) );
-        }
-
 
     }
 }

@@ -74,92 +74,10 @@
             </Border>
         </DataTemplate>
 
-        <DataTemplate x:Key="pluginVertexPropertiesTemplate">
-            <Border Padding="5pt">
-                <StackPanel DataContext="{Binding Path=LivePluginInfo}">
-                    <TextBlock FontWeight="Bold">
-                        Plugin properties
-                    </TextBlock>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Row="0">GUID</TextBlock>
-                        <TextBlock Grid.Row="1">Name</TextBlock>
-                        <TextBlock Grid.Row="2">Service</TextBlock>
-                        <TextBlock Grid.Row="3">References</TextBlock>
-
-                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}" IsEnabled="False" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
-                        <ComboBox Grid.Column="1" Grid.Row="2"
-                                  ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                  SelectedItem="{Binding Path=PluginInfo.Service}"
-                                  IsEnabled="True">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock>
-                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <StackPanel Grid.Column="1" Grid.Row="3">
-                            <ItemsControl ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
-                                <!--<ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                        <Run Text="{Binding Path=Reference.ServiceFullName, Mode=OneWay}"/> (<Run Text="{Binding Path=Requirement, Mode=OneWay}"/>)
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>-->
-                            </ItemsControl>
-
-                            <!-- Add new reference box -->
-                            <DockPanel Margin="0,3">
-                                <Button DockPanel.Dock="Right" Width="15pt" Click="CreateReferenceButton_Click">+</Button>
-                                <ComboBox x:Name="NewReferenceRequirementComboBox"  DockPanel.Dock="Right"
-                                          ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                                          SelectedIndex="0"
-                                          Width="70pt"/>
-
-                                <ComboBox x:Name="NewReferenceServiceComboBox"
-                                          ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                          SelectedIndex="0">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock>
-                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
-                                    </TextBlock>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </DockPanel>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </DataTemplate>
-
-        <!-- Properties: ServiceReferences-->
-        <DataTemplate DataType="{x:Type mocks:MockServiceReferenceInfo}">
-            <DockPanel Margin="0,3">
-                <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteReferenceButton_Click">-</Button>
-                <ComboBox x:Name="ReferenceRequirementComboBox"  DockPanel.Dock="Right"
-                              ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                              SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
-                              SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
-                              Width="70pt"/>
-
-                <TextBlock Text="{Binding Path=Reference.ServiceFullName}" />
-            </DockPanel>
+        <DataTemplate x:Key="pluginVertexPropertiesTemplate" DataType="local:YodiiGraphVertex">
+            <local:PluginPropertyPanel
+                LivePluginInfo="{Binding Path=LivePluginInfo}"
+                ServiceInfos="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"/>
         </DataTemplate>
 
         <local:VertexPropertiesTemplateSelector 
