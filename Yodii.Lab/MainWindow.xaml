@@ -1,203 +1,138 @@
-﻿<Fluent:RibbonWindow x:Class="Yodii.Lab.MainWindow"
-                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-                    xmlns:GraphSharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
-                    xmlns:WpfExtensions="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
-                    xmlns:local="clr-namespace:Yodii.Lab"
-                    xmlns:mocks="clr-namespace:Yodii.Lab.Mocks"
-                    xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
-                    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                     WindowStartupLocation="CenterScreen"
-                     WindowState="Maximized"
-        Title="Yodii Lab" Height="600" Width="800">
+﻿<Fluent:RibbonWindow
+    x:Class="Yodii.Lab.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
+    xmlns:GraphSharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
+    xmlns:WpfExtensions="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
+    xmlns:local="clr-namespace:Yodii.Lab"
+    xmlns:mocks="clr-namespace:Yodii.Lab.Mocks"
+    xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
+    x:Name="MainWindowRoot"
+    Title="Yodii Lab"
+    Height="600"
+    Width="800">
     <Fluent:RibbonWindow.Resources>
-        <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
+        <BooleanToVisibilityConverter
+            x:Key="boolToVisibilityConverter" />
 
-        <ObjectDataProvider MethodName="GetValues"
-                        ObjectType="{x:Type sys:Enum}"
-                        x:Key="RunningRequirements">
+        <ObjectDataProvider
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}"
+            x:Key="RunningRequirements">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="ym:RunningRequirement" />
+                <x:Type
+                    TypeName="ym:RunningRequirement" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
-        <DataTemplate x:Key="serviceVertexPropertiesTemplate">
-            <Border Padding="5pt">
-                <StackPanel DataContext="{Binding Path=LiveServiceInfo}">
-                    <TextBlock FontWeight="Bold">
-                        Service properties
-                    </TextBlock>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Row="0">Name</TextBlock>
-                        <TextBlock Grid.Row="1">Specialized service</TextBlock>
-                        <TextBlock Grid.Row="2">Implementations</TextBlock>
-
-                        <!-- TODO. ServiceFullName is key of SortedArrayKeyLists. Is it stable if we change it? -->
-                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}" LostFocus="ServiceNamePropertyTextBox_LostFocus" KeyDown="ServiceNamePropertyTextBox_KeyDown" IsEnabled="True" />
-                        <ComboBox Grid.Column="1" Grid.Row="1"
-                                  ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                  SelectedItem="{Binding Path=ServiceInfo.Generalization, UpdateSourceTrigger=PropertyChanged}"
-                                  IsEnabled="True">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock>
-                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <StackPanel Grid.Column="1" Grid.Row="2">
-                            <ItemsControl ItemsSource="{Binding Path=ServiceInfo.Implementations, Mode=OneWay}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                        <Run Text="{Binding Path=PluginFullName, Mode=OneWay}"/> (<Run Text="{Binding Path=PluginId, Mode=OneWay}"/>)
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
+        <DataTemplate
+            x:Key="serviceVertexPropertiesTemplate"
+            DataType="local:YodiiGraphVertex">
+            <local:ServicePropertyPanel
+                LiveServiceInfo="{Binding Path=LiveServiceInfo, Mode=OneWay}"
+                ServiceInfoManager="{Binding Path=DataContext.ServiceInfoManager, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
-        <DataTemplate x:Key="pluginVertexPropertiesTemplate">
-            <Border Padding="5pt">
-                <StackPanel DataContext="{Binding Path=LivePluginInfo}">
-                    <TextBlock FontWeight="Bold">
-                        Plugin properties
-                    </TextBlock>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Row="0">GUID</TextBlock>
-                        <TextBlock Grid.Row="1">Name</TextBlock>
-                        <TextBlock Grid.Row="2">Service</TextBlock>
-                        <TextBlock Grid.Row="3">References</TextBlock>
-
-                        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}" IsEnabled="False" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
-                        <ComboBox Grid.Column="1" Grid.Row="2"
-                                  ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                  SelectedItem="{Binding Path=PluginInfo.Service}"
-                                  IsEnabled="True">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock>
-                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                        <StackPanel Grid.Column="1" Grid.Row="3">
-                            <ItemsControl ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
-                                <!--<ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                        <Run Text="{Binding Path=Reference.ServiceFullName, Mode=OneWay}"/> (<Run Text="{Binding Path=Requirement, Mode=OneWay}"/>)
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>-->
-                            </ItemsControl>
-
-                            <!-- Add new reference box -->
-                            <DockPanel Margin="0,3">
-                                <Button DockPanel.Dock="Right" Width="15pt" Click="CreateReferenceButton_Click">+</Button>
-                                <ComboBox x:Name="NewReferenceRequirementComboBox"  DockPanel.Dock="Right"
-                                          ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                                          SelectedIndex="0"
-                                          Width="70pt"/>
-
-                                <ComboBox x:Name="NewReferenceServiceComboBox"
-                                          ItemsSource="{Binding Path=DataContext.ServiceInfos, RelativeSource={RelativeSource AncestorType={x:Type Fluent:RibbonWindow}}}"
-                                          SelectedIndex="0">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock>
-                                        <TextBlock Text="{Binding Path=ServiceFullName, Mode=OneWay}"/>
-                                    </TextBlock>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-                            </DockPanel>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
+        <DataTemplate
+            x:Key="pluginVertexPropertiesTemplate"
+            DataType="local:YodiiGraphVertex">
+            <local:PluginPropertyPanel
+                LivePluginInfo="{Binding Path=LivePluginInfo, Mode=OneWay}"
+                ServiceInfos="{Binding Path=DataContext.ServiceInfos, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
-        <!-- Properties: ServiceReferences-->
-        <DataTemplate DataType="{x:Type mocks:MockServiceReferenceInfo}">
-            <DockPanel Margin="0,3">
-                <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteReferenceButton_Click">-</Button>
-                <ComboBox x:Name="ReferenceRequirementComboBox"  DockPanel.Dock="Right"
-                              ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                              SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
-                              SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
-                              Width="70pt"/>
-
-                <TextBlock Text="{Binding Path=Reference.ServiceFullName}" />
-            </DockPanel>
-        </DataTemplate>
-
-        <local:VertexPropertiesTemplateSelector 
-        PluginPropertiesTemplate="{StaticResource pluginVertexPropertiesTemplate}" 
-        ServicePropertiesTemplate="{StaticResource serviceVertexPropertiesTemplate}" 
-        x:Key="vertexPropertiesTemplateSelector" />
+        <local:VertexPropertiesTemplateSelector
+            PluginPropertiesTemplate="{StaticResource pluginVertexPropertiesTemplate}"
+            ServicePropertiesTemplate="{StaticResource serviceVertexPropertiesTemplate}"
+            x:Key="vertexPropertiesTemplateSelector" />
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
-        <Fluent:Ribbon DockPanel.Dock="Top">
+        <Fluent:Ribbon
+            DockPanel.Dock="Top">
             <Fluent:Ribbon.QuickAccessItems>
-                <Fluent:QuickAccessMenuItem Header="Save" />
+                <Fluent:QuickAccessMenuItem
+                    Header="Save" />
             </Fluent:Ribbon.QuickAccessItems>
             <!--Tabs-->
-            <Fluent:RibbonTabItem Header="Home">
-                <Fluent:RibbonGroupBox Header="File">
-                    <Fluent:Button Header="Open" LargeIcon=""
-                                   Click="OpenFile_Click"
-                                   />
-                    <Fluent:Button Header="Save as" LargeIcon=""
-                                   Click="SaveAsFile_Click"
-                                   />
+            <Fluent:RibbonTabItem
+                Header="Home">
+                <Fluent:RibbonGroupBox
+                    Header="File">
+                    <Fluent:Button
+                        Header="Open"
+                        Click="OpenFile_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource FolderOpenIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                    <Fluent:Button
+                        Header="Save as"
+                        Click="SaveAsFile_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource DiskIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:Button Header="Add service" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png"
-                                   Click="NewServiceButton_Click"
-                                   />
-                    <Fluent:Button Header="Add plugin" LargeIcon="/Yodii.Lab;component/Icons/database_32xLG.png"
-                                   Click="NewPluginButton_Click"
-                                   />
-                    <Fluent:Button Header="Delete selected" LargeIcon="/Yodii.Lab;component/Icons/Symbols_Critical_32xLG.png"
-                                   Command="{Binding Path=RemoveSelectedVertex}"
-                                   />
+                    <Fluent:Button
+                        Header="Add service"
+                        Click="NewServiceButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource ServiceIconBlack}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                    <Fluent:Button
+                        Header="Add plugin"
+                        Click="NewPluginButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource PluginIconBlack}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
+                    <Fluent:Button
+                        Header="Delete selected"
+                        Command="{Binding Path=RemoveSelectedVertex}">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource DeleteIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:Button Header="Configuration editor" LargeIcon="/Yodii.Lab;component/Icons/column_32xLG.png" Click="ConfEditorButton_Click" />
+                    <Fluent:Button
+                        Header="Configuration editor"
+                        Click="ConfEditorButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource LayerIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:SplitButton Header="Reorder graph" ItemsSource="{Binding Path=GraphLayoutAlgorithms}" MenuItem.Click="NewGraphLayoutButton_Click" Click="ReorderGraphButton_Click">
+                    <Fluent:SplitButton
+                        Header="Reorder graph"
+                        ItemsSource="{Binding Path=GraphLayoutAlgorithms}"
+                        MenuItem.Click="NewGraphLayoutButton_Click"
+                        Click="ReorderGraphButton_Click">
+                        <Fluent:SplitButton.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource RefreshIcon}" />
+                        </Fluent:SplitButton.LargeIcon>
                         <!--<Fluent:DropDownButton.ItemTemplate>
                             <DataTemplate DataType="{x:Type sys:String}">
                                 <Fluent:MenuItem Header="{Binding}"/>
@@ -210,69 +145,55 @@
         <!-- Central panel -->
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="4*" />
-                <RowDefinition Height="3pt" />
-                <RowDefinition Height="1*" />
+                <RowDefinition
+                    Height="4*" />
+                <RowDefinition
+                    Height="3pt" />
+                <RowDefinition
+                    Height="1*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="3pt" />
-                <ColumnDefinition Width="1*" />
+                <ColumnDefinition
+                    Width="3*" />
+                <ColumnDefinition
+                    Width="3pt" />
+                <ColumnDefinition
+                    Width="1*" />
             </Grid.ColumnDefinitions>
 
             <!-- Graph viewer -->
-            <xctk:Zoombox Grid.Column="0" Grid.Row="0" MouseDown="graphLayout_MouseDown">
-                <!--<WpfExtensions:ZoomControl
-                Grid.Column="0" Grid.Row="0"
-                Zoom="0.2"
-                ZoomBoxOpacity="0.5" Background="#ff656565">-->
-                <Border Padding="30pt">
-                    <local:YodiiGraphLayout x:Name="graphLayout" Margin="0pt"
-                    Graph="{Binding Path=Graph}"
-                    LayoutAlgorithmType="EfficientSugiyama"
-                    OverlapRemovalAlgorithmType="FSA"
-                    GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
-                    HighlightAlgorithmType="Simple"
-                    MaxHeight="2000" MaxWidth="2000">
+            <xctk:Zoombox
+                Grid.Column="0"
+                Grid.Row="0"
+                MouseDown="graphLayout_MouseDown">
+                <Border
+                    Padding="30pt">
+                    <local:YodiiGraphLayout
+                        x:Name="graphLayout"
+                        Margin="0pt"
+                        Graph="{Binding Path=Graph}"
+                        LayoutAlgorithmType="EfficientSugiyama"
+                        OverlapRemovalAlgorithmType="FSA"
+                        GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
+                        HighlightAlgorithmType="Simple"
+                        MaxHeight="2000"
+                        MaxWidth="2000">
 
                         <local:YodiiGraphLayout.Resources>
                             <!-- Vertex view structure/data -->
-                            <DataTemplate x:Key="YodiiVertexTemplate" DataType="{x:Type local:YodiiGraphVertex}">
-                                <ContentControl FontSize="10pt"
-                                Foreground="White"
-                                FontFamily="Segoe UI">
-                                    <StackPanel Orientation="Vertical" Margin="1pt">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Image x:Name="VertexIcon" Source="" Height="12pt" Margin="0,0,3pt,0" />
-                                            <TextBlock x:Name="VertexTitle" Text="{Binding Path=Title, Mode=OneWay}" FontSize="12pt"/>
-                                        </StackPanel>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button>
-                                                <Run FontFamily="Webdings">&lt;</Run>
-                                            </Button>
-                                            <Button>
-                                                <Run FontFamily="Webdings">4</Run>
-                                            </Button>
-                                            <TextBlock Margin="3pt,0,0,0" x:Name="IsStartedText" Text="Stopped" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </ContentControl>
+                            <DataTemplate
+                                x:Key="YodiiVertexTemplate"
+                                DataType="{x:Type local:YodiiGraphVertex}">
+
+                                <local:YodiiVertexControl
+                                    Vertex="{Binding Mode=OneWay}"
+                                    ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
 
                                 <DataTemplate.Triggers>
                                     <!-- Bold title on highlight -->
                                     <!--<DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
                                 </DataTrigger>-->
-
-                                    <!-- Service styling -->
-                                    <DataTrigger Binding="{Binding Path=IsService, Mode=OneWay}" Value="true">
-                                        <Setter TargetName="VertexIcon" Property="Source" Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
-                                    </DataTrigger>
-                                    <!-- Plugin styling -->
-                                    <DataTrigger Binding="{Binding Path=IsPlugin, Mode=OneWay}" Value="true">
-                                        <Setter TargetName="VertexIcon" Property="Source" Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
-                                    </DataTrigger>
-
 
                                     <!-- IsStarted text -->
                                     <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
@@ -288,127 +209,136 @@
                             <!-- Vertex styling -->
 
                             <!-- Vertex style -->
-                            <Style TargetType="{x:Type GraphSharp:VertexControl}">
+                            <Style
+                                TargetType="{x:Type GraphSharp:VertexControl}">
                                 <Style.Resources>
                                     <!-- Mouse tooltip -->
-                                    <ToolTip x:Key="VertexToolTipContent">
+                                    <ToolTip
+                                        x:Key="VertexToolTipContent">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Title}" />
+                                            <TextBlock
+                                                Text="{Binding Title}" />
                                         </StackPanel>
                                     </ToolTip>
                                 </Style.Resources>
-                                <Setter Property="ToolTip" Value="{StaticResource VertexToolTipContent}" />
+                                <Setter
+                                    Property="ToolTip"
+                                    Value="{StaticResource VertexToolTipContent}" />
 
                                 <!-- Global vertex template -->
-                                <Setter Property="Template">
+                                <Setter
+                                    Property="Template">
                                     <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type GraphSharp:VertexControl}">
-                                            <Border x:Name="VertexBorder"
-                                            BorderBrush="Black"
-                                            Background="Black"
-                                            BorderThickness="1"
-                                            CornerRadius="0,0,0,0"
-                                            MouseDown="StackPanel_MouseDown"
-                                            Padding="5">
+                                        <ControlTemplate
+                                            TargetType="{x:Type GraphSharp:VertexControl}">
 
-                                                <ContentPresenter Content="{TemplateBinding Vertex}"
-                                               ContentTemplate="{StaticResource YodiiVertexTemplate}" />
-
-                                                <Border.Effect>
-                                                    <DropShadowEffect BlurRadius="3" Color="Gray"
-                                                    Opacity="0.3" Direction="300" />
-                                                </Border.Effect>
-                                            </Border>
-
-                                            <!-- Conditional vertex template -->
-                                            <ControlTemplate.Triggers>
-                                                <!-- Service styling -->
-                                                <DataTrigger Binding="{Binding Path=IsService, Mode=OneWay}" Value="true">
-                                                    <Setter TargetName="VertexBorder" Property="BorderBrush" Value="Red" />
-                                                </DataTrigger>
-                                                <!-- Plugin styling -->
-                                                <DataTrigger Binding="{Binding Path=IsPlugin, Mode=OneWay}" Value="true">
-                                                    <Setter TargetName="VertexBorder" Property="BorderBrush" Value="Blue" />
-                                                </DataTrigger>
-                                            </ControlTemplate.Triggers>
+                                            <ContentPresenter
+                                                Content="{TemplateBinding Vertex}"
+                                                ContentTemplate="{StaticResource YodiiVertexTemplate}"
+                                                MouseDown="StackPanel_MouseDown" />
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
 
-                                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                <Setter
+                                    Property="RenderTransformOrigin"
+                                    Value="0.5,0.5" />
 
-                                <Setter Property="RenderTransform">
+                                <Setter
+                                    Property="RenderTransform">
                                     <Setter.Value>
-                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        <ScaleTransform
+                                            ScaleX="1"
+                                            ScaleY="1" />
                                     </Setter.Value>
                                 </Setter>
                                 <Style.Triggers>
 
                                     <!-- Selected -->
-                                    <DataTrigger Binding="{Binding Path=IsSelected, Mode=OneWay}" Value="true">
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsSelected, Mode=OneWay}"
+                                        Value="true">
                                         <DataTrigger.EnterActions>
                                             <BeginStoryboard>
-                                                <Storyboard AutoReverse="False">
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                      To="1.3"
-                                      Duration="00:00:00.25"/>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                      To="1.3"
-                                      Duration="00:00:00.25"/>
+                                                <Storyboard
+                                                    AutoReverse="False">
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                        To="1.3"
+                                                        Duration="00:00:00.25" />
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                        To="1.3"
+                                                        Duration="00:00:00.25" />
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.EnterActions>
                                         <DataTrigger.ExitActions>
                                             <BeginStoryboard>
-                                                <Storyboard AutoReverse="False">
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                      To="1"
-                                      Duration="00:00:00.25"/>
-                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                      To="1"
-                                      Duration="00:00:00.25"/>
+                                                <Storyboard
+                                                    AutoReverse="False">
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                        To="1"
+                                                        Duration="00:00:00.25" />
+                                                    <DoubleAnimation
+                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                        To="1"
+                                                        Duration="00:00:00.25" />
                                                 </Storyboard>
                                             </BeginStoryboard>
                                         </DataTrigger.ExitActions>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-
                             <!-- Global edge style -->
-                            <Style TargetType="{x:Type GraphSharp:EdgeControl}">
+                            <Style
+                                TargetType="{x:Type GraphSharp:EdgeControl}">
                                 <Style.Resources>
-                                    <ToolTip x:Key="ToolTipContent">
+                                    <ToolTip
+                                        x:Key="ToolTipContent">
                                         <StackPanel>
                                             <!-- TODO -->
-                                            <TextBlock Text="{Binding Description}" />
+                                            <TextBlock
+                                                Text="{Binding Description}" />
                                         </StackPanel>
                                     </ToolTip>
                                 </Style.Resources>
-                                <Setter Property="ToolTip" Value="{StaticResource ToolTipContent}" />
+                                <Setter
+                                    Property="ToolTip"
+                                    Value="{StaticResource ToolTipContent}" />
                             </Style>
                         </local:YodiiGraphLayout.Resources>
                     </local:YodiiGraphLayout>
                 </Border>
-                <!--</WpfExtensions:ZoomControl>-->
             </xctk:Zoombox>
 
             <!-- Right panel -->
-            <GridSplitter ResizeDirection="Columns"
-                          Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          />
-            <ContentControl Grid.Row="0" Grid.Column="2"
-                          Content="{Binding Path=SelectedVertex, UpdateSourceTrigger=PropertyChanged}"
-                          ContentTemplateSelector="{StaticResource ResourceKey=vertexPropertiesTemplateSelector}" />
-
-
+            <GridSplitter
+                ResizeDirection="Columns"
+                Grid.Row="0"
+                Grid.Column="1"
+                Grid.RowSpan="3"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" />
+            <ContentControl
+                Grid.Row="0"
+                Grid.Column="2"
+                Content="{Binding Path=SelectedVertex, UpdateSourceTrigger=PropertyChanged}"
+                ContentTemplateSelector="{StaticResource ResourceKey=vertexPropertiesTemplateSelector}" />
 
             <!-- Bottom panel -->
-            <GridSplitter ResizeDirection="Rows"
-                          Grid.Row="1" Grid.Column="0"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                          />
-            <Border Padding="5" Background="LightGray" Grid.Row="2" Grid.Column="0">
+            <GridSplitter
+                ResizeDirection="Rows"
+                Grid.Row="1"
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" />
+            <Border
+                Padding="5"
+                Background="LightGray"
+                Grid.Row="2"
+                Grid.Column="0">
                 <StackPanel>
                     <TextBlock>Right panel</TextBlock>
                 </StackPanel>

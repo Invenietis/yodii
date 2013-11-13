@@ -14,7 +14,7 @@ namespace Yodii.Lab
     /// Manager of IServiceInfo and IPluginInfo for the lab.
     /// Handles item bindings.
     /// </summary>
-    class ServiceInfoManager
+    public class ServiceInfoManager
     {
         readonly CKObservableSortedArrayKeyList<ServiceInfo, string> _serviceInfos;
         readonly CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;

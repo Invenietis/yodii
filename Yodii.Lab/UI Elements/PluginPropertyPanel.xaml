@@ -1,0 +1,164 @@
+﻿<UserControl
+    x:Class="Yodii.Lab.PluginPropertyPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Yodii.Lab"
+    xmlns:mocks="clr-namespace:Yodii.Lab.Mocks"
+    xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    mc:Ignorable="d"
+    x:Name="propertyControl"
+    d:DesignHeight="300"
+    d:DesignWidth="300">
+    <UserControl.Resources>
+        <local:NullToBoolValueConverter
+            x:Key="NullToBoolValueConverter" />
+
+        <!-- Enum content for RunningRequirements -->
+        <ObjectDataProvider
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}"
+            x:Key="RunningRequirements">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type
+                    TypeName="ym:RunningRequirement" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <!-- Service name display (eg. for ComboBox items) -->
+        <DataTemplate
+            x:Key="serviceFullNameTemplate"
+            DataType="mocks:ServiceInfo">
+            <!-- Template: Show service name in combobox content -->
+            <TextBlock>
+                <TextBlock
+                    Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
+            </TextBlock>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Border
+        Padding="5pt">
+        <StackPanel
+            DataContext="{Binding Path=LivePluginInfo}">
+            <TextBlock
+                FontWeight="Bold">
+                        Plugin properties
+            </TextBlock>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition
+                        Height="Auto" />
+                    <RowDefinition
+                        Height="Auto" />
+                    <RowDefinition
+                        Height="Auto" />
+                    <RowDefinition
+                        Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition
+                        Width="Auto" />
+                    <ColumnDefinition
+                        Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    Grid.Row="0">GUID</TextBlock>
+                <TextBlock
+                    Grid.Row="1">Name</TextBlock>
+                <TextBlock
+                    Grid.Row="2">Service</TextBlock>
+                <TextBlock
+                    Grid.Row="3">References</TextBlock>
+
+                <TextBox
+                    Grid.Column="1"
+                    Grid.Row="0"
+                    Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}"
+                    IsEnabled="False" />
+                <TextBox
+                    Grid.Column="1"
+                    Grid.Row="1"
+                    Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
+                <DockPanel
+                    Grid.Column="1"
+                    Grid.Row="2">
+                    <CheckBox
+                        Unchecked="HasServiceCheckbox_Unchecked"
+                        Margin="3pt"
+                        x:Name="HasServiceCheckbox"
+                        IsChecked="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=PluginInfo.Service, Mode=OneWay, ConverterParameter=true}" />
+                    <ComboBox
+                        IsEnabled="{Binding ElementName=HasServiceCheckbox, Path=IsChecked, Mode=OneWay}"
+                        x:Name="PluginServiceComboBox"
+                        ItemTemplate="{StaticResource serviceFullNameTemplate}"
+                        SelectedValue="{Binding Path=PluginInfo.Service}"
+                        ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
+                    </ComboBox>
+                </DockPanel>
+                <StackPanel
+                    Grid.Column="1"
+                    Grid.Row="3">
+                    <ItemsControl
+                        ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate
+                                DataType="mocks:MockServiceReferenceInfo">
+                                <!-- Template: Existing service references for plugin -->
+                                <DockPanel
+                                    Margin="0,3">
+                                    <Button
+                                        DockPanel.Dock="Right"
+                                        Width="15pt"
+                                        Click="DeleteReferenceButton_Click">-</Button>
+                                    <ComboBox
+                                        x:Name="ReferenceRequirementComboBox"
+                                        DockPanel.Dock="Right"
+                                        SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
+                                        ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
+                                        SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
+                                        Width="70pt" />
+
+                                    <TextBlock
+                                        Text="{Binding Path=Reference.ServiceFullName}" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Add new reference panel below references -->
+                    <DockPanel
+                        Margin="0,3">
+                        <Button
+                            DockPanel.Dock="Right"
+                            Width="15pt"
+                            Click="CreateReferenceButton_Click">+</Button>
+                        <ComboBox
+                            x:Name="NewReferenceRequirementComboBox"
+                            DockPanel.Dock="Right"
+                            SelectedIndex="0"
+                            ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
+                            Width="70pt" />
+
+                        <ComboBox
+                            x:Name="NewReferenceServiceComboBox"
+                            SelectedIndex="0"
+                            ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate
+                                    DataType="mocks:ServiceInfo">
+                                    <TextBlock>
+                                        <TextBlock
+                                            Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </DockPanel>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -14,13 +14,17 @@ namespace Yodii.Lab
         readonly LiveServiceInfo _liveService;
         readonly LivePluginInfo _livePlugin;
         bool _isSelected = false;
+        ConfigurationStatus _configStatus;
+        YodiiGraph _parentGraph;
+        bool _hasConfiguration;
         #endregion
 
         #region Constructors
-        internal YodiiGraphVertex( LivePluginInfo plugin )
+        internal YodiiGraphVertex( YodiiGraph parentGraph, LivePluginInfo plugin )
         {
             _isPlugin = true;
             _livePlugin = plugin;
+            _parentGraph = parentGraph;
 
             _livePlugin.PluginInfo.PropertyChanged += Info_PropertyChanged;
         }
@@ -56,6 +60,32 @@ namespace Yodii.Lab
             }
         }
 
+        public bool HasConfiguration
+        {
+            get { return _hasConfiguration; }
+            internal set
+            {
+                if( value != _hasConfiguration )
+                {
+                    _hasConfiguration = value;
+                    RaisePropertyChanged( "HasConfiguration" );
+                }
+            }
+        }
+
+        public ConfigurationStatus ConfigurationStatus
+        {
+            get { return _configStatus; }
+            internal set
+            {
+                if( value != _configStatus )
+                {
+                    _configStatus = value;
+                    RaisePropertyChanged( "ConfigurationStatus" );
+                }
+            }
+        }
+
         // Global view properties
         public string Title
         {
@@ -71,5 +101,22 @@ namespace Yodii.Lab
         public LivePluginInfo LivePluginInfo { get { return _livePlugin; } }
 
         #endregion Properties
+
+        internal void RaiseStatusChange()
+        {
+            RaisePropertyChanged( "ConfigurationStatus" );
+            RaisePropertyChanged( "HasConfiguration" );
+        }
+
+        internal void RemoveSelf()
+        {
+            if( IsService )
+            {
+                _parentGraph.RemoveService( LiveServiceInfo.ServiceInfo );
+            } else if (IsPlugin)
+            {
+                _parentGraph.RemovePlugin( LivePluginInfo.PluginInfo );
+            }
+        }
     }
 }
