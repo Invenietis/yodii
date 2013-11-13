@@ -68,11 +68,5 @@ namespace Yodii.Engine
             command._caller = caller;
         }
         public event PropertyChangedEventHandler PropertyChanged;
-
-
-        RunningStatus ILivePluginInfo.Status
-        {
-            get { throw new NotImplementedException(); }
-        }
     }
 }

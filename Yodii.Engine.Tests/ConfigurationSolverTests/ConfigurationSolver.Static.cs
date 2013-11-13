@@ -682,6 +682,45 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
+        public void ConfigurationSolverCreation003f()
+        {
+            #region graph
+            /**
+             *  +--------+
+             *  |ServiceA+ ------+
+             *  |Runnable|       |
+             *  +---+----+       |
+             *      |            |
+             *      |            |
+             *      |            |
+             *      |        +---+---*-+
+             *  +---+-----+  |PluginA-2|
+             *  |PluginA-1|  |Runnable |
+             *  |Runnable |  +---------+
+             *  +---------+
+             */
+            #endregion
+
+            DiscoveredInfo info = MockInfoFactory.CreateGraph003();
+            ConfigurationManager cm = new ConfigurationManager();
+
+            ConfigurationLayer cl = new ConfigurationLayer();
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Runnable);
+            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Runnable );
+
+            cm.Layers.Add( cl );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.RunningPlugins, Is.Null );
+            Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
+            Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
+        }
+
+        [Test]
         public void ConfigurationSolverCreation004a()
         {
             #region graph

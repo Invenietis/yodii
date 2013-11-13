@@ -74,10 +74,5 @@ namespace Yodii.Engine
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-
-        RunningStatus ILiveServiceInfo.Status
-        {
-            get { throw new NotImplementedException(); }
-        }
     }
 }
