@@ -42,6 +42,21 @@ namespace Yodii.Lab.Mocks
             get { return _service; }
         }
 
+        public string Description
+        {
+            get
+            {
+                if( String.IsNullOrWhiteSpace( PluginFullName ) )
+                {
+                    return String.Format( "Unnamed plugin ({0})", PluginId.ToString() );
+                }
+                else
+                {
+                    return String.Format( "{0}", PluginFullName );
+                }
+            }
+        }
+
         #region IPluginInfo Members
 
         public Guid PluginId
@@ -76,7 +91,8 @@ namespace Yodii.Lab.Mocks
         {
             get { return _service; }
         }
-        public ServiceInfo Service {
+        public ServiceInfo Service
+        {
             get { return _service; }
             set
             {

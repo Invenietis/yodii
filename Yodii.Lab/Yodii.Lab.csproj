@@ -119,6 +119,8 @@
     <Compile Include="ConfigurationEditor\ConfigurationEditorWindow.xaml.cs">
       <DependentUpon>ConfigurationEditorWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ConfigurationEditor\ConfigurationItemViewModel.cs" />
+    <Compile Include="ConfigurationEditor\ConfigurationLayerViewModel.cs" />
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphEdgeType.cs" />
@@ -135,6 +137,7 @@
     <Compile Include="UI Elements\YodiiVertexControl.xaml.cs">
       <DependentUpon>YodiiVertexControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\DropDownButton.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
     <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
