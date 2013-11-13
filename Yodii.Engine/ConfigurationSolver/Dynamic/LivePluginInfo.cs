@@ -13,14 +13,17 @@ namespace Yodii.Engine
     {
         readonly IPluginInfo _pluginInfo;
         readonly RunningRequirement _configRequirement;
-        readonly RunningStatus _status;
-        readonly bool _isRunning;
+        readonly RunningStatus? _status;
         readonly Guid _id;
         readonly ILiveServiceInfo _service;
 
-        internal LivePluginInfo( IPluginInfo plugin )
+        internal LivePluginInfo( IPluginSolved plugin, ILiveServiceInfo service )
         {
-            _id = plugin.PluginId;
+            _pluginInfo = plugin.PluginInfo;
+            _configRequirement = plugin.ConfigSolvedStatus;
+            _status = plugin.RunningStatus;
+            _id = plugin.PluginInfo.PluginId;
+            _service = service;
         }
 
         public IPluginInfo PluginInfo
@@ -33,14 +36,14 @@ namespace Yodii.Engine
             get { return _configRequirement; }
         }
 
-        public RunningStatus Status
+        public RunningStatus? Status
         {
             get { return _status; }
         }
 
         public bool IsRunning
         {
-            get { return _isRunning; }
+            get { return _status == RunningStatus.RunningLocked || _status == RunningStatus.Running; }
         }
 
         public ILiveServiceInfo Service
@@ -48,18 +51,28 @@ namespace Yodii.Engine
             get { return _service; }
         }
 
-        public bool Start()
+        public bool Start( Object caller )
         {
-            if ( _status == RunningStatus.Disabled || _status == RunningStatus.RunningLocked ) throw new InvalidOperationException();            
+            if ( _status == RunningStatus.Disabled || _status == RunningStatus.RunningLocked ) throw new InvalidOperationException();
+            Debug.Assert( _status == RunningStatus.Stopped );
             YodiiCommandPlugin command = new YodiiCommandPlugin( _id, true );
+            command._caller = caller;
             return true;
         }
 
-        public void Stop()
+        public void Stop( Object caller )
         {
-            if ( _status == RunningStatus.Disabled || _status == RunningStatus.RunningLocked ) throw new InvalidOperationException();            
+            if ( _status == RunningStatus.Disabled || _status == RunningStatus.RunningLocked ) throw new InvalidOperationException();
+            Debug.Assert( _status == RunningStatus.Running );
             YodiiCommandPlugin command = new YodiiCommandPlugin( _id, false );
+            command._caller = caller;
         }
-        public event PropertyChangedEventHandler PropertyChanged;    
+        public event PropertyChangedEventHandler PropertyChanged;
+
+
+        RunningStatus ILivePluginInfo.Status
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

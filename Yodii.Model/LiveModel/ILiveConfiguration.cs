@@ -11,5 +11,7 @@ namespace Yodii.Model
         IReadOnlyList<ILivePluginInfo> PluginLiveInfo { get; }
 
         IReadOnlyList<ILiveServiceInfo> ServiceLiveInfo { get; }
+
+        void RevokeCaller( Object caller );
     }
 }

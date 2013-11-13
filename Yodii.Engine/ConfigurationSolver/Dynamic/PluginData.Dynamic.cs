@@ -11,9 +11,17 @@ namespace Yodii.Engine
     {
         RunningStatus? _dynamicStatus;
 
-        public RunningStatus? Status { get { return _dynamicStatus; } }
+        public RunningStatus? Status { get { return _dynamicStatus; } set { _dynamicStatus = value; } }
 
-        void MustExistServices()
+        internal void MustExistServices()
+        {
+            
+        }
+        internal void DynamicStart()
+        {
+
+        }
+        internal void DynamicStop()
         {
 
         }

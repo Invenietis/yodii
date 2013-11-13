@@ -75,10 +75,10 @@ namespace Yodii.Engine
             List<IPluginSolved> disabledPlugins = null;
             int availablePluginsCount = 0;
             List<IPluginSolved> runningPlugins = null;
-
+            
             //Just a test
-            Dictionary<PluginData, IPluginInfo> _availablePlugins = new Dictionary<PluginData, IPluginInfo>();
-            Dictionary<ServiceData, IServiceInfo> _availableServices = new Dictionary<ServiceData, IServiceInfo>();
+            Dictionary<PluginData, ILivePluginInfo> _availablePlugins = null;
+            Dictionary<ServiceData, ILiveServiceInfo> _availableServices = null;
 
             // Time to conclude about configuration and to initialize dynamic resolution.
             // Any Plugin that has a ConfigOriginalStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
@@ -110,8 +110,8 @@ namespace Yodii.Engine
                     {
                         //The plugin's configOriginalStatus is either Optional or Runnable
                         availablePluginsCount++;
-                        if( _availablePlugins == null ) _availablePlugins = new Dictionary<PluginData, IPluginInfo>();
-                        _availablePlugins.Add( p, p.PluginInfo );
+                        if ( _availablePlugins == null ) _availablePlugins = new Dictionary<PluginData, ILivePluginInfo>();
+                        //_availablePlugins.Add( p,  );
                     }
                 }
             }
@@ -131,7 +131,7 @@ namespace Yodii.Engine
                 {
                     if( s.ConfigOriginalStatus == ConfigurationStatus.Optional || s.ConfigOriginalStatus == ConfigurationStatus.Runnable )
                     {
-                        _availableServices.Add( s, s.ServiceInfo );
+                        //_availableServices.Add( s, s.ServiceInfo );
                     }
                 }
             }
@@ -210,11 +210,10 @@ namespace Yodii.Engine
             // 
             #endregion
 
-            //_availablePlugins
-            //Dynamic resolution
+            //Mode live
             List<ILivePluginInfo> livePlugins = new List<ILivePluginInfo>();
             List<ILiveServiceInfo> liveServices = new List<ILiveServiceInfo>();
-
+           
             ///This list is updated by events popping from the GUI
             ObservableCollection<YodiiCommand> dynamicCommands = new ObservableCollection<YodiiCommand>();
 

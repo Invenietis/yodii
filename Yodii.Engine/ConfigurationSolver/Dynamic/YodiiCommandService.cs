@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Yodii.Model;
 
 namespace Yodii.Engine
 {
@@ -16,11 +18,20 @@ namespace Yodii.Engine
             _start = start;
         }
 
-        internal void StartService( string serviceFullName, bool start )
+        internal void Execute()
         {
-        }
-        internal void StopService( string serviceFullName, bool start )
-        {
+            if ( _start )
+            {
+                var target = _services.FirstOrDefault( s => s.Value.ServiceInfo.ServiceFullName == _serviceFullName );
+                Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Stopped );
+                target.Key.DynamicStart();
+            }
+            else
+            {
+                var target = _services.FirstOrDefault( s => s.Value.ServiceInfo.ServiceFullName == _serviceFullName );
+                Debug.Assert( target.Key.Disabled != true && target.Key.Status == RunningStatus.Running );
+                target.Key.DynamicStop();
+            }
         }
     }
 }

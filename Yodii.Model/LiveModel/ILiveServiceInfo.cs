@@ -14,7 +14,7 @@ namespace Yodii.Model
 
         RunningRequirement ConfigRequirement { get; }
 
-        RunningStatus Status { get; }
+        RunningStatus? Status { get; }
 
         bool IsRunning { get; }
 
@@ -22,8 +22,8 @@ namespace Yodii.Model
 
         ILivePluginInfo RunningPlugin { get; }
 
-        bool Start();
+        bool Start( Object caller );
 
-        void Stop();
+        void Stop( Object caller );
     }
 }
