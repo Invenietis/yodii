@@ -200,6 +200,139 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
+        public void ConfigurationSolverCreation001e()
+        {
+            #region graph
+            /**
+             *                  +--------+                              +--------+
+             *      +---------->|ServiceA+-------+   *----------------->|ServiceB|
+             *      |           |Running |       |   | Need ?           |Running |   
+             *      |           +---+----+       |   |                  +---+----+
+             *      |               |            |   |                      |
+             *      |               |            |   |                      |
+             *      |               |            |   |                      |
+             *  +---+-----+         |        +---+---*-+                    |
+             *  |ServiceAx|     +---+-----+  |PluginA-2|                +---+-----+
+             *  |Optional |     |PluginA-1|  |Optional |                |PluginB-1|
+             *  +----+----+     |Optional |  +---------+                |Optional |
+             *       |          +---------+                             +---------+
+             *       |
+             *  +----+-----+
+             *  |PluginAx-1|
+             *  |Running   |
+             *  +----------+
+             */
+            #endregion
+
+            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.Optional );
+
+            ConfigurationManager cm = new ConfigurationManager();
+
+            ConfigurationLayer cl = new ConfigurationLayer();
+            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
+            cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Running );
+
+            cm.Layers.Add( cl );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.RunningPlugins, Is.Not.Null );
+            Assert.That( res.BlockingServices, Is.Null );
+            Assert.That( res.BlockingPlugins, Is.Null );
+
+            info = MockInfoFactory.CreateGraph001();
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.OptionalTryStart );
+
+            res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.RunningPlugins, Is.Not.Null );
+            Assert.That( res.BlockingServices, Is.Null );
+            Assert.That( res.BlockingPlugins, Is.Null );
+
+            info = MockInfoFactory.CreateGraph001();
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.Runnable );
+
+            res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.RunningPlugins, Is.Not.Null );
+            Assert.That( res.BlockingServices, Is.Null );
+            Assert.That( res.BlockingPlugins, Is.Null );
+
+            info = MockInfoFactory.CreateGraph001();
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.RunnableTryStart );
+
+            res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.RunningPlugins, Is.Not.Null );
+            Assert.That( res.BlockingServices, Is.Null );
+            Assert.That( res.BlockingPlugins, Is.Null );
+
+            info = MockInfoFactory.CreateGraph001();
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.Running );
+
+            res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.RunningPlugins, Is.Not.Null );
+            Assert.That( res.BlockingServices, Is.Null );
+            Assert.That( res.BlockingPlugins, Is.Null );
+        }
+
+        [Test]
+        public void ConfigurationSolverCreation001g()
+        {
+            #region graph
+            /**
+             *                  +--------+                              +--------+
+             *      +---------->|ServiceA+-------+   *----------------->|ServiceB|
+             *      |           |Optional|       |   | Need Running     |Running |   
+             *      |           +---+----+       |   |                  +---+----+
+             *      |               |            |   |                      |
+             *      |               |            |   |                      |
+             *      |               |            |   |                      |
+             *  +---+-----+         |        +---+---*-+                    |
+             *  |ServiceAx|     +---+-----+  |PluginA-2|                +---+-----+
+             *  |Optional |     |PluginA-1|  |Running  |                |PluginB-1|
+             *  +----+----+     |Optional |  +---------+                |Disable  |
+             *       |          +---------+                             +---------+
+             *       |
+             *  +----+-----+
+             *  |PluginAx-1|
+             *  |Optional  |
+             *  +----------+
+             */
+            #endregion
+
+            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
+
+            ConfigurationManager cm = new ConfigurationManager();
+
+            ConfigurationLayer cl = new ConfigurationLayer();
+            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Disable );
+            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
+
+            cm.Layers.Add( cl );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.RunningPlugins, Is.Null );
+            Assert.That( res.BlockingServices.Count, Is.EqualTo( 1 ) );
+            Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
+            Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
+            Assert.DoesNotThrow( () => res.BlockingServices.Single( s => s.ServiceInfo.ServiceFullName == "ServiceB" ) );
+        }
+
+        [Test]
         public void ConfigurationSolverCreation001MinusPluginAx()
         {
             #region graph
@@ -546,6 +679,52 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
             Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
+        }
+
+        [Test]
+        public void ConfigurationSolverCreation004a()
+        {
+            #region graph
+            /**
+             *  +--------+
+             *  |ServiceA+ ------+
+             *  |Optional|       |
+             *  +---+----+       |
+             *      |            |
+             *      |            |
+             *      |            |
+             *      |         +---+------+
+             *  +---+------+  |ServiceAx2|
+             *  |ServiceAx1|  |Running   |
+             *  |Running   |  +----------+
+             *  +----------+      |       
+             *      |             |       
+             *      |             |       
+             *      |             |       
+             *      |          +---+-------+
+             *  +---+-------+  |PluginAx2-1|
+             *  |PluginAx1-1|  |Optional   |
+             *  |Optional   |  +-----------+
+             *  +-----------+
+             */
+            #endregion
+
+            DiscoveredInfo info = MockInfoFactory.CreateGraph004();
+            ConfigurationManager cm = new ConfigurationManager();
+
+            ConfigurationLayer cl = new ConfigurationLayer();
+            cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
+            cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
+
+            cm.Layers.Add( cl );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+
+            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.RunningPlugins, Is.Null );
+            Assert.That( res.BlockingServices.Count, Is.EqualTo( 2 ) );
+            CollectionAssert.AreEquivalent( new[] { "ServiceAx1", "ServiceAx2" }, res.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
         }
     }
 }

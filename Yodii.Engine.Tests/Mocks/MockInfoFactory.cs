@@ -141,5 +141,47 @@ namespace Yodii.Engine.Tests.Mocks
 
             return d;
         }
+
+        public static DiscoveredInfo CreateGraph004()
+        {
+            /**
+             *  +--------+
+             *  |ServiceA+ ------+
+             *  |        |       |
+             *  +---+----+       |
+             *      |            |
+             *      |            |
+             *      |            |
+             *      |         +---+------+
+             *  +---+------+  |ServiceAx2|
+             *  |ServiceAx1|  |          |
+             *  |          |  +----------+
+             *  +----------+      |       
+             *      |             |       
+             *      |             |       
+             *      |             |       
+             *      |          +---+-------+
+             *  +---+-------+  |PluginAx2-1|
+             *  |PluginAx1-1|  |           |
+             *  |           |  +-----------+
+             *  +-----------+
+             */
+
+            var d = new DiscoveredInfo();
+
+            d.ServiceInfos.Add( new ServiceInfo( "ServiceA", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "ServiceAx1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "ServiceAx2", d.DefaultAssembly ) );
+            d.FindService( "ServiceAx1" ).Generalization = d.FindService( "ServiceA" );
+            d.FindService( "ServiceAx2" ).Generalization = d.FindService( "ServiceA" );
+
+            d.PluginInfos.Add( new PluginInfo( "PluginAx1-1", d.DefaultAssembly ) );
+            d.PluginInfos.Add( new PluginInfo( "PluginAx2-2", d.DefaultAssembly ) );
+
+            d.FindPlugin( "PluginAx1-1" ).Service = d.FindService( "ServiceAx1" );
+            d.FindPlugin( "PluginAx2-2" ).Service = d.FindService( "ServiceAx2" );
+
+            return d;
+        }
     }
 }
