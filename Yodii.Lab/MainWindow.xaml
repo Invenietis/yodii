@@ -186,14 +186,15 @@
                                 DataType="{x:Type local:YodiiGraphVertex}">
 
                                 <local:YodiiVertexControl
-                                    Vertex="{Binding Mode=OneWay}" ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
+                                    Vertex="{Binding Mode=OneWay}"
+                                    ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
 
                                 <DataTemplate.Triggers>
                                     <!-- Bold title on highlight -->
                                     <!--<DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
                                 </DataTrigger>-->
-                                    
+
                                     <!-- IsStarted text -->
                                     <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
@@ -230,49 +231,11 @@
                                     <Setter.Value>
                                         <ControlTemplate
                                             TargetType="{x:Type GraphSharp:VertexControl}">
-                                            <Border
-                                                x:Name="VertexBorder"
-                                                BorderBrush="Black"
-                                                Background="Black"
-                                                BorderThickness="1"
-                                                CornerRadius="0,0,0,0"
-                                                MouseDown="StackPanel_MouseDown"
-                                                Padding="5">
 
-                                                <ContentPresenter
-                                                    Content="{TemplateBinding Vertex}"
-                                                    ContentTemplate="{StaticResource YodiiVertexTemplate}" />
-
-                                                <Border.Effect>
-                                                    <DropShadowEffect
-                                                        BlurRadius="3"
-                                                        Color="Gray"
-                                                        Opacity="0.3"
-                                                        Direction="300" />
-                                                </Border.Effect>
-                                            </Border>
-
-                                            <!-- Conditional vertex template -->
-                                            <ControlTemplate.Triggers>
-                                                <!-- Service styling -->
-                                                <DataTrigger
-                                                    Binding="{Binding Path=IsService, Mode=OneWay}"
-                                                    Value="true">
-                                                    <Setter
-                                                        TargetName="VertexBorder"
-                                                        Property="BorderBrush"
-                                                        Value="Red" />
-                                                </DataTrigger>
-                                                <!-- Plugin styling -->
-                                                <DataTrigger
-                                                    Binding="{Binding Path=IsPlugin, Mode=OneWay}"
-                                                    Value="true">
-                                                    <Setter
-                                                        TargetName="VertexBorder"
-                                                        Property="BorderBrush"
-                                                        Value="Blue" />
-                                                </DataTrigger>
-                                            </ControlTemplate.Triggers>
+                                            <ContentPresenter
+                                                Content="{TemplateBinding Vertex}"
+                                                ContentTemplate="{StaticResource YodiiVertexTemplate}"
+                                                MouseDown="StackPanel_MouseDown" />
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>

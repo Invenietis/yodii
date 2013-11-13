@@ -7,8 +7,8 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="300">
+    d:DesignHeight="60"
+    d:DesignWidth="200">
     <UserControl.Resources>
         <ObjectDataProvider
             MethodName="GetValues"
@@ -20,112 +20,148 @@
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </UserControl.Resources>
-    <ContentControl
-        FontSize="10pt"
-        Foreground="White"
-        FontFamily="Segoe UI">
-        <StackPanel
-            Orientation="Vertical"
-            Margin="1pt">
-            <StackPanel.ContextMenu>
-                <ContextMenu>
-                    <MenuItem
-                        Header="Configuration"
-                        ItemsSource="{Binding Source={StaticResource ResourceKey=ConfigurationStatusValues}}"
-                        Click="ConfigurationStatusMenuItem_Click">
-                    </MenuItem>
-                    <Separator />
-                    <MenuItem
-                        Header="Delete"
-                        Click="DeleteMenuItem_Click"/>
-                </ContextMenu>
-            </StackPanel.ContextMenu>
+    <Border
+        Background="Black"
+        BorderThickness="1"
+        CornerRadius="0,0,0,0"
+        Padding="5">
+        <Border.ContextMenu>
+            <ContextMenu>
+                <MenuItem
+                    Header="Configuration"
+                    ItemsSource="{Binding Source={StaticResource ResourceKey=ConfigurationStatusValues}}"
+                    Click="ConfigurationStatusMenuItem_Click">
+                </MenuItem>
+                <Separator />
+                <MenuItem
+                    Header="Delete"
+                    Click="DeleteMenuItem_Click" />
+            </ContextMenu>
+        </Border.ContextMenu>
+        <ContentControl
+            FontSize="10pt"
+            Foreground="White"
+            FontFamily="Segoe UI">
             <StackPanel
-                Orientation="Horizontal">
-                <Image
-                    x:Name="VertexIcon"
-                    Source="/Yodii.Lab;component/Icons/column_32xLG.png"
-                    MaxHeight="12pt"
-                    MaxWidth="12pt"
-                    VerticalAlignment="Center"
-                    Margin="0,0,3pt,0">
-                    <Image.Style>
-                        <Style
-                            TargetType="Image">
-                            <Style.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding Path=IsService, Mode=OneWay}"
-                                    Value="true">
-                                    <Setter
-                                        Property="Source"
-                                        Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
-                                </DataTrigger>
-                                <!-- Plugin styling -->
-                                <DataTrigger
-                                    Binding="{Binding Path=IsPlugin, Mode=OneWay}"
-                                    Value="true">
-                                    <Setter
-                                        Property="Source"
-                                        Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Image.Style>
-                </Image>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    x:Name="VertexTitle"
-                    Text="{Binding Path=Title, Mode=OneWay, FallbackValue=Title}"
-                    FontSize="12pt" />
+                Orientation="Vertical"
+                Margin="1pt">
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Image
+                        x:Name="VertexIcon"
+                        MaxHeight="12pt"
+                        MaxWidth="12pt"
+                        VerticalAlignment="Center"
+                        Margin="0,0,3pt,0">
+                        <Image.Style>
+                            <Style
+                                TargetType="Image">
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsService, Mode=OneWay}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
+                                    </DataTrigger>
+                                    <!-- Plugin styling -->
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsPlugin, Mode=OneWay}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        x:Name="VertexTitle"
+                        Text="{Binding Path=Title, Mode=OneWay, FallbackValue=Title}"
+                        FontSize="12pt" />
+                </StackPanel>
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Image
+                        VerticalAlignment="Center"
+                        Stretch="Uniform"
+                        SnapsToDevicePixels="True"
+                        Source="/Yodii.Lab;component/Icons/PropertyIcon.png" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{Binding Path=ConfigurationStatus, FallbackValue=(ConfigurationStatus)}">
+                        <TextBlock.Style>
+                            <Style
+                                TargetType="TextBlock">
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=HasConfiguration}"
+                                        Value="True">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="White" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=HasConfiguration}"
+                                        Value="False">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Gray" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+                <!--<StackPanel
+                    Orientation="Horizontal">
+                    <Button>
+                        <Run
+                            FontFamily="Webdings">&lt;</Run>
+                    </Button>
+                    <Button>
+                        <Run
+                            FontFamily="Webdings">4</Run>
+                    </Button>
+                    <TextBlock
+                        Margin="3pt,0,0,0"
+                        x:Name="IsStartedText"
+                        Text="Stopped" />
+                </StackPanel>-->
             </StackPanel>
-            <StackPanel
-                Orientation="Horizontal">
-                <Image
-                    VerticalAlignment="Center"
-                    Stretch="Uniform"
-                    SnapsToDevicePixels="True"
-                    Source="/Yodii.Lab;component/Icons/PropertyIcon.png" />
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{Binding Path=ConfigurationStatus, FallbackValue=(ConfigurationStatus)}">
-                    <TextBlock.Style>
-                        <Style
-                            TargetType="TextBlock">
-                            <Style.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding Path=HasConfiguration}"
-                                    Value="True">
-                                    <Setter
-                                        Property="Foreground"
-                                        Value="White" />
-                                </DataTrigger>
-                                <DataTrigger
-                                    Binding="{Binding Path=HasConfiguration}"
-                                    Value="False">
-                                    <Setter
-                                        Property="Foreground"
-                                        Value="Gray" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-            </StackPanel>
-            <StackPanel
-                Orientation="Horizontal">
-                <Button>
-                    <Run
-                        FontFamily="Webdings">&lt;</Run>
-                </Button>
-                <Button>
-                    <Run
-                        FontFamily="Webdings">4</Run>
-                </Button>
-                <TextBlock
-                    Margin="3pt,0,0,0"
-                    x:Name="IsStartedText"
-                    Text="Stopped" />
-            </StackPanel>
-        </StackPanel>
-    </ContentControl>
+        </ContentControl>
+
+        <Border.Effect>
+            <DropShadowEffect
+                BlurRadius="3"
+                Color="Gray"
+                Opacity="0.3"
+                Direction="300" />
+        </Border.Effect>
+        <Border.Style>
+            <Style
+                TargetType="Border">
+                <Style.Triggers>
+                    <!-- Service styling -->
+                    <DataTrigger
+                        Binding="{Binding Path=IsService, Mode=OneWay}"
+                        Value="true">
+                        <Setter
+                            Property="BorderBrush"
+                            Value="Red" />
+                    </DataTrigger>
+                    <!-- Plugin styling -->
+                    <DataTrigger
+                        Binding="{Binding Path=IsPlugin, Mode=OneWay}"
+                        Value="true">
+                        <Setter
+                            Property="BorderBrush"
+                            Value="Blue" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+    </Border>
 </UserControl>
