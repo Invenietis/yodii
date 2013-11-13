@@ -166,10 +166,6 @@
                 Grid.Column="0"
                 Grid.Row="0"
                 MouseDown="graphLayout_MouseDown">
-                <!--<WpfExtensions:ZoomControl
-                Grid.Column="0" Grid.Row="0"
-                Zoom="0.2"
-                ZoomBoxOpacity="0.5" Background="#ff656565">-->
                 <Border
                     Padding="30pt">
                     <local:YodiiGraphLayout
@@ -188,68 +184,16 @@
                             <DataTemplate
                                 x:Key="YodiiVertexTemplate"
                                 DataType="{x:Type local:YodiiGraphVertex}">
-                                <ContentControl
-                                    FontSize="10pt"
-                                    Foreground="White"
-                                    FontFamily="Segoe UI">
-                                    <StackPanel
-                                        Orientation="Vertical"
-                                        Margin="1pt">
-                                        <StackPanel
-                                            Orientation="Horizontal">
-                                            <Image
-                                                x:Name="VertexIcon"
-                                                Source=""
-                                                Height="12pt"
-                                                Margin="0,0,3pt,0" />
-                                            <TextBlock
-                                                x:Name="VertexTitle"
-                                                Text="{Binding Path=Title, Mode=OneWay}"
-                                                FontSize="12pt" />
-                                        </StackPanel>
-                                        <StackPanel
-                                            Orientation="Horizontal">
-                                            <Button>
-                                                <Run
-                                                    FontFamily="Webdings">&lt;</Run>
-                                            </Button>
-                                            <Button>
-                                                <Run
-                                                    FontFamily="Webdings">4</Run>
-                                            </Button>
-                                            <TextBlock
-                                                Margin="3pt,0,0,0"
-                                                x:Name="IsStartedText"
-                                                Text="Stopped" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </ContentControl>
+
+                                <local:YodiiVertexControl
+                                    Vertex="{Binding Mode=OneWay}" ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
 
                                 <DataTemplate.Triggers>
                                     <!-- Bold title on highlight -->
                                     <!--<DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
                                 </DataTrigger>-->
-
-                                    <!-- Service styling -->
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsService, Mode=OneWay}"
-                                        Value="true">
-                                        <Setter
-                                            TargetName="VertexIcon"
-                                            Property="Source"
-                                            Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
-                                    </DataTrigger>
-                                    <!-- Plugin styling -->
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsPlugin, Mode=OneWay}"
-                                        Value="true">
-                                        <Setter
-                                            TargetName="VertexIcon"
-                                            Property="Source"
-                                            Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
-                                    </DataTrigger>
-
+                                    
                                     <!-- IsStarted text -->
                                     <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
@@ -384,7 +328,6 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-
                             <!-- Global edge style -->
                             <Style
                                 TargetType="{x:Type GraphSharp:EdgeControl}">
@@ -405,7 +348,6 @@
                         </local:YodiiGraphLayout.Resources>
                     </local:YodiiGraphLayout>
                 </Border>
-                <!--</WpfExtensions:ZoomControl>-->
             </xctk:Zoombox>
 
             <!-- Right panel -->

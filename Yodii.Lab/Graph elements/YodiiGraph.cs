@@ -14,34 +14,116 @@ namespace Yodii.Lab
     /// <summary>
     /// Yodii graph. Handles binding and converting from ServiceInfo/PluginInfo collections.
     /// </summary>
-    [DebuggerDisplay("Vertices = {Vertices.Count}, Edges = {Edges.Count}, Services = {_serviceInfos.Count}, Plugins = {_pluginInfos.Count} ")]
+    [DebuggerDisplay( "Vertices = {Vertices.Count}, Edges = {Edges.Count}, Services = {_serviceInfos.Count}, Plugins = {_pluginInfos.Count} " )]
     public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
         readonly ICKObservableReadOnlyCollection<LiveServiceInfo> _serviceInfos;
         readonly ICKObservableReadOnlyCollection<LivePluginInfo> _pluginInfos;
+        readonly ServiceInfoManager _serviceManager;
+
+        ConfigurationManager _configurationManager;
 
         #region Constructor
-        internal YodiiGraph( ICKObservableReadOnlyCollection<LiveServiceInfo> serviceInfos, ICKObservableReadOnlyCollection<LivePluginInfo> pluginInfos )
+        internal YodiiGraph( ConfigurationManager configManager, ServiceInfoManager serviceManager )
             : base()
         {
-            Debug.Assert( serviceInfos != null );
-            Debug.Assert( pluginInfos != null );
+            Debug.Assert( serviceManager != null );
+            Debug.Assert( configManager != null );
 
-            _serviceInfos = serviceInfos;
-            _pluginInfos = pluginInfos;
+            _serviceInfos = serviceManager.LiveServiceInfos;
+            _pluginInfos = serviceManager.LivePluginInfos;
+            _configurationManager = configManager;
+            _serviceManager = serviceManager;
 
             _serviceInfos.CollectionChanged += _serviceInfos_CollectionChanged;
             _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
+            _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
+
+            UpdateVerticesWithConfiguration( _configurationManager.FinalConfiguration );
         }
         #endregion Constructor
 
+        #region Properties
+        internal ConfigurationManager ConfigurationManager
+        {
+            get { return _configurationManager; }
+            set
+            {
+                Debug.Assert( value != null );
+                _configurationManager = value;
+                UpdateVerticesWithConfiguration( _configurationManager.FinalConfiguration );
+                _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
+            }
+        }
+
+        void _configurationManager_ConfigurationChanged( object sender, ConfigurationChangedEventArgs e )
+        {
+            UpdateVerticesWithConfiguration( e.FinalConfiguration );
+        }
+        #endregion
+
+        #region Internal methods
+        internal void RemoveService( ServiceInfo service )
+        {
+            _serviceManager.RemoveService( service );
+        }
+        internal void RemovePlugin( PluginInfo plugin )
+        {
+            _serviceManager.RemovePlugin( plugin );
+        }
+        #endregion Internal methods
+
         #region Private methods
+        private void UpdateVerticesWithConfiguration( FinalConfiguration config )
+        {
+            if( config == null )
+            {
+                foreach(  var v in Vertices )
+                {
+                    v.HasConfiguration = false;
+                    v.ConfigurationStatus = ConfigurationStatus.Optional;
+                }
+            }
+            else
+            {
+
+                foreach( var v in Vertices )
+                {
+                    string identifier;
+                    if( v.IsService )
+                        identifier = v.LiveServiceInfo.ServiceInfo.ServiceFullName;
+                    else
+                        identifier = v.LivePluginInfo.PluginInfo.PluginId.ToString();
+
+                    var items = config.Items.Where( x => x.ServiceOrPluginId == identifier);
+                    if( items.Count() > 0 )
+                    {
+                        v.HasConfiguration = true;
+                        v.ConfigurationStatus = items.First().Status;
+                    }
+                    else
+                    {
+                        v.HasConfiguration = false;
+                        v.ConfigurationStatus = ConfigurationStatus.Optional;
+                    }
+                }
+            }
+        }
+
+        private void RaiseVertexStatusChange()
+        {
+            foreach( YodiiGraphVertex vertex in this.Vertices )
+            {
+                vertex.RaiseStatusChange();
+            }
+        }
+
         YodiiGraphVertex CreateServiceVertex( LiveServiceInfo liveService )
         {
             YodiiGraphVertex serviceVertex = new YodiiGraphVertex( liveService );
             this.AddVertex( serviceVertex );
             liveService.ServiceInfo.PropertyChanged += ServiceInfo_PropertyChanged;
-           
+
 
             if( liveService.Generalization != null )
             {
@@ -75,7 +157,7 @@ namespace Yodii.Lab
 
         YodiiGraphVertex CreatePluginVertex( LivePluginInfo livePlugin )
         {
-            YodiiGraphVertex pluginVertex = new YodiiGraphVertex( livePlugin );
+            YodiiGraphVertex pluginVertex = new YodiiGraphVertex( this, livePlugin );
             this.AddVertex( pluginVertex );
             livePlugin.PluginInfo.PropertyChanged += PluginInfo_PropertyChanged;
 
@@ -153,7 +235,7 @@ namespace Yodii.Lab
 
         void ClearServiceVertices()
         {
-            foreach(var vtx in Vertices.Where( v => v.IsService))
+            foreach( var vtx in Vertices.Where( v => v.IsService ) )
             {
                 vtx.LiveServiceInfo.ServiceInfo.PropertyChanged -= ServiceInfo_PropertyChanged;
             }

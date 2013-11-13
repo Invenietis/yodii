@@ -132,6 +132,9 @@
     <Compile Include="UI Elements\ServicePropertyPanel.xaml.cs">
       <DependentUpon>ServicePropertyPanel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI Elements\YodiiVertexControl.xaml.cs">
+      <DependentUpon>YodiiVertexControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
     <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
@@ -178,6 +181,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI Elements\ServicePropertyPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI Elements\YodiiVertexControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -229,6 +236,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\ModernUiLicense.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\PropertyIcon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

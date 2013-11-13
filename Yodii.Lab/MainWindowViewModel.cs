@@ -33,7 +33,7 @@ namespace Yodii.Lab
 
             // Live plugins managed in the ServiceInfoManager.
 
-            _graph = new YodiiGraph( _serviceInfoManager.LiveServiceInfos, _serviceInfoManager.LivePluginInfos );
+            _graph = new YodiiGraph( _configurationManager, _serviceInfoManager  );
 
 
             initCommands();
