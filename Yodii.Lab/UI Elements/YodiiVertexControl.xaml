@@ -6,10 +6,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
+    xmlns:local="clr-namespace:Yodii.Lab"
     mc:Ignorable="d"
+    x:Name="VertexControlRoot"
     d:DesignHeight="60"
     d:DesignWidth="200">
     <UserControl.Resources>
+        <local:EnumToBooleanConverter
+            x:Key="EnumToBooleanConv" />
+        
         <ObjectDataProvider
             MethodName="GetValues"
             ObjectType="{x:Type sys:Enum}"
@@ -28,6 +33,7 @@
         <Border.ContextMenu>
             <ContextMenu>
                 <MenuItem
+                    x:Name="ConfigurationStatusMenu"
                     Header="Configuration"
                     ItemsSource="{Binding Source={StaticResource ResourceKey=ConfigurationStatusValues}}"
                     Click="ConfigurationStatusMenuItem_Click">
