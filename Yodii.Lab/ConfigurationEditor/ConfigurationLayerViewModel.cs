@@ -13,6 +13,7 @@ namespace Yodii.Lab.ConfigurationEditor
     {
         #region Fields
         readonly ConfigurationLayer _layer;
+        readonly ConfigurationEditorWindow _window;
         readonly ObservableCollection<ConfigurationItemViewModel> _itemViewModels;
 
         Visibility _newLayerVisibility = Visibility.Collapsed;
@@ -37,7 +38,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
         public ObservableCollection<ConfigurationItemViewModel> ItemViewModels
         {
-            get { return _itemViewModels;  }
+            get { return _itemViewModels; }
         }
 
         public Visibility NewLayerVisibility
@@ -108,13 +109,16 @@ namespace Yodii.Lab.ConfigurationEditor
         #endregion Properties
 
         #region Constructor
-        internal ConfigurationLayerViewModel( ConfigurationLayer layer, ServiceInfoManager serviceInfoManager )
+        internal ConfigurationLayerViewModel( ConfigurationEditorWindow window, ConfigurationLayer layer, ServiceInfoManager serviceInfoManager )
         {
+            Debug.Assert( window != null );
             Debug.Assert( layer != null );
 
             AddItemCommand = new RelayCommand( ExecuteAddItem );
             ToggleNewItemCommand = new RelayCommand( ExecuteToggleNewItem );
+
             ServiceInfoManager = serviceInfoManager;
+            _window = window;
             _itemViewModels = new ObservableCollection<ConfigurationItemViewModel>();
 
             _layer = layer;
@@ -167,6 +171,9 @@ namespace Yodii.Lab.ConfigurationEditor
         {
             if( SelectedServiceOrPlugin == null ) return;
             string serviceOrPluginId = SelectedServiceOrPlugin is ServiceInfo ? ((ServiceInfo)SelectedServiceOrPlugin).ServiceFullName : ((PluginInfo)SelectedServiceOrPlugin).PluginId.ToString();
+
+            _window.IsResettingSelection = true;
+
             var result = _layer.Items.Add( serviceOrPluginId, _newItemStatus, "ConfigurationEditor" );
 
             if( !result.IsSuccessful )
@@ -188,6 +195,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 NewLayerVisibility = Visibility.Collapsed;
             }
 
+            _window.IsResettingSelection = false;
         }
         #endregion Private methods
     }

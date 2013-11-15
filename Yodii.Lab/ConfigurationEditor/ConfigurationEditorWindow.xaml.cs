@@ -21,9 +21,9 @@ namespace Yodii.Lab.ConfigurationEditor
 
         /// <summary>
         /// Used when resetting combo boxes without triggering ConfigurationManager Add events.
-        /// Prevents reentrancy.
+        /// Prevents reentrancy. Use when adding layers, or changing statuses.
         /// </summary>
-        bool isResettingSelection;
+        internal bool IsResettingSelection { get; set; }
 
         readonly ConfigurationManager _configurationManager;
         readonly ObservableCollection<ConfigurationLayerViewModel> _layerViewModels;
@@ -40,7 +40,7 @@ namespace Yodii.Lab.ConfigurationEditor
             _layerViewModels = new ObservableCollection<ConfigurationLayerViewModel>();
             foreach( var layer in _configurationManager.Layers )
             {
-                _layerViewModels.Add( new ConfigurationLayerViewModel( layer, _serviceInfoManager ) );
+                _layerViewModels.Add( new ConfigurationLayerViewModel( this, layer, _serviceInfoManager ) );
             }
             _configurationManager.Layers.CollectionChanged += Layers_CollectionChanged;
 
@@ -55,7 +55,7 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     ConfigurationLayer addedLayer = (ConfigurationLayer)e.NewItems[0];
-                    ConfigurationLayerViewModel vm = new ConfigurationLayerViewModel( addedLayer, ServiceInfoManager );
+                    ConfigurationLayerViewModel vm = new ConfigurationLayerViewModel( this, addedLayer, ServiceInfoManager );
                     _layerViewModels.Add( vm );
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
@@ -121,7 +121,7 @@ namespace Yodii.Lab.ConfigurationEditor
         private void ConfigurationStatusValues_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
             // Both at 1 if old value was replaced (and not initialized, like when the window starts up)
-            if( !isResettingSelection && e.RemovedItems.Count == 1 && e.AddedItems.Count == 1 )
+            if( !IsResettingSelection && e.RemovedItems.Count == 1 && e.AddedItems.Count == 1 )
             {
                 // Find the selected item, starting from the bottom
                 ComboBox box = sender as ComboBox;
@@ -146,11 +146,11 @@ namespace Yodii.Lab.ConfigurationEditor
                         MessageBoxResult.OK,
                         MessageBoxOptions.None
                         );
-                    isResettingSelection = true;
+                    IsResettingSelection = true;
                     box.SelectedItem = oldStatus;
                 }
             }
-            isResettingSelection = false;
+            IsResettingSelection = false;
         }
 
         private void DeleteConfigurationItemButton_Click( object sender, RoutedEventArgs e )

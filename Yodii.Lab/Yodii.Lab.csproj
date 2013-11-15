@@ -138,6 +138,7 @@
       <DependentUpon>YodiiVertexControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\DropDownButton.cs" />
+    <Compile Include="Utils\EnumToBooleanConverter.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
     <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
@@ -242,6 +243,13 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\PropertyIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\action_add_16xLG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\class_32xLG.png" />
+    <Resource Include="Icons\interface_16xLG.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

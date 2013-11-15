@@ -62,7 +62,7 @@
                                         Value="true">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Icons/column_32xLG.png" />
+                                            Value="/Yodii.Lab;component/Icons/interface_16xLG.png" />
                                     </DataTrigger>
                                     <!-- Plugin styling -->
                                     <DataTrigger
@@ -70,7 +70,7 @@
                                         Value="true">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Icons/database_32xLG.png" />
+                                            Value="/Yodii.Lab;component/Icons/class_32xLG.png" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

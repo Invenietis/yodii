@@ -33,9 +33,15 @@
                 <StackPanel>
                     <DockPanel>
                         <Button
-                            DockPanel.Dock="Right"
-                            Click="DeleteLayerButton_Click">Delete layer</Button>
-                        <TextBlock>
+                            DockPanel.Dock="Left"
+                            FontFamily="Webdings"
+                            Foreground="Red"
+                            VerticalAlignment="Center"
+                            FontWeight="ExtraBlack"
+                            Margin="0,0,5,0"
+                            Click="DeleteLayerButton_Click">r</Button>
+                        <TextBlock
+                            VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style
                                     TargetType="{x:Type TextBlock}">
@@ -57,65 +63,73 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
+                        <Button
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Right"
+                            Width="Auto"
+                            HorizontalAlignment="Right"
+                            Command="{Binding Path=ToggleNewItemCommand}">Add configuration</Button>
                     </DockPanel>
+                    <!-- New item -->
+                    <Border
+                        Background="LightYellow"
+                        Margin="0,3"
+                        Visibility="{Binding Path=NewLayerVisibility}"
+                        Padding="5">
+                        <DockPanel>
+
+                            <Button
+                                DockPanel.Dock="Right"
+                                Command="{Binding Path=AddItemCommand}">
+                                <Image
+                                    Width="12pt"
+                                    Source="/Yodii.Lab;component/Icons/action_add_16xLG.png" />
+                            </Button>
+                            <StackPanel
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,5,0">Select:</TextBlock>
+                                <local:DropDownButton
+                                    Content="Service"
+                                    Margin="0,0,5,0">
+                                    <local:DropDownButton.DropDown>
+                                        <ContextMenu
+                                            ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos}"
+                                            DisplayMemberPath="ServiceFullName"
+                                            MenuItem.Click="ServicePluginDefinitionMenuItem_Click" />
+                                    </local:DropDownButton.DropDown>
+                                </local:DropDownButton>
+                                <local:DropDownButton
+                                    Content="Plugin"
+                                    Margin="0,0,5,0">
+                                    <local:DropDownButton.DropDown>
+                                        <ContextMenu
+                                            ItemsSource="{Binding Path=ServiceInfoManager.PluginInfos}"
+                                            DisplayMemberPath="Description"
+                                            MenuItem.Click="ServicePluginDefinitionMenuItem_Click" />
+                                    </local:DropDownButton.DropDown>
+                                </local:DropDownButton>
+                            </StackPanel>
+                            <ComboBox
+                                x:Name="NewConfigurationStatusValue"
+                                DockPanel.Dock="Right"
+                                Margin="0,0,5,0"
+                                SelectedValue="{Binding Path=NewConfigurationStatus}"
+                                ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+                                SelectedIndex="0"
+                                Width="70pt" />
+
+                            <!--<TextBox x:Name="NewPluginOrServiceId" Text=""/>-->
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Margin="0,0,5,0"
+                                Text="{Binding Path=NewItemDescription}" />
+                        </DockPanel>
+                    </Border>
                     <ItemsControl
                         ItemsSource="{Binding Path=ItemViewModels}">
                     </ItemsControl>
-
-                    <Button
-                        Width="Auto"
-                        HorizontalAlignment="Right"
-                        Margin="0,5,0,0"
-                        Command="{Binding Path=ToggleNewItemCommand}">New configuration item</Button>
-                    <!-- New item -->
-                    <DockPanel
-                        Margin="0,3"
-                        Visibility="{Binding Path=NewLayerVisibility}">
-
-                        <Button
-                            DockPanel.Dock="Right"
-                            Command="{Binding Path=AddItemCommand}">Add configuration</Button>
-                        <StackPanel
-                            Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Margin="0,0,5,0">Select:</TextBlock>
-                            <local:DropDownButton
-                                Content="Service"
-                                Margin="0,0,5,0">
-                                <local:DropDownButton.DropDown>
-                                    <ContextMenu
-                                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos}"
-                                        DisplayMemberPath="ServiceFullName"
-                                        MenuItem.Click="ServicePluginDefinitionMenuItem_Click" />
-                                </local:DropDownButton.DropDown>
-                            </local:DropDownButton>
-                            <local:DropDownButton
-                                Content="Plugin"
-                                Margin="0,0,5,0">
-                                <local:DropDownButton.DropDown>
-                                    <ContextMenu
-                                        ItemsSource="{Binding Path=ServiceInfoManager.PluginInfos}"
-                                        DisplayMemberPath="Description"
-                                        MenuItem.Click="ServicePluginDefinitionMenuItem_Click" />
-                                </local:DropDownButton.DropDown>
-                            </local:DropDownButton>
-                        </StackPanel>
-                        <ComboBox
-                            x:Name="NewConfigurationStatusValue"
-                            DockPanel.Dock="Right"
-                            Margin="0,0,5,0"
-                            SelectedValue="{Binding Path=NewConfigurationStatus}"
-                            ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
-                            SelectedIndex="0"
-                            Width="70pt" />
-
-                        <!--<TextBox x:Name="NewPluginOrServiceId" Text=""/>-->
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Margin="0,0,5,0"
-                            Text="{Binding Path=NewItemDescription}" />
-                    </DockPanel>
                 </StackPanel>
 
             </Border>
@@ -129,7 +143,11 @@
 
                 <Button
                     DockPanel.Dock="Right"
-                    Command="{Binding Path=DeleteItemCommand}">Delete</Button>
+                    Command="{Binding Path=DeleteItemCommand}"
+                    FontFamily="Webdings"
+                    Margin="5,0,0,0"
+                    Foreground="Red"
+                    FontWeight="ExtraBlack">r</Button>
                 <ComboBox
                     x:Name="ConfigurationStatusValues"
                     DockPanel.Dock="Right"
@@ -192,7 +210,7 @@
                     Visibility="{Binding Path=NewLayerVisibility, FallbackValue=Visible}"
                     Margin="3"
                     Padding="5"
-                    Background="LightGray">
+                    Background="LightYellow">
                     <DockPanel>
                         <TextBlock
                             DockPanel.Dock="Left"
@@ -204,7 +222,12 @@
                             Margin="5,0,0,0"
                             x:Name="NewLayerCreateButton"
                             DockPanel.Dock="Right"
-                            Click="NewLayerButton_Click">Create layer</Button>
+                            VerticalAlignment="Center"
+                            Click="NewLayerButton_Click">
+                            <Image
+                                Width="12pt"
+                                Source="/Yodii.Lab;component/Icons/action_add_16xLG.png" />
+                        </Button>
                         <!--<TextBox Name="NewLayerName" />-->
                         <xctk:WatermarkTextBox
                             x:Name="NewLayerNameTextBox"
