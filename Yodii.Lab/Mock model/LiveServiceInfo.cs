@@ -94,15 +94,21 @@ namespace Yodii.Lab.Mocks
         #endregion Properties
 
         #region Public methods
-        bool ILiveServiceInfo.Start()
+        public bool Start( Object o )
         {
             throw new NotImplementedException();
         }
 
-        void ILiveServiceInfo.Stop()
+        public void Stop( Object o )
         {
             throw new NotImplementedException();
         }
         #endregion Public methods
+
+
+        RunningStatus? ILiveServiceInfo.Status
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

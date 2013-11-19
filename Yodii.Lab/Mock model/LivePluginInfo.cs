@@ -49,7 +49,7 @@ namespace Yodii.Lab.Mocks
             get { return _configRequirement; }
         }
 
-        RunningStatus ILivePluginInfo.Status
+        public RunningStatus Status
         {
             get { return _status; }
         }
@@ -64,16 +64,22 @@ namespace Yodii.Lab.Mocks
             get { return _service; }
         }
 
-        bool ILivePluginInfo.Start()
+        public bool Start( Object o )
         {
             throw new NotImplementedException();
         }
 
-        void ILivePluginInfo.Stop()
+        public void Stop( Object o )
         {
             throw new NotImplementedException();
         }
 
         #endregion
+
+
+        RunningStatus? ILivePluginInfo.Status
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }
