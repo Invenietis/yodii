@@ -90,7 +90,7 @@ namespace Yodii.Lab
             }
         }
 
-        private void HasGeneralizationCheckbox_Unchecked( object sender, RoutedEventArgs e )
+        private void ClearGeneralizationButton_Click( object sender, RoutedEventArgs e )
         {
             if( LiveServiceInfo == null ) return;
             LiveServiceInfo.ServiceInfo.Generalization = null;

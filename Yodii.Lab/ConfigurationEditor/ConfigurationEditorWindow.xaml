@@ -33,13 +33,10 @@
                 <StackPanel>
                     <DockPanel>
                         <Button
+                            Style="{StaticResource RemoveButtonStyle}"
                             DockPanel.Dock="Left"
-                            FontFamily="Webdings"
-                            Foreground="Red"
-                            VerticalAlignment="Center"
-                            FontWeight="ExtraBlack"
                             Margin="0,0,5,0"
-                            Click="DeleteLayerButton_Click">r</Button>
+                            Click="DeleteLayerButton_Click" />
                         <TextBlock
                             VerticalAlignment="Center">
                             <TextBlock.Style>
@@ -142,12 +139,10 @@
                 Margin="0,3">
 
                 <Button
+                    Style="{StaticResource RemoveButtonStyle}"
                     DockPanel.Dock="Right"
                     Command="{Binding Path=DeleteItemCommand}"
-                    FontFamily="Webdings"
-                    Margin="5,0,0,0"
-                    Foreground="Red"
-                    FontWeight="ExtraBlack">r</Button>
+                    Margin="5,0,0,0" />
                 <ComboBox
                     x:Name="ConfigurationStatusValues"
                     DockPanel.Dock="Right"

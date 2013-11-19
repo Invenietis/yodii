@@ -27,11 +27,7 @@ namespace Yodii.Lab
 
         string _pluginName;
         string _pluginGuidText;
-        bool _hasService;
         IServiceInfo _service;
-
-        IServiceInfo _newReferenceService; // TODO : Need to implement service reference creation
-        RunningRequirement _newReferenceRequirement; // TODO
 
         public AddPluginWindow( ICKObservableReadOnlyCollection<IServiceInfo> availableServices, IServiceInfo selectedService = null )
         {
@@ -43,7 +39,6 @@ namespace Yodii.Lab
             if( selectedService != null )
             {
                 SelectedService = selectedService;
-                HasService = true;
             }
 
             this.DataContext = this;
@@ -63,15 +58,7 @@ namespace Yodii.Lab
 
         public bool HasService
         {
-            get { return _hasService; }
-            set
-            {
-                if( value != _hasService )
-                {
-                    _hasService = value;
-                    RaisePropertyChanged( "HasService" );
-                }
-            }
+            get { return SelectedService != null; }
         }
 
         public string NewPluginName
@@ -109,6 +96,7 @@ namespace Yodii.Lab
                 {
                     _service = value;
                     RaisePropertyChanged( "SelectedService" );
+                    RaisePropertyChanged( "HasService" );
                 }
             }
         }
@@ -172,6 +160,11 @@ namespace Yodii.Lab
             this.Close();
         }
 
+        private void ClearServiceButton_Click( object sender, RoutedEventArgs e )
+        {
+            SelectedService = null;
+        }
+
         #region INotifyPropertyChanged utilities
 
         /// <summary>
@@ -193,6 +186,7 @@ namespace Yodii.Lab
         }
 
         #endregion INotifyPropertyChanged utilities
+
     }
 
     public class NewPluginEventArgs : EventArgs
