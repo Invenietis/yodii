@@ -114,7 +114,10 @@ namespace Yodii.Engine
         {
             Debug.Assert( r != ServiceDisabledReason.None );
             Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
-            Debug.Assert( !GeneralizationRoot.Disabled, "A root is necessarily not disabled if one of its specialization is not disabled." );
+            Debug.Assert( !GeneralizationRoot.Disabled ||
+                (GeneralizationRoot.DisabledReason == ServiceDisabledReason.MultipleSpecializationsMustExistByConfig
+                || GeneralizationRoot.DisabledReason == ServiceDisabledReason.GeneralizationIsDisabled)
+                && r == ServiceDisabledReason.GeneralizationIsDisabled, "A root is necessarily not disabled if one of its specialization is not disabled except if we are propagating a MultipleSpecializationsMustExistByConfig to the specialized Services." );
             _configDisabledReason = r;
             ServiceData spec = FirstSpecialization;
             while( spec != null )

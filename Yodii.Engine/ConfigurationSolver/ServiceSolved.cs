@@ -38,5 +38,10 @@ namespace Yodii.Engine
         public RunningRequirement ConfigSolvedStatus { get { return _configSolvedStatus; } }
 
         public RunningStatus? RunningStatus { get { return _runningStatus; } }
+
+        public override string ToString()
+        {
+            return String.Format( "{0} - {1} - {2}", _serviceInfo.ServiceFullName, IsDisabled ? _serviceDisabledReason.ToString() : "!Disabled", ConfigSolvedStatus.ToString() );
+        }
     }
 }

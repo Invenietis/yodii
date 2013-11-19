@@ -13,9 +13,9 @@ namespace Yodii.Engine
         readonly List<IPluginSolved> _blockingPlugins;
         readonly List<IServiceSolved> _blockingServices;
 
-        readonly IReadOnlyCollection<IPluginInfo> _disabledPlugins;
-        readonly IReadOnlyCollection<IPluginInfo> _stoppedPlugins;
-        readonly IReadOnlyCollection<IPluginInfo> _runningPlugins;
+        readonly List<IPluginSolved> _disabledPlugins;
+        readonly int _availablePluginsCount;
+        readonly List<IPluginSolved> _runningPlugins;
 
         internal ConfigurationSolverResult( List<IPluginSolved> blockingPlugins, List<IServiceSolved> blockingServices )
         {
@@ -23,38 +23,39 @@ namespace Yodii.Engine
             _blockingPlugins = blockingPlugins;
             _blockingServices = blockingServices;
 
-            //_blockingPlugins = blockingPlugins != null ? blockingPlugins.ToReadOnlyCollection() : CKReadOnlyListEmpty<IPluginInfo>.Empty;
-            //_blockingServices = blockingServices != null ? blockingServices.ToReadOnlyCollection() : CKReadOnlyListEmpty<IServiceInfo>.Empty;
+            _blockingPlugins = blockingPlugins != null ? blockingPlugins : new List<IPluginSolved>();
+            _blockingServices = blockingServices != null ? blockingServices : new List<IServiceSolved>();
         }
 
-        public ConfigurationSolverResult( List<IPluginInfo> disabledPlugins, List<IPluginInfo> stoppedPlugins, List<IPluginInfo> runningPlugins )
+        public ConfigurationSolverResult( List<IPluginSolved> disabledPlugins, int availablePluginsCount, List<IPluginSolved> runningPlugins )
         {
-            _disabledPlugins = disabledPlugins.ToReadOnlyCollection();
-            _stoppedPlugins = stoppedPlugins.ToReadOnlyCollection();
-            _runningPlugins = runningPlugins.ToReadOnlyCollection();
+            _disabledPlugins = disabledPlugins != null ? disabledPlugins : new List<IPluginSolved>();
+            _availablePluginsCount = availablePluginsCount;
+            _runningPlugins = runningPlugins != null ? runningPlugins : new List<IPluginSolved>();
         }
 
         public bool ConfigurationSuccess { get { return _blockingPlugins == null; } }
 
-        public IReadOnlyList<IPluginSolved> BlockingPlugins { get { return _blockingPlugins.ToReadOnlyList(); } }
+        public IReadOnlyList<IPluginSolved> BlockingPlugins { get { return ( _blockingPlugins != null ) ? _blockingPlugins.ToReadOnlyList() : null; } }
 
-        public IReadOnlyList<IServiceSolved> BlockingServices { get { return _blockingServices.ToReadOnlyList(); } }
+        public IReadOnlyList<IServiceSolved> BlockingServices { get { return ( _blockingServices != null ) ? _blockingServices.ToReadOnlyList() : null; } }
 
-       //////
-
-        public IReadOnlyCollection<IPluginInfo> DisabledPlugins
+       
+        //(Maybe) used later in tests, else TO BE REMOVED 
+        public IReadOnlyCollection<IPluginSolved> DisabledPlugins
         {
-            get { return _disabledPlugins; }
+            get { return (_disabledPlugins != null) ? _disabledPlugins.ToReadOnlyList() : null; }
         }
 
-        public IReadOnlyCollection<IPluginInfo> StoppedPlugins
+        public int AvailablePluginsCount
         {
-            get { return _stoppedPlugins; }
+            get { return _availablePluginsCount; }
         }
 
-        public IReadOnlyCollection<IPluginInfo> RunningPlugins
+        //(Maybe) used later in tests, else TO BE REMOVED
+        public IReadOnlyCollection<IPluginSolved> RunningPlugins
         {
-            get { return _runningPlugins; }
+            get { return (_runningPlugins != null) ? _runningPlugins.ToReadOnlyList() : null; }
         }
     }
 }

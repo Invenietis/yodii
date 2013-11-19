@@ -7,10 +7,23 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    partial class ServiceData
+    partial class PluginData
     {
         RunningStatus? _dynamicStatus;
 
         public RunningStatus? Status { get { return _dynamicStatus; } set { _dynamicStatus = value; } }
+
+        internal void MustExistServices()
+        {
+            
+        }
+        internal void DynamicStart()
+        {
+
+        }
+        internal void DynamicStop()
+        {
+
+        }
     }
 }

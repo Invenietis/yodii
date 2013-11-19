@@ -106,5 +106,9 @@ namespace Yodii.Lab.Mocks
         {
             get { throw new NotImplementedException(); }
         }
+        public override string ToString()
+        {
+            return String.Format( "{0} has service {1} ", _pluginFullName, _service );
+        }
     }
 }

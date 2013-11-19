@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace Yodii.Model
 
         RunningRequirement ConfigRequirement { get; }
 
-        RunningStatus Status { get; }
+        RunningStatus? Status { get; }
 
         bool IsRunning { get; }
 
@@ -21,8 +22,8 @@ namespace Yodii.Model
 
         ILivePluginInfo RunningPlugin { get; }
 
-        bool Start();
+        bool Start( Object caller );
 
-        void Stop();
+        void Stop( Object caller );
     }
 }

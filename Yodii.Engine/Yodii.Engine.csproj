@@ -49,22 +49,28 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ConfigurationSolver\ConfigState.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolverResult.cs" />
-    <Compile Include="ConfigurationSolver\DynamicSolver.cs" />
-    <Compile Include="ConfigurationSolver\PluginData.cs" />
-    <Compile Include="ConfigurationSolver\PluginData.Dynamic.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\ConfigurationSolver.Dynamic.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\LiveConfiguration.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\LivePluginInfo.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\LiveServiceInfo.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\YodiiCommand.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\YodiiCommandPlugin.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\YodiiCommandService.cs" />
+    <Compile Include="ConfigurationSolver\PluginData.Static.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\PluginData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\PluginRunningRequirementReason.cs" />
     <Compile Include="ConfigurationSolver\PluginSolved.cs" />
-    <Compile Include="ConfigurationSolver\ServiceData.cs" />
-    <Compile Include="ConfigurationSolver\ServiceData.Dynamic.cs" />
+    <Compile Include="ConfigurationSolver\ServiceData.Static.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\ServiceData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.StaticPropagation.cs" />
-    <Compile Include="ConfigurationSolver\ServiceRootData.cs" />
-    <Compile Include="ConfigurationSolver\ServiceRootData.Dynamic.cs" />
+    <Compile Include="ConfigurationSolver\ServiceRootData.Static.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\ServiceRootData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceRunningRequirementReason.cs" />
     <Compile Include="ConfigurationSolver\ServiceSolved.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ConfigurationSolver\YodiiCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Yodii.Engine
 {
-    class DynamicSolver
+    partial class ConfigurationSolver
     {
+
     }
 }
