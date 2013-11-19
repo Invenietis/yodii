@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Yodii.Lab.Mocks;
@@ -13,15 +14,24 @@ namespace Yodii.Lab
         readonly bool _isPlugin;
         readonly LiveServiceInfo _liveService;
         readonly LivePluginInfo _livePlugin;
+        readonly YodiiGraph _parentGraph;
+
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
-        YodiiGraph _parentGraph;
         bool _hasConfiguration;
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new plugin vertex.
+        /// </summary>
+        /// <param name="parentGraph"></param>
+        /// <param name="plugin"></param>
         internal YodiiGraphVertex( YodiiGraph parentGraph, LivePluginInfo plugin )
         {
+            Debug.Assert( parentGraph != null );
+            Debug.Assert( plugin != null );
+
             _isPlugin = true;
             _livePlugin = plugin;
             _parentGraph = parentGraph;
@@ -29,15 +39,19 @@ namespace Yodii.Lab
             _livePlugin.PluginInfo.PropertyChanged += Info_PropertyChanged;
         }
 
-        void Info_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        /// <summary>
+        /// Creates a new service vertex.
+        /// </summary>
+        /// <param name="parentGraph"></param>
+        /// <param name="service"></param>
+        internal YodiiGraphVertex( YodiiGraph parentGraph, LiveServiceInfo service )
         {
-            RaisePropertyChanged( "Title" );
-        }
+            Debug.Assert( parentGraph != null );
+            Debug.Assert( service != null );
 
-        internal YodiiGraphVertex( LiveServiceInfo service )
-        {
             _isPlugin = false;
             _liveService = service;
+            _parentGraph = parentGraph;
 
             _liveService.ServiceInfo.PropertyChanged += Info_PropertyChanged;
         }
@@ -117,6 +131,11 @@ namespace Yodii.Lab
             {
                 _parentGraph.RemovePlugin( LivePluginInfo.PluginInfo );
             }
+        }
+
+        void Info_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            RaisePropertyChanged( "Title" );
         }
     }
 }

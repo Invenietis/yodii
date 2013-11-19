@@ -120,7 +120,7 @@ namespace Yodii.Lab
 
         YodiiGraphVertex CreateServiceVertex( LiveServiceInfo liveService )
         {
-            YodiiGraphVertex serviceVertex = new YodiiGraphVertex( liveService );
+            YodiiGraphVertex serviceVertex = new YodiiGraphVertex( this, liveService );
             this.AddVertex( serviceVertex );
             liveService.ServiceInfo.PropertyChanged += ServiceInfo_PropertyChanged;
 

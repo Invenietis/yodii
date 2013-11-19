@@ -273,7 +273,21 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 foreach( ConfigurationItem item in layer.Items.Where( i => i.Status == ConfigurationStatus.Optional ).ToList() )
                 {
-                    layer.Items.Remove( item.ServiceOrPluginId );
+                    var result = layer.Items.Remove( item.ServiceOrPluginId );
+
+                    if( !result )
+                    {
+                        MessageBox.Show(
+                            String.Format("Could not remove \"{0}\":\n\n{1}",
+                            ServiceInfoManager.GetDescriptionOfServiceOrPluginId(item.ServiceOrPluginId),
+                            String.Join("; ", result.FailureCauses)),
+                            "Could not remove configuration",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            MessageBoxResult.OK,
+                            MessageBoxOptions.None
+                        );
+                    }
                 }
             }
         }

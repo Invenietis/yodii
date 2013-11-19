@@ -39,44 +39,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
         public string Description
         {
-            get
-            {
-                Guid pluginGuid;
-                bool isPlugin = Guid.TryParse(_item.ServiceOrPluginId, out pluginGuid);
-
-                if( isPlugin )
-                {
-                    PluginInfo p = _serviceInfoManager.PluginInfos.Where( x => x.PluginId == pluginGuid ).FirstOrDefault();
-                    if( p != null)
-                    {
-                        if( String.IsNullOrWhiteSpace(p.PluginFullName))
-                        {
-                            return String.Format( "Plugin: Unnamed plugin ({0})", pluginGuid.ToString() );
-                        }
-                        else
-                        {
-                            return String.Format( "Plugin: {0}", p.PluginFullName );
-                        }
-                    }
-                    else
-                    {
-                        return String.Format( "Plugin: Unknown ({0})", pluginGuid.ToString() );
-                    }
-                }
-                else
-                {
-                    ServiceInfo s = _serviceInfoManager.ServiceInfos.Where( x => x.ServiceFullName == _item.ServiceOrPluginId ).FirstOrDefault();
-
-                    if( s != null )
-                    {
-                        return String.Format( "Service: {0}", _item.ServiceOrPluginId );
-                    }
-                    else
-                    {
-                        return String.Format( "Service: Unknown ({0})", _item.ServiceOrPluginId );
-                    }
-                }
-            }
+            get { return _serviceInfoManager.GetDescriptionOfServiceOrPluginId( _item.ServiceOrPluginId ); }
         }
     }
 }
