@@ -717,7 +717,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.ConfigurationSuccess, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
-            Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
+            Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
         }
 
         [Test]
