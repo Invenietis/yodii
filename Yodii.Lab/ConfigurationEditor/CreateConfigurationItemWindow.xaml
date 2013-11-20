@@ -5,11 +5,14 @@
     xmlns:local="clr-namespace:Yodii.Lab"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
-    SizeToContent="WidthAndHeight"
-    Title="CreateConfigurationItemWindow"
+    SizeToContent="Height"
+    Title="Add configuration"
     x:Name="WindowRoot"
-    Height="300"
-    Width="300">
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner"
+    Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+    Height="135"
+    Width="350">
     <Window.Resources>
 
         <!-- ConfigurationStatus enum -->
@@ -26,72 +29,123 @@
     </Window.Resources>
 
     <StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition
+                    Height="Auto" />
+                <RowDefinition
+                    Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition
+                    Width="Auto" />
+                <ColumnDefinition
+                    Width="1*" />
+            </Grid.ColumnDefinitions>
 
-        <StackPanel
-            Orientation="Horizontal">
+            <DockPanel
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="5pt">
+                <TextBlock
+                    DockPanel.Dock="Left"
+                    VerticalAlignment="Center"
+                    Margin="0,0,5pt,0">Select:</TextBlock>
+                <local:DropDownButton
+                    x:Name="ServicesDropDownButton"
+                    DockPanel.Dock="Left"
+                    VerticalAlignment="Center"
+                    Content="Service"
+                    Margin="0,0,5,0">
+                    <local:DropDownButton.DropDown>
+                        <ContextMenu
+                            ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos}"
+                            DisplayMemberPath="ServiceFullName">
+                            <ContextMenu.ItemContainerStyle>
+                                <Style
+                                    TargetType="{x:Type MenuItem}">
+                                    <Setter
+                                        Property="Command"
+                                        Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SelectItemCommand}" />
+                                    <Setter
+                                        Property="CommandParameter"
+                                        Value="{Binding}" />
+                                </Style>
+                            </ContextMenu.ItemContainerStyle>
+
+                        </ContextMenu>
+                    </local:DropDownButton.DropDown>
+                </local:DropDownButton>
+                <local:DropDownButton
+                    DockPanel.Dock="Left"
+                    VerticalAlignment="Center"
+                    Content="Plugin"
+                    Margin="0,0,5,0">
+                    <local:DropDownButton.DropDown>
+                        <ContextMenu
+                            ItemsSource="{Binding Path=ServiceInfoManager.PluginInfos}"
+                            DisplayMemberPath="Description">
+                            <ContextMenu.ItemContainerStyle>
+                                <Style
+                                    TargetType="{x:Type MenuItem}">
+                                    <Setter
+                                        Property="Command"
+                                        Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SelectItemCommand}" />
+                                    <Setter
+                                        Property="CommandParameter"
+                                        Value="{Binding}" />
+                                </Style>
+                            </ContextMenu.ItemContainerStyle>
+                        </ContextMenu>
+                    </local:DropDownButton.DropDown>
+                </local:DropDownButton>
+            </DockPanel>
             <TextBlock
+                Grid.Row="0"
+                Grid.Column="1"
                 VerticalAlignment="Center"
-                Margin="0,0,5,0">Select:</TextBlock>
-            <local:DropDownButton
-                Content="Service"
-                Margin="0,0,5,0">
-                <local:DropDownButton.DropDown>
-                    <ContextMenu
-                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos}"
-                        DisplayMemberPath="ServiceFullName">
-                        <ContextMenu.ItemContainerStyle>
-                            <Style
-                                TargetType="{x:Type MenuItem}">
-                                <Setter
-                                    Property="Command"
-                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SelectItemCommand}" />
-                                <Setter
-                                    Property="CommandParameter"
-                                    Value="{Binding}" />
-                            </Style>
-                        </ContextMenu.ItemContainerStyle>
+                Margin="5pt"
+                Text="{Binding Path=SelectedItemDescription, FallbackValue='Select plugin or service.'}"
+                TextTrimming="CharacterEllipsis" />
+            <TextBlock
+                Margin="5pt"
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalAlignment="Center">
+                Requirement:
+            </TextBlock>
+            <StackPanel
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="5pt"
+                Orientation="Horizontal">
+                <ComboBox
+                    VerticalAlignment="Center"
+                    x:Name="NewConfigurationStatusValue"
+                    SelectedValue="{Binding Path=SelectedStatus}"
+                    ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+                    SelectedIndex="0"
+                    Width="70pt" />
+            </StackPanel>
+        </Grid>
 
-                    </ContextMenu>
-                </local:DropDownButton.DropDown>
-            </local:DropDownButton>
-            <local:DropDownButton
-                Content="Plugin"
-                Margin="0,0,5,0">
-                <local:DropDownButton.DropDown>
-                    <ContextMenu
-                        ItemsSource="{Binding Path=ServiceInfoManager.PluginInfos}"
-                        DisplayMemberPath="Description">
-                        <ContextMenu.ItemContainerStyle>
-                            <Style
-                                TargetType="{x:Type MenuItem}">
-                                <Setter
-                                    Property="Command"
-                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SelectItemCommand}" />
-                                <Setter
-                                    Property="CommandParameter"
-                                    Value="{Binding}" />
-                            </Style>
-                        </ContextMenu.ItemContainerStyle>
-                    </ContextMenu>
-                </local:DropDownButton.DropDown>
-            </local:DropDownButton>
-        </StackPanel>
-
-        <ComboBox
-            x:Name="NewConfigurationStatusValue"
-            Margin="0,0,5,0"
-            SelectedValue="{Binding Path=SelectedStatus}"
-            ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
-            SelectedIndex="0"
-            Width="70pt" />
-
-        <TextBlock
-            VerticalAlignment="Center"
-            Margin="0,0,5,0"
-            Text="{Binding Path=SelectedItemDescription}" />
-
-        <Button
-            IsDefault="True"
-            Click="OkButton_Click">Create</Button>
+        <DockPanel>
+            <Border
+                BorderThickness="0,1pt,0,0"
+                BorderBrush="DarkGray"
+                DockPanel.Dock="Bottom"
+                Padding="5">
+                <StackPanel
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+                    <Button
+                        IsDefault="True"
+                        Margin="3pt,0"
+                        Click="OkButton_Click">Add</Button>
+                    <Button
+                        IsCancel="True">Cancel</Button>
+                </StackPanel>
+            </Border>
+        </DockPanel>
     </StackPanel>
 </Window>

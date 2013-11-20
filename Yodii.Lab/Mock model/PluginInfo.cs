@@ -16,6 +16,9 @@ namespace Yodii.Lab.Mocks
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
 
+        bool _hasError;
+        string _errorMessage;
+
         ServiceInfo _service;
         string _pluginFullName;
 
@@ -115,13 +118,30 @@ namespace Yodii.Lab.Mocks
 
         public bool HasError
         {
-            get { throw new NotImplementedException(); }
+            get { return _hasError; }
+            set
+            {
+                if( value != _hasError )
+                {
+                    _hasError = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
 
         public string ErrorMessage
         {
-            get { throw new NotImplementedException(); }
+            get { return _errorMessage; }
+            set
+            {
+                if( value != _errorMessage )
+                {
+                    _errorMessage = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
+
         public override string ToString()
         {
             return String.Format( "{0} has service {1} ", _pluginFullName, _service );

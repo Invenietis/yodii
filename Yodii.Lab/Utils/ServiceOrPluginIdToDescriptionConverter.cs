@@ -11,10 +11,7 @@ namespace Yodii.Lab
         {
             if( values == null ) return String.Empty;
             Debug.Assert( values.Length == 2 );
-            if( values[0] == null ) return String.Empty;
-
-            Debug.Assert( values[1] != null );
-            Debug.Assert( values[1] is ServiceInfoManager );
+            if( values[0] == null || values[1] == null || !(values[1] is ServiceInfoManager) ) return String.Empty;
 
             return ((ServiceInfoManager)values[1]).GetDescriptionOfServiceOrPluginId( (string)values[0] );
         }

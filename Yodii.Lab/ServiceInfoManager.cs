@@ -14,14 +14,17 @@ namespace Yodii.Lab
     /// Manager of IServiceInfo and IPluginInfo for the lab.
     /// Handles item bindings.
     /// </summary>
-    public class ServiceInfoManager
+    public class ServiceInfoManager : IDiscoveredInfo
     {
+        #region Fields
         readonly CKObservableSortedArrayKeyList<ServiceInfo, string> _serviceInfos;
         readonly CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;
 
         readonly CKObservableSortedArrayKeyList<LiveServiceInfo, ServiceInfo> _liveServiceInfos;
         readonly CKObservableSortedArrayKeyList<LivePluginInfo, PluginInfo> _livePluginInfos;
+        #endregion
 
+        #region Constructor
         internal ServiceInfoManager()
         {
             _serviceInfos = new CKObservableSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
@@ -30,6 +33,7 @@ namespace Yodii.Lab
             _liveServiceInfos = new CKObservableSortedArrayKeyList<LiveServiceInfo, ServiceInfo>( s => s.ServiceInfo, ( x, y ) => String.CompareOrdinal( x.ServiceFullName, y.ServiceFullName ), false );
             _livePluginInfos = new CKObservableSortedArrayKeyList<LivePluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginId.ToString(), y.PluginId.ToString() ), false );
         }
+        #endregion
 
         #region Properties
         /// <summary>
@@ -63,6 +67,17 @@ namespace Yodii.Lab
             get { return _livePluginInfos; }
         }
         #endregion Properties
+
+        #region IDiscoveredInfo implementation
+        IReadOnlyList<IServiceInfo> IDiscoveredInfo.ServiceInfos
+        {
+            get { return _serviceInfos; }
+        }
+        IReadOnlyList<IPluginInfo> IDiscoveredInfo.PluginInfos
+        {
+            get { return _pluginInfos; }
+        }
+        #endregion
 
         #region Internal methods
         internal void ClearState()

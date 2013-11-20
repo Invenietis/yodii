@@ -19,11 +19,16 @@ namespace Yodii.Lab.ConfigurationEditor
     {
         internal ConfigurationEditorWindow( ConfigurationManager configurationManager, ServiceInfoManager serviceInfoManager )
         {
-            var viewModel = new ConfigurationEditorWindowViewModel( configurationManager, serviceInfoManager );
+            var viewModel = new ConfigurationEditorWindowViewModel( this, configurationManager, serviceInfoManager );
 
             this.DataContext = viewModel;
 
             InitializeComponent();
+        }
+
+        private void CloseButton_Click( object sender, RoutedEventArgs e )
+        {
+            this.Close();
         }
     }
 

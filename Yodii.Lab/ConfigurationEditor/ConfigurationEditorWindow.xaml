@@ -10,8 +10,10 @@
     xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     Title="Configuration editor"
     x:Name="ConfigurationEditorWindowRoot"
-    Height="500"
-    Width="600">
+    WindowStartupLocation="CenterOwner"
+    
+    Height="250"
+    Width="400">
     <Window.Resources>
         <local:IntegerToVisibilityConverter
             x:Key="integerToVisibilityConverter" />
@@ -33,16 +35,17 @@
         <DataTemplate
             DataType="{x:Type ym:ConfigurationLayer}">
             <Border
-                Margin="3"
-                Padding="5"
+                Margin="3pt"
+                Padding="5pt"
                 Background="LightGray"
                 x:Name="ConfigurationLayerBorder">
                 <StackPanel>
                     <DockPanel>
                         <Button
+                            VerticalAlignment="Center"
                             Style="{StaticResource RemoveButtonStyle}"
                             DockPanel.Dock="Left"
-                            Margin="0,0,5,0"
+                            Margin="0,0,5pt,0"
                             Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.RemoveLayerCommand}"
                             CommandParameter="{Binding}" />
                         <TextBlock
@@ -89,15 +92,17 @@
         <DataTemplate
             DataType="{x:Type ym:ConfigurationItem}">
             <DockPanel
-                Margin="0,3">
+                Margin="0,3pt">
                 <Button
+                    VerticalAlignment="Center"
                     Style="{StaticResource RemoveButtonStyle}"
                     DockPanel.Dock="Right"
                     Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.RemoveConfigItemCommand}"
                     CommandParameter="{Binding}"
-                    Margin="5,0,0,0" />
+                    Margin="5pt,0,0,0" />
                 <!-- TODO -->
                 <ComboBox
+                    VerticalAlignment="Center"
                     x:Name="ConfigurationStatusValues"
                     DockPanel.Dock="Right"
                     SelectedItem="{Binding Path=Status, Mode=OneWay}"
@@ -113,7 +118,8 @@
                     </ei:Interaction.Triggers>
                 </ComboBox>
 
-                <TextBlock>
+                <TextBlock
+                    VerticalAlignment="Center">
                     <TextBlock.Text>
                         <MultiBinding
                             Converter="{StaticResource idToDescriptionConverter}">
@@ -131,19 +137,26 @@
     </Window.Resources>
     <DockPanel>
         <Border
+            BorderThickness="0,1pt,0,0"
+            BorderBrush="DarkGray"
             DockPanel.Dock="Bottom"
-            Padding="5">
+            Padding="3pt">
             <StackPanel
                 Orientation="Horizontal"
                 HorizontalAlignment="Right">
                 <Button
-                    Padding="4,2"
-                    Margin="3"
+                    Padding="4pt,2pt"
+                    Margin="3pt"
                     Command="{Binding AddLayerCommand}">New layer</Button>
                 <Button
-                    Padding="4,2"
-                    Margin="3"
+                    Padding="4pt,2pt"
+                    Margin="3pt"
                     Command="{Binding ClearOptionalItemsCommand}">Remove Optional items</Button>
+                <Button
+                    Padding="4pt,2pt"
+                    Margin="3pt"
+                    IsCancel="True"
+                    Click="CloseButton_Click">Close</Button>
             </StackPanel>
         </Border>
 
@@ -152,8 +165,8 @@
             <StackPanel>
                 <Border
                     Visibility="{Binding Path=ConfigurationManager.Layers.Count, Converter={StaticResource ResourceKey=integerToVisibilityConverter}}"
-                    Margin="3"
-                    Padding="5"
+                    Margin="3pt"
+                    Padding="5pt"
                     Background="LightGray">
                     <TextBlock>
                         This configuration is empty.
