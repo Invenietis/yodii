@@ -21,6 +21,7 @@ namespace Yodii.Lab.ConfigurationEditor
         #region Fields
         readonly ConfigurationManager _configurationManager;
         readonly ServiceInfoManager _serviceInfoManager;
+        readonly ConfigurationEditorWindow _window;
 
         readonly ICommand _addLayerCommand;
         readonly ICommand _removeLayerCommand;
@@ -28,16 +29,38 @@ namespace Yodii.Lab.ConfigurationEditor
         readonly ICommand _removeConfigItemCommand;
         readonly ICommand _setConfigItemStatusCommand;
         readonly ICommand _clearOptionalItemsCommand;
+
+        bool _isChangingConfig = false; // Prevents reentrancy, and command being run twice. Use when adding/changing items.
+        /* When creating a ConfigurationItem that already exists, the existing item's status is changed.
+         * In this editor, the existing item's status (in the ComboBox) is changed.
+         * That raises its SelectedItemChanged event (used when changing the Status of each item manually),
+         * and runs the SetConfigItemStatusCommand, effectively trying to set the ConfigurationStatus to the one it just changed to.
+         * Get it? Here's a duck art I found on the net.
+         *        ..---.. 
+                 .'  _    `. 
+             __..'  (o)    : 
+            `..__          ; 
+                 `.       / 
+                   ;      `..---...___ 
+                 .'                   `~-. .-') 
+                .                         ' _.' 
+               :                           : 
+               \                           ' 
+                +                         J 
+                 `._                   _.' 
+                    `~--....___...---~' mh 
+         * */
         #endregion
 
         #region Constructor & init
-        internal ConfigurationEditorWindowViewModel( ConfigurationManager configManager, ServiceInfoManager serviceManager )
+        internal ConfigurationEditorWindowViewModel( ConfigurationEditorWindow parentWindow, ConfigurationManager configManager, ServiceInfoManager serviceManager )
         {
             Debug.Assert( configManager != null );
             Debug.Assert( serviceManager != null );
 
             _configurationManager = configManager;
             _serviceInfoManager = serviceManager;
+            _window = parentWindow;
 
             _addLayerCommand = new RelayCommand( ExecuteAddLayer );
             _removeLayerCommand = new RelayCommand( ExecuteRemoveLayer );
@@ -92,6 +115,8 @@ namespace Yodii.Lab.ConfigurationEditor
 
         private void ExecuteSetConfigItemStatus( object param )
         {
+            if( _isChangingConfig ) return;
+            _isChangingConfig = true;
             ComboBox box = (ComboBox)param;
             ConfigurationItem item = (ConfigurationItem)box.DataContext;
 
@@ -103,6 +128,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 MessageBox.Show( "Item status set failure" ); // TODO: Detailed message
             }
 
+            _isChangingConfig = false;
             box.GetBindingExpression(ComboBox.SelectedItemProperty).UpdateTarget();
         }
 
@@ -120,10 +146,13 @@ namespace Yodii.Lab.ConfigurationEditor
 
         private void ExecuteAddConfigItem( object param )
         {
+            if( _isChangingConfig ) return;
+            _isChangingConfig = true;
             Debug.Assert( param != null && param is ConfigurationLayer);
 
             ConfigurationLayer layer = param as ConfigurationLayer;
-            CreateConfigurationItemWindow w = new CreateConfigurationItemWindow(_serviceInfoManager);
+            CreateConfigurationItemWindow w = new CreateConfigurationItemWindow( _serviceInfoManager );
+            w.Owner = _window;
 
             var windowResult = w.ShowDialog();
 
@@ -139,15 +168,7 @@ namespace Yodii.Lab.ConfigurationEditor
                     }
                 }
             }
-            //Debug.Assert( param is Object[] );
-            //Object[] objects = (Object[])param;
-
-            //Debug.Assert( objects.Length == 3 );
-            //Debug.Assert( objects[0] is ConfigurationLayer );
-            //Debug.Assert( objects[1] is ConfigurationStatus );
-            //Debug.Assert( objects[2] is PluginInfo || objects[2] is ServiceInfo );
-
-            //throw new NotImplementedException();
+            _isChangingConfig = false;
         }
 
         private void ExecuteRemoveLayer( object param )
@@ -179,6 +200,8 @@ namespace Yodii.Lab.ConfigurationEditor
         private void ExecuteAddLayer( object param )
         {
             CreateConfigurationLayerWindow w = new CreateConfigurationLayerWindow();
+            w.Owner = _window;
+
             bool? result = w.ShowDialog();
             if( result == true )
             {

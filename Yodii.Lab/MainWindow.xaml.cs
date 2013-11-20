@@ -63,6 +63,7 @@ namespace Yodii.Lab
             else
             {
                 _activeConfEditorWindow = new ConfigurationEditorWindow( _vm.ConfigurationManager, _vm.ServiceInfoManager );
+                _activeConfEditorWindow.Owner = this;
                 _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
 
                 _activeConfEditorWindow.Show();

@@ -11,9 +11,9 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     WindowStartupLocation="CenterScreen"
-    WindowState="Maximized"
     x:Name="MainWindowRoot"
     Title="Yodii Lab"
+    
     Height="600"
     Width="800">
     <Fluent:RibbonWindow.Resources>

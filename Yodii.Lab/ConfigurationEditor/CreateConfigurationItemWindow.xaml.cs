@@ -32,10 +32,13 @@ namespace Yodii.Lab.ConfigurationEditor
             this.DataContext = ViewModel;
 
             InitializeComponent();
+
+            ServicesDropDownButton.Focus();
         }
 
         private void OkButton_Click( object sender, RoutedEventArgs e )
         {
+            if( ViewModel.SelectedItem == null ) return;
             this.DialogResult = true;
             this.Close();
         }

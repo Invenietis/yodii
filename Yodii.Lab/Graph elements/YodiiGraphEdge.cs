@@ -42,6 +42,7 @@ namespace Yodii.Lab
                 {
                     _referenceRequirement = value;
                     RaisePropertyChanged( "ReferenceRequirement" );
+                    RaisePropertyChanged( "Description" );
                 }
             }
         }

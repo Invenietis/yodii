@@ -10,8 +10,10 @@
     xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     Title="Configuration editor"
     x:Name="ConfigurationEditorWindowRoot"
-    Height="500"
-    Width="600">
+    WindowStartupLocation="CenterOwner"
+    
+    Height="250"
+    Width="400">
     <Window.Resources>
         <local:IntegerToVisibilityConverter
             x:Key="integerToVisibilityConverter" />
@@ -131,6 +133,8 @@
     </Window.Resources>
     <DockPanel>
         <Border
+            BorderThickness="0,1pt,0,0"
+            BorderBrush="DarkGray"
             DockPanel.Dock="Bottom"
             Padding="5">
             <StackPanel
@@ -144,6 +148,11 @@
                     Padding="4,2"
                     Margin="3"
                     Command="{Binding ClearOptionalItemsCommand}">Remove Optional items</Button>
+                <Button
+                    Padding="4,2"
+                    Margin="3"
+                    IsCancel="True"
+                    Click="CloseButton_Click">Close</Button>
             </StackPanel>
         </Border>
 
