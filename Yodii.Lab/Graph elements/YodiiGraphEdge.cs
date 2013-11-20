@@ -33,7 +33,8 @@ namespace Yodii.Lab
             if( e.PropertyName == "Requirement" ) ReferenceRequirement = (sender as MockServiceReferenceInfo).Requirement;
         }
 
-        public RunningRequirement ReferenceRequirement {
+        public RunningRequirement ReferenceRequirement
+        {
             get { return _referenceRequirement; }
             set
             {
@@ -50,6 +51,31 @@ namespace Yodii.Lab
         public bool IsImplementation { get { return Type == YodiiGraphEdgeType.Implementation; } }
         public bool IsServiceReference { get { return Type == YodiiGraphEdgeType.ServiceReference; } }
 
+        public string Description
+        {
+            get
+            {
+                if( IsSpecialization )
+                {
+                    return String.Format( "Specialization:\n\nService {0} specializes service {1}.",
+                        Source.LiveServiceInfo.ServiceInfo.ServiceFullName,
+                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName );
+                }
+                else if( IsImplementation )
+                {
+                    return String.Format( "Implementation:\n\nPlugin {0} implements service {1}.",
+                        Source.LivePluginInfo.PluginInfo.Description,
+                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName );
+                }
+                else
+                {
+                    return String.Format( "Service reference ({0}):\n\nPlugin {1} references service {2} with requirement: {0}.",
+                        ReferenceRequirement.ToString(),
+                        Source.LivePluginInfo.PluginInfo.Description,
+                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName);
+                }
+            }
+        }
 
         #region INotifyPropertyChanged utilities
 

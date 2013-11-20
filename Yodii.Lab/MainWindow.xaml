@@ -131,24 +131,11 @@
                         ItemsSource="{Binding Path=GraphLayoutAlgorithms}" 
                         MenuItem.Click="NewGraphLayoutButton_Click"
                         Click="ReorderGraphButton_Click">
-                        <!--<Fluent:SplitButton.ItemContainerStyle>
-                            <Style
-                                TargetType="MenuItem">
-                                <Setter
-                                    Property="IsChecked"
-                                    Value="{Binding Converter={StaticResource ResourceKey=EnumToBooleanConv}, Mode=OneWay}" /> --><!-- TODO --><!--
-                            </Style>
-                        </Fluent:SplitButton.ItemContainerStyle>-->
                         <Fluent:SplitButton.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
                         </Fluent:SplitButton.LargeIcon>
-                        <!--<Fluent:DropDownButton.ItemTemplate>
-                            <DataTemplate DataType="{x:Type sys:String}">
-                                <Fluent:MenuItem Header="{Binding}"/>
-                            </DataTemplate>
-                        </Fluent:DropDownButton.ItemTemplate>-->
                     </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
@@ -201,11 +188,6 @@
                                     ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
 
                                 <DataTemplate.Triggers>
-                                    <!-- Bold title on highlight -->
-                                    <!--<DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
-                                    <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
-                                </DataTrigger>-->
-
                                     <!-- IsStarted text -->
                                     <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
@@ -318,6 +300,40 @@
                                 <Setter
                                     Property="ToolTip"
                                     Value="{StaticResource ToolTipContent}" />
+
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsSpecialization}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Red" />
+                                        <Setter
+                                            Property="StrokeThickness"
+                                            Value="5" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsImplementation}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Blue" />
+                                        <Setter
+                                            Property="StrokeThickness"
+                                            Value="3" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsServiceReference}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Yellow" />
+                                        <Setter
+                                            Property="StrokeThickness"
+                                            Value="2" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                                
                             </Style>
                         </local:YodiiGraphLayout.Resources>
                     </local:YodiiGraphLayout>

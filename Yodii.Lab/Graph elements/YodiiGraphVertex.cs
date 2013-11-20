@@ -108,7 +108,7 @@ namespace Yodii.Lab
                 if( IsService )
                     return LiveServiceInfo.ServiceInfo.ServiceFullName;
                 else
-                    return LivePluginInfo.PluginInfo.PluginFullName;
+                    return LivePluginInfo.PluginInfo.Description;
             }
         }
         public LiveServiceInfo LiveServiceInfo { get { return _liveService; } }
