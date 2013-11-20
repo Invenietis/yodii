@@ -53,6 +53,9 @@
     <Reference Include="GraphSharp.Controls">
       <HintPath>..\packages\GraphSharp.1.1.0.0\lib\net40\GraphSharp.Controls.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
+    </Reference>
     <Reference Include="QuickGraph">
       <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
     </Reference>
@@ -70,7 +73,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\System.Windows.Interactivity.dll</HintPath>
+      <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\System.Windows.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -119,8 +122,14 @@
     <Compile Include="ConfigurationEditor\ConfigurationEditorWindow.xaml.cs">
       <DependentUpon>ConfigurationEditorWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConfigurationEditor\ConfigurationItemViewModel.cs" />
-    <Compile Include="ConfigurationEditor\ConfigurationLayerViewModel.cs" />
+    <Compile Include="ConfigurationEditor\ConfigurationEditorWindowViewModel.cs" />
+    <Compile Include="ConfigurationEditor\CreateConfigurationItemWindow.xaml.cs">
+      <DependentUpon>CreateConfigurationItemWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigurationEditor\CreateConfigurationItemWindowViewModel.cs" />
+    <Compile Include="ConfigurationEditor\CreateConfigurationLayerWindow.xaml.cs">
+      <DependentUpon>CreateConfigurationLayerWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphEdgeType.cs" />
@@ -138,6 +147,8 @@
       <DependentUpon>YodiiVertexControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\DropDownButton.cs" />
+    <Compile Include="Utils\IntegerToVisibilityConverter.cs" />
+    <Compile Include="Utils\ServiceOrPluginIdToDescriptionConverter.cs" />
     <Compile Include="Utils\EnumToBooleanConverter.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
     <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
@@ -165,6 +176,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ConfigurationEditor\ConfigurationEditorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ConfigurationEditor\CreateConfigurationItemWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ConfigurationEditor\CreateConfigurationLayerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

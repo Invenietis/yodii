@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace Yodii.Lab
 {
@@ -20,7 +17,7 @@ namespace Yodii.Lab
         /// Throw new PropertyChanged.
         /// </summary>
         /// <param name="caller">Fill with Member name, when called from a property.</param>
-        protected void RaisePropertyChanged( string caller )
+        protected void RaisePropertyChanged( [CallerMemberName] string caller = null )
         {
             Debug.Assert( caller != null );
             if( PropertyChanged != null )

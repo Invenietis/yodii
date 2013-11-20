@@ -103,7 +103,7 @@ namespace Yodii.Model
         internal ConfigurationResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
         {
             Debug.Assert( item != null && _finalConfiguration != null && _configurationLayerCollection.Count != 0 );
-            //if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
+            if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
 
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             final.Add( item.ServiceOrPluginId, newStatus );

@@ -1,0 +1,13 @@
+﻿<Window x:Class="Yodii.Lab.ConfigurationEditor.CreateConfigurationLayerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        SizeToContent="WidthAndHeight"
+        Title="CreateConfigurationLayerWindow" Height="100" Width="300">
+    <StackPanel>
+        <TextBlock>Enter new layer name (optional) :</TextBlock>
+        <TextBox
+            x:Name="NewLayerName" />
+        <Button
+            Click="OkButton_Click" IsDefault="True">OK</Button>
+    </StackPanel>
+</Window>

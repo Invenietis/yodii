@@ -273,6 +273,32 @@ namespace Yodii.Lab
             CreateLivePlugin( pluginInfo );
         }
 
+        public static string GetDescriptionOfServiceOrPluginInfo( object serviceOrPluginInfo )
+        {
+            if( serviceOrPluginInfo == null ) return "No service or plugin given.";
+            if( serviceOrPluginInfo is ServiceInfo )
+            {
+                ServiceInfo service = serviceOrPluginInfo as ServiceInfo;
+                return String.Format( "Service: {0}", service.ServiceFullName );
+            }
+            else if( serviceOrPluginInfo is PluginInfo )
+            {
+                PluginInfo plugin = serviceOrPluginInfo as PluginInfo;
+                if( String.IsNullOrWhiteSpace( plugin.PluginFullName ) )
+                {
+                    return String.Format( "Plugin: Unnamed plugin ({0})", plugin.PluginId.ToString() );
+                }
+                else
+                {
+                    return String.Format( "Plugin: {0}", plugin.PluginFullName );
+                }
+            }
+            else
+            {
+                throw new ArgumentException( "Parameter must be a ServiceInfo instance, a PluginInfo instance, or null.", "serviceOrPluginInfo" );
+            }
+        }
+
         public string GetDescriptionOfServiceOrPluginId( string serviceOrPluginId )
         {
             Guid pluginGuid;

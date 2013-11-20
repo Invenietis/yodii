@@ -1,0 +1,97 @@
+﻿<Window
+    x:Class="Yodii.Lab.ConfigurationEditor.CreateConfigurationItemWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Yodii.Lab"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
+    SizeToContent="WidthAndHeight"
+    Title="CreateConfigurationItemWindow"
+    x:Name="WindowRoot"
+    Height="300"
+    Width="300">
+    <Window.Resources>
+
+        <!-- ConfigurationStatus enum -->
+        <ObjectDataProvider
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}"
+            x:Key="ConfigurationStatusValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type
+                    TypeName="ym:ConfigurationStatus" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+    </Window.Resources>
+
+    <StackPanel>
+
+        <StackPanel
+            Orientation="Horizontal">
+            <TextBlock
+                VerticalAlignment="Center"
+                Margin="0,0,5,0">Select:</TextBlock>
+            <local:DropDownButton
+                Content="Service"
+                Margin="0,0,5,0">
+                <local:DropDownButton.DropDown>
+                    <ContextMenu
+                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos}"
+                        DisplayMemberPath="ServiceFullName">
+                        <ContextMenu.ItemContainerStyle>
+                            <Style
+                                TargetType="{x:Type MenuItem}">
+                                <Setter
+                                    Property="Command"
+                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SelectItemCommand}" />
+                                <Setter
+                                    Property="CommandParameter"
+                                    Value="{Binding}" />
+                            </Style>
+                        </ContextMenu.ItemContainerStyle>
+
+                    </ContextMenu>
+                </local:DropDownButton.DropDown>
+            </local:DropDownButton>
+            <local:DropDownButton
+                Content="Plugin"
+                Margin="0,0,5,0">
+                <local:DropDownButton.DropDown>
+                    <ContextMenu
+                        ItemsSource="{Binding Path=ServiceInfoManager.PluginInfos}"
+                        DisplayMemberPath="Description">
+                        <ContextMenu.ItemContainerStyle>
+                            <Style
+                                TargetType="{x:Type MenuItem}">
+                                <Setter
+                                    Property="Command"
+                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SelectItemCommand}" />
+                                <Setter
+                                    Property="CommandParameter"
+                                    Value="{Binding}" />
+                            </Style>
+                        </ContextMenu.ItemContainerStyle>
+                    </ContextMenu>
+                </local:DropDownButton.DropDown>
+            </local:DropDownButton>
+        </StackPanel>
+
+        <ComboBox
+            x:Name="NewConfigurationStatusValue"
+            Margin="0,0,5,0"
+            SelectedValue="{Binding Path=SelectedStatus}"
+            ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+            SelectedIndex="0"
+            Width="70pt" />
+
+        <TextBlock
+            VerticalAlignment="Center"
+            Margin="0,0,5,0"
+            Text="{Binding Path=SelectedItemDescription}" />
+
+        <Button
+            IsDefault="True"
+            Click="OkButton_Click">Create</Button>
+    </StackPanel>
+</Window>
