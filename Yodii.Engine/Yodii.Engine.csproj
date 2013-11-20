@@ -65,7 +65,7 @@
     <Compile Include="ConfigurationSolver\ServiceData.StaticPropagation.cs" />
     <Compile Include="ConfigurationSolver\ServiceRootData.Static.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\ServiceRootData.Dynamic.cs" />
-    <Compile Include="ConfigurationSolver\ServiceRunningRequirementReason.cs" />
+    <Compile Include="ConfigurationSolver\ServiceSolvedConfigStatusReason.cs" />
     <Compile Include="ConfigurationSolver\SolvedServiceSnapshot.cs" />
     <Compile Include="ConfigurationSolver\StaticFailureResult.cs" />
     <Compile Include="EmptyDiscoveredInfo.cs" />

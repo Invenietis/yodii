@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    enum ServiceRunningRequirementReason
+    enum ServiceSolvedConfigStatusReason
     {
         /// <summary>
         /// Initialized by ServiceData constructor.

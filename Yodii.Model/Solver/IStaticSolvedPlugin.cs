@@ -14,7 +14,7 @@ namespace Yodii.Model
 
         ConfigurationStatus ConfigOriginalStatus { get; }
 
-        SolvedConfigurationStatus ConfigSolvedStatus { get; }
+        SolvedConfigurationStatus WantedConfigSolvedStatus { get; }
 
         bool IsBlocking { get; }
     }

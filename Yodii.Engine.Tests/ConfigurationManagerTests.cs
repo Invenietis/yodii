@@ -25,7 +25,7 @@ namespace Yodii.Engine.Tests
 
             // Add a random plugin GUID
             pluginIdentifier = Guid.NewGuid().ToString();
-            result = layer.Items.Add( pluginIdentifier, ConfigurationStatus.Disable );
+            result = layer.Items.Add( pluginIdentifier, ConfigurationStatus.Disabled );
             Assert.That( result, Is.True );
             Assert.That( layer.Items.Count == 1 );
             Assert.That( layer.Items[pluginIdentifier], Is.InstanceOf<ConfigurationItem>() );
@@ -61,11 +61,11 @@ namespace Yodii.Engine.Tests
             // Precedence test for Disabled
             string pluginId = Guid.NewGuid().ToString();
 
-            result = layer.Items.Add( pluginId, ConfigurationStatus.Disable );
+            result = layer.Items.Add( pluginId, ConfigurationStatus.Disabled );
             Assert.That( result, Is.True );
-            Assert.That( layer.Items[pluginId].Status == ConfigurationStatus.Disable );
+            Assert.That( layer.Items[pluginId].Status == ConfigurationStatus.Disabled );
 
-            result = layer.Items.Add( pluginId, ConfigurationStatus.Disable );
+            result = layer.Items.Add( pluginId, ConfigurationStatus.Disabled );
             Assert.That( result, Is.True, "Adding the same plugin twice, in the same state, is a valid operation." );
             Assert.That( layer.Items.Count == 1, "Adding the same plugin twice, in the same state, does not actually add it and increment the count." );
 
@@ -76,7 +76,7 @@ namespace Yodii.Engine.Tests
             result = layer.Items.Add( pluginId, ConfigurationStatus.Running );
             Assert.That( result, Is.True );
 
-            result = layer.Items.Add( pluginId, ConfigurationStatus.Disable );
+            result = layer.Items.Add( pluginId, ConfigurationStatus.Disabled );
             Assert.That( result, Is.True );
 
             result = layer.Items.Remove( pluginId );
@@ -97,7 +97,7 @@ namespace Yodii.Engine.Tests
             Assert.That( result, Is.True );
             result = layer.Items.Add( pluginId, ConfigurationStatus.Runnable );
             Assert.That( result, Is.True );
-            result = layer.Items.Add( pluginId, ConfigurationStatus.Disable );
+            result = layer.Items.Add( pluginId, ConfigurationStatus.Disabled );
             Assert.That( result, Is.True );
 
             result = layer.Items.Remove( pluginId );
@@ -156,7 +156,7 @@ namespace Yodii.Engine.Tests
             ConfigurationLayer layer = new ConfigurationLayer( "BaseConfig" );
 
             layer.Items.Add( "Yodii.ManagerService", ConfigurationStatus.Runnable );
-            layer.Items.Add( Guid.NewGuid().ToString(), ConfigurationStatus.Disable );
+            layer.Items.Add( Guid.NewGuid().ToString(), ConfigurationStatus.Disabled );
 
             result = cm.Layers.Add( layer ); // Fires Changing => Changed once.
             Assert.That( result, Is.True );
@@ -187,7 +187,7 @@ namespace Yodii.Engine.Tests
             Assert.That( manager.FinalConfiguration.Items[2].ServiceOrPluginId, Is.EqualTo( "schmurtz3" ) );
 
             ConfigurationLayer conflictLayer = new ConfigurationLayer( "schmurtzConflict" );
-            conflictLayer.Items.Add( "schmurtz1", ConfigurationStatus.Disable );
+            conflictLayer.Items.Add( "schmurtz1", ConfigurationStatus.Disabled );
 
             result = manager.Layers.Add( conflictLayer );
             Assert.That( result == false );
@@ -197,7 +197,7 @@ namespace Yodii.Engine.Tests
             Assert.That( result.FailureCauses[0], Is.StringContaining( "schmurtz1" ) );
 
             ConfigurationLayer layer2 = new ConfigurationLayer();
-            layer2.Items.Add( "schmurtz4", ConfigurationStatus.Disable );
+            layer2.Items.Add( "schmurtz4", ConfigurationStatus.Disabled );
             layer2.Items.Add( "schmurtz1", ConfigurationStatus.Running );
 
             result = manager.Layers.Add( layer2 );
