@@ -8,25 +8,24 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    internal class ServiceSolved : IServiceSolved
+    internal class SolvedServiceSnapshot : IStaticSolvedService, IDynamicSolvedService
     {
         readonly ServiceDisabledReason _serviceDisabledReason;
-        readonly RunningRequirement _configSolvedStatus;
+        readonly SolvedConfigurationStatus _configSolvedStatus;
         readonly IServiceInfo _serviceInfo;
         readonly ConfigurationStatus _configurationStatus;
         readonly RunningStatus? _runningStatus;
 
-        public ServiceSolved( IServiceInfo serviceInfo, ServiceDisabledReason serviceDisabledReason, RunningRequirement configSolvedStatus, ConfigurationStatus configurationStatus, RunningStatus? nullable )
+        public SolvedServiceSnapshot( ServiceData s )
         {
-            Debug.Assert( serviceInfo != null );
-            _serviceInfo = serviceInfo;
-            _serviceDisabledReason = serviceDisabledReason;
-            _configSolvedStatus = configSolvedStatus;
-            _configurationStatus = configurationStatus;
-            _runningStatus = nullable;
+            _serviceInfo = s.ServiceInfo;
+            _serviceDisabledReason = s.DisabledReason;
+            _configSolvedStatus = s.ConfigSolvedStatus;
+            _configurationStatus = s.ConfigOriginalStatus;
+            _runningStatus = s.DynamicStatus;
         }
 
-        public bool IsBlocking { get { return _configSolvedStatus >= RunningRequirement.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } }
+        public bool IsBlocking { get { return _configSolvedStatus >= SolvedConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } }
         public bool IsDisabled { get { return _serviceDisabledReason != ServiceDisabledReason.None; } }
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
@@ -35,7 +34,7 @@ namespace Yodii.Engine
 
         public ConfigurationStatus ConfigurationStatus { get { return _configurationStatus; } }
 
-        public RunningRequirement ConfigSolvedStatus { get { return _configSolvedStatus; } }
+        public SolvedConfigurationStatus ConfigSolvedStatus { get { return _configSolvedStatus; } }
 
         public RunningStatus? RunningStatus { get { return _runningStatus; } }
 

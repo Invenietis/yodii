@@ -263,7 +263,7 @@ namespace Yodii.Lab
         /// <param name="plugin">Plugin</param>
         /// <param name="service">Service the plugin depends on</param>
         /// <param name="runningRequirement">How the plugin depends on the service</param>
-        public void SetPluginDependency( IPluginInfo plugin, IServiceInfo service, RunningRequirement runningRequirement )
+        public void SetPluginDependency( IPluginInfo plugin, IServiceInfo service, DependencyRequirement runningRequirement )
         {
             if( plugin == null ) throw new ArgumentNullException( "plugin" );
             if( service == null ) throw new ArgumentNullException( "service" );

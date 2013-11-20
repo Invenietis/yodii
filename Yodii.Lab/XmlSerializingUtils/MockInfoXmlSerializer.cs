@@ -206,7 +206,7 @@ namespace Yodii.Lab.Mocks
                                     string serviceFullName2 = r.GetAttribute( "Service" );
                                     if( !String.IsNullOrEmpty( serviceFullName2 ) )
                                     {
-                                        RunningRequirement requirement = (RunningRequirement)Enum.Parse( typeof( RunningRequirement ), r.GetAttribute( "Requirement" ) );
+                                        DependencyRequirement requirement = (DependencyRequirement)Enum.Parse( typeof( DependencyRequirement ), r.GetAttribute( "Requirement" ) );
 
                                         if( loadedServices.Contains( serviceFullName2 ) )
                                         {
@@ -295,9 +295,9 @@ namespace Yodii.Lab.Mocks
         {
             public readonly PluginInfo Plugin;
             public readonly string PendingServiceFullName;
-            public readonly RunningRequirement Requirement;
+            public readonly DependencyRequirement Requirement;
 
-            internal PendingServiceReference( PluginInfo plugin, string pendingServiceFullName, RunningRequirement requirement )
+            internal PendingServiceReference( PluginInfo plugin, string pendingServiceFullName, DependencyRequirement requirement )
             {
                 Plugin = plugin;
                 PendingServiceFullName = pendingServiceFullName;

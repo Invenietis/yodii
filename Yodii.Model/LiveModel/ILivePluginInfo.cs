@@ -8,20 +8,16 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    public interface ILivePluginInfo : INotifyPropertyChanged
+    public interface ILivePluginInfo : IDynamicSolvedPlugin, INotifyPropertyChanged
     {
-        IPluginInfo PluginInfo { get; }
-
-        RunningRequirement ConfigRequirement { get; }
-
-        RunningStatus? Status { get; }
-
         bool IsRunning { get; }
 
         ILiveServiceInfo Service { get; }
 
-        bool Start( Object caller );
+        bool Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None );
 
-        void Stop( Object caller );
+        void Stop( object caller );
+
+        Exception CurrentError { get; }
     }
 }

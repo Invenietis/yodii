@@ -23,7 +23,7 @@ namespace Yodii.Lab
     public partial class AddPluginWindow : Window, INotifyPropertyChanged
     {
         public event EventHandler<NewPluginEventArgs> NewPluginCreated;
-        readonly Dictionary<IServiceInfo,RunningRequirement> _serviceReferences; // TODO
+        readonly Dictionary<IServiceInfo,DependencyRequirement> _serviceReferences; // TODO
 
         string _pluginName;
         string _pluginGuidText;
@@ -31,11 +31,11 @@ namespace Yodii.Lab
         IServiceInfo _service;
 
         IServiceInfo _newReferenceService; // TODO : Need to implement service reference creation
-        RunningRequirement _newReferenceRequirement; // TODO
+        DependencyRequirement _newReferenceRequirement; // TODO
 
         public AddPluginWindow( ICKObservableReadOnlyCollection<IServiceInfo> availableServices, IServiceInfo selectedService = null )
         {
-            _serviceReferences = new Dictionary<IServiceInfo,RunningRequirement>();
+            _serviceReferences = new Dictionary<IServiceInfo,DependencyRequirement>();
             AvailableServices = availableServices;
 
             NewPluginGuidText = Guid.NewGuid().ToString();
@@ -142,7 +142,7 @@ namespace Yodii.Lab
             }
         }
 
-        private bool RaiseNewPlugin( Guid newGuid, string newPluginName, IServiceInfo service, Dictionary<IServiceInfo, RunningRequirement> serviceReferences )
+        private bool RaiseNewPlugin( Guid newGuid, string newPluginName, IServiceInfo service, Dictionary<IServiceInfo, DependencyRequirement> serviceReferences )
         {
             if( NewPluginCreated != null )
             {
@@ -201,7 +201,7 @@ namespace Yodii.Lab
         public string PluginName { get; internal set; }
         public IServiceInfo Service { get; internal set; }
 
-        public Dictionary<IServiceInfo, RunningRequirement> ServiceReferences { get; internal set; }
+        public Dictionary<IServiceInfo, DependencyRequirement> ServiceReferences { get; internal set; }
 
         public string CancelReason { get; set; }
     }

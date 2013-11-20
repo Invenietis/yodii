@@ -12,14 +12,14 @@ namespace Yodii.Lab.Mocks
     {
         #region Fields
         private ServiceInfo _serviceInfo;
-        private RunningRequirement _configRequirement;
+        private DependencyRequirement _configRequirement;
         private RunningStatus _status;
         private LiveServiceInfo _generalization;
         private LivePluginInfo _runningPlugin;
         #endregion Fields
 
         #region Constructor
-        internal LiveServiceInfo( ServiceInfo serviceInfo, RunningRequirement configRequirement = RunningRequirement.Optional, LiveServiceInfo generalization = null)
+        internal LiveServiceInfo( ServiceInfo serviceInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LiveServiceInfo generalization = null)
         {
             Debug.Assert( serviceInfo != null );
 
@@ -41,7 +41,7 @@ namespace Yodii.Lab.Mocks
             get { return _serviceInfo; }
         }
 
-        public RunningRequirement ConfigRequirement
+        public DependencyRequirement ConfigRequirement
         {
             get { return _configRequirement; }
         }

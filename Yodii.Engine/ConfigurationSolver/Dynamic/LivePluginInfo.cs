@@ -12,12 +12,12 @@ namespace Yodii.Engine
     internal class LivePluginInfo : ILivePluginInfo
     {
         readonly IPluginInfo _pluginInfo;
-        readonly RunningRequirement _configRequirement;
+        readonly DependencyRequirement _configRequirement;
         readonly RunningStatus? _status;
         readonly Guid _id;
         readonly ILiveServiceInfo _service;
 
-        internal LivePluginInfo( IPluginSolved plugin, ILiveServiceInfo service )
+        internal LivePluginInfo( IDynamicSolvedPlugin plugin, ILiveServiceInfo service )
         {
             _pluginInfo = plugin.PluginInfo;
             _configRequirement = plugin.ConfigSolvedStatus;
@@ -31,7 +31,7 @@ namespace Yodii.Engine
             get { return _pluginInfo; }
         }
 
-        public RunningRequirement ConfigRequirement
+        public DependencyRequirement ConfigRequirement
         {
             get { return _configRequirement; }
         }

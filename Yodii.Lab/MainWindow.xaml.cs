@@ -39,7 +39,7 @@ namespace Yodii.Lab
 
             IPluginInfo pluginA1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.A1", serviceA );
             IPluginInfo pluginA2 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.A2", serviceA );
-            _vm.SetPluginDependency( pluginA2, serviceB, RunningRequirement.Running );
+            _vm.SetPluginDependency( pluginA2, serviceB, DependencyRequirement.Running );
             IPluginInfo pluginB1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.B1", serviceB );
             IPluginInfo pluginAx1 = _vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
 

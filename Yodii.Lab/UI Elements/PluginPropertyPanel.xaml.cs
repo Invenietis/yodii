@@ -80,8 +80,8 @@ namespace Yodii.Lab
                 FrameworkElement parentElement = box.Parent as FrameworkElement;
                 MockServiceReferenceInfo serviceRef = parentElement.DataContext as MockServiceReferenceInfo;
 
-                RunningRequirement oldReq = serviceRef.Requirement;
-                RunningRequirement newReq = (RunningRequirement)e.AddedItems[0];
+                DependencyRequirement oldReq = serviceRef.Requirement;
+                DependencyRequirement newReq = (DependencyRequirement)e.AddedItems[0];
 
                 serviceRef.Requirement = newReq;
             }
@@ -98,7 +98,7 @@ namespace Yodii.Lab
             ComboBox serviceComboBox = parentElement.FindName( "NewReferenceServiceComboBox" ) as ComboBox;
 
             ServiceInfo service = serviceComboBox.SelectedItem as ServiceInfo;
-            RunningRequirement req = (RunningRequirement)requirementComboBox.SelectedItem;
+            DependencyRequirement req = (DependencyRequirement)requirementComboBox.SelectedItem;
 
             LivePluginInfo.PluginInfo.InternalServiceReferences.Add( new MockServiceReferenceInfo( LivePluginInfo.PluginInfo, service, req ) );
         }

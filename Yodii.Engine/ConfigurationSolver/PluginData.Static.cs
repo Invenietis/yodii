@@ -11,7 +11,7 @@ namespace Yodii.Engine
     {
         readonly Dictionary<IServiceInfo,ServiceData> _allServices;
         PluginDisabledReason _configDisabledReason;
-        RunningRequirement _configSolvedStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
         PluginRunningRequirementReason _configSolvedStatusReason;
 
         public readonly IPluginInfo PluginInfo;
@@ -63,7 +63,7 @@ namespace Yodii.Engine
                 // Register MustExist references to Services from this plugin.
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
-                    if( sRef.Requirement >= RunningRequirement.Runnable )
+                    if( sRef.Requirement >= DependencyRequirement.Runnable )
                     {
                         // If the required service is already disabled, we immediately disable this plugin.
                         // If the required service is not yet disabled, we register this plugin data:
@@ -87,12 +87,12 @@ namespace Yodii.Engine
             _configSolvedStatusReason = PluginRunningRequirementReason.Config;
             if ( !Disabled )
             {
-                Debug.Assert( (int)RunningRequirement.Optional == (int)ConfigurationStatus.Optional );
-                Debug.Assert( (int)RunningRequirement.Runnable == (int)ConfigurationStatus.Runnable );
-                Debug.Assert( (int)RunningRequirement.Running == (int)ConfigurationStatus.Running );
-                _configSolvedStatus = (RunningRequirement)pluginStatus;
+                Debug.Assert( (int)DependencyRequirement.Optional == (int)ConfigurationStatus.Optional );
+                Debug.Assert( (int)DependencyRequirement.Runnable == (int)ConfigurationStatus.Runnable );
+                Debug.Assert( (int)DependencyRequirement.Running == (int)ConfigurationStatus.Running );
+                _configSolvedStatus = (DependencyRequirement)pluginStatus;
             }
-            Debug.Assert( !Disabled || _configSolvedStatus == RunningRequirement.Optional, "Disabled => status is Optional." );
+            Debug.Assert( !Disabled || _configSolvedStatus == DependencyRequirement.Optional, "Disabled => status is Optional." );
             if( service != null )
             {
                 service.AddPlugin( this );
@@ -107,7 +107,7 @@ namespace Yodii.Engine
         /// if this plugin implements a service.
         /// This is the minimal requirement after having propagated the constraints through the graph.
         /// </summary>
-        public RunningRequirement ConfigSolvedStatus
+        public SolvedConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -151,17 +151,17 @@ namespace Yodii.Engine
         /// When called by RetrieveTheOnlyPlugin, it when the plugin became the only plugin.
         /// When called by SetRunningRequirement, it is because this plugin is the only plugin.
         /// </summary>
-        internal bool SetRunningRequirement( RunningRequirement r, PluginRunningRequirementReason reason )
+        internal bool SetRunningRequirement( DependencyRequirement r, PluginRunningRequirementReason reason )
         {
             if( r <= _configSolvedStatus )
             {
-                if( r >= RunningRequirement.Runnable) return !Disabled;
+                if( r >= DependencyRequirement.Runnable) return !Disabled;
                 return true;
             }
             // New requirement is stronger than the previous one.
             _configSolvedStatus = r;
             // Is it compliant with a Disabled plugin? If yes, it is always satisfied.
-            if( r < RunningRequirement.Runnable )
+            if( r < DependencyRequirement.Runnable )
             {
                 _configSolvedStatusReason = reason;
                 // The new requirement is OptionalTryStart. This can always be satisfied.
@@ -187,10 +187,10 @@ namespace Yodii.Engine
         /// <returns></returns>
         internal bool CheckReferencesWhenMustExist()
         {
-            Debug.Assert( !Disabled && _configSolvedStatus >= RunningRequirement.Runnable );
+            Debug.Assert( !Disabled && _configSolvedStatus >= DependencyRequirement.Runnable );
             foreach( var sRef in PluginInfo.ServiceReferences )
             {
-                RunningRequirement propagation = sRef.Requirement;
+                DependencyRequirement propagation = sRef.Requirement;
                 if( _configSolvedStatus < propagation ) propagation = _configSolvedStatus;
 
                 ServiceData sr = _allServices[sRef.Reference];

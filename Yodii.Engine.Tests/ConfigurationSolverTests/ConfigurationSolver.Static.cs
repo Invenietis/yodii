@@ -53,9 +53,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 2 ) );
             Assert.That( res.BlockingServices, Is.Empty);
@@ -102,9 +102,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
@@ -146,9 +146,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingServices, Is.Empty );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
@@ -191,9 +191,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
@@ -225,7 +225,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.Optional );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Optional );
 
             ConfigurationManager cm = new ConfigurationManager();
 
@@ -237,49 +237,49 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
 
             info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.OptionalTryStart );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.OptionalTryStart );
 
-            res = cs.Initialize( cm.FinalConfiguration, info );
+            res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
 
             info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.Runnable );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Runnable );
 
-            res = cs.Initialize( cm.FinalConfiguration, info );
+            res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
 
             info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.RunnableTryStart );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.RunnableTryStart );
 
-            res = cs.Initialize( cm.FinalConfiguration, info );
+            res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
 
             info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), RunningRequirement.Running );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Running );
 
-            res = cs.Initialize( cm.FinalConfiguration, info );
+            res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Not.Null );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
@@ -322,9 +322,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingServices.Count, Is.EqualTo( 1 ) );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
@@ -368,9 +368,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingServices.Count, Is.EqualTo( 2 ) );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 2 ) );
@@ -432,9 +432,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingServices, Is.Empty );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 3 ) );
@@ -492,9 +492,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.BlockingServices, Is.Null );
             Assert.That( res.BlockingPlugins, Is.Null );
             Assert.That( res.RunningPlugins.Count, Is.EqualTo( 1 ) );
@@ -529,9 +529,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Empty );
             Assert.That( res.BlockingServices, Is.Null);
         }
@@ -565,9 +565,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Empty );
             Assert.That( res.BlockingServices, Is.Null );
         }
@@ -601,9 +601,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Empty );
             Assert.That( res.BlockingServices, Is.Null );
         }
@@ -636,9 +636,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.True );
+            Assert.That( res.Success, Is.True );
             Assert.That( res.RunningPlugins, Is.Empty );
             Assert.That( res.BlockingServices, Is.Null );
         }
@@ -673,9 +673,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
             Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
@@ -712,9 +712,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingPlugins.Count, Is.EqualTo( 1 ) );
             Assert.DoesNotThrow( () => res.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
@@ -758,9 +758,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cm.Layers.Add( cl );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IConfigurationSolverResult res = cs.Initialize( cm.FinalConfiguration, info );
+            IYodiiEngineResult res = cs.StaticResolution( cm.FinalConfiguration, info );
 
-            Assert.That( res.ConfigurationSuccess, Is.False );
+            Assert.That( res.Success, Is.False );
             Assert.That( res.RunningPlugins, Is.Null );
             Assert.That( res.BlockingServices.Count, Is.EqualTo( 2 ) );
             CollectionAssert.AreEquivalent( new[] { "ServiceAx1", "ServiceAx2" }, res.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    public interface IPluginInfo : IDiscoveredErrorInfo
+    public interface IPluginInfo : IDiscoveredItem
     {
         /// <summary>
         /// Gets the unique identifier of the plugin. This is an alias to <see cref="IUniqueId.UniqueId"/>.

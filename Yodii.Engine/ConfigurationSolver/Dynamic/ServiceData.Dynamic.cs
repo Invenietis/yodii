@@ -11,14 +11,16 @@ namespace Yodii.Engine
     {
         RunningStatus? _dynamicStatus;
 
-        public RunningStatus? Status { get { return _dynamicStatus; } set { _dynamicStatus = value; } }
+        public RunningStatus? DynamicStatus { get { return _dynamicStatus; } set { _dynamicStatus = value; } }
 
-        internal void DynamicStart()
+        public void ResetDynamicState()
         {
-
-        }
-        internal void DynamicStop()
-        {
+            switch ( ConfigSolvedStatus )
+            {
+                case SolvedConfigurationStatus.Disabled: _dynamicStatus = RunningStatus.Disabled; break;
+                case SolvedConfigurationStatus.Running: _dynamicStatus = RunningStatus.RunningLocked; break;
+                default: _dynamicStatus = null; break;
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Yodii.Model
 {
-    public interface IServiceInfo : IDiscoveredErrorInfo
+    public interface IServiceInfo : IDiscoveredItem
     {
         /// <summary>
         /// Gets the full name of the service (namespace and interface name).

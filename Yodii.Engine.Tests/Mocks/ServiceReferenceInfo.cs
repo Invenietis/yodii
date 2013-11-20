@@ -13,12 +13,12 @@ namespace Yodii.Engine.Tests.Mocks
     {
         IPluginInfo _owner;
         IServiceInfo _reference;
-        RunningRequirement _requirement;
+        DependencyRequirement _requirement;
         string _ctorParamOrPropertyName;
         int _ctorParamIndex;
         bool _isServiceWrapped;
 
-        internal ServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, RunningRequirement requirement )
+        internal ServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, DependencyRequirement requirement )
         {
             Debug.Assert( ownerPlugin != null );
             Debug.Assert( referencedService != null );
@@ -40,7 +40,7 @@ namespace Yodii.Engine.Tests.Mocks
             set { _reference = value; }
         }
 
-        public RunningRequirement Requirement
+        public DependencyRequirement Requirement
         {
             get { return _requirement; }
             set { _requirement = value; }

@@ -347,11 +347,11 @@ namespace Yodii.Lab.Tests
 
             IPluginInfo pluginB1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.B1", serviceB );
 
-            vm.SetPluginDependency( pluginA2, serviceB, RunningRequirement.Running );
+            vm.SetPluginDependency( pluginA2, serviceB, DependencyRequirement.Running );
 
             Assert.That( pluginA2.ServiceReferences.Count == 1 );
             Assert.That( pluginA2.ServiceReferences[0].Reference == serviceB );
-            Assert.That( pluginA2.ServiceReferences[0].Requirement == RunningRequirement.Running );
+            Assert.That( pluginA2.ServiceReferences[0].Requirement == DependencyRequirement.Running );
 
             Assert.That( serviceA.Implementations.Count == 2 );
             Assert.That( serviceB.Implementations.Count == 1 );

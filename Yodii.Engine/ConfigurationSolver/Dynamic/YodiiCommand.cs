@@ -7,12 +7,13 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    internal abstract class YodiiCommand
+    internal class YodiiCommand
     {
-        internal Dictionary<PluginData, ILivePluginInfo> _availablePlugins;
-        internal Dictionary<ServiceData, ILiveServiceInfo> _services;
-        internal Object _caller;
+        public readonly object Caller;
+        public readonly bool Start;
+        public readonly Guid PluginId;
+        public readonly StartDependencyImpact Impact;
+        public readonly string FullName;
 
-        internal Object ObjectCaller { get { return _caller; } }
     }
 }

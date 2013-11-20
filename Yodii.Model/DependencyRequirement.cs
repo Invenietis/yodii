@@ -12,7 +12,7 @@ namespace Yodii.Model
     /// A requirement is a gradation between <see cref="Optional"/> and <see cref="MustExistAndRun"/>.
     /// </summary>
     [Flags]
-    public enum RunningRequirement
+    public enum DependencyRequirement
     {
         /// <summary>
         /// The service or plugin is optional: it can be unavailable.

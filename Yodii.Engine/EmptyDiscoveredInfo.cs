@@ -9,6 +9,13 @@ namespace Yodii.Engine
 {
     public class EmptyDiscoveredInfo : IDiscoveredInfo
     {
+
+        public static readonly IDiscoveredInfo Empty = new EmptyDiscoveredInfo();
+
+        EmptyDiscoveredInfo()
+        {
+        }
+
         public IReadOnlyList<IServiceInfo> ServiceInfos
         {
             get { return CKReadOnlyListEmpty<IServiceInfo>.Empty; }

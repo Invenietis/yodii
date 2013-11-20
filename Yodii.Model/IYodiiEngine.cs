@@ -4,18 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using System.ComponentModel;
 
 namespace Yodii.Model
 {
-    public interface IYodiiEngine
+
+
+    public interface IYodiiEngine : INotifyPropertyChanged
     {
-        ICKObservableReadOnlyCollection<ILivePluginInfo> Plugins { get; }
+        IDiscoveredInfo DiscoveredInfo { get; set; }
 
-        ICKObservableReadOnlyCollection<ILiveServiceInfo> Services { get; }
+        ConfigurationManager ConfigurationManager { get; }
 
-        ILiveServiceInfo FindService( IServiceInfo p );
+        IYodiiEngineResult Start();
 
-        ILivePluginInfo FindPlugin( IPluginInfo p );
+        void Stop();
+
+        ILiveInfo LiveInfo { get; }
 
     }
 }

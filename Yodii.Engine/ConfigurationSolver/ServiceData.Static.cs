@@ -11,7 +11,7 @@ namespace Yodii.Engine
     {
         readonly Dictionary<IServiceInfo,ServiceData> _allServices;
         ServiceDisabledReason _configDisabledReason;
-        RunningRequirement _configSolvedStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
         ServiceRunningRequirementReason _configSolvedStatusReason;
         ServiceData _configMustExistSpecialization;
         ServiceData _configDirectMustExistSpecialization;
@@ -69,10 +69,10 @@ namespace Yodii.Engine
             _configSolvedStatusReason = ServiceRunningRequirementReason.Config;
             if ( !Disabled )
             {
-                Debug.Assert( (int)RunningRequirement.Optional == (int)ConfigurationStatus.Optional );
-                Debug.Assert( (int)RunningRequirement.Runnable == (int)ConfigurationStatus.Runnable );
-                Debug.Assert( (int)RunningRequirement.Running == (int)ConfigurationStatus.Running );
-                _configSolvedStatus = (RunningRequirement)serviceStatus;
+                Debug.Assert( (int)DependencyRequirement.Optional == (int)ConfigurationStatus.Optional );
+                Debug.Assert( (int)DependencyRequirement.Runnable == (int)ConfigurationStatus.Runnable );
+                Debug.Assert( (int)DependencyRequirement.Running == (int)ConfigurationStatus.Running );
+                _configSolvedStatus = (DependencyRequirement)serviceStatus;
             }
         }
 
@@ -151,7 +151,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
         /// </summary>
-        public RunningRequirement ConfigSolvedStatus
+        public SolvedConfigurationStatus ConfigSolvedStatus
         {
             get { return _configMustExistSpecialization != null ? _configMustExistSpecialization._configSolvedStatus : _configSolvedStatus; }
         }
@@ -159,7 +159,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the minimal running requirement for this service (not the one of MustExistSpecialization if it exists).
         /// </summary>
-        public RunningRequirement ThisMinimalRunningRequirement
+        public DependencyRequirement ThisMinimalRunningRequirement
         {
             get { return _configSolvedStatus; }
         }
@@ -178,7 +178,7 @@ namespace Yodii.Engine
         /// <param name="r"></param>
         /// <param name="reason"></param>
         /// <returns>True if the requirement can be satisfied at this level. False otherwise.</returns>
-        internal bool SetRunningRequirement( RunningRequirement r, ServiceRunningRequirementReason reason )
+        internal bool SetRunningRequirement( DependencyRequirement r, ServiceRunningRequirementReason reason )
         {
             if( _configMustExistSpecialization != null && _configMustExistSpecialization != this )
             {
@@ -186,7 +186,7 @@ namespace Yodii.Engine
             }
             if( r <= _configSolvedStatus )
             {
-                if( r >= RunningRequirement.Runnable ) return !Disabled;
+                if( r >= DependencyRequirement.Runnable ) return !Disabled;
                 return true;
             }
             // New requirement is stronger than the previous one.
@@ -199,7 +199,7 @@ namespace Yodii.Engine
             var current = _configSolvedStatus;
             _configSolvedStatus = r;
             // Is it compliant with a Disabled service? If yes, it is always satisfied.
-            if( r < RunningRequirement.Runnable )
+            if( r < DependencyRequirement.Runnable )
             {
                 _configSolvedStatusReason = reason;
                 // Propagate TryStart.
@@ -213,7 +213,7 @@ namespace Yodii.Engine
             _configSolvedStatusReason = reason;
 
             // Call SetAsRunnableService only if this Service becomes Runnable or Running.
-            if( current < RunningRequirement.Runnable )
+            if( current < DependencyRequirement.Runnable )
             {
                 if( !SetAsRunnableService() ) return false;
             }
@@ -241,7 +241,7 @@ namespace Yodii.Engine
             {
                 _configSolvedStatus = GeneralizationRoot.RunnablePluginByConfig.ConfigSolvedStatus;
             }
-            Debug.Assert( _configSolvedStatus >= RunningRequirement.Runnable );
+            Debug.Assert( _configSolvedStatus >= DependencyRequirement.Runnable );
             // From a non running requirement to a running requirement.
             var currentMustExist = GeneralizationRoot.MustExistService;
             //
@@ -447,7 +447,7 @@ namespace Yodii.Engine
             // The less trivially case when this must exist plugin conflicts with some MustExist at the services level
             // is already handled in PluginData constructor thanks to service.MustExistSpecialization beeing not null that 
             // immediately disables the plugin.
-            if( p.ConfigSolvedStatus >= RunningRequirement.Runnable )
+            if( p.ConfigSolvedStatus >= DependencyRequirement.Runnable )
             {
                 Debug.Assert( !p.Disabled );
                 GeneralizationRoot.SetMustExistPluginByConfig( p );

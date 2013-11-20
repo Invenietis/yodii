@@ -6,15 +6,15 @@ using CK.Core;
 using System.Diagnostics;
 using Yodii.Model;
 using System.Collections.ObjectModel;
+using Yodii.Engine.ConfigurationSolver;
 
 namespace Yodii.Engine
 {
-    public partial class ConfigurationSolver
+    class ConfigurationSolver
     {
         Dictionary<IServiceInfo,ServiceData> _services;
         List<ServiceRootData> _serviceRoots;
         Dictionary<IPluginInfo,PluginData> _plugins;
-        ConfigState _currentConfigState;
 
         public ConfigurationSolver()
         {
@@ -23,14 +23,11 @@ namespace Yodii.Engine
             _plugins = new Dictionary<IPluginInfo, PluginData>();
         }
 
-        public IConfigurationSolverResult Initialize( FinalConfiguration finalConfig, IDiscoveredInfo info )
+        public IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
         {
             // Registering all Services.
             _services.Clear();
             _serviceRoots.Clear();
-
-            //Saving raw data, in case the static resolution fails
-            _currentConfigState = new ConfigState( finalConfig, info );
 
             foreach( IServiceInfo sI in info.ServiceInfos )
             {
@@ -64,181 +61,88 @@ namespace Yodii.Engine
                 // becomes disabled (if it has no more available implementations) and that triggers disabling of plugins that require
                 // the service. This works because disable flag on each participant is carefully set before propagating the
                 // information to others to avoid loops and because such plugins reference themselves at the required service (AddMustExistReferencer).
-                if( !p.Disabled && p.ConfigSolvedStatus >= RunningRequirement.Runnable )
+                if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
                 }
             }
-            List<IPluginSolved> blockingPlugins = null;
-            List<IServiceSolved> blockingServices = null;
-
-            List<IPluginSolved> disabledPlugins = null;
-            int availablePluginsCount = 0;
-            List<IPluginSolved> runningPlugins = null;
-            
-            //Just a test
-            Dictionary<PluginData, ILivePluginInfo> _availablePlugins = null;
-            Dictionary<ServiceData, ILiveServiceInfo> _availableServices = null;
-
             // Time to conclude about configuration and to initialize dynamic resolution.
             // Any Plugin that has a ConfigOriginalStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
+            List<PluginData> blockingPlugins = null;
+            List<ServiceData> blockingServices = null;
 
-            foreach( PluginData p in _plugins.Values )
+            foreach ( PluginData p in _plugins.Values )
             {
-                if( p.Disabled )
+                if ( p.Disabled )
                 {
-                    if( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
+                    if ( p.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
-                        if( blockingPlugins == null ) blockingPlugins = new List<IPluginSolved>();
-                        blockingPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
-                    }
-                    else
-                    {
-                        if( disabledPlugins == null ) disabledPlugins = new List<IPluginSolved>();
-                        disabledPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
-                    }
-                }
-                else
-                {
-                    Debug.Assert( p.ConfigOriginalStatus > ConfigurationStatus.Disable && p.DisabledReason == PluginDisabledReason.None );
-                    if( p.ConfigOriginalStatus == ConfigurationStatus.Running )
-                    {
-                        if( runningPlugins == null ) runningPlugins = new List<IPluginSolved>();
-                        runningPlugins.Add( new PluginSolved( p.PluginInfo, p.DisabledReason, p.ConfigSolvedStatus, p.ConfigOriginalStatus, p.Status ) );
-                    }
-                    else
-                    {
-                        //The plugin's configOriginalStatus is either Optional or Runnable
-                        availablePluginsCount++;
-                        if ( _availablePlugins == null ) _availablePlugins = new Dictionary<PluginData, ILivePluginInfo>();
-                        //_availablePlugins.Add( p,  );
+                        if ( blockingPlugins == null ) blockingPlugins = new List<PluginData>();
+                        blockingPlugins.Add( p );
                     }
                 }
             }
             // Any Service that has a ConfigSolvedStatus greater or equal to Runnable and is Disabled leads to an impossible configuration.
-
-            foreach( ServiceData s in _services.Values )
+            foreach ( ServiceData s in _services.Values )
             {
-                if( s.Disabled )
+                if ( s.Disabled )
                 {
-                    if( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
+                    if ( s.ConfigOriginalStatus >= ConfigurationStatus.Runnable )
                     {
-                        if( blockingServices == null ) blockingServices = new List<IServiceSolved>();
-                        blockingServices.Add( new ServiceSolved( s.ServiceInfo, s.DisabledReason, s.ConfigSolvedStatus, s.ConfigOriginalStatus, s.Status ) );
-                    }
-                }
-                else
-                {
-                    if( s.ConfigOriginalStatus == ConfigurationStatus.Optional || s.ConfigOriginalStatus == ConfigurationStatus.Runnable )
-                    {
-                        //_availableServices.Add( s, s.ServiceInfo );
+                        if ( blockingServices == null ) blockingServices = new List<ServiceData>();
+                        blockingServices.Add( s );
                     }
                 }
             }
-
-            //Saving current state into ConfigState object after static resolution 
-            _currentConfigState._servicesRootData = _serviceRoots;
-            _currentConfigState._services = _services;
-            _currentConfigState._plugins = _plugins;
-
-            if( blockingPlugins != null || blockingServices != null )
+            if ( blockingPlugins != null || blockingServices != null )
             {
-                return new ConfigurationSolverResult( blockingPlugins, blockingServices );
+                return new YodiiEngineResult( _services, _plugins, blockingPlugins, blockingServices );
             }
-            #region Spi-comment-res-specs
-            // Plugin state first: Service plugins state will be updated while 
-            // initializing services below.
-
-            // Configurations have been applied: now, PluginData and ServiceData objects have been "configured" as much as possible by following
-            // Disabled, MustExist and MustExistAndRun configurations and references (MustExist and MustExistAndRun).
-            // As soon as configuration changes, this very first phasis must be done again. But as long as the configuration does NOT change, we can handle
-            // dynamic starts and stops based on this very same starting point.
-            //
-            // Plugins that have not been explicitely disabled nor started (MustExistAndRun) are in an "unknown state".
-            // Services that have not been explicitely disabled nor selected (thanks to a MustExistAndRun plugin by example) are also in an "unknown state".
-            //
-            // This is where the "dynamic commands" must be applied, from the most recent on to the oldest one.
-            //
-            // Applying a "start command" to a Plugin means starting MustExistServices and restrict the system to MustExist services accordingly and setting the plugin Status to RunningStatus.Running. 
-            // This puts some other services and/or plugins into RunningStatus.Stopped state. (Mechanism here is the same as the "static" propagation of configurations.)
-            //
-            // Applying a "stop command" simply sets the plugin or service Status to RunningStatus.Stopped (and may stop other plugins/services just like "static" propagation of configurations does). 
-            // 
-            // The first "command" (the most recent one) SHOULD always be satisfied: since it must have been registered (accepted) only for plugin or service with a Status
-            // not equals to RunningStatus.RunningLocked or RunningStatus.Disabled (these 2 status are driven by the configuration), the service or plugin is guaranteed to be runnable... or stoppable
-            // Of course, this is true only if we are not being processing a Configuration change. 
-            // In such case, the first "command" is not necessarily satisfied (and it is handled like the older ones, see below).
-            //
-            // For remaining "commands", this is not true anymore. Here, the rule is simple: if a start or stop can not be satisfied, the corresponding "command" is removed from the list.
-            // Note that if the command is already satisfied (ie. the state is no more "unknown" and is ok), we let the command in the list.
-            //
-            // When all "commands" have been applied (either successfully or not), there may be services or plugins that are still in "unknown state". For each of them
-            // the TryStart (from MustExistTryStart and OptionalTryStart) from the configuration are taken into account.
-            // There is 2 ways to apply TryStart: 
-            //   1) - we apply them in order (actually transforming TryStart into "start commands"), but the order is meaningless: the result is not deterministic.
-            //   2) - we dynamically compute a "best solution" that maximizes TryStart satisfaction.
-            // Practically, my (current) feeling is that 2) should be the way to go at the start of the system, but 1) will be enough as soon as we have some (enough) "commands" to honor.
-            //
-            // What is a "start command" ? How are they managed ?
-            // - A command is nothing more than bool (start or stop) associated to a PluginId or a ServiceFullName.
-            // - They are stored in a list, new one added at the head.
-            // - They are created by calls to ILivePluginInfo.Start( object caller ) or ILiveServiceInfo.Start( object caller ) methods.
-            //    - ILivePluginInfo/ILiveServiceInfo are two observable objects that expose the live status of plugins/services. They are accessible from a ILiveConfiguration object.
-            //    - These 2 methods can only be called if ILiveXXXInfo.Status is equal to RunningStatus.Running or RunningStatus.Stopped. 
-            //      Calling them when Status is RunningStatus.Disabled or RunningStatus.RunningLocked throws an InvalidOperationException dans ta gueule.
-            //    - A given caller can have at most one command for a plugin or a service: Start and Stop push the existing command (with the right boolean) or create a new one at the head of the list.
-            //    - Calling Start (resp. Stop) with the same caller twice (without having called Stop - resp. Start) is not an error, it simply "pushes" the command at the head of the list.
-            //
-            // Caller identifier can be of any object type. They can be revoked thanks to ILiveConfiguration.RevokeCaller( object caller ) that removes from the list all commands emitted by this caller.
-            // Nevertheless, one (very) special case of callers must be handled carefully: the Plugins.
-            //
-            // When a Plugin calls Start() or Stop() on services (or, more rarely, on plugins), it participates to the plan. When the plugin is Stopped, it must be revoked as a caller (it has nothing to
-            // say anymore). 
-            // The funny case is when the application of a "command" stops a running plugin that emitted commands that have already been applied.
-            //
-            // This pathological case must be detected (not that complicated) and handled: the simplest way (actually the only one I imagine) to handle this is to revoke the plugin as a caller (this 
-            // removes all its commands) and to restart computation from the initial state (from the configuration) by applying all existing commands.
-            // Failure to handle this at this level will work... but will result in (potentially multiple) loops that may be visible to the user: the plugin will be revoked when Stopped by 
-            // the PluginHost and that will trigger recomputation of the plan.
-            // Since we are talking about pathological cases... could there be loops in the System? It has to be investigated but my feeling is:
-            //   - Yes, but very very rarely in practice. 
-            //   - This can be easily (not too much complicated at least) detected and gracefully signaled by an error.
-            // But this is definitely an aspect to investigate.
-            // 
-            // Once the configuration is computed, it is transferred to the PluginHost. On success, ILiveConfiguration objects are updated. If the PluginHost fails (on exceptions, it does its best 
-            // to restore the system), the ILiveConfiguration is not updated with the new plan.
-            // 
-            #endregion
-
-            //Mode live
-            List<ILivePluginInfo> livePlugins = new List<ILivePluginInfo>();
-            List<ILiveServiceInfo> liveServices = new List<ILiveServiceInfo>();
-           
-            ///This list is updated by events popping from the GUI
-            ObservableCollection<YodiiCommand> dynamicCommands = new ObservableCollection<YodiiCommand>();
-
-            LiveConfiguration dynamicRes = new LiveConfiguration( livePlugins, liveServices, dynamicCommands );
-
-            foreach( YodiiCommand command in dynamicCommands )
-            {
-                dynamicRes.AddYodiiCommand( command );
-            }
-
-            return new ConfigurationSolverResult( disabledPlugins, availablePluginsCount, runningPlugins );
+            return null;
         }
 
-        private void CollectResult( List<IPluginInfo> disabledPlugins, List<IPluginInfo> runningPlugins, List<IPluginInfo> stoppedPlugins )
+        public void DynamicResolution( List<YodiiCommand> commands )
         {
-            disabledPlugins.Clear();
-            runningPlugins.Clear();
-            stoppedPlugins.Clear();
-            foreach( PluginData p in _plugins.Values )
+            foreach ( var p in _plugins.Values ) p.ResetDynamicState();
+            foreach ( var s in _services.Values ) s.ResetDynamicState();
+
+            for ( int i = 0; i < commands.Count; ++i )
             {
-                if( p.Disabled ) disabledPlugins.Add( p.PluginInfo );
-                //Status comes from PluginData.Dynamic
-                else if( p.Status >= RunningStatus.Running ) runningPlugins.Add( p.PluginInfo );
-                else stoppedPlugins.Add( p.PluginInfo );
+                if ( !ApplyAndTellMeIfCommandMustBeKept( commands[i] ) )
+                {
+                    Debug.Assert( i > 0 );
+                    commands.RemoveAt( i-- );
+                }
             }
+
+            Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
+        }
+
+        public IEnumerable<Tuple<IPluginInfo,Exception>> WhatIsAHost( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> totoStart )
+        {
+        }
+
+        private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
+        {
+            if ( cmd.FullName != null )
+            {
+                ServiceData s;
+                if ( _services.TryGetValue( cmd.FullName, out s ) )
+                {
+                    if ( cmd.Start ) return s.Start();
+                    return s.Stop();
+                }
+            }
+            else
+            {
+                PluginData p;
+                if ( _plugins.TryGetValue( cmd.PluginId, out p ) )
+                {
+                    if ( cmd.Start ) return p.Start( cmd.Impact );
+                    return p.Stop();
+                }
+            }
+            return true;
         }
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )

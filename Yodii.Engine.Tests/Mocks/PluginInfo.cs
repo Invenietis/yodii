@@ -59,7 +59,7 @@ namespace Yodii.Engine.Tests.Mocks
             get { return _serviceReferences; }
         }
 
-        public ServiceReferenceInfo AddServiceReference( ServiceInfo service, RunningRequirement req )
+        public ServiceReferenceInfo AddServiceReference( ServiceInfo service, DependencyRequirement req )
         {
             var r = new ServiceReferenceInfo( this, service, req );
             _serviceReferences.Add( r );

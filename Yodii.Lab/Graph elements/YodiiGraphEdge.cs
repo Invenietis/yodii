@@ -13,7 +13,7 @@ namespace Yodii.Lab
     public class YodiiGraphEdge : Edge<YodiiGraphVertex>, INotifyPropertyChanged
     {
         readonly YodiiGraphEdgeType _type;
-        RunningRequirement _referenceRequirement;
+        DependencyRequirement _referenceRequirement;
 
         internal YodiiGraphEdge( YodiiGraphVertex source, YodiiGraphVertex target, YodiiGraphEdgeType type )
             : base( source, target )
@@ -33,7 +33,7 @@ namespace Yodii.Lab
             if( e.PropertyName == "Requirement" ) ReferenceRequirement = (sender as MockServiceReferenceInfo).Requirement;
         }
 
-        public RunningRequirement ReferenceRequirement {
+        public DependencyRequirement ReferenceRequirement {
             get { return _referenceRequirement; }
             set
             {

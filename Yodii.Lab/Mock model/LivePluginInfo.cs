@@ -11,7 +11,7 @@ namespace Yodii.Lab.Mocks
     public class LivePluginInfo : ViewModelBase, ILivePluginInfo
     {
         private PluginInfo _pluginInfo;
-        private RunningRequirement _configRequirement;
+        private DependencyRequirement _configRequirement;
         private RunningStatus _status;
         private LiveServiceInfo _service;
 
@@ -27,7 +27,7 @@ namespace Yodii.Lab.Mocks
         }
         #endregion Properties
 
-        internal LivePluginInfo( PluginInfo pluginInfo, RunningRequirement configRequirement = RunningRequirement.Optional, LiveServiceInfo liveServiceInfo = null )
+        internal LivePluginInfo( PluginInfo pluginInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LiveServiceInfo liveServiceInfo = null )
         {
             Debug.Assert( pluginInfo != null );
 
@@ -44,7 +44,7 @@ namespace Yodii.Lab.Mocks
             get { return _pluginInfo; }
         }
 
-        RunningRequirement ILivePluginInfo.ConfigRequirement
+        DependencyRequirement ILivePluginInfo.ConfigRequirement
         {
             get { return _configRequirement; }
         }

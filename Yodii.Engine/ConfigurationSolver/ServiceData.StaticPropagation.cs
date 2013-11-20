@@ -22,10 +22,10 @@ namespace Yodii.Engine
             class Ref
             {
                 public readonly ServiceData Service;
-                public RunningRequirement Requirement;
+                public DependencyRequirement Requirement;
                 public Ref NextRef;
 
-                public Ref( Ref next, ServiceData s, RunningRequirement r )
+                public Ref( Ref next, ServiceData s, DependencyRequirement r )
                 {
                     Service = s;
                     Requirement = r;
@@ -80,13 +80,13 @@ namespace Yodii.Engine
                 return _firstRef != null;
             }
 
-            public bool SetRunningRequirement( RunningRequirement serviceRequirement, ServiceRunningRequirementReason reason )
+            public bool SetRunningRequirement( DependencyRequirement serviceRequirement, ServiceRunningRequirementReason reason )
             {
-                Debug.Assert( serviceRequirement >= RunningRequirement.Runnable );
+                Debug.Assert( serviceRequirement >= DependencyRequirement.Runnable );
                 Ref r = _firstRef;
                 while( r != null )
                 {
-                    RunningRequirement propagate = r.Requirement;
+                    DependencyRequirement propagate = r.Requirement;
                     if( propagate > serviceRequirement ) propagate = serviceRequirement;
                     if( !r.Service.SetRunningRequirement( propagate, reason ) ) return false;
                     r = r.NextRef;
@@ -194,7 +194,7 @@ namespace Yodii.Engine
             {
                 RetrieveTheOnlyPlugin( fromConfig );
             }
-            else if( ConfigSolvedStatus >= RunningRequirement.Runnable )
+            else if( ConfigSolvedStatus >= DependencyRequirement.Runnable )
             {
                 RetrieveOrUpdateTheCommonServiceReferences( fromConfig );
             }
@@ -251,7 +251,7 @@ namespace Yodii.Engine
         
         void RetrieveOrUpdateTheCommonServiceReferences( bool fromConfig )
         {
-            Debug.Assert( !Disabled && ConfigSolvedStatus >= RunningRequirement.Runnable && TotalAvailablePluginCount > 1 );
+            Debug.Assert( !Disabled && ConfigSolvedStatus >= DependencyRequirement.Runnable && TotalAvailablePluginCount > 1 );
             if( _commonReferences == null ) _commonReferences = new CommonServiceReferences();
             _commonReferences.Reset();
             if( _commonReferences.Add( this ) )

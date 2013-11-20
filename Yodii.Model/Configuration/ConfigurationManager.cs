@@ -20,7 +20,15 @@ namespace Yodii.Model
 
         ConfigurationChangingEventArgs _currentEventArgs;
 
+
+        public ConfigurationManager()
+        {
+            _configurationLayerCollection = new ConfigurationLayerCollection(this);
+        }
+        
+        
         public event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
+
         public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
         public ConfigurationLayerCollection Layers
@@ -38,10 +46,6 @@ namespace Yodii.Model
             }
         }
 
-        public ConfigurationManager()
-        {
-            _configurationLayerCollection = new ConfigurationLayerCollection(this);
-        }
 
         private FinalConfiguration ResolveBasicConfiguration(ConfigurationLayer firstLayer)
         {

@@ -28,15 +28,17 @@ using System.Text;
 
 namespace Yodii.Model
 {
-    public interface IDiscoveredErrorInfo
+    public interface IDiscoveredItem
     {
         /// <summary>
-        /// Return if an error occured during the discover.
+        /// Whether this item is on error.
+        /// Typically an error occured during the discovery phasis.
         /// </summary>
         bool HasError { get; }
 
         /// <summary>
-        /// Gets the message of an error that happened during the discover.
+        /// Gets the error message associated to this item.
+        /// Typically an error that happened during the discovery phasis.
         /// </summary>
         string ErrorMessage { get; }
     }

@@ -48,7 +48,7 @@ namespace Yodii.Engine.Tests.Mocks
             d.FindPlugin( "PluginAx-1" ).Service = d.FindService( "ServiceAx" );
             d.FindPlugin( "PluginB-1" ).Service = d.FindService( "ServiceB" );
 
-            d.FindPlugin( "PluginA-2" ).AddServiceReference( d.FindService( "ServiceB" ), RunningRequirement.Running );
+            d.FindPlugin( "PluginA-2" ).AddServiceReference( d.FindService( "ServiceB" ), DependencyRequirement.Running );
 
             return d;
         }
@@ -107,7 +107,7 @@ namespace Yodii.Engine.Tests.Mocks
             d.FindPlugin( "PluginAxx-1" ).Service = d.FindService( "ServiceAxx" );
             d.FindPlugin( "PluginB-1" ).Service = d.FindService( "ServiceB" );
 
-            d.FindPlugin( "PluginA-2" ).AddServiceReference( d.FindService( "ServiceB" ), RunningRequirement.Running );
+            d.FindPlugin( "PluginA-2" ).AddServiceReference( d.FindService( "ServiceB" ), DependencyRequirement.Running );
 
             return d;
         }

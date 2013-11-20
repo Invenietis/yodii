@@ -122,7 +122,7 @@ namespace Yodii.Lab
             if( s.Generalization != null )
             {
                 LiveServiceInfo generalizationLiveInfo = _liveServiceInfos.GetByKey( (ServiceInfo)s.Generalization );
-                newServiceInfo = new LiveServiceInfo( s, RunningRequirement.Optional, generalizationLiveInfo ); // TODO: Running requirement
+                newServiceInfo = new LiveServiceInfo( s, DependencyRequirement.Optional, generalizationLiveInfo ); // TODO: Running requirement
             }
             else
             {
@@ -139,7 +139,7 @@ namespace Yodii.Lab
             {
                 p.Service.InternalImplementations.Add( p );
                 LiveServiceInfo liveService = _liveServiceInfos.GetByKey( p.Service );
-                lp = new LivePluginInfo( p, RunningRequirement.Optional, liveService ); // TODO: Running requirement
+                lp = new LivePluginInfo( p, DependencyRequirement.Optional, liveService ); // TODO: Running requirement
             }
             else
             {
@@ -156,14 +156,14 @@ namespace Yodii.Lab
         /// <param name="plugin">Plugin</param>
         /// <param name="service">Service the plugin depends on</param>
         /// <param name="runningRequirement">How the plugin depends on the service</param>
-        internal void SetPluginDependency( PluginInfo plugin, ServiceInfo service, RunningRequirement runningRequirement )
+        internal void SetPluginDependency( PluginInfo plugin, ServiceInfo service, DependencyRequirement runningRequirement )
         {
             Debug.Assert( plugin != null );
             Debug.Assert( service != null );
             Debug.Assert( ServiceInfos.Contains( service ) );
             Debug.Assert( PluginInfos.Contains( plugin ) );
 
-            MockServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, RunningRequirement.Running );
+            MockServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, DependencyRequirement.Running );
             plugin.InternalServiceReferences.Add( reference );
 
         }

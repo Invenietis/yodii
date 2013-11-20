@@ -20,7 +20,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the requirement for the referenced service.
         /// </summary>
-        RunningRequirement Requirement { get; }
+        DependencyRequirement Requirement { get; }
         
         /// <summary>
         /// Gets the name of the property or constructor parameter that references the service.

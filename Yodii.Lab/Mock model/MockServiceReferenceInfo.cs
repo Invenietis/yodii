@@ -15,9 +15,9 @@ namespace Yodii.Lab.Mocks
         readonly PluginInfo _owner;
         readonly ServiceInfo _reference;
 
-        RunningRequirement _requirement;
+        DependencyRequirement _requirement;
 
-        internal MockServiceReferenceInfo( PluginInfo ownerPlugin, ServiceInfo referencedService, RunningRequirement requirement )
+        internal MockServiceReferenceInfo( PluginInfo ownerPlugin, ServiceInfo referencedService, DependencyRequirement requirement )
         {
             Debug.Assert( ownerPlugin != null );
             Debug.Assert( referencedService != null );
@@ -42,12 +42,12 @@ namespace Yodii.Lab.Mocks
             get { return _reference; }
         }
 
-        RunningRequirement IServiceReferenceInfo.Requirement
+        DependencyRequirement IServiceReferenceInfo.Requirement
         {
             get { return _requirement; }
         }
 
-        public RunningRequirement Requirement
+        public DependencyRequirement Requirement
         {
             get { return _requirement; }
             set
