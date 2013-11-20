@@ -58,7 +58,8 @@
             DockPanel.Dock="Top">
             <Fluent:Ribbon.QuickAccessItems>
                 <Fluent:QuickAccessMenuItem
-                    Header="Save" />
+                    Header="Save"
+                    Command="{Binding Path=SaveAsFileCommand}"/>
             </Fluent:Ribbon.QuickAccessItems>
             <!--Tabs-->
             <Fluent:RibbonTabItem
@@ -67,7 +68,7 @@
                     Header="File">
                     <Fluent:Button
                         Header="Open"
-                        Click="OpenFile_Click">
+                        Command="{Binding Path=OpenFileCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -76,7 +77,7 @@
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Save as"
-                        Click="SaveAsFile_Click">
+                        Command="{Binding Path=SaveAsFileCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -87,7 +88,7 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Add service"
-                        Click="NewServiceButton_Click">
+                        Command="{Binding Path=CreateServiceCommand}">
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
@@ -96,7 +97,7 @@
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Add plugin"
-                        Click="NewPluginButton_Click">
+                        Command="{Binding Path=CreatePluginCommand}">
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
@@ -116,7 +117,7 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Configuration editor"
-                        Click="ConfEditorButton_Click">
+                        Command="{Binding Path=OpenConfigurationEditorCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -128,13 +129,23 @@
                     <Fluent:SplitButton
                         Header="Reorder graph"
                         ItemsSource="{Binding Path=GraphLayoutAlgorithms}"
-                        MenuItem.Click="NewGraphLayoutButton_Click"
-                        Click="ReorderGraphButton_Click">
+                        Command="{Binding Path=ReorderGraphLayoutCommand}">
                         <Fluent:SplitButton.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
                         </Fluent:SplitButton.LargeIcon>
+                        <Fluent:SplitButton.ItemContainerStyle>
+                            <Style
+                                TargetType="{x:Type MenuItem}">
+                                <Setter
+                                    Property="Command"
+                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.ReorderGraphLayoutCommand}" />
+                                <Setter
+                                    Property="CommandParameter"
+                                    Value="{Binding}" />
+                            </Style>
+                        </Fluent:SplitButton.ItemContainerStyle>
                     </Fluent:SplitButton>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
@@ -173,14 +184,11 @@
                     Padding="30pt">
                     <local:YodiiGraphLayout
                         x:Name="graphLayout"
-                        Margin="0pt"
                         Graph="{Binding Path=Graph}"
-                        LayoutAlgorithmType="EfficientSugiyama"
+                        LayoutAlgorithmType="{Binding Path=GraphLayoutAlgorithmType}"
                         OverlapRemovalAlgorithmType="FSA"
-                        GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
                         HighlightAlgorithmType="Simple"
-                        MaxHeight="2000"
-                        MaxWidth="2000">
+                        RenderTransformOrigin="0.5,0.5">
 
                         <local:YodiiGraphLayout.Resources>
                             <!-- Vertex view structure/data -->

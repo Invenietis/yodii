@@ -13,6 +13,8 @@ using Yodii.Lab.Utils;
 using System.Xml;
 using System.IO;
 using Yodii.Engine;
+using Yodii.Lab.ConfigurationEditor;
+using System.Windows;
 
 namespace Yodii.Lab
 {
@@ -20,36 +22,210 @@ namespace Yodii.Lab
     {
         #region Fields
 
+        readonly MainWindow _parentWindow;
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceInfoManager;
 
         readonly ICommand _removeSelectedVertexCommand;
         readonly ICommand _runStaticSolverCommand;
+        readonly ICommand _openFileCommand;
+        readonly ICommand _saveAsFileCommand;
+        readonly ICommand _reorderGraphLayoutCommand;
+        readonly ICommand _createServiceCommand;
+        readonly ICommand _createPluginCommand;
+        readonly ICommand _openConfigurationEditorCommand;
 
         ConfigurationManager _configurationManager; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
         bool _isLive;
+        string _graphLayoutAlgorithmType;
+
+        ConfigurationEditorWindow _activeConfEditorWindow = null;
 
         #endregion
 
-        #region Constructor & initializers
+        #region Constructor
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(MainWindow parentWindow)
         {
+            _parentWindow = parentWindow;
             _configurationManager = new ConfigurationManager();
             _serviceInfoManager = new ServiceInfoManager();
 
             // Live objects and static infos are managed in the ServiceInfoManager.
 
             _graph = new YodiiGraph( _configurationManager, _serviceInfoManager );
+            _graphLayoutAlgorithmType = "KK";
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
             _runStaticSolverCommand = new RelayCommand( RunStaticSolverExecute );
+            _openFileCommand = new RelayCommand( OpenFileExecute );
+            _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
+            _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
+            _createPluginCommand = new RelayCommand( CreatePluginExecute );
+            _createServiceCommand = new RelayCommand( CreateServiceExecute );
+            _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
         }
 
-        #endregion Constructor & initializers
+        #endregion Constructor
 
         #region Command handlers
+
+        private void OpenConfigurationEditorExecute (object param)
+        {
+            if( _activeConfEditorWindow != null )
+            {
+                _activeConfEditorWindow.Activate();
+            }
+            else
+            {
+                _activeConfEditorWindow = new ConfigurationEditorWindow( ConfigurationManager, ServiceInfoManager );
+                _activeConfEditorWindow.Owner = _parentWindow;
+                _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
+
+                _activeConfEditorWindow.Show();
+            }
+        }
+
+        private void ReorderGraphLayoutExecute(object param)
+        {
+            if(param == null )
+            {
+                // Refresh layout.
+                string oldLayout = GraphLayoutAlgorithmType;
+
+                GraphLayoutAlgorithmType = null;
+
+                GraphLayoutAlgorithmType = oldLayout;
+            }
+            else
+            {
+                GraphLayoutAlgorithmType = (string)param;
+            }
+        }
+
+        private void CreateServiceExecute(object param)
+        {
+            IServiceInfo selectedService = null;
+
+            if( SelectedVertex != null )
+            {
+                if( SelectedVertex.IsService )
+                {
+                    selectedService = SelectedVertex.LiveServiceInfo.ServiceInfo;
+                }
+                else if( SelectedVertex.IsPlugin )
+                {
+                    selectedService = SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                }
+            }
+
+            AddServiceWindow window = new AddServiceWindow( ServiceInfos, selectedService );
+
+            window.NewServiceCreated += ( s, nse ) =>
+            {
+                if( ServiceInfos.Any( si => si.ServiceFullName == nse.ServiceName ) )
+                {
+                    nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
+                }
+                else
+                {
+                    IServiceInfo newService = CreateNewService( nse.ServiceName, nse.Generalization );
+                    SelectService( newService );
+                }
+            };
+
+            window.Owner = _parentWindow;
+
+            window.ShowDialog();
+        }
+
+        private void CreatePluginExecute(object param)
+        {
+            IServiceInfo selectedService = null;
+
+            if( SelectedVertex != null )
+            {
+                if( SelectedVertex.IsService )
+                {
+                    selectedService = SelectedVertex.LiveServiceInfo.ServiceInfo;
+                }
+                else if( SelectedVertex.IsPlugin )
+                {
+                    selectedService = SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                }
+            }
+
+            AddPluginWindow window = new AddPluginWindow( ServiceInfos, selectedService );
+
+            window.NewPluginCreated += ( s, npe ) =>
+            {
+                if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
+                {
+                    npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
+                }
+                else
+                {
+                    IPluginInfo newPlugin = CreateNewPlugin( npe.PluginId, npe.PluginName, npe.Service );
+                    foreach( var kvp in npe.ServiceReferences )
+                    {
+                        SetPluginDependency( newPlugin, kvp.Key, kvp.Value );
+                    }
+                    SelectPlugin( newPlugin );
+                }
+            };
+
+            window.Owner = _parentWindow;
+
+            window.ShowDialog();
+        }
+
+        private void OpenFileExecute(object param)
+        {
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckFileExists = true;
+            dlg.CheckPathExists = true;
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = LoadState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                }
+            }
+
+            GraphLayoutAlgorithmType = "KK";
+        }
+
+        private void SaveAsFileExecute(object param)
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckPathExists = true;
+            dlg.OverwritePrompt = true;
+            dlg.AddExtension = true;
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = SaveState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+            }
+        }
 
         private void RunStaticSolverExecute( object obj )
         {
@@ -152,6 +328,12 @@ namespace Yodii.Lab
                 {
                     _configurationManager = value;
                     _graph.ConfigurationManager = value;
+
+                    if( _activeConfEditorWindow != null )
+                    {
+                        _activeConfEditorWindow.Close();
+                    }
+
                     RaisePropertyChanged( "ConfigurationManager" );
                 }
             }
@@ -172,7 +354,7 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// The currently selected graph vertex.
+        /// The currently selected graph vertex.GraphLayoutAlgorithmType
         /// </summary>
         public YodiiGraphVertex SelectedVertex
         {
@@ -196,6 +378,25 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// The current graph layout type.
+        /// </summary>
+        public string GraphLayoutAlgorithmType
+        {
+            get
+            {
+                return _graphLayoutAlgorithmType;
+            }
+            set
+            {
+                if( value != _graphLayoutAlgorithmType )
+                {
+                    _graphLayoutAlgorithmType = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns true if a vertex is selected.
         /// </summary>
         public bool HasSelection
@@ -209,8 +410,13 @@ namespace Yodii.Lab
         }
 
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
-
+        public ICommand OpenConfigurationEditorCommand { get { return _openConfigurationEditorCommand; } }
         public ICommand RunStaticSolverCommand { get { return _runStaticSolverCommand; } }
+        public ICommand OpenFileCommand { get { return _openFileCommand; } }
+        public ICommand SaveAsFileCommand { get { return _saveAsFileCommand; } }
+        public ICommand ReorderGraphLayoutCommand { get { return _reorderGraphLayoutCommand; } }
+        public ICommand CreatePluginCommand { get { return _createPluginCommand; } }
+        public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
         #endregion Properties
 
         #region Public methods
@@ -408,8 +614,5 @@ namespace Yodii.Lab
 
         #region Private methods
         #endregion Private methods
-
-
-
     }
 }
