@@ -12,38 +12,52 @@ using System.Collections.Specialized;
 using Yodii.Lab.Utils;
 using System.Xml;
 using System.IO;
+using Yodii.Engine;
 
 namespace Yodii.Lab
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        #region Fields
+
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceInfoManager;
-        
+
+        readonly ICommand _removeSelectedVertexCommand;
+        readonly ICommand _runStaticSolverCommand;
+
         ConfigurationManager _configurationManager; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
-
         bool _isLive;
 
+        #endregion
+
         #region Constructor & initializers
+
         public MainWindowViewModel()
         {
             _configurationManager = new ConfigurationManager();
             _serviceInfoManager = new ServiceInfoManager();
 
-            // Live plugins managed in the ServiceInfoManager.
+            // Live objects and static infos are managed in the ServiceInfoManager.
 
-            _graph = new YodiiGraph( _configurationManager, _serviceInfoManager  );
+            _graph = new YodiiGraph( _configurationManager, _serviceInfoManager );
 
-
-            initCommands();
+            _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
+            _runStaticSolverCommand = new RelayCommand( RunStaticSolverExecute );
         }
-        private void initCommands()
-        {
-            RemoveSelectedVertex = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
-        }
+
+        #endregion Constructor & initializers
 
         #region Command handlers
+
+        private void RunStaticSolverExecute( object obj )
+        {
+            // TODO: Complete static solver.
+            ConfigurationSolver solver = new ConfigurationSolver();
+            var result = solver.Initialize( _configurationManager.FinalConfiguration, _serviceInfoManager );
+        }
+
         private bool HasSelectedVertex( object obj )
         {
             return SelectedVertex != null;
@@ -64,9 +78,8 @@ namespace Yodii.Lab
 
             SelectedVertex = null;
         }
-        #endregion #region Command handlers
 
-        #endregion Constructor & initializers
+        #endregion Command handlers
 
         #region Properties
         /// <summary>
@@ -135,7 +148,7 @@ namespace Yodii.Lab
             }
             private set
             {
-                if( value != _configurationManager)
+                if( value != _configurationManager )
                 {
                     _configurationManager = value;
                     _graph.ConfigurationManager = value;
@@ -195,9 +208,9 @@ namespace Yodii.Lab
             get { return _serviceInfoManager; }
         }
 
-        #region Command properties
-        public ICommand RemoveSelectedVertex { get; private set; }
-        #endregion
+        public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
+
+        public ICommand RunStaticSolverCommand { get { return _runStaticSolverCommand; } }
         #endregion Properties
 
         #region Public methods
@@ -299,27 +312,40 @@ namespace Yodii.Lab
         {
             return _serviceInfoManager.PluginInfos.Where( x => x.PluginId == guid ).First();
         }
-        #endregion Public methods
 
-        #region Private methods
-        #endregion Private methods
-
-
-        public void SelectService( IServiceInfo serviceInfo )
+        public DetailedOperationResult LoadState( string filePath )
         {
-            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LiveServiceInfo.ServiceInfo == serviceInfo ).First();
-            SelectedVertex = vertexToSelect;
-        }
+            _serviceInfoManager.ClearState();
 
-        public void SelectPlugin( IPluginInfo pluginInfo )
-        {
-            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LivePluginInfo.PluginInfo == pluginInfo ).First();
-            SelectedVertex = vertexToSelect;
-        }
+            XmlReaderSettings rs = new XmlReaderSettings();
 
-        public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
-        {
-            return _serviceInfoManager.RenameService( serviceInfo, newName );
+            try
+            {
+                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
+                {
+                    using( XmlReader xr = XmlReader.Create( fs, rs ) )
+                    {
+                        while( xr.Read() )
+                        {
+                            if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
+                            {
+                                _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
+                            }
+                            else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
+                            {
+                                var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
+                                ConfigurationManager = manager;
+                            }
+                        }
+                    }
+                }
+            }
+            catch( Exception e ) // TODO: Detailed exception handling and undo
+            {
+                return new DetailedOperationResult( false, e.Message );
+            }
+
+            return new DetailedOperationResult( true );
         }
 
         public DetailedOperationResult SaveState( string tempFilePath )
@@ -353,7 +379,8 @@ namespace Yodii.Lab
                         xw.WriteEndDocument();
                     }
                 }
-            } catch ( Exception e ) // TODO: Detailed exception handling
+            }
+            catch( Exception e ) // TODO: Detailed exception handling
             {
                 return new DetailedOperationResult( false, e.Message );
             }
@@ -361,38 +388,28 @@ namespace Yodii.Lab
             return new DetailedOperationResult( true );
         }
 
-        public DetailedOperationResult LoadState( string filePath )
+        public void SelectService( IServiceInfo serviceInfo )
         {
-            _serviceInfoManager.ClearState();
-
-            XmlReaderSettings rs = new XmlReaderSettings();
-
-            try
-            {
-                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
-                {
-                    using( XmlReader xr = XmlReader.Create( fs, rs ) )
-                    {
-                        while( xr.Read() )
-                        {
-                            if( xr.IsStartElement() && xr.Name == "ServicePluginInfos")
-                            {
-                                _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
-                            } else if (xr.IsStartElement() && xr.Name == "ConfigurationManager")
-                            {
-                                var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-                                ConfigurationManager = manager;
-                            }
-                        }
-                    }
-                }
-            }
-            catch( Exception e ) // TODO: Detailed exception handling and undo
-            {
-                return new DetailedOperationResult( false, e.Message );
-            }
-
-            return new DetailedOperationResult( true );
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LiveServiceInfo.ServiceInfo == serviceInfo ).First();
+            SelectedVertex = vertexToSelect;
         }
+
+        public void SelectPlugin( IPluginInfo pluginInfo )
+        {
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LivePluginInfo.PluginInfo == pluginInfo ).First();
+            SelectedVertex = vertexToSelect;
+        }
+
+        public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
+        {
+            return _serviceInfoManager.RenameService( serviceInfo, newName );
+        }
+        #endregion Public methods
+
+        #region Private methods
+        #endregion Private methods
+
+
+
     }
 }

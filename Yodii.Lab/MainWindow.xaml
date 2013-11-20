@@ -105,7 +105,7 @@
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Delete selected"
-                        Command="{Binding Path=RemoveSelectedVertex}">
+                        Command="{Binding Path=RemoveSelectedVertexCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -125,10 +125,9 @@
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <!-- Graph.LayoutAlgorithmType -->
                     <Fluent:SplitButton
                         Header="Reorder graph"
-                        ItemsSource="{Binding Path=GraphLayoutAlgorithms}" 
+                        ItemsSource="{Binding Path=GraphLayoutAlgorithms}"
                         MenuItem.Click="NewGraphLayoutButton_Click"
                         Click="ReorderGraphButton_Click">
                         <Fluent:SplitButton.LargeIcon>
@@ -137,6 +136,12 @@
                                 Child="{StaticResource RefreshIcon}" />
                         </Fluent:SplitButton.LargeIcon>
                     </Fluent:SplitButton>
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox>
+                    <Fluent:Button
+                        Header="Run static solver"
+                        Command="{Binding Path=RunStaticSolverCommand}">
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
