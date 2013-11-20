@@ -272,5 +272,44 @@ namespace Yodii.Lab
 
             CreateLivePlugin( pluginInfo );
         }
+
+        public string GetDescriptionOfServiceOrPluginId( string serviceOrPluginId )
+        {
+            Guid pluginGuid;
+            bool isPlugin = Guid.TryParse( serviceOrPluginId, out pluginGuid );
+
+            if( isPlugin )
+            {
+                PluginInfo p = PluginInfos.Where( x => x.PluginId == pluginGuid ).FirstOrDefault();
+                if( p != null )
+                {
+                    if( String.IsNullOrWhiteSpace( p.PluginFullName ) )
+                    {
+                        return String.Format( "Plugin: Unnamed plugin ({0})", pluginGuid.ToString() );
+                    }
+                    else
+                    {
+                        return String.Format( "Plugin: {0}", p.PluginFullName );
+                    }
+                }
+                else
+                {
+                    return String.Format( "Plugin: Unknown ({0})", pluginGuid.ToString() );
+                }
+            }
+            else
+            {
+                ServiceInfo s = ServiceInfos.Where( x => x.ServiceFullName == serviceOrPluginId ).FirstOrDefault();
+
+                if( s != null )
+                {
+                    return String.Format( "Service: {0}", serviceOrPluginId );
+                }
+                else
+                {
+                    return String.Format( "Service: Unknown ({0})", serviceOrPluginId );
+                }
+            }
+        }
     }
 }

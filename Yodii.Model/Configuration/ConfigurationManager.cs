@@ -220,7 +220,7 @@ namespace Yodii.Model
 
         internal void OnConfigurationChanged()
         {
-            Debug.Assert( _currentEventArgs != null );
+            Debug.Assert( _currentEventArgs != null, "Another change is in progress." ); // Reeantrancy warning. If you break here, check that your event handlers are not doing another change at the same time.
 
             FinalConfiguration = _currentEventArgs.FinalConfiguration;
             if( _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.StatusChanged

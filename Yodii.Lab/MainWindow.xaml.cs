@@ -9,9 +9,9 @@ using System.Timers;
 using System.Threading;
 using Yodii.Model;
 using System.Diagnostics;
-using Yodii.Lab.ConfigurationEditor;
 using Yodii.Lab.Mocks;
 using Yodii.Lab.Utils;
+using Yodii.Lab.ConfigurationEditor;
 
 namespace Yodii.Lab
 {
@@ -62,7 +62,7 @@ namespace Yodii.Lab
             }
             else
             {
-                _activeConfEditorWindow = new ConfigurationEditorWindow( _vm.ConfigurationManager );
+                _activeConfEditorWindow = new ConfigurationEditorWindow( _vm.ConfigurationManager, _vm.ServiceInfoManager );
                 _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
 
                 _activeConfEditorWindow.Show();

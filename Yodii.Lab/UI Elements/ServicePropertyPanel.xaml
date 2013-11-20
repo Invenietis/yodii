@@ -55,13 +55,14 @@
                 <DockPanel
                     Grid.Column="1"
                     Grid.Row="1">
-                    <CheckBox
-                        Unchecked="HasGeneralizationCheckbox_Unchecked"
-                        Margin="3pt"
-                        x:Name="HasGeneralizationCheckbox"
-                        IsChecked="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=ServiceInfo.Generalization, Mode=OneWay, ConverterParameter=true}"/>
+                    <Button
+                        Style="{StaticResource RemoveButtonStyle}"
+                        DockPanel.Dock="Right"
+                        ToolTip="Clear service"
+                        Margin="5,0,0,0"
+                        IsEnabled="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=ServiceInfo.Generalization, Mode=OneWay, ConverterParameter=true}"
+                        Click="ClearGeneralizationButton_Click" />
                     <ComboBox
-                        IsEnabled="{Binding ElementName=HasGeneralizationCheckbox, Path=IsChecked, Mode=OneWay}"
                         x:Name="GeneralizationComboBox"
                         SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=TwoWay}"
                         ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}" >

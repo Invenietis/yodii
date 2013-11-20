@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -23,8 +24,14 @@ namespace Yodii.Lab
 
         public static readonly DependencyProperty VertexProperty = 
             DependencyProperty.Register( "Vertex", typeof( YodiiGraphVertex ),
-            typeof( YodiiVertexControl )
+            typeof( YodiiVertexControl ), new FrameworkPropertyMetadata(OnVertexChangedCallback)
             );
+
+        private static void OnVertexChangedCallback( DependencyObject d, DependencyPropertyChangedEventArgs e )
+        {
+            (d as YodiiVertexControl).OnNewVertex();
+        }
+
         public static readonly DependencyProperty ConfigurationManagerProperty = 
             DependencyProperty.Register( "ConfigurationManager", typeof( ConfigurationManager ),
             typeof( YodiiVertexControl )
@@ -33,6 +40,15 @@ namespace Yodii.Lab
         public YodiiVertexControl()
         {
             InitializeComponent();
+            ConfigurationStatusMenu.ItemContainerGenerator.StatusChanged += ItemContainerGenerator_StatusChanged;
+        }
+
+        void ItemContainerGenerator_StatusChanged( object sender, EventArgs e )
+        {
+            if(ConfigurationStatusMenu.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            {
+                UpdateCheckbox();
+            }
         }
 
         public YodiiGraphVertex Vertex
@@ -40,6 +56,54 @@ namespace Yodii.Lab
             get { return (YodiiGraphVertex)GetValue( VertexProperty ); }
             set { SetValue( VertexProperty, value ); }
         }
+
+        private void OnNewVertex()
+        {
+            if( Vertex == null ) return;
+
+            Vertex.PropertyChanged += Vertex_PropertyChanged;
+            UpdateCheckbox();
+        }
+
+        void Vertex_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            Debug.Assert( Vertex == sender as YodiiGraphVertex );
+
+            UpdateCheckbox();
+        }
+
+        void UpdateCheckbox()
+        {
+            if( Vertex.HasConfiguration == false )
+                SetCheckedConfigurationStatus( null );
+            else
+                SetCheckedConfigurationStatus( Vertex.ConfigurationStatus );
+        }
+
+        void SetCheckedConfigurationStatus( ConfigurationStatus? newStatus )
+        {
+            if( ConfigurationStatusMenu.ItemContainerGenerator.Status != System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated ) return;
+            foreach( var item in this.ConfigurationStatusMenu.Items )
+            {
+                MenuItem childItem = ConfigurationStatusMenu.ItemContainerGenerator.ContainerFromItem( item ) as MenuItem;
+
+                if( newStatus == null )
+                {
+                    childItem.IsChecked = false;
+                    continue;
+                }
+                else
+                {
+                    ConfigurationStatus status = (ConfigurationStatus)item;
+                    ConfigurationStatus childStatus = (ConfigurationStatus)childItem.DataContext;
+                    if( childStatus == newStatus )
+                        childItem.IsChecked = true;
+                    else
+                        childItem.IsChecked = false;
+                }
+            }
+        }
+
         public ConfigurationManager ConfigurationManager
         {
             get { return (ConfigurationManager)GetValue( ConfigurationManagerProperty ); }

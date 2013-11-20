@@ -19,6 +19,8 @@
     <Fluent:RibbonWindow.Resources>
         <BooleanToVisibilityConverter
             x:Key="boolToVisibilityConverter" />
+        <local:EnumToBooleanConverter
+            x:Key="EnumToBooleanConv" />
 
         <ObjectDataProvider
             MethodName="GetValues"
@@ -87,18 +89,18 @@
                         Header="Add service"
                         Click="NewServiceButton_Click">
                         <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource ServiceIconBlack}" />
+                            <Image
+                                Height="12pt"
+                                Source="/Yodii.Lab;component/Icons/interface_16xLG.png" />
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Add plugin"
                         Click="NewPluginButton_Click">
                         <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource PluginIconBlack}" />
+                            <Image
+                                Height="12pt"
+                                Source="/Yodii.Lab;component/Icons/class_32xLG.png" />
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                     <Fluent:Button
@@ -123,11 +125,20 @@
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
+                    <!-- Graph.LayoutAlgorithmType -->
                     <Fluent:SplitButton
                         Header="Reorder graph"
-                        ItemsSource="{Binding Path=GraphLayoutAlgorithms}"
+                        ItemsSource="{Binding Path=GraphLayoutAlgorithms}" 
                         MenuItem.Click="NewGraphLayoutButton_Click"
                         Click="ReorderGraphButton_Click">
+                        <!--<Fluent:SplitButton.ItemContainerStyle>
+                            <Style
+                                TargetType="MenuItem">
+                                <Setter
+                                    Property="IsChecked"
+                                    Value="{Binding Converter={StaticResource ResourceKey=EnumToBooleanConv}, Mode=OneWay}" /> --><!-- TODO --><!--
+                            </Style>
+                        </Fluent:SplitButton.ItemContainerStyle>-->
                         <Fluent:SplitButton.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"

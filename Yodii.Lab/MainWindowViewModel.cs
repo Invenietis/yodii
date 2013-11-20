@@ -138,6 +138,7 @@ namespace Yodii.Lab
                 if( value != _configurationManager)
                 {
                     _configurationManager = value;
+                    _graph.ConfigurationManager = value;
                     RaisePropertyChanged( "ConfigurationManager" );
                 }
             }
