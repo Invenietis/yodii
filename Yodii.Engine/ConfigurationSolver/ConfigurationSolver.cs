@@ -6,7 +6,6 @@ using CK.Core;
 using System.Diagnostics;
 using Yodii.Model;
 using System.Collections.ObjectModel;
-using Yodii.Engine.ConfigurationSolver;
 
 namespace Yodii.Engine
 {

@@ -49,12 +49,14 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ConfigurationSolver\ConfigState.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\DynamicFailureResult.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\DynamicSolvedConfiguration.cs" />
+    <Compile Include="ConfigurationSolver\Live\LiveInfo.cs" />
+    <Compile Include="ConfigurationSolver\Live\LivePluginInfo.cs" />
+    <Compile Include="ConfigurationSolver\Live\LiveServiceInfo.cs" />
+    <Compile Include="ConfigurationSolver\Static\StaticSolvedConfiguration.cs" />
     <Compile Include="ConfigurationSolver\YodiiEngineResult.cs" />
-    <Compile Include="ConfigurationSolver\Dynamic\LiveConfiguration.cs" />
-    <Compile Include="ConfigurationSolver\Dynamic\LivePluginInfo.cs" />
-    <Compile Include="ConfigurationSolver\Dynamic\LiveServiceInfo.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\YodiiCommand.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Static.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\PluginData.Dynamic.cs" />
@@ -67,7 +69,7 @@
     <Compile Include="ConfigurationSolver\Dynamic\ServiceRootData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceSolvedConfigStatusReason.cs" />
     <Compile Include="ConfigurationSolver\SolvedServiceSnapshot.cs" />
-    <Compile Include="ConfigurationSolver\StaticFailureResult.cs" />
+    <Compile Include="ConfigurationSolver\Static\StaticFailureResult.cs" />
     <Compile Include="EmptyDiscoveredInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YodiiEngine.cs" />

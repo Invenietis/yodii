@@ -9,7 +9,7 @@ namespace Yodii.Model
     public interface IStaticSolvedConfiguration
     {
         IReadOnlyList<IStaticSolvedPlugin> Plugins { get; }
-        IReadOnlyList<IStaticSolvedService> Service { get; }
+        IReadOnlyList<IStaticSolvedService> Services { get; }
         IStaticSolvedService FindService( string fullName );
         IStaticSolvedPlugin FindPlugin( Guid pluginId );
     }

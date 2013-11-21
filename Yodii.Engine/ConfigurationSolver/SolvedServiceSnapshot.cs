@@ -62,7 +62,13 @@ namespace Yodii.Engine
 
         public override string ToString()
         {
-            return String.Format( "{0} - {1} - {2}", _serviceInfo.ServiceFullName, IsDisabled ? _serviceDisabledReason.ToString() : "!Disabled", ConfigSolvedStatus.ToString() );
+            return String.Format( "{0} - {1} - {2}", _serviceInfo.ServiceFullName, _serviceDisabledReason.ToString(), _configSolvedStatus.ToString() );
+        }
+
+
+        public ServiceDisabledReason DisabledReason
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }
