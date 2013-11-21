@@ -61,7 +61,7 @@ namespace Yodii.Engine
 
         public override string ToString()
         {
-            return String.Format( "{0} - {1} - {2}", _pluginInfo.PluginFullName, _disabledReason.ToString(), ConfigSolvedStatus.ToString() );
+            return String.Format( "{0} - {1} - {2}", _pluginInfo.PluginFullName, _disabledReason.ToString(), _configSolvedStatus.ToString() );
         }
     }
 }
