@@ -7,7 +7,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
-    public class YodiiGraphEdge : EdgeBase<YodiiGraphVertex>, INotifyPropertyChanged
+    public class YodiiGraphEdge : GraphX.EdgeBase<YodiiGraphVertex>, INotifyPropertyChanged
     {
         readonly YodiiGraphEdgeType _type;
         RunningRequirement _referenceRequirement;

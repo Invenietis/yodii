@@ -15,6 +15,8 @@ using System.IO;
 using Yodii.Engine;
 using Yodii.Lab.ConfigurationEditor;
 using System.Windows;
+using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
+using GraphX.GraphSharp.Algorithms.Layout;
 
 namespace Yodii.Lab
 {
@@ -38,7 +40,7 @@ namespace Yodii.Lab
         ConfigurationManager _configurationManager; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
         bool _isLive;
-        string _graphLayoutAlgorithmType;
+        GraphX.LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
 
@@ -46,7 +48,7 @@ namespace Yodii.Lab
 
         #region Constructor
 
-        public MainWindowViewModel(MainWindow parentWindow)
+        public MainWindowViewModel( MainWindow parentWindow )
         {
             _parentWindow = parentWindow;
             _configurationManager = new ConfigurationManager();
@@ -55,7 +57,6 @@ namespace Yodii.Lab
             // Live objects and static infos are managed in the ServiceInfoManager.
 
             _graph = new YodiiGraph( _configurationManager, _serviceInfoManager );
-            _graphLayoutAlgorithmType = "KK";
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
             _runStaticSolverCommand = new RelayCommand( RunStaticSolverExecute );
@@ -71,7 +72,7 @@ namespace Yodii.Lab
 
         #region Command handlers
 
-        private void OpenConfigurationEditorExecute (object param)
+        private void OpenConfigurationEditorExecute( object param )
         {
             if( _activeConfEditorWindow != null )
             {
@@ -87,24 +88,36 @@ namespace Yodii.Lab
             }
         }
 
-        private void ReorderGraphLayoutExecute(object param)
+        private void ReorderGraphLayoutExecute( object param )
         {
-            if(param == null )
+            if( param == null )
             {
                 // Refresh layout.
-                string oldLayout = GraphLayoutAlgorithmType;
-
-                GraphLayoutAlgorithmType = null;
-
-                GraphLayoutAlgorithmType = oldLayout;
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
             }
             else
             {
-                GraphLayoutAlgorithmType = (string)param;
+                GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
+                ILayoutParameters parameters = null;
+
+                if( GraphLayoutAlgorithmType == GraphX.LayoutAlgorithmTypeEnum.EfficientSugiyama )
+                {
+                    EfficientSugiyamaLayoutParameters sugiyamaParams = new EfficientSugiyamaLayoutParameters();
+                    sugiyamaParams.VertexDistance = 70.0;
+                    sugiyamaParams.MinimizeEdgeLength = false;
+                    sugiyamaParams.PositionMode = 0;
+                    sugiyamaParams.EdgeRouting = SugiyamaEdgeRoutings.Orthogonal;
+
+                    sugiyamaParams.OptimizeWidth = false;
+
+                    parameters = sugiyamaParams;
+                }
+
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, parameters );
             }
         }
 
-        private void CreateServiceExecute(object param)
+        private void CreateServiceExecute( object param )
         {
             IServiceInfo selectedService = null;
 
@@ -140,7 +153,7 @@ namespace Yodii.Lab
             window.ShowDialog();
         }
 
-        private void CreatePluginExecute(object param)
+        private void CreatePluginExecute( object param )
         {
             IServiceInfo selectedService = null;
 
@@ -180,7 +193,7 @@ namespace Yodii.Lab
             window.ShowDialog();
         }
 
-        private void OpenFileExecute(object param)
+        private void OpenFileExecute( object param )
         {
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
@@ -200,12 +213,9 @@ namespace Yodii.Lab
                     MessageBox.Show( r.Reason, "Couldn't open file" );
                 }
             }
-
-            GraphLayoutAlgorithmType = "KK";
-            _parentWindow.GraphArea.GenerateGraph( Graph, true, true, true );
         }
 
-        private void SaveAsFileExecute(object param)
+        private void SaveAsFileExecute( object param )
         {
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
 
@@ -233,6 +243,15 @@ namespace Yodii.Lab
             // TODO: Complete static solver.
             ConfigurationSolver solver = new ConfigurationSolver();
             var result = solver.Initialize( _configurationManager.FinalConfiguration, _serviceInfoManager );
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine( "ConfigurationSolver result:" );
+            if( result.ConfigurationSuccess ) sb.AppendLine( "Success" );
+            else sb.AppendLine( "Failure" );
+            sb.AppendLine( String.Format( "{0} running plugins\n", result.RunningPlugins.Count) );
+
+            MessageBox.Show( sb.ToString() );
         }
 
         private bool HasSelectedVertex( object obj )
@@ -341,20 +360,6 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Available Layout algorithms.
-        /// </summary>
-        /// <remarks>
-        /// Pulled from Graph#/Algorithms/Layout/StandardLayoutAlgorithmFactory.cs
-        /// </remarks>
-        public List<String> GraphLayoutAlgorithms
-        {
-            get
-            {
-                return new List<String>() { "Circular", "Tree", "FR", "BoundedFR", "KK", "ISOM", "LinLog", "EfficientSugiyama", /*"Sugiyama",*/ "CompoundFDP" };
-            }
-        }
-
-        /// <summary>
         /// The currently selected graph vertex.GraphLayoutAlgorithmType
         /// </summary>
         public YodiiGraphVertex SelectedVertex
@@ -381,7 +386,7 @@ namespace Yodii.Lab
         /// <summary>
         /// The current graph layout type.
         /// </summary>
-        public string GraphLayoutAlgorithmType
+        public GraphX.LayoutAlgorithmTypeEnum GraphLayoutAlgorithmType
         {
             get
             {
@@ -394,6 +399,17 @@ namespace Yodii.Lab
                     _graphLayoutAlgorithmType = value;
                     RaisePropertyChanged();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Available graph layout types.
+        /// </summary>
+        public IEnumerable<GraphX.LayoutAlgorithmTypeEnum> GraphLayoutAlgorithmTypes
+        {
+            get
+            {
+                return (IEnumerable<GraphX.LayoutAlgorithmTypeEnum>)Enum.GetValues( typeof( GraphX.LayoutAlgorithmTypeEnum ) );
             }
         }
 

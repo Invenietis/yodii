@@ -30,12 +30,12 @@ namespace Yodii.Lab
             InitializeComponent();
 
             GraphArea.DefaultLayoutAlgorithm = GraphX.LayoutAlgorithmTypeEnum.KK;
-            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.None;
+            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
             GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
-            GraphArea.SetVerticesDrag( true, true );
-            //GraphArea.EnableParallelEdges = true;
-            //GraphArea.EdgeShowSelfLooped = true;
-            //GraphArea.EdgeCurvingEnabled = true;
+            //GraphArea.SetVerticesDrag( true, true );
+            GraphArea.EnableParallelEdges = true;
+            GraphArea.EdgeShowSelfLooped = true;
+            GraphArea.EdgeCurvingEnabled = true;
             GraphArea.UseNativeObjectArrange = false;
             GraphArea.SideExpansionSize = new Size( 100, 100 );
 
@@ -58,7 +58,8 @@ namespace Yodii.Lab
                 DragBehaviour.SetIsDragEnabled( item.Value, true );
                 item.Value.EventOptions.PositionChangeNotification = true;
             }
-            GraphArea.UpdateLayout();
+            GraphArea.ShowAllEdgesLabels();
+            GraphArea.InvalidateVisual();
         }
 
         void GraphArea_GenerateGraphFinished( object sender, EventArgs e )
@@ -71,12 +72,28 @@ namespace Yodii.Lab
                 DragBehaviour.SetIsDragEnabled( item.Value, true );
                 item.Value.EventOptions.PositionChangeNotification = true;
             }
-            GraphArea.UpdateLayout();
+            GraphArea.ShowAllEdgesLabels();
+            GraphArea.InvalidateVisual();
         }
 
         void Graph_GraphUpdateRequested( object sender, GraphUpdateRequestEventArgs e )
         {
-            this.GraphArea.GenerateGraph( _vm.Graph );
+            if( e.NewLayout != null )
+            {
+                GraphArea.DefaultLayoutAlgorithm = (GraphX.LayoutAlgorithmTypeEnum)e.NewLayout;
+            }
+            if( e.AlgorithmParameters != null )
+            {
+                GraphArea.DefaultLayoutAlgorithmParams = e.AlgorithmParameters;
+            }
+
+            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
+            {
+                this.GraphArea.GenerateGraph( _vm.Graph );
+            } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
+            {
+                this.GraphArea.RelayoutGraph();
+            }
 
         }
 

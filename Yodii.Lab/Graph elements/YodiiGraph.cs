@@ -247,12 +247,14 @@ namespace Yodii.Lab
             this.RemoveVertexIf( v => v.IsService );
         }
 
-        internal void RaiseGraphUpdateRequested( GraphGenerationRequestType type = GraphGenerationRequestType.RelayoutGraph )
+        internal void RaiseGraphUpdateRequested( GraphGenerationRequestType type = GraphGenerationRequestType.RelayoutGraph,
+            GraphX.LayoutAlgorithmTypeEnum? newLayout = null,
+            GraphX.GraphSharp.Algorithms.Layout.ILayoutParameters algoParams = null )
         {
             if( _lockGraphUpdates ) return;
             if( this.GraphUpdateRequested != null )
             {
-                this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type ) );
+                this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type, newLayout, algoParams ) );
             }
         }
         #endregion Private methods
