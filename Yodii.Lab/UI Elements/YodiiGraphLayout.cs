@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using GraphSharp.Controls;
+using GraphX;
 
 namespace Yodii.Lab
 {
-    class YodiiGraphLayout : GraphLayout<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph> { }
+    public class YodiiGraphArea : GraphArea<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph> {
+    }
 }

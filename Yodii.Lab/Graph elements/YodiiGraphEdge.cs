@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using QuickGraph;
+using GraphX;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
 
 namespace Yodii.Lab
 {
-    public class YodiiGraphEdge : Edge<YodiiGraphVertex>, INotifyPropertyChanged
+    public class YodiiGraphEdge : EdgeBase<YodiiGraphVertex>, INotifyPropertyChanged
     {
         readonly YodiiGraphEdgeType _type;
         RunningRequirement _referenceRequirement;
@@ -19,6 +16,11 @@ namespace Yodii.Lab
             : base( source, target )
         {
             _type = type;
+        }
+
+        public YodiiGraphEdge()
+            : base(null, null, 1)
+        {
         }
 
         internal YodiiGraphEdge( YodiiGraphVertex source, YodiiGraphVertex target, MockServiceReferenceInfo serviceRef )

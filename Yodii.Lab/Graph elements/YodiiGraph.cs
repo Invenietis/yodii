@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using QuickGraph;
-using CK.Core;
-using System.Diagnostics;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
+using CK.Core;
+using QuickGraph;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
 
@@ -17,6 +15,9 @@ namespace Yodii.Lab
     [DebuggerDisplay( "Vertices = {Vertices.Count}, Edges = {Edges.Count}, Services = {_serviceInfos.Count}, Plugins = {_pluginInfos.Count} " )]
     public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
+        int currentId = 0;
+        public event EventHandler<GraphUpdateRequestEventArgs> GraphUpdateRequested;
+
         readonly ICKObservableReadOnlyCollection<LiveServiceInfo> _serviceInfos;
         readonly ICKObservableReadOnlyCollection<LivePluginInfo> _pluginInfos;
         readonly ServiceInfoManager _serviceManager;
@@ -24,6 +25,9 @@ namespace Yodii.Lab
         ConfigurationManager _configurationManager;
 
         #region Constructor
+        public YodiiGraph()
+        { }
+
         internal YodiiGraph( ConfigurationManager configManager, ServiceInfoManager serviceManager )
             : base()
         {
@@ -108,6 +112,8 @@ namespace Yodii.Lab
                     }
                 }
             }
+
+            RaiseGraphUpdateRequested();
         }
 
         private void RaiseVertexStatusChange()
@@ -120,7 +126,7 @@ namespace Yodii.Lab
 
         YodiiGraphVertex CreateServiceVertex( LiveServiceInfo liveService )
         {
-            YodiiGraphVertex serviceVertex = new YodiiGraphVertex( this, liveService );
+            YodiiGraphVertex serviceVertex = new YodiiGraphVertex( this, liveService ) { ID = currentId++ };
             this.AddVertex( serviceVertex );
             liveService.ServiceInfo.PropertyChanged += ServiceInfo_PropertyChanged;
 
@@ -129,7 +135,7 @@ namespace Yodii.Lab
             {
                 YodiiGraphVertex generalizationVertex = FindOrCreateServiceVertex( liveService.Generalization );
 
-                YodiiGraphEdge edge = new YodiiGraphEdge( serviceVertex, generalizationVertex, YodiiGraphEdgeType.Specialization );
+                YodiiGraphEdge edge = new YodiiGraphEdge( serviceVertex, generalizationVertex, YodiiGraphEdgeType.Specialization ) { ID = currentId++ };
 
                 this.AddEdge( edge );
             }
@@ -157,7 +163,7 @@ namespace Yodii.Lab
 
         YodiiGraphVertex CreatePluginVertex( LivePluginInfo livePlugin )
         {
-            YodiiGraphVertex pluginVertex = new YodiiGraphVertex( this, livePlugin );
+            YodiiGraphVertex pluginVertex = new YodiiGraphVertex( this, livePlugin ) { ID = this.currentId++ };
             this.AddVertex( pluginVertex );
             livePlugin.PluginInfo.PropertyChanged += PluginInfo_PropertyChanged;
 
@@ -165,7 +171,7 @@ namespace Yodii.Lab
             {
                 YodiiGraphVertex serviceVertex = FindOrCreateServiceVertex( livePlugin.Service );
 
-                YodiiGraphEdge serviceEdge = new YodiiGraphEdge( pluginVertex, serviceVertex, YodiiGraphEdgeType.Implementation );
+                YodiiGraphEdge serviceEdge = new YodiiGraphEdge( pluginVertex, serviceVertex, YodiiGraphEdgeType.Implementation ) { ID = currentId++ };
                 this.AddEdge( serviceEdge );
             }
 
@@ -173,7 +179,7 @@ namespace Yodii.Lab
             {
                 YodiiGraphVertex refVertex = FindOrCreateServiceVertex( reference.Reference );
 
-                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference );
+                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference ) { ID = currentId++ };
                 this.AddEdge( refEdge );
             }
 
@@ -241,6 +247,14 @@ namespace Yodii.Lab
             }
             this.RemoveVertexIf( v => v.IsService );
         }
+
+        void RaiseGraphUpdateRequested()
+        {
+            if( this.GraphUpdateRequested != null )
+            {
+                this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs() );
+            }
+        }
         #endregion Private methods
 
         #region Event handlers
@@ -263,6 +277,7 @@ namespace Yodii.Lab
             {
                 ClearPluginVertices();
             }
+            RaiseGraphUpdateRequested();
         }
 
         void _serviceInfos_CollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
@@ -284,6 +299,7 @@ namespace Yodii.Lab
             {
                 ClearServiceVertices();
             }
+            RaiseGraphUpdateRequested();
         }
 
         void ObservableServiceReferences_CollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
@@ -294,7 +310,7 @@ namespace Yodii.Lab
                 YodiiGraphVertex pluginVertex = FindOrCreatePluginVertex( (PluginInfo)reference.Owner );
                 YodiiGraphVertex refVertex = FindOrCreateServiceVertex( (IServiceInfo)reference.Reference );
 
-                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference );
+                YodiiGraphEdge refEdge = new YodiiGraphEdge( pluginVertex, refVertex, reference ) { ID = currentId++ };
                 this.AddEdge( refEdge );
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
@@ -307,6 +323,7 @@ namespace Yodii.Lab
                         e2.Source.IsPlugin && e2.Source.LivePluginInfo.PluginInfo == reference.Owner
                         && e2.Target.IsService && e2.Target.LiveServiceInfo.ServiceInfo == reference.Reference );
             }
+            RaiseGraphUpdateRequested();
         }
 
         void ServiceInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -324,7 +341,7 @@ namespace Yodii.Lab
                 if( service.Generalization != null )
                 {
                     YodiiGraphVertex newGeneralizationVertex = FindOrCreateServiceVertex( service.Generalization );
-                    YodiiGraphEdge newEdge = new YodiiGraphEdge( serviceVertex, newGeneralizationVertex, YodiiGraphEdgeType.Specialization );
+                    YodiiGraphEdge newEdge = new YodiiGraphEdge( serviceVertex, newGeneralizationVertex, YodiiGraphEdgeType.Specialization ) { ID = currentId++ };
                     AddEdge( newEdge );
                     serviceVertex.LiveServiceInfo.Generalization = newGeneralizationVertex.LiveServiceInfo;
                 }
@@ -335,6 +352,7 @@ namespace Yodii.Lab
                 }
 
             }
+            RaiseGraphUpdateRequested();
         }
 
         void PluginInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -353,10 +371,11 @@ namespace Yodii.Lab
                 if( pluginInfo.Service != null )
                 {
                     YodiiGraphVertex newServiceVertex = FindOrCreateServiceVertex( pluginInfo.Service );
-                    YodiiGraphEdge newEdge = new YodiiGraphEdge( pluginVertex, newServiceVertex, YodiiGraphEdgeType.Implementation );
+                    YodiiGraphEdge newEdge = new YodiiGraphEdge( pluginVertex, newServiceVertex, YodiiGraphEdgeType.Implementation ) { ID = currentId++ };
                     AddEdge( newEdge );
                 }
             }
+            RaiseGraphUpdateRequested();
         }
         #endregion Event handlers
     }

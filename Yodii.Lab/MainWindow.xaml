@@ -3,8 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
-    xmlns:GraphSharp="clr-namespace:GraphSharp.Controls;assembly=GraphSharp.Controls"
-    xmlns:WpfExtensions="clr-namespace:WPFExtensions.Controls;assembly=WPFExtensions"
+    xmlns:GraphX="clr-namespace:GraphX;assembly=GraphX"
+    xmlns:gxc="clr-namespace:GraphX.Controls;assembly=GraphX"
     xmlns:local="clr-namespace:Yodii.Lab"
     xmlns:mocks="clr-namespace:Yodii.Lab.Mocks"
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
@@ -31,7 +31,7 @@
                     TypeName="ym:RunningRequirement" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
-
+        
         <DataTemplate
             x:Key="serviceVertexPropertiesTemplate"
             DataType="local:YodiiGraphVertex">
@@ -174,184 +174,172 @@
                 <ColumnDefinition
                     Width="1*" />
             </Grid.ColumnDefinitions>
+            
+            <Grid.Resources>
+                <DataTemplate
+                    x:Key="YodiiVertexTemplate"
+                    DataType="{x:Type local:YodiiGraphVertex}">
+
+                    <local:YodiiVertexControl
+                        Vertex="{Binding Mode=OneWay}"
+                        ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
+
+                </DataTemplate>
+                <Style
+                    TargetType="{x:Type GraphX:VertexControl}">
+                    <Style.Resources>
+                        <ToolTip
+                            x:Key="VertexToolTipContent">
+                            <StackPanel>
+                                <TextBlock
+                                    Text="{Binding Title}" />
+                            </StackPanel>
+                        </ToolTip>
+                    </Style.Resources>
+                    <Setter
+                        Property="ToolTip"
+                        Value="{StaticResource VertexToolTipContent}" />
+                    <Setter
+                        Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate
+                                TargetType="{x:Type GraphX:VertexControl}">
+
+                                <ContentPresenter
+                                    Content="{TemplateBinding Vertex}"
+                                    ContentTemplate="{StaticResource YodiiVertexTemplate}"
+                                    MouseDown="StackPanel_MouseDown" />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                    <Setter
+                        Property="RenderTransformOrigin"
+                        Value="0.5,0.5" />
+
+                    <Setter
+                        Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform
+                                ScaleX="1"
+                                ScaleY="1" />
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Path=IsSelected, Mode=OneWay}"
+                            Value="true">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard
+                                        AutoReverse="False">
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                            To="1.3"
+                                            Duration="00:00:00.25" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                            To="1.3"
+                                            Duration="00:00:00.25" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard
+                                        AutoReverse="False">
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                            To="1"
+                                            Duration="00:00:00.25" />
+                                        <DoubleAnimation
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                            To="1"
+                                            Duration="00:00:00.25" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                <Style
+                    TargetType="{x:Type GraphX:EdgeControl}">
+                    <Style.Resources>
+                        <ToolTip
+                            x:Key="ToolTipContent">
+                            <StackPanel>
+                                <TextBlock
+                                    Text="{Binding Description}" />
+                            </StackPanel>
+                        </ToolTip>
+                    </Style.Resources>
+                    <Setter
+                        Property="ToolTip"
+                        Value="{StaticResource ToolTipContent}" />
+
+                    <Style.Triggers>
+                        <DataTrigger
+                            Binding="{Binding Path=IsSpecialization}"
+                            Value="true">
+                            <Setter
+                                Property="Foreground"
+                                Value="Red" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="5" />
+                        </DataTrigger>
+                        <DataTrigger
+                            Binding="{Binding Path=IsImplementation}"
+                            Value="true">
+                            <Setter
+                                Property="Foreground"
+                                Value="Blue" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="3" />
+                        </DataTrigger>
+                        <DataTrigger
+                            Binding="{Binding Path=IsServiceReference}"
+                            Value="true">
+                            <Setter
+                                Property="Foreground"
+                                Value="Yellow" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                        </DataTrigger>
+                    </Style.Triggers>
+
+                </Style>
+            </Grid.Resources>
 
             <!-- Graph viewer -->
-            <xctk:Zoombox
+            <gxc:ZoomControl
+                x:Name="ZoomBox"
+                Grid.Column="0"
+                Grid.Row="0">
+                <local:YodiiGraphArea
+                    x:Name="GraphArea" />
+            </gxc:ZoomControl>
+            <!--<xctk:Zoombox
                 Grid.Column="0"
                 Grid.Row="0"
                 MouseDown="graphLayout_MouseDown">
                 <Border
                     Padding="30pt">
-                    <local:YodiiGraphLayout
+                    <local:YodiiGraphArea
                         x:Name="graphLayout"
                         Graph="{Binding Path=Graph}"
-                        LayoutAlgorithmType="{Binding Path=GraphLayoutAlgorithmType}"
                         OverlapRemovalAlgorithmType="FSA"
                         HighlightAlgorithmType="Simple"
                         RenderTransformOrigin="0.5,0.5">
 
-                        <local:YodiiGraphLayout.Resources>
-                            <!-- Vertex view structure/data -->
-                            <DataTemplate
-                                x:Key="YodiiVertexTemplate"
-                                DataType="{x:Type local:YodiiGraphVertex}">
+                        <local:YodiiGraphArea.Resources>
 
-                                <local:YodiiVertexControl
-                                    Vertex="{Binding Mode=OneWay}"
-                                    ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
-
-                                <DataTemplate.Triggers>
-                                    <!-- IsStarted text -->
-                                    <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
-                                    <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="false">
-                                    <Setter TargetName="IsStartedText" Property="Text" Value="Stopped" />
-                                </DataTrigger>-->
-                                </DataTemplate.Triggers>
-
-                            </DataTemplate>
-
-                            <!-- Vertex styling -->
-
-                            <!-- Vertex style -->
-                            <Style
-                                TargetType="{x:Type GraphSharp:VertexControl}">
-                                <Style.Resources>
-                                    <!-- Mouse tooltip -->
-                                    <ToolTip
-                                        x:Key="VertexToolTipContent">
-                                        <StackPanel>
-                                            <TextBlock
-                                                Text="{Binding Title}" />
-                                        </StackPanel>
-                                    </ToolTip>
-                                </Style.Resources>
-                                <Setter
-                                    Property="ToolTip"
-                                    Value="{StaticResource VertexToolTipContent}" />
-
-                                <!-- Global vertex template -->
-                                <Setter
-                                    Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate
-                                            TargetType="{x:Type GraphSharp:VertexControl}">
-
-                                            <ContentPresenter
-                                                Content="{TemplateBinding Vertex}"
-                                                ContentTemplate="{StaticResource YodiiVertexTemplate}"
-                                                MouseDown="StackPanel_MouseDown" />
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-
-                                <Setter
-                                    Property="RenderTransformOrigin"
-                                    Value="0.5,0.5" />
-
-                                <Setter
-                                    Property="RenderTransform">
-                                    <Setter.Value>
-                                        <ScaleTransform
-                                            ScaleX="1"
-                                            ScaleY="1" />
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-
-                                    <!-- Selected -->
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsSelected, Mode=OneWay}"
-                                        Value="true">
-                                        <DataTrigger.EnterActions>
-                                            <BeginStoryboard>
-                                                <Storyboard
-                                                    AutoReverse="False">
-                                                    <DoubleAnimation
-                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                        To="1.3"
-                                                        Duration="00:00:00.25" />
-                                                    <DoubleAnimation
-                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                        To="1.3"
-                                                        Duration="00:00:00.25" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </DataTrigger.EnterActions>
-                                        <DataTrigger.ExitActions>
-                                            <BeginStoryboard>
-                                                <Storyboard
-                                                    AutoReverse="False">
-                                                    <DoubleAnimation
-                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                        To="1"
-                                                        Duration="00:00:00.25" />
-                                                    <DoubleAnimation
-                                                        Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                        To="1"
-                                                        Duration="00:00:00.25" />
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </DataTrigger.ExitActions>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                            <!-- Global edge style -->
-                            <Style
-                                TargetType="{x:Type GraphSharp:EdgeControl}">
-                                <Style.Resources>
-                                    <ToolTip
-                                        x:Key="ToolTipContent">
-                                        <StackPanel>
-                                            <!-- TODO -->
-                                            <TextBlock
-                                                Text="{Binding Description}" />
-                                        </StackPanel>
-                                    </ToolTip>
-                                </Style.Resources>
-                                <Setter
-                                    Property="ToolTip"
-                                    Value="{StaticResource ToolTipContent}" />
-
-                                <Style.Triggers>
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsSpecialization}"
-                                        Value="true">
-                                        <Setter
-                                            Property="Foreground"
-                                            Value="Red" />
-                                        <Setter
-                                            Property="StrokeThickness"
-                                            Value="5" />
-                                    </DataTrigger>
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsImplementation}"
-                                        Value="true">
-                                        <Setter
-                                            Property="Foreground"
-                                            Value="Blue" />
-                                        <Setter
-                                            Property="StrokeThickness"
-                                            Value="3" />
-                                    </DataTrigger>
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsServiceReference}"
-                                        Value="true">
-                                        <Setter
-                                            Property="Foreground"
-                                            Value="Yellow" />
-                                        <Setter
-                                            Property="StrokeThickness"
-                                            Value="2" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                                
-                            </Style>
-                        </local:YodiiGraphLayout.Resources>
-                    </local:YodiiGraphLayout>
+                        </local:YodiiGraphArea.Resources>
+                    </local:YodiiGraphArea>
                 </Border>
-            </xctk:Zoombox>
+            </xctk:Zoombox>-->
 
             <!-- Right panel -->
             <GridSplitter

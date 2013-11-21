@@ -202,6 +202,7 @@ namespace Yodii.Lab
             }
 
             GraphLayoutAlgorithmType = "KK";
+            _parentWindow.GraphArea.GenerateGraph( Graph, true, true, true );
         }
 
         private void SaveAsFileExecute(object param)

@@ -67,6 +67,7 @@ namespace Yodii.Lab
 
         void Vertex_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
         {
+            if( Vertex == null ) return;
             Debug.Assert( Vertex == sender as YodiiGraphVertex );
 
             UpdateCheckbox();
@@ -74,6 +75,7 @@ namespace Yodii.Lab
 
         void UpdateCheckbox()
         {
+            if( Vertex == null ) return;
             if( Vertex.HasConfiguration == false )
                 SetCheckedConfigurationStatus( null );
             else
@@ -120,6 +122,7 @@ namespace Yodii.Lab
 
         private void ChangeConfiguration( ConfigurationStatus status )
         {
+            if( Vertex == null ) return;
             // If plugin: PluginInfo.PluginId / else: ServiceInfo.ServiceFullName
             string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LivePluginInfo.PluginInfo.PluginId.ToString() : Vertex.LiveServiceInfo.ServiceInfo.ServiceFullName;
 
@@ -151,6 +154,7 @@ namespace Yodii.Lab
 
         private void DeleteMenuItem_Click( object sender, RoutedEventArgs e )
         {
+            if( Vertex == null ) return;
             Vertex.RemoveSelf();
         }
     }

@@ -12,6 +12,7 @@ using System.Diagnostics;
 using Yodii.Lab.Mocks;
 using Yodii.Lab.Utils;
 using Yodii.Lab.ConfigurationEditor;
+using GraphX;
 
 namespace Yodii.Lab
 {
@@ -26,8 +27,45 @@ namespace Yodii.Lab
         {
             _vm = new MainWindowViewModel(this);
             this.DataContext = _vm;
-
             InitializeComponent();
+            GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+
+            GraphArea.DefaultLayoutAlgorithm = GraphX.LayoutAlgorithmTypeEnum.KK;
+            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.Bundling;
+            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
+            GraphArea.SetVerticesDrag( true, true );
+            GraphArea.EnableParallelEdges = true;
+            GraphArea.EdgeShowSelfLooped = true;
+            GraphArea.EdgeCurvingEnabled = true;
+            GraphArea.UseNativeObjectArrange = false;
+            GraphArea.SideExpansionSize = new Size( 100, 100 );
+
+            GraphArea.GenerateGraphFinished += GraphArea_GenerateGraphFinished;
+
+            ZoomBox.IsAnimationDisabled = false;
+            ZoomBox.MaxZoomDelta = 2;
+
+            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
+
+        }
+
+        void GraphArea_GenerateGraphFinished( object sender, EventArgs e )
+        {
+            GraphArea.GenerateAllEdges();
+            ZoomBox.ZoomToFill();
+            ZoomBox.Mode = GraphX.Controls.ZoomControlModes.Custom;
+            foreach( var item in GraphArea.VertexList )
+            {
+                DragBehaviour.SetIsDragEnabled( item.Value, true );
+                item.Value.EventOptions.PositionChangeNotification = true;
+            }
+            GraphArea.UpdateLayout();
+        }
+
+        void Graph_GraphUpdateRequested( object sender, GraphUpdateRequestEventArgs e )
+        {
+            this.GraphArea.GenerateGraph( _vm.Graph );
+
         }
 
         private void StackPanel_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
