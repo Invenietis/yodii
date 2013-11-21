@@ -13,7 +13,6 @@
     WindowStartupLocation="CenterScreen"
     x:Name="MainWindowRoot"
     Title="Yodii Lab"
-    
     Height="600"
     Width="800">
     <Fluent:RibbonWindow.Resources>
@@ -31,7 +30,7 @@
                     TypeName="ym:RunningRequirement" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
-        
+
         <DataTemplate
             x:Key="serviceVertexPropertiesTemplate"
             DataType="local:YodiiGraphVertex">
@@ -59,7 +58,7 @@
             <Fluent:Ribbon.QuickAccessItems>
                 <Fluent:QuickAccessMenuItem
                     Header="Save"
-                    Command="{Binding Path=SaveAsFileCommand}"/>
+                    Command="{Binding Path=SaveAsFileCommand}" />
             </Fluent:Ribbon.QuickAccessItems>
             <!--Tabs-->
             <Fluent:RibbonTabItem
@@ -88,7 +87,8 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Add service"
-                        Command="{Binding Path=CreateServiceCommand}">
+                        Command="{Binding Path=CreateServiceCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
@@ -97,7 +97,8 @@
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Add plugin"
-                        Command="{Binding Path=CreatePluginCommand}">
+                        Command="{Binding Path=CreatePluginCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
@@ -117,7 +118,8 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Configuration editor"
-                        Command="{Binding Path=OpenConfigurationEditorCommand}">
+                        Command="{Binding Path=OpenConfigurationEditorCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -174,7 +176,7 @@
                 <ColumnDefinition
                     Width="1*" />
             </Grid.ColumnDefinitions>
-            
+
             <Grid.Resources>
                 <DataTemplate
                     x:Key="YodiiVertexTemplate"
@@ -309,7 +311,7 @@
                                 Value="Dot" />
                         </DataTrigger>
                     </Style.Triggers>
-                    
+
                     <Setter
                         Property="ToolTip"
                         Value="{StaticResource ToolTipContent}" />

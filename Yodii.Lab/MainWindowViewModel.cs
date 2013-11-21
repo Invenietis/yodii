@@ -24,7 +24,6 @@ namespace Yodii.Lab
     {
         #region Fields
 
-        readonly MainWindow _parentWindow;
         readonly YodiiGraph _graph;
         readonly ServiceInfoManager _serviceInfoManager;
 
@@ -48,9 +47,8 @@ namespace Yodii.Lab
 
         #region Constructor
 
-        public MainWindowViewModel( MainWindow parentWindow )
+        public MainWindowViewModel()
         {
-            _parentWindow = parentWindow;
             _configurationManager = new ConfigurationManager();
             _serviceInfoManager = new ServiceInfoManager();
 
@@ -74,6 +72,7 @@ namespace Yodii.Lab
 
         private void OpenConfigurationEditorExecute( object param )
         {
+            Debug.Assert( param == null || param is Window);
             if( _activeConfEditorWindow != null )
             {
                 _activeConfEditorWindow.Activate();
@@ -81,7 +80,7 @@ namespace Yodii.Lab
             else
             {
                 _activeConfEditorWindow = new ConfigurationEditorWindow( ConfigurationManager, ServiceInfoManager );
-                _activeConfEditorWindow.Owner = _parentWindow;
+                _activeConfEditorWindow.Owner = (Window)param;
                 _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
 
                 _activeConfEditorWindow.Show();
@@ -119,6 +118,7 @@ namespace Yodii.Lab
 
         private void CreateServiceExecute( object param )
         {
+            Debug.Assert( param == null || param is Window );
             IServiceInfo selectedService = null;
 
             if( SelectedVertex != null )
@@ -148,13 +148,14 @@ namespace Yodii.Lab
                 }
             };
 
-            window.Owner = _parentWindow;
+            window.Owner = (Window)param;
 
             window.ShowDialog();
         }
 
         private void CreatePluginExecute( object param )
         {
+            Debug.Assert( param != null || param is Window );
             IServiceInfo selectedService = null;
 
             if( SelectedVertex != null )
@@ -188,7 +189,7 @@ namespace Yodii.Lab
                 }
             };
 
-            window.Owner = _parentWindow;
+            window.Owner = (Window)param;
 
             window.ShowDialog();
         }

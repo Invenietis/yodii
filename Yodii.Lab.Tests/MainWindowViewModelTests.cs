@@ -254,7 +254,7 @@ namespace Yodii.Lab.Tests
 
             Assert.That( r.IsSuccessful );
 
-            MainWindowViewModel _vm2 = new MainWindowViewModel(null);
+            MainWindowViewModel _vm2 = new MainWindowViewModel();
 
             DetailedOperationResult r2 = _vm2.LoadState( tempFilePath );
 
@@ -300,7 +300,7 @@ namespace Yodii.Lab.Tests
              * |PluginAx-1|    |Plugin.Without.Service|
              * +----------+    +----------------------+
              */
-            MainWindowViewModel vm = new MainWindowViewModel(null);
+            MainWindowViewModel vm = new MainWindowViewModel();
 
             Assert.That( vm.IsLive, Is.False );
 

@@ -25,7 +25,7 @@ namespace Yodii.Lab
 
         public MainWindow()
         {
-            _vm = new MainWindowViewModel(this);
+            _vm = new MainWindowViewModel();
             this.DataContext = _vm;
             InitializeComponent();
 
