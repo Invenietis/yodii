@@ -11,6 +11,8 @@ namespace Yodii.Model
     {
         bool Success { get; }
 
+        IConfigurationManagerFailureResult ConfigurationManagerFailureResult { get; }
+
         IStaticFailureResult StaticFailureResult { get; }
 
         IDynamicFailureResult HostFailureResult { get; }

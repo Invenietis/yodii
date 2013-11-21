@@ -20,15 +20,7 @@ namespace Yodii.Model
 
         ConfigurationChangingEventArgs _currentEventArgs;
 
-
-        public ConfigurationManager()
-        {
-            _configurationLayerCollection = new ConfigurationLayerCollection(this);
-        }
-        
-        
         public event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
-
         public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
         public ConfigurationLayerCollection Layers
@@ -46,36 +38,41 @@ namespace Yodii.Model
             }
         }
 
-
-        private FinalConfiguration ResolveBasicConfiguration(ConfigurationLayer firstLayer)
+        public ConfigurationManager()
         {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            foreach( ConfigurationItem item in firstLayer.Items )
-            {
-                final.Add( item.ServiceOrPluginId, item.Status );
-            }
-
-            _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerAdded, firstLayer );
-            RaiseConfigurationChanging( _currentEventArgs );
-
-            if( _currentEventArgs.IsCanceled )
-            {
-                firstLayer.Items.Remove( firstLayer.Items.Last().ServiceOrPluginId );
-                return ResolveBasicConfiguration( firstLayer );
-            }
-            else
-            {
-                return _currentEventArgs.FinalConfiguration;
-            }
+            _configurationLayerCollection = new ConfigurationLayerCollection( this );
         }
 
-        internal void OnLayerNameChanged( ConfigurationLayer layer)
+        //private FinalConfiguration ResolveBasicConfiguration(ConfigurationLayer firstLayer)
+        //{
+        //    Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+        //    foreach( ConfigurationItem item in firstLayer.Items )
+        //    {
+        //        final.Add( item.ServiceOrPluginId, item.Status );
+        //    }
+
+        //    _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerAdded, firstLayer );
+        //    RaiseConfigurationChanging( _currentEventArgs );
+
+        //    if( _currentEventArgs.IsCanceled )
+        //    {
+        //        firstLayer.Items.Remove( firstLayer.Items.Last().ServiceOrPluginId );
+        //        return ResolveBasicConfiguration( firstLayer );
+        //    }
+        //    else
+        //    {
+        //        return _currentEventArgs.FinalConfiguration;
+        //    }
+        //}
+
+        internal void OnLayerNameChanged( ConfigurationLayer layer )
         {
             _configurationLayerCollection.CheckPosition( layer );
         }
 
         ConfigurationResult FillFromConfiguration( Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
         {
+            Co
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
                 ConfigurationStatus status;
@@ -85,7 +82,7 @@ namespace Yodii.Model
                     {
                         if( final.TryGetValue( item.ServiceOrPluginId, out status ) )
                         {
-                            if( status == ConfigurationStatus.Optional || ( status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running ) )
+                            if( status == ConfigurationStatus.Optional || (status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running) )
                             {
                                 final[item.ServiceOrPluginId] = item.Status;
                             }
@@ -107,7 +104,7 @@ namespace Yodii.Model
         internal ConfigurationResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
         {
             Debug.Assert( item != null && _finalConfiguration != null && _configurationLayerCollection.Count != 0 );
-            //if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
+            if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
 
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             final.Add( item.ServiceOrPluginId, newStatus );
@@ -126,8 +123,8 @@ namespace Yodii.Model
 
                 return result;
             }
-            result.AddFailureCause( String.Format("The status of {0} cannot be changed", item.ServiceOrPluginId) );
-            return result ;
+            result.AddFailureCause( String.Format( "The status of {0} cannot be changed", item.ServiceOrPluginId ) );
+            return result;
         }
 
         internal ConfigurationResult OnConfigurationItemAdding( ConfigurationItem newItem )
@@ -168,16 +165,16 @@ namespace Yodii.Model
                 return new ConfigurationResult();
             }
             Debug.Fail( "Removing a configuration item can not lead to an impossibility." );
-            return new ConfigurationResult("Removing a configuration item can not lead to an impossibility.");
+            return new ConfigurationResult( "Removing a configuration item can not lead to an impossibility." );
         }
 
         internal ConfigurationResult OnConfigurationLayerAdding( ConfigurationLayer layer )
         {
-            if( _finalConfiguration == null )
-            {
-                FinalConfiguration = ResolveBasicConfiguration( layer );
-                return new ConfigurationResult();
-            }
+            //if( _finalConfiguration == null )
+            //{
+            //    FinalConfiguration = ResolveBasicConfiguration( layer );
+            //    return new ConfigurationResult();
+            //}
 
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             foreach( ConfigurationItem item in layer.Items )
@@ -257,7 +254,7 @@ namespace Yodii.Model
         private void RaiseConfigurationChanging( ConfigurationChangingEventArgs e )
         {
             var h = ConfigurationChanging;
-            if( h != null ) h( this, e ); 
+            if( h != null ) h( this, e );
         }
 
         private void RaiseConfigurationChanged( ConfigurationChangedEventArgs e )
@@ -277,7 +274,7 @@ namespace Yodii.Model
                 _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.LayerName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), true );
 
                 _layers.PropertyChanged += RetrievePropertyEvent;
-                _layers.CollectionChanged += RetrieveCollectionEvent;            
+                _layers.CollectionChanged += RetrieveCollectionEvent;
             }
 
             private void RetrieveCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
@@ -307,7 +304,7 @@ namespace Yodii.Model
                         _parent.OnConfigurationChanged();
                         return result;
                     }
-                    else 
+                    else
                     {
                         result.AddFailureCause( "A problem has been encountered while adding the ConfigurationLayer in the collection" );
                         return result;
@@ -376,7 +373,7 @@ namespace Yodii.Model
 
             public int Count
             {
-                get { return _layers.Count; } 
+                get { return _layers.Count; }
             }
 
             #endregion
@@ -429,7 +426,7 @@ namespace Yodii.Model
 
             #endregion
         }
-        
+
     }
 
     public class ConfigurationChangingEventArgs : EventArgs
@@ -489,7 +486,7 @@ namespace Yodii.Model
             _configurationLayerChanged = configurationLayer;
         }
 
-        public void Cancel(string cause)
+        public void Cancel( string cause )
         {
             _isCanceled = true;
             _causes.Add( cause );

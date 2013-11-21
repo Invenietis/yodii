@@ -58,11 +58,11 @@ namespace Yodii.Model
             }
         }
 
-        public ConfigurationResult SetStatus( ConfigurationStatus newStatus, string statusReason = "")
+        public IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            ConfigurationResult result = _owner.OnConfigurationItemChanging( this, newStatus ); 
-            if( result )
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, newStatus ); 
+            if( result.Success )
             {
                 _status = newStatus;
                 NotifyPropertyChanged( "Status" );

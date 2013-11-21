@@ -31,9 +31,12 @@ namespace Yodii.Engine
         {
             _hostFailureResult = hostFailureResult;
         }
-
         public bool Success { get { return _staticFailureResult == null && _hostFailureResult == null; } }
 
+        public IConfigurationManagerFailureResult ConfigurationManagerFailureResult
+        {
+            get { return null; }
+        }
 
         public IStaticFailureResult StaticFailureResult
         {

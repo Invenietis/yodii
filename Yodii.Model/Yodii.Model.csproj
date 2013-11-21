@@ -50,7 +50,11 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Configuration\ConfigurationConflict.cs" />
+    <Compile Include="Configuration\ConfigurationManagerFailureResult.cs" />
     <Compile Include="Configuration\ConfigurationManagerXmlSerializer.cs" />
+    <Compile Include="Configuration\ConfigurationYodiiEngineResult.cs" />
+    <Compile Include="IConfigurationManagerFailureResult.cs" />
     <Compile Include="LiveModel\StartDependencyImpact.cs" />
     <Compile Include="Solver\PluginRuntimeError.cs" />
     <Compile Include="Solver\SolvedConfigurationStatus.cs" />

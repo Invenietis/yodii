@@ -72,11 +72,11 @@ namespace Yodii.Model
 
         #endregion properties
 
-        internal ConfigurationResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
-            if( _owner == null ) return new ConfigurationResult();
+            if( _owner == null ) return new ConfigurationYodiiEngineResult();
             return _owner.OnConfigurationItemChanging( item, newStatus );
         }
 
