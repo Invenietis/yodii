@@ -49,6 +49,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ConfigurationManager.cs" />
     <Compile Include="ConfigurationSolver\ConfigState.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\YodiiEngineResult.cs" />
