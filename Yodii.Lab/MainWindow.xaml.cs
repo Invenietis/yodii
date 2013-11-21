@@ -28,25 +28,37 @@ namespace Yodii.Lab
             _vm = new MainWindowViewModel(this);
             this.DataContext = _vm;
             InitializeComponent();
-            GraphArea.GenerateGraph( _vm.Graph, true, true, true );
 
             GraphArea.DefaultLayoutAlgorithm = GraphX.LayoutAlgorithmTypeEnum.KK;
-            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.Bundling;
+            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.None;
             GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
             GraphArea.SetVerticesDrag( true, true );
-            GraphArea.EnableParallelEdges = true;
-            GraphArea.EdgeShowSelfLooped = true;
-            GraphArea.EdgeCurvingEnabled = true;
+            //GraphArea.EnableParallelEdges = true;
+            //GraphArea.EdgeShowSelfLooped = true;
+            //GraphArea.EdgeCurvingEnabled = true;
             GraphArea.UseNativeObjectArrange = false;
             GraphArea.SideExpansionSize = new Size( 100, 100 );
 
             GraphArea.GenerateGraphFinished += GraphArea_GenerateGraphFinished;
+            GraphArea.RelayoutFinished += GraphArea_RelayoutFinished;
 
             ZoomBox.IsAnimationDisabled = false;
             ZoomBox.MaxZoomDelta = 2;
 
             _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
+        }
+
+        void GraphArea_RelayoutFinished( object sender, EventArgs e )
+        {
+            ZoomBox.ZoomToFill();
+            ZoomBox.Mode = GraphX.Controls.ZoomControlModes.Custom;
+            foreach( var item in GraphArea.VertexList )
+            {
+                DragBehaviour.SetIsDragEnabled( item.Value, true );
+                item.Value.EventOptions.PositionChangeNotification = true;
+            }
+            GraphArea.UpdateLayout();
         }
 
         void GraphArea_GenerateGraphFinished( object sender, EventArgs e )

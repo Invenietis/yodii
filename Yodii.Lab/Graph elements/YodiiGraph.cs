@@ -23,6 +23,7 @@ namespace Yodii.Lab
         readonly ServiceInfoManager _serviceManager;
 
         ConfigurationManager _configurationManager;
+        bool _lockGraphUpdates;
 
         #region Constructor
         public YodiiGraph()
@@ -112,8 +113,6 @@ namespace Yodii.Lab
                     }
                 }
             }
-
-            RaiseGraphUpdateRequested();
         }
 
         private void RaiseVertexStatusChange()
@@ -248,11 +247,12 @@ namespace Yodii.Lab
             this.RemoveVertexIf( v => v.IsService );
         }
 
-        void RaiseGraphUpdateRequested()
+        internal void RaiseGraphUpdateRequested( GraphGenerationRequestType type = GraphGenerationRequestType.RelayoutGraph )
         {
+            if( _lockGraphUpdates ) return;
             if( this.GraphUpdateRequested != null )
             {
-                this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs() );
+                this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type ) );
             }
         }
         #endregion Private methods

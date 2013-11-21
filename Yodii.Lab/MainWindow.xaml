@@ -316,30 +316,13 @@
             <!-- Graph viewer -->
             <gxc:ZoomControl
                 x:Name="ZoomBox"
+                MouseDown="graphLayout_MouseDown"
+                Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
                 Grid.Column="0"
                 Grid.Row="0">
                 <local:YodiiGraphArea
                     x:Name="GraphArea" />
             </gxc:ZoomControl>
-            <!--<xctk:Zoombox
-                Grid.Column="0"
-                Grid.Row="0"
-                MouseDown="graphLayout_MouseDown">
-                <Border
-                    Padding="30pt">
-                    <local:YodiiGraphArea
-                        x:Name="graphLayout"
-                        Graph="{Binding Path=Graph}"
-                        OverlapRemovalAlgorithmType="FSA"
-                        HighlightAlgorithmType="Simple"
-                        RenderTransformOrigin="0.5,0.5">
-
-                        <local:YodiiGraphArea.Resources>
-
-                        </local:YodiiGraphArea.Resources>
-                    </local:YodiiGraphArea>
-                </Border>
-            </xctk:Zoombox>-->
 
             <!-- Right panel -->
             <GridSplitter
