@@ -118,7 +118,7 @@ namespace Yodii.Engine
             Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
         }
 
-        public IEnumerable<Tuple<IPluginInfo,Exception>> WhatIsAHost( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> totoStart )
+        public IEnumerable<Tuple<IPluginInfo,Exception>> WhatIsAHost( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
         {
         }
 
@@ -126,8 +126,8 @@ namespace Yodii.Engine
         {
             if ( cmd.FullName != null )
             {
-                ServiceData s;
-                if ( _services.TryGetValue( cmd.FullName, out s ) )
+                ServiceData s = _services.Values.FirstOrDefault( i => i.ServiceInfo.ServiceFullName == cmd.FullName );
+                if ( s != null )
                 {
                     if ( cmd.Start ) return s.Start();
                     return s.Stop();
@@ -135,8 +135,8 @@ namespace Yodii.Engine
             }
             else
             {
-                PluginData p;
-                if ( _plugins.TryGetValue( cmd.PluginId, out p ) )
+                PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
+                if ( p != null );
                 {
                     if ( cmd.Start ) return p.Start( cmd.Impact );
                     return p.Stop();

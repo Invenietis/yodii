@@ -22,5 +22,13 @@ namespace Yodii.Engine
                 default: _dynamicStatus = null; break;
             }
         }
+        public bool Start()
+        {
+            return true;
+        }
+        public bool Stop()
+        {
+            return true;
+        }
     }
 }

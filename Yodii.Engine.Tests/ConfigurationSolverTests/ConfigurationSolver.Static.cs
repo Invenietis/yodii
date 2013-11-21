@@ -94,8 +94,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationLayer cl = new ConfigurationLayer();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Disable);
-            cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Disable );
+            cl.Items.Add( "ServiceAx", ConfigurationStatus.Disabled);
+            cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
 
             cm.Layers.Add( cl );
@@ -140,7 +140,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationManager cm = new ConfigurationManager();
 
             ConfigurationLayer cl = new ConfigurationLayer();
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Disable );
+            cl.Items.Add( "ServiceB", ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
 
             cm.Layers.Add( cl );
@@ -183,7 +183,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             ConfigurationLayer cl = new ConfigurationLayer();
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disable );
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
 
             cm.Layers.Add( cl );
 
@@ -316,7 +316,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             ConfigurationLayer cl = new ConfigurationLayer();
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Disable );
+            cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
 
             cm.Layers.Add( cl );
@@ -485,9 +485,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             ConfigurationLayer cl = new ConfigurationLayer();
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Disable );
+            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin( "PluginAxx-1" ).PluginId.ToString(), ConfigurationStatus.Disable );
+            cl.Items.Add( info.FindPlugin( "PluginAxx-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
 
             cm.Layers.Add( cl );
 
@@ -560,7 +560,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationManager cm = new ConfigurationManager();
 
             ConfigurationLayer cl = new ConfigurationLayer();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disable );
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
 
             cm.Layers.Add( cl );
 
@@ -667,7 +667,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationManager cm = new ConfigurationManager();
 
             ConfigurationLayer cl = new ConfigurationLayer();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disable );
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin("PluginA-1").PluginId.ToString(), ConfigurationStatus.Running );
 
             cm.Layers.Add( cl );

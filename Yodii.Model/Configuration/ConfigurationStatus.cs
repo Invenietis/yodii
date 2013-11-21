@@ -8,7 +8,7 @@ namespace Yodii.Model
 {
     public enum ConfigurationStatus
     {
-        Disable = -1,
+        Disabled = -1,
 
         Optional = 0,
 

@@ -70,7 +70,7 @@ namespace Yodii.Engine
         internal void SetMustExistPluginByConfig( PluginData p )
         {
             Debug.Assert( !Disabled );
-            Debug.Assert( p.ConfigSolvedStatus >= DependencyRequirement.Runnable );
+            Debug.Assert( p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable );
             Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData ctor, Service is not yet set." );
             if( _mustExistPluginByConfig == null )
             {

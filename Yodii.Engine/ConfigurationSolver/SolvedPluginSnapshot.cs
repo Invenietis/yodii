@@ -31,7 +31,15 @@ namespace Yodii.Engine
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
-        public SolvedConfigurationStatus ConfigSolvedStatus { get { return _configSolvedStatus; } }
+        SolvedConfigurationStatus IStaticSolvedPlugin.WantedConfigSolvedStatus 
+        { 
+            get { return _configSolvedStatus; } 
+        }
+
+        SolvedConfigurationStatus IDynamicSolvedPlugin.ConfigSolvedStatus 
+        { 
+            get { return _configSolvedStatus; } 
+        }
 
         bool IStaticSolvedPlugin.IsBlocking 
         { 

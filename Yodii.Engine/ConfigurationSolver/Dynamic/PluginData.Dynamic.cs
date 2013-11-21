@@ -22,5 +22,14 @@ namespace Yodii.Engine
                 default: _dynamicStatus = null; break;
             }
         }
+
+        public bool Start( StartDependencyImpact impact)
+        {
+            return true;
+        }
+        public bool Stop()
+        {
+            return true;
+        }
     }
 }
