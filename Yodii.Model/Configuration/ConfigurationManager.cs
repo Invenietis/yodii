@@ -191,6 +191,7 @@ namespace Yodii.Model
                 if( _currentEventArgs.IsCanceled )
                 {
                     foreach( string s in _currentEventArgs.Causes ) result.AddFailureCause( s );
+                    _currentEventArgs = null;
                     return result;
                 }
                 return result;
