@@ -11,25 +11,46 @@ namespace Yodii.Engine
     {
         IDiscoveredInfo _discoveredInfo;
         readonly ConfigurationManager _manager;
+        ConfigurationSolver _currentSolver;
+        readonly List<YodiiCommand> _yodiiCommands;
+        readonly IYodiiEngineHost _host;
 
-        public YodiiEngine()
+        public YodiiEngine( IYodiiEngineHost host )
         {
+            if( host == null ) throw new ArgumentNullException( "host" );
+            _host = host;
             _discoveredInfo = EmptyDiscoveredInfo.Empty;
-            _manager = new ConfigurationManager();
+            _manager = new ConfigurationManager( this );
+            _yodiiCommands = new List<YodiiCommand>();
+        }
+
+        void _manager_ConfigurationChanging( object sender, ConfigurationChangingEventArgs e )
+        {
+            // Prechanging
+            ConfigurationSolver s = new ConfigurationSolver();
+            IStaticFailureResult sr = s.StaticResolution( e.FinalConfiguration, _discoveredInfo );
+            if( sr != null )
+            {
+                e.CancelByStaticResolution( sr );
+                return;
+            }
+
+            // Postchanging
+            var toDo = s.DynamicResolution( _yodiiCommands );
+            var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
+            if( errors != null && errors.Any() )
+            {
+                IDynamicFailureResult dr = s.CreateDynamicFailureResult( errors );
+                e.CancelByDynamicStep( dr );
+                return;
+            }
+            _currentSolver = s;
+
         }
 
         public IDiscoveredInfo DiscoveredInfo
         {
             get { return _discoveredInfo; }
-            set
-            {
-                if( value == null ) value = EmptyDiscoveredInfo.Empty;
-                if ( value != _discoveredInfo )
-                {
-                    _discoveredInfo = value;
-                    RaisePropertyChanged();
-                }
-            }
         }
 
         public ConfigurationManager ConfigurationManager
@@ -45,6 +66,10 @@ namespace Yodii.Engine
         {
         }
 
+        public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
+        {
+ 
+        }
 
         void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {

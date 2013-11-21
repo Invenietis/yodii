@@ -72,11 +72,11 @@ namespace Yodii.Model
 
         #endregion properties
 
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        internal ConfigurationManagerFailureResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
-            if( _owner == null ) return new ConfigurationYodiiEngineResult();
+            if( _owner == null ) return new ConfigurationManagerFailureResult();
             return _owner.OnConfigurationItemChanging( item, newStatus );
         }
 
@@ -120,7 +120,7 @@ namespace Yodii.Model
                 FirePropertyChanged( e );
             }
 
-            public ConfigurationResult Add( string serviceOrPluginId, ConfigurationStatus status, string statusReason = "" )
+            public IYodiiEngineResult Add( string serviceOrPluginId, ConfigurationStatus status, string statusReason = "" )
             {
                 if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
 
@@ -150,7 +150,7 @@ namespace Yodii.Model
             /// </summary>
             /// <param name="serviceOrPluginId">The identifier.</param>
             /// <returns>True if the identifier has actually been removed.</returns>
-            public ConfigurationResult Remove( string serviceOrPluginId )
+            public IYodiiEngineResult Remove( string serviceOrPluginId )
             {
                 if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
 

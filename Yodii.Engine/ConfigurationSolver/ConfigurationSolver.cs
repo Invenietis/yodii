@@ -23,7 +23,7 @@ namespace Yodii.Engine
             _plugins = new Dictionary<IPluginInfo, PluginData>();
         }
 
-        public IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
+        public IStaticFailureResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
         {
             // Registering all Services.
             _services.Clear();
@@ -96,12 +96,12 @@ namespace Yodii.Engine
             }
             if ( blockingPlugins != null || blockingServices != null )
             {
-                return new YodiiEngineResult( _services, _plugins, blockingPlugins, blockingServices );
+                return new StaticFailureResult( blockingPlugins, blockingServices );
             }
             return null;
         }
 
-        public void DynamicResolution( List<YodiiCommand> commands )
+        public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )
         {
             foreach ( var p in _plugins.Values ) p.ResetDynamicState();
             foreach ( var s in _services.Values ) s.ResetDynamicState();
@@ -114,12 +114,10 @@ namespace Yodii.Engine
                     commands.RemoveAt( i-- );
                 }
             }
-
             Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
-        }
-
-        public IEnumerable<Tuple<IPluginInfo,Exception>> WhatIsAHost( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
-        {
+            return Tuple.Create( _plugins.Values.Where( p => p.Disabled ).Select( p => p.PluginInfo ),
+                                 _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Stopped ).Select( p => p.PluginInfo ),
+                                 _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Running || p.DynamicStatus == RunningStatus.RunningLocked ).Select( p => p.PluginInfo ) );
         }
 
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )

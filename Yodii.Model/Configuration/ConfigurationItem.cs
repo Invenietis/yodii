@@ -68,7 +68,6 @@ namespace Yodii.Model
                 NotifyPropertyChanged( "Status" );
                 if( StatusReason != statusReason ) StatusReason = statusReason;
                 if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
-                return result;
             }
             return result;
         }

@@ -12,7 +12,7 @@ namespace Yodii.Model
 
     public interface IYodiiEngine : INotifyPropertyChanged
     {
-        IDiscoveredInfo DiscoveredInfo { get; set; }
+        IDiscoveredInfo DiscoveredInfo { get; }
 
         ConfigurationManager ConfigurationManager { get; }
 

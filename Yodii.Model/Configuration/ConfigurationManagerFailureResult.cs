@@ -30,6 +30,11 @@ namespace Yodii.Model
             _failureReasons.Add( reason );
         }
 
+        public bool Success
+        {
+            get { return _blockingItems.Count == 0 && _failureReasons.Count == 0; }
+        }
+
         #region IConfigurationManagerFailureResult Members
 
         public IReadOnlyList<ConfigurationConflict> BlockingItems

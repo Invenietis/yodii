@@ -9,12 +9,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using Yodii.Model;
 
 namespace Yodii.Engine
 {
     //Todo : augmenter la précision de la résolution du layer system
     class ConfigurationManager : IConfigurationManager
     {
+        readonly YodiiEngine _engine;
         readonly ConfigurationLayerCollection _configurationLayerCollection;
         FinalConfiguration _finalConfiguration;
 
@@ -38,8 +40,9 @@ namespace Yodii.Engine
             }
         }
 
-        public ConfigurationManager()
+        public ConfigurationManager( YodiiEngine engine )
         {
+            _engine = engine;
             _configurationLayerCollection = new ConfigurationLayerCollection( this );
         }
 
