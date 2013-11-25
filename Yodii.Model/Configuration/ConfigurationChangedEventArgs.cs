@@ -7,13 +7,13 @@ namespace Yodii.Model
 {
     public class ConfigurationChangedEventArgs : EventArgs
     {
-        private IFinalConfiguration _finalConfiguration;
+        private FinalConfiguration _finalConfiguration;
 
         private FinalConfigurationChange _finalConfigurationChanged;
         private IConfigurationItem _configurationItemChanged;
         private IConfigurationLayer _configurationLayerChanged;
 
-        public IFinalConfiguration FinalConfiguration
+        public FinalConfiguration FinalConfiguration
         {
             get { return _finalConfiguration; }
         }
@@ -33,14 +33,14 @@ namespace Yodii.Model
             get { return _configurationLayerChanged; }
         }
 
-        internal ConfigurationChangedEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
+        public ConfigurationChangedEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChanged = finalConfigurationChanged;
             _configurationItemChanged = configurationItem;
         }
 
-        internal ConfigurationChangedEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
+        public ConfigurationChangedEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChanged = finalConfigurationChanged;

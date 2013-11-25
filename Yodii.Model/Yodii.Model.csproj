@@ -53,13 +53,13 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
+    <Compile Include="Configuration\FinalConfiguration.cs" />
+    <Compile Include="Configuration\FinalConfigurationItem.cs" />
     <Compile Include="Configuration\IConfigurationItem.cs" />
     <Compile Include="Configuration\IConfigurationItemCollection.cs" />
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
-    <Compile Include="Configuration\IFinalConfiguration.cs" />
-    <Compile Include="Configuration\IFinalConfigurationItem.cs" />
     <Compile Include="DependencyRequirement.cs" />
     <Compile Include="Discoverer.cs" />
     <Compile Include="IConfigurationManagerFailureResult.cs" />

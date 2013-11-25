@@ -6,7 +6,7 @@ namespace Yodii.Model
     {
         event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
         event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
-        IFinalConfiguration FinalConfiguration { get; }
+        FinalConfiguration FinalConfiguration { get; }
         IConfigurationLayerCollection Layers { get; }
     }
 }

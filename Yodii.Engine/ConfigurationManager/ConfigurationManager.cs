@@ -25,7 +25,7 @@ namespace Yodii.Engine
         public event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
         public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
-        public ConfigurationLayerCollection Layers
+        public IConfigurationLayerCollection Layers
         {
             get { return _configurationLayerCollection; }
         }

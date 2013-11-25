@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
-using Yodii.Model;
 
-namespace Yodii.Engine
+namespace Yodii.Model
 {
-    public class FinalConfiguration : IFinalConfiguration
+    public class FinalConfiguration
     {
         readonly CKSortedArrayKeyList<FinalConfigurationItem, string> _items;
 
@@ -24,7 +23,7 @@ namespace Yodii.Engine
             return _items.GetByKey( serviceOrPluginId ).Status;
         }
 
-        internal FinalConfiguration( Dictionary<string, ConfigurationStatus> finalStatus )
+        public FinalConfiguration( Dictionary<string, ConfigurationStatus> finalStatus )
         {
             _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginId, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
             foreach( var item in finalStatus ) _items.Add( new FinalConfigurationItem( item.Key, item.Value ) );

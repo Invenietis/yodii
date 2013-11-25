@@ -9,14 +9,14 @@ namespace Yodii.Model
 {
     public class ConfigurationChangingEventArgs : EventArgs
     {
-        readonly IFinalConfiguration _finalConfiguration;
+        readonly FinalConfiguration _finalConfiguration;
         readonly FinalConfigurationChange _finalConfigurationChange;
         readonly IConfigurationItem _configurationItemChanged;
         readonly IConfigurationLayer _configurationLayerChanged;
 
         List<string> _externalReasons;
 
-        public IFinalConfiguration FinalConfiguration
+        public FinalConfiguration FinalConfiguration
         {
             get { return _finalConfiguration; }
         }
@@ -46,14 +46,14 @@ namespace Yodii.Model
             get { return _externalReasons != null ? _externalReasons.AsReadOnlyList() : CKReadOnlyListEmpty<string>.Empty; }
         }
 
-        public ConfigurationChangingEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
+        public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChange = finalConfigurationChanged;
             _configurationItemChanged = configurationItem;
         }
 
-        public ConfigurationChangingEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
+        public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChange = finalConfigurationChanged;

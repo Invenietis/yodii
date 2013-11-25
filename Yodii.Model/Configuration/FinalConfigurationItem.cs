@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Yodii.Engine
+namespace Yodii.Model
 {
-    public struct FinalConfigurationItem : Yodii.Model.Configuration.IFinalConfigurationItem
+    public struct FinalConfigurationItem
     {
         readonly string _serviceOrPluginId;
         readonly ConfigurationStatus _status;
