@@ -28,10 +28,10 @@ namespace Yodii.Engine
         {
             // Prechanging
             ConfigurationSolver s = new ConfigurationSolver();
-            IStaticFailureResult sr = s.StaticResolution( e.FinalConfiguration, _discoveredInfo );
-            if( sr != null )
+            IYodiiEngineResult engineResult = s.StaticResolution( e.FinalConfiguration, _discoveredInfo );
+            if( engineResult.StaticFailureResult != null )
             {
-                e.CancelByStaticResolution( sr );
+                e.CancelByStaticResolution( engineResult.StaticFailureResult );
                 return;
             }
 
@@ -40,8 +40,8 @@ namespace Yodii.Engine
             var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
             if( errors != null && errors.Any() )
             {
-                IDynamicFailureResult dr = s.CreateDynamicFailureResult( errors );
-                e.CancelByDynamicStep( dr );
+                IYodiiEngineResult engineResultBis = s.CreateDynamicFailureResult( errors );
+                e.CancelByDynamicStep( engineResultBis.HostFailureResult );
                 return;
             }
             _currentSolver = s;

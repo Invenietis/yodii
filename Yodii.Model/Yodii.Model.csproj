@@ -60,7 +60,6 @@
     <Compile Include="DependencyRequirement.cs" />
     <Compile Include="Discoverer.cs" />
     <Compile Include="IConfigurationManagerFailureResult.cs" />
-    <Compile Include="IConfigurationSolverResult.cs" />
     <Compile Include="Configuration\ConfigurationItem.cs" />
     <Compile Include="Configuration\ConfigurationLayer.cs" />
     <Compile Include="Configuration\ConfigurationManager.cs" />
@@ -71,13 +70,10 @@
     <Compile Include="Configuration\FinalConfigurationItem.cs" />
     <Compile Include="IDiscoveredInfo.cs" />
     <Compile Include="IAssemblyInfo.cs" />
-    <Compile Include="IDiscoveredErrorInfo.cs" />
     <Compile Include="IDiscoveredItem.cs" />
     <Compile Include="IPluginInfo.cs" />
-    <Compile Include="IPluginSolved.cs" />
     <Compile Include="IServiceInfo.cs" />
     <Compile Include="IServiceReferenceInfo.cs" />
-    <Compile Include="IServiceSolved.cs" />
     <Compile Include="IYodiiEngineHost.cs" />
     <Compile Include="IYodiiEngineResult.cs" />
     <Compile Include="LiveModel\ILiveInfo.cs" />
@@ -85,8 +81,6 @@
     <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="PluginDisabledReason.cs" />
     <Compile Include="PluginInfo.cs" />
-    <Compile Include="RunningRequirement.cs" />
-    <Compile Include="LiveModel\ILiveConfiguration.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />
     <Compile Include="IYodiiEngine.cs" />
@@ -105,7 +99,6 @@
     <Compile Include="Solver\SolvedConfigurationStatus.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LiveModel\LiveConfiguration.cs.orig" />
     <None Include="packages.config" />
     <None Include="packages.config" />
   </ItemGroup>
