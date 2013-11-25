@@ -26,6 +26,8 @@ namespace Yodii.Engine
         public YodiiEngineResult( Dictionary<IServiceInfo, ServiceData> services, Dictionary<IPluginInfo, PluginData> plugins, List<PluginData> blockingPlugins, List<ServiceData> blockingServices )
         {
             Debug.Assert( blockingPlugins != null || blockingServices != null );
+            Debug.Assert( services != null || plugins != null );
+
             List<IStaticSolvedService> AllServices = new List<IStaticSolvedService>();
             List<IStaticSolvedPlugin> AllPlugins = new List<IStaticSolvedPlugin>();
 
@@ -55,7 +57,7 @@ namespace Yodii.Engine
                     BlockingServices.Add( new SolvedServiceSnapshot( sb ) );
                 }
             }
-            StaticFailureResult _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration(AllPlugins, AllServices), BlockingPlugins, BlockingServices );
+            _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration(AllPlugins, AllServices), BlockingPlugins, BlockingServices );
         }
 
         internal YodiiEngineResult( IStaticFailureResult staticFailureResult )

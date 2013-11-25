@@ -22,7 +22,7 @@ namespace Yodii.Engine
             _plugins = new Dictionary<IPluginInfo, PluginData>();
         }
 
-        public IStaticFailureResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
+        public IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
         {
             // Registering all Services.
             _services.Clear();
@@ -95,7 +95,7 @@ namespace Yodii.Engine
             }
             if ( blockingPlugins != null || blockingServices != null )
             {
-                return new StaticFailureResult( blockingPlugins, blockingServices );
+                return new YodiiEngineResult(_services, _plugins, blockingPlugins, blockingServices );
             }
             return null;
         }
@@ -133,7 +133,7 @@ namespace Yodii.Engine
             else
             {
                 PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
-                if ( p != null );
+                if ( p != null )
                 {
                     if ( cmd.Start ) return p.Start( cmd.Impact );
                     return p.Stop();
@@ -181,6 +181,11 @@ namespace Yodii.Engine
             data = new PluginData( _services, p, service, pluginStatus );
             _plugins.Add( p, data );
             return data;
+        }
+
+        internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        {
+            return new YodiiEngineResult( _services, _plugins, errors );
         }
     }
 }

@@ -8,8 +8,6 @@ using System.ComponentModel;
 
 namespace Yodii.Model
 {
-
-
     public interface IYodiiEngine : INotifyPropertyChanged
     {
         IDiscoveredInfo DiscoveredInfo { get; }
@@ -21,6 +19,5 @@ namespace Yodii.Model
         void Stop();
 
         ILiveInfo LiveInfo { get; }
-
     }
 }

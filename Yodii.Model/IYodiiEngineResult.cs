@@ -9,7 +9,9 @@ namespace Yodii.Model
 {
     public interface IYodiiEngineResult
     {
-        bool Success { get; }
+        bool StaticResolutionSuccess { get; }
+
+        bool DynamicResolutionSuccess { get; }
 
         IConfigurationManagerFailureResult ConfigurationManagerFailureResult { get; }
 
