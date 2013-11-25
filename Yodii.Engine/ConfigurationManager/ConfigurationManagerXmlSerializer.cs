@@ -9,7 +9,7 @@ namespace Yodii.Model
 {
     public static class ConfigurationManagerXmlSerializer
     {
-        public static void SerializeConfigurationManager( ConfigurationManager m, XmlWriter w )
+        public static void SerializeConfigurationManager( IConfigurationManager m, XmlWriter w )
         {
             w.WriteStartElement( "YodiiConfiguration" );
             foreach( var layer in m.Layers )

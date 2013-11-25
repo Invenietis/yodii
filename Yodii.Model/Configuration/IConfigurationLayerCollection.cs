@@ -2,7 +2,7 @@
 using CK.Core;
 namespace Yodii.Model
 {
-    interface IConfigurationLayerCollection : ICKObservableReadOnlyList<IConfigurationLayer>
+    public interface IConfigurationLayerCollection : ICKObservableReadOnlyList<IConfigurationLayer>
     {
         IYodiiEngineResult Add( IConfigurationLayer layer );
         IYodiiEngineResult Remove( IConfigurationLayer layer );

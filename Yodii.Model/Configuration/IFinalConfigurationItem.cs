@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Yodii.Model
 {
-    interface IFinalConfigurationItem
+    public interface IFinalConfigurationItem
     {
         string ServiceOrPluginId { get; }
         ConfigurationStatus Status { get; }

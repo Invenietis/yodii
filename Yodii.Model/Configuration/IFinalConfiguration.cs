@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 namespace Yodii.Model
 {
-    interface IFinalConfiguration
+    public interface IFinalConfiguration
     {
         ConfigurationStatus GetStatus( string serviceOrPluginId );
         IReadOnlyList<IFinalConfigurationItem> Items { get; }

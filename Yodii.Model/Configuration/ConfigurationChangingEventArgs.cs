@@ -46,14 +46,14 @@ namespace Yodii.Model
             get { return _externalReasons != null ? _externalReasons.AsReadOnlyList() : CKReadOnlyListEmpty<string>.Empty; }
         }
 
-        internal ConfigurationChangingEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
+        public ConfigurationChangingEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChange = finalConfigurationChanged;
             _configurationItemChanged = configurationItem;
         }
 
-        internal ConfigurationChangingEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
+        public ConfigurationChangingEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChange = finalConfigurationChanged;

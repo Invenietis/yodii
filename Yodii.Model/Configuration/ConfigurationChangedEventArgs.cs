@@ -40,7 +40,7 @@ namespace Yodii.Model
             _configurationItemChanged = configurationItem;
         }
 
-        internal ConfigurationChangedEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, iConfigurationLayer configurationLayer )
+        internal ConfigurationChangedEventArgs( IFinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChanged = finalConfigurationChanged;

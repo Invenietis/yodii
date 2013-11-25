@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using CK.Core;
+using Yodii.Model;
 
 namespace Yodii.Engine
 {

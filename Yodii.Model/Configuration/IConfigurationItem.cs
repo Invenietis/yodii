@@ -2,11 +2,11 @@
 using System.ComponentModel;
 namespace Yodii.Model
 {
-    interface IConfigurationItem : INotifyPropertyChanged
+    public interface IConfigurationItem : INotifyPropertyChanged
     {
-        ConfigurationLayer Layer { get; }
+        IConfigurationLayer Layer { get; }
         string ServiceOrPluginId { get; }
-        IYodiiEngineResult SetStatus( Yodii.Model.ConfigurationStatus newStatus, string statusReason = "" );
+        IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" );
         ConfigurationStatus Status { get; }
         string StatusReason { get; set; }
     }

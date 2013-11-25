@@ -12,7 +12,7 @@ namespace Yodii.Model
     {
         IDiscoveredInfo DiscoveredInfo { get; }
 
-        ConfigurationManager ConfigurationManager { get; }
+        IConfigurationManager ConfigurationManager { get; }
 
         IYodiiEngineResult Start();
 

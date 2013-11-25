@@ -53,7 +53,6 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
-    <Compile Include="Configuration\ConfigurationManagerXmlSerializer.cs" />
     <Compile Include="Configuration\IConfigurationItem.cs" />
     <Compile Include="Configuration\IConfigurationItemCollection.cs" />
     <Compile Include="Configuration\IConfigurationLayer.cs" />
