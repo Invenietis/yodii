@@ -1,11 +1,12 @@
 ﻿using System;
-namespace Yodii.Model.Configuration
+using System.ComponentModel;
+namespace Yodii.Model
 {
-    interface IConfigurationManager
+    interface IConfigurationManager : INotifyPropertyChanged
     {
-        event EventHandler<Yodii.Model.ConfigurationChangedEventArgs> ConfigurationChanged;
-        event EventHandler<Yodii.Model.ConfigurationChangingEventArgs> ConfigurationChanging;
-        Yodii.Model.FinalConfiguration FinalConfiguration { get; }
-        Yodii.Model.ConfigurationManager.ConfigurationLayerCollection Layers { get; }
+        event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
+        event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
+        IFinalConfiguration FinalConfiguration { get; }
+        IConfigurationLayerCollection Layers { get; }
     }
 }

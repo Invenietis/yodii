@@ -6,10 +6,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Yodii.Model;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
-    public class ConfigurationItem : INotifyPropertyChanged
+    public class ConfigurationItem : IConfigurationItem
     {
         readonly string _serviceOrPluginId;
         readonly ConfigurationLayer _owner;
@@ -33,7 +34,7 @@ namespace Yodii.Model
             get { return _serviceOrPluginId; }
         }
 
-        public ConfigurationLayer Layer
+        public IConfigurationLayer Layer
         {
             get { return _statusReason == null ? null : _owner; }
         }

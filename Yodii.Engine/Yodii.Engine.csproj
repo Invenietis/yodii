@@ -49,7 +49,12 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ConfigurationManager.cs" />
+    <Compile Include="ConfigurationManager\ConfigurationItem.cs" />
+    <Compile Include="ConfigurationManager\ConfigurationLayer.cs" />
+    <Compile Include="ConfigurationManager\ConfigurationManager.cs" />
+    <Compile Include="ConfigurationManager\ConfigurationManagerFailureResult.cs" />
+    <Compile Include="ConfigurationManager\FinalConfiguration.cs" />
+    <Compile Include="ConfigurationManager\FinalConfigurationItem.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicFailureResult.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicSolvedConfiguration.cs" />
@@ -57,6 +62,7 @@
     <Compile Include="ConfigurationSolver\Live\LivePluginInfo.cs" />
     <Compile Include="ConfigurationSolver\Live\LiveServiceInfo.cs" />
     <Compile Include="ConfigurationSolver\Static\StaticSolvedConfiguration.cs" />
+    <Compile Include="ConfigurationSolver\SuccessYodiiEngineResult.cs" />
     <Compile Include="ConfigurationSolver\YodiiEngineResult.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\YodiiCommand.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Static.cs" />

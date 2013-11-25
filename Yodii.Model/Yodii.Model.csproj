@@ -51,24 +51,22 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
-    <Compile Include="Configuration\ConfigurationConflict.cs" />
-    <Compile Include="Configuration\ConfigurationManagerFailureResult.cs" />
     <Compile Include="Configuration\ConfigurationManagerXmlSerializer.cs" />
-    <Compile Include="Configuration\ConfigurationYodiiEngineResult.cs" />
+    <Compile Include="Configuration\IConfigurationItem.cs" />
+    <Compile Include="Configuration\IConfigurationItemCollection.cs" />
+    <Compile Include="Configuration\IConfigurationLayer.cs" />
+    <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Configuration\IFinalConfiguration.cs" />
+    <Compile Include="Configuration\IFinalConfigurationItem.cs" />
     <Compile Include="DependencyRequirement.cs" />
     <Compile Include="Discoverer.cs" />
     <Compile Include="IConfigurationManagerFailureResult.cs" />
     <Compile Include="IConfigurationSolverResult.cs" />
-    <Compile Include="Configuration\ConfigurationItem.cs" />
-    <Compile Include="Configuration\ConfigurationLayer.cs" />
-    <Compile Include="Configuration\ConfigurationManager.cs" />
-    <Compile Include="Configuration\ConfigurationResult.cs" />
     <Compile Include="Configuration\ConfigurationStatus.cs" />
-    <Compile Include="Configuration\FinalConfiguration.cs" />
     <Compile Include="Configuration\FinalConfigurationChange.cs" />
-    <Compile Include="Configuration\FinalConfigurationItem.cs" />
     <Compile Include="IDiscoveredInfo.cs" />
     <Compile Include="IAssemblyInfo.cs" />
     <Compile Include="IDiscoveredErrorInfo.cs" />
@@ -105,7 +103,6 @@
     <Compile Include="Solver\SolvedConfigurationStatus.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LiveModel\LiveConfiguration.cs.orig" />
     <None Include="packages.config" />
     <None Include="packages.config" />
   </ItemGroup>

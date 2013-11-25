@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -15,6 +16,8 @@ namespace Yodii.Engine
         readonly List<YodiiCommand> _yodiiCommands;
         readonly IYodiiEngineHost _host;
 
+        ConfigurationSolver _virtualSolver;
+
         public YodiiEngine( IYodiiEngineHost host )
         {
             if( host == null ) throw new ArgumentNullException( "host" );
@@ -24,28 +27,28 @@ namespace Yodii.Engine
             _yodiiCommands = new List<YodiiCommand>();
         }
 
-        void _manager_ConfigurationChanging( object sender, ConfigurationChangingEventArgs e )
+        internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfiguration )
         {
-            // Prechanging
-            ConfigurationSolver s = new ConfigurationSolver();
-            IStaticFailureResult sr = s.StaticResolution( e.FinalConfiguration, _discoveredInfo );
-            if( sr != null )
-            {
-                e.CancelByStaticResolution( sr );
-                return;
-            }
+            Debug.Assert( _virtualSolver == null );
+            _virtualSolver = new ConfigurationSolver();
+            IYodiiEngineResult result = new YodiiEngineResult( _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo ) );
+            if( !result.Success ) _virtualSolver = null;
+            return result;
+        }
 
-            // Postchanging
-            var toDo = s.DynamicResolution( _yodiiCommands );
+        internal IYodiiEngineResult DynamicResolution()
+        {
+            Debug.Assert( _virtualSolver != null );
+            var toDo = _virtualSolver.DynamicResolution( _yodiiCommands );
             var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
             if( errors != null && errors.Any() )
             {
-                IDynamicFailureResult dr = s.CreateDynamicFailureResult( errors );
-                e.CancelByDynamicStep( dr );
-                return;
+                YodiiEngineResult result = new YodiiEngineResult( _virtualSolver.CreateDynamicFailureResult( errors ) );
+                _virtualSolver = null;
+                return result;
             }
-            _currentSolver = s;
-
+            _currentSolver = _virtualSolver;
+            _virtualSolver = null;
         }
 
         public IDiscoveredInfo DiscoveredInfo

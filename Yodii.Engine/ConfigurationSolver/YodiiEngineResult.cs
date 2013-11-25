@@ -10,6 +10,7 @@ namespace Yodii.Engine
 {
     class YodiiEngineResult : IYodiiEngineResult
     {
+        readonly IConfigurationManagerFailureResult _configurationFailureResult;
         readonly IStaticFailureResult _staticFailureResult;
         readonly IDynamicFailureResult _hostFailureResult;
         readonly IReadOnlyList<IPluginInfo> _pluginCulprits;
@@ -57,15 +58,30 @@ namespace Yodii.Engine
             StaticFailureResult _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration(AllPlugins, AllServices), BlockingPlugins, BlockingServices );
         }
 
+        internal YodiiEngineResult( IStaticFailureResult staticFailureResult )
+        {
+            _staticFailureResult = staticFailureResult;
+        }
+
         internal YodiiEngineResult( IDynamicFailureResult hostFailureResult )
         {
             _hostFailureResult = hostFailureResult;
         }
-        public bool Success { get { return _staticFailureResult == null && _hostFailureResult == null; } }
+
+        internal YodiiEngineResult( IConfigurationManagerFailureResult configurationFailureResult )
+        {
+            _configurationFailureResult = configurationFailureResult;
+        }
+
+        internal YodiiEngineResult()
+        {
+        }
+
+        public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
 
         public IConfigurationManagerFailureResult ConfigurationManagerFailureResult
         {
-            get { return null; }
+            get { return _configurationFailureResult; }
         }
 
         public IStaticFailureResult StaticFailureResult

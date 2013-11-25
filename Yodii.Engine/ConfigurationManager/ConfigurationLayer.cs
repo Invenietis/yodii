@@ -9,10 +9,11 @@ using CK.Core;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using Yodii.Model;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
-    public class ConfigurationLayer : INotifyPropertyChanged
+    public class ConfigurationLayer : IConfigurationLayer
     {
         #region fields
 
@@ -72,11 +73,11 @@ namespace Yodii.Model
 
         #endregion properties
 
-        internal ConfigurationManagerFailureResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
-            if( _owner == null ) return new ConfigurationManagerFailureResult();
+            if( _owner == null ) return new SuccessYodiiEngineResult();
             return _owner.OnConfigurationItemChanging( item, newStatus );
         }
 
@@ -92,7 +93,7 @@ namespace Yodii.Model
 
         #endregion
 
-        public class ConfigurationItemCollection : ICKObservableReadOnlyList<ConfigurationItem>
+        public class ConfigurationItemCollection : IConfigurationItemCollection
         {
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
             private ConfigurationLayer _layer;
@@ -131,11 +132,11 @@ namespace Yodii.Model
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );
-                    return new ConfigurationResult();
+                    return new SuccessYodiiEngineResult();
                 }
 
-                ConfigurationResult result = _layer._owner.OnConfigurationItemAdding( newItem );
-                if( result )
+                IYodiiEngineResult result = _layer._owner.OnConfigurationItemAdding( newItem );
+                if( result.Success )
                 {
                     _items.Add( newItem );
                     _layer._owner.OnConfigurationChanged();
@@ -161,11 +162,11 @@ namespace Yodii.Model
                     {
                         target.OnRemoved();
                         _items.Remove( target );
-                        return new ConfigurationResult();
+                        return new SuccessYodiiEngineResult();
                     }
 
-                    ConfigurationResult result = _layer._owner.OnConfigurationItemRemoving( target );
-                    if( result )
+                    IYodiiEngineResult result = _layer._owner.OnConfigurationItemRemoving( target );
+                    if( result.Success )
                     {
                         target.OnRemoved();
                         _items.Remove( target );
@@ -174,7 +175,7 @@ namespace Yodii.Model
                     }
                     return result;
                 }
-                return new ConfigurationResult("Item not found");
+                return new YodiiEngineResult( new ConfigurationManagerFailureResult("Item not found") );
             }
 
             public ConfigurationItem this[string key]

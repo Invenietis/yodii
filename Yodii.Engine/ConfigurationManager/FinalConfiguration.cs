@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
-    public class FinalConfiguration
+    public class FinalConfiguration : IFinalConfiguration
     {
         readonly CKSortedArrayKeyList<FinalConfigurationItem, string> _items;
 

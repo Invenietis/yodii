@@ -7,8 +7,6 @@ namespace Yodii.Model
 {
     public interface IConfigurationManagerFailureResult
     {
-        IReadOnlyList<ConfigurationConflict> BlockingItems { get; }
-
         IReadOnlyList<string> FailureReasons { get; }
     }
 }
