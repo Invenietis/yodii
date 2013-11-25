@@ -57,7 +57,7 @@
     <Compile Include="ConfigurationSolver\Live\LivePluginInfo.cs" />
     <Compile Include="ConfigurationSolver\Live\LiveServiceInfo.cs" />
     <Compile Include="ConfigurationSolver\Static\StaticSolvedConfiguration.cs" />
-    <Compile Include="ConfigurationSolver\YodiiEngineResult.cs" />
+    <Compile Include="YodiiEngineResult.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\YodiiCommand.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Static.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\PluginData.Dynamic.cs" />
@@ -74,6 +74,7 @@
     <Compile Include="EmptyDiscoveredInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="YodiiEngine.cs" />
+    <Compile Include="YodiiEngineHostMock.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">

@@ -87,8 +87,10 @@ namespace Yodii.Engine
             }
             _hostFailureResult = new DynamicFailureResult( new DynamicSolvedConfiguration( dynamicPlugins, dynamicServices ), runtimeErrors.AsReadOnlyList() );
         }
-       
-        public bool Success { get { return _staticFailureResult == null && _hostFailureResult == null; } }
+
+        public bool StaticResolutionSuccess { get { return _staticFailureResult == null; } }
+        
+        public bool DynamicResolutionSuccess { get { return _hostFailureResult == null; } }
 
         public IConfigurationManagerFailureResult ConfigurationManagerFailureResult
         {

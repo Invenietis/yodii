@@ -35,7 +35,7 @@ namespace Yodii.Model
 
         #region IYodiiEngineResult Members
 
-        public bool Success
+        public bool StaticResolutionSuccess
         {
             get { return _configurationManagerFailureResult != null; }
         }

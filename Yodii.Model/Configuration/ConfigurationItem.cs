@@ -62,7 +62,7 @@ namespace Yodii.Model
         {
             if( _statusReason == null ) throw new InvalidOperationException();
             IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, newStatus ); 
-            if( result.Success )
+            if( result.StaticResolutionSuccess )
             {
                 _status = newStatus;
                 NotifyPropertyChanged( "Status" );
