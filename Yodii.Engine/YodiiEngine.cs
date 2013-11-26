@@ -31,7 +31,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfiguration )
         {
-            if( _discoveredInfo != null )
+            if( _isStart )
             {
                 Debug.Assert( _virtualSolver == null );
                 _virtualSolver = new ConfigurationSolver();

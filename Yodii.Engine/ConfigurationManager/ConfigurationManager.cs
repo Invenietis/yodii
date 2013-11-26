@@ -14,7 +14,7 @@ using Yodii.Model;
 namespace Yodii.Engine
 {
     //Todo : augmenter la précision de la résolution du layer system
-    class ConfigurationManager : IConfigurationManager
+    public class ConfigurationManager : IConfigurationManager
     {
         readonly YodiiEngine _engine;
         readonly ConfigurationLayerCollection _configurationLayerCollection;

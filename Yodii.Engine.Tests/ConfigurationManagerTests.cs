@@ -179,7 +179,7 @@ namespace Yodii.Engine.Tests
             layer.Items.Add( "schmurtz6", ConfigurationStatus.Running );
 
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
-            engine.ConfigurationManager.ConfigurationChanging += ( s, e ) => { if( e.FinalConfiguration.GetStatus( "schmurtz4" ) == ConfigurationStatus.Running )  e.Cancel( "schmurtz!" ); };
+            engine.ConfigurationManager.ConfigurationChanging += ( s, e ) => { if( e.FinalConfiguration.GetStatus( "schmurtz4" ) == ConfigurationStatus.Running )  e.CancelForExternalReason( "schmurtz!" ); };
             IYodiiEngineResult result = engine.ConfigurationManager.Layers.Add( layer );
             Assert.That( result.Success, Is.True );
             Assert.That( engine.ConfigurationManager.FinalConfiguration.Items[0].ServiceOrPluginId, Is.EqualTo( "schmurtz1" ) );
