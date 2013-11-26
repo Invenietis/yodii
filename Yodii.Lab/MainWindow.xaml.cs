@@ -29,7 +29,6 @@ namespace Yodii.Lab
             this.DataContext = _vm;
             InitializeComponent();
 
-            GraphArea.DefaultLayoutAlgorithm = GraphX.LayoutAlgorithmTypeEnum.KK;
             GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
             GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
             //GraphArea.SetVerticesDrag( true, true );
@@ -47,6 +46,16 @@ namespace Yodii.Lab
 
             _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
+
+            GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
+            GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
+
+            this.Loaded += MainWindow_Loaded;
+        }
+
+        void MainWindow_Loaded( object sender, RoutedEventArgs e )
+        {
+            GraphArea.GenerateGraph( _vm.Graph );
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )

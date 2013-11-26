@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<YodiiLabState>
+  <ServicePluginInfos>
+    <YodiiLabState>
+      <Services>
+        <Service FullName="Service.A">
+          <Generalization />
+        </Service>
+        <Service FullName="Service.Ax">
+          <Generalization>Service.A</Generalization>
+        </Service>
+        <Service FullName="Service.B">
+          <Generalization />
+        </Service>
+      </Services>
+      <Plugins>
+        <Plugin Guid="5ac159f6-b8c8-4b1b-8fad-fb626e82ade3">
+          <FullName>Plugin.B1</FullName>
+          <Service>Service.B</Service>
+          <ServiceReferences />
+        </Plugin>
+        <Plugin Guid="863f69d1-2a52-4389-b34d-e6eca9bc832e">
+          <FullName>Plugin.Ax1</FullName>
+          <Service>Service.Ax</Service>
+          <ServiceReferences />
+        </Plugin>
+        <Plugin Guid="d9808221-d662-45f4-a52f-8edc439e28b9">
+          <FullName>Plugin.A2</FullName>
+          <Service>Service.A</Service>
+          <ServiceReferences>
+            <ServiceReference Service="Service.B" Requirement="Running" />
+          </ServiceReferences>
+        </Plugin>
+        <Plugin Guid="fee2c16a-73fc-4d9f-9c0a-5c793cde10ed">
+          <FullName>Plugin.A1</FullName>
+          <Service>Service.A</Service>
+          <ServiceReferences />
+        </Plugin>
+      </Plugins>
+    </YodiiLabState>
+  </ServicePluginInfos>
+  <ConfigurationManager>
+    <YodiiConfiguration>
+      <ConfigurationLayer Name="Base layer">
+        <ConfigurationItem ServiceOrPluginId="5ac159f6-b8c8-4b1b-8fad-fb626e82ade3" Status="Runnable" Reason="" />
+        <ConfigurationItem ServiceOrPluginId="Service.A" Status="Running" Reason="" />
+        <ConfigurationItem ServiceOrPluginId="Service.Ax" Status="Disable" Reason="Right-click change" />
+        <ConfigurationItem ServiceOrPluginId="fee2c16a-73fc-4d9f-9c0a-5c793cde10ed" Status="Optional" Reason="Right-click change" />
+      </ConfigurationLayer>
+    </YodiiConfiguration>
+  </ConfigurationManager>
+</YodiiLabState>

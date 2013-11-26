@@ -17,6 +17,8 @@ using Yodii.Lab.ConfigurationEditor;
 using System.Windows;
 using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
 using GraphX.GraphSharp.Algorithms.Layout;
+using GraphX;
+using GraphX.GraphSharp.Algorithms.Layout.Simple.Tree;
 
 namespace Yodii.Lab
 {
@@ -39,7 +41,8 @@ namespace Yodii.Lab
         ConfigurationManager _configurationManager; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
         bool _isLive;
-        GraphX.LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
+        LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
+        ILayoutParameters _graphLayoutParameters;
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
 
@@ -64,6 +67,19 @@ namespace Yodii.Lab
             _createPluginCommand = new RelayCommand( CreatePluginExecute );
             _createServiceCommand = new RelayCommand( CreateServiceExecute );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
+
+            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.Tree;
+            GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
+
+            LoadDefaultState();
+        }
+
+        private void LoadDefaultState()
+        {
+            _serviceInfoManager.ClearState();
+            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
+
+            LoadStateFromXmlReader( r );
         }
 
         #endregion Constructor
@@ -96,23 +112,11 @@ namespace Yodii.Lab
             }
             else
             {
+                // Re-create graph with new layout and parameters.
                 GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
-                ILayoutParameters parameters = null;
+                GraphLayoutParameters = GetDefaultLayoutParameters(GraphLayoutAlgorithmType);
 
-                if( GraphLayoutAlgorithmType == GraphX.LayoutAlgorithmTypeEnum.EfficientSugiyama )
-                {
-                    EfficientSugiyamaLayoutParameters sugiyamaParams = new EfficientSugiyamaLayoutParameters();
-                    sugiyamaParams.VertexDistance = 70.0;
-                    sugiyamaParams.MinimizeEdgeLength = false;
-                    sugiyamaParams.PositionMode = 0;
-                    sugiyamaParams.EdgeRouting = SugiyamaEdgeRoutings.Orthogonal;
-
-                    sugiyamaParams.OptimizeWidth = false;
-
-                    parameters = sugiyamaParams;
-                }
-
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, parameters );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
             }
         }
 
@@ -386,8 +390,8 @@ namespace Yodii.Lab
 
         /// <summary>
         /// The current graph layout type.
-        /// </summary>
-        public GraphX.LayoutAlgorithmTypeEnum GraphLayoutAlgorithmType
+        /// </summary> parameters
+        public LayoutAlgorithmTypeEnum GraphLayoutAlgorithmType
         {
             get
             {
@@ -398,6 +402,25 @@ namespace Yodii.Lab
                 if( value != _graphLayoutAlgorithmType )
                 {
                     _graphLayoutAlgorithmType = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The current graph layout parameters.
+        /// </summary>
+        public ILayoutParameters GraphLayoutParameters
+        {
+            get
+            {
+                return _graphLayoutParameters;
+            }
+            set
+            {
+                if( value != _graphLayoutParameters )
+                {
+                    _graphLayoutParameters = value;
                     RaisePropertyChanged();
                 }
             }
@@ -549,18 +572,7 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        while( xr.Read() )
-                        {
-                            if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
-                            {
-                                _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
-                            }
-                            else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
-                            {
-                                var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-                                ConfigurationManager = manager;
-                            }
-                        }
+                        LoadStateFromXmlReader(xr);
                     }
                 }
             }
@@ -631,6 +643,47 @@ namespace Yodii.Lab
         #endregion Public methods
 
         #region Private methods
+
+        private static ILayoutParameters GetDefaultLayoutParameters(LayoutAlgorithmTypeEnum layoutType)
+        {
+            switch( layoutType )
+            {
+                case LayoutAlgorithmTypeEnum.EfficientSugiyama:
+                    EfficientSugiyamaLayoutParameters sugiyamaParams = new EfficientSugiyamaLayoutParameters();
+                    sugiyamaParams.VertexDistance = 70.0;
+                    sugiyamaParams.MinimizeEdgeLength = false;
+                    sugiyamaParams.PositionMode = 0;
+                    sugiyamaParams.EdgeRouting = SugiyamaEdgeRoutings.Orthogonal;
+                    sugiyamaParams.OptimizeWidth = false;
+                    return sugiyamaParams;
+                case LayoutAlgorithmTypeEnum.Tree:
+                    SimpleTreeLayoutParameters treeParams = new SimpleTreeLayoutParameters();
+                    treeParams.Direction = LayoutDirection.BottomToTop;
+                    //treeParams.VertexGap = 30.0;
+                    //treeParams.OptimizeWidthAndHeight = false;
+                    treeParams.SpanningTreeGeneration = SpanningTreeGeneration.BFS;
+                    return treeParams;
+                default:
+                    return null;
+            }
+        }
+
+        private void LoadStateFromXmlReader(XmlReader xr)
+        {
+            while( xr.Read() )
+            {
+                if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
+                {
+                    _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
+                }
+                else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
+                {
+                    var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
+                    ConfigurationManager = manager;
+                }
+            }
+        }
+
         #endregion Private methods
     }
 }
