@@ -14,14 +14,17 @@ namespace Yodii.Lab
     /// Manager of IServiceInfo and IPluginInfo for the lab.
     /// Handles item bindings.
     /// </summary>
-    public class ServiceInfoManager
+    public class ServiceInfoManager : IDiscoveredInfo
     {
+        #region Fields
         readonly CKObservableSortedArrayKeyList<ServiceInfo, string> _serviceInfos;
         readonly CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;
 
         readonly CKObservableSortedArrayKeyList<LiveServiceInfo, ServiceInfo> _liveServiceInfos;
         readonly CKObservableSortedArrayKeyList<LivePluginInfo, PluginInfo> _livePluginInfos;
+        #endregion
 
+        #region Constructor
         internal ServiceInfoManager()
         {
             _serviceInfos = new CKObservableSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
@@ -30,6 +33,7 @@ namespace Yodii.Lab
             _liveServiceInfos = new CKObservableSortedArrayKeyList<LiveServiceInfo, ServiceInfo>( s => s.ServiceInfo, ( x, y ) => String.CompareOrdinal( x.ServiceFullName, y.ServiceFullName ), false );
             _livePluginInfos = new CKObservableSortedArrayKeyList<LivePluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginId.ToString(), y.PluginId.ToString() ), false );
         }
+        #endregion
 
         #region Properties
         /// <summary>
@@ -63,6 +67,17 @@ namespace Yodii.Lab
             get { return _livePluginInfos; }
         }
         #endregion Properties
+
+        #region IDiscoveredInfo implementation
+        IReadOnlyList<IServiceInfo> IDiscoveredInfo.ServiceInfos
+        {
+            get { return _serviceInfos; }
+        }
+        IReadOnlyList<IPluginInfo> IDiscoveredInfo.PluginInfos
+        {
+            get { return _pluginInfos; }
+        }
+        #endregion
 
         #region Internal methods
         internal void ClearState()
@@ -271,6 +286,71 @@ namespace Yodii.Lab
             }
 
             CreateLivePlugin( pluginInfo );
+        }
+
+        public static string GetDescriptionOfServiceOrPluginInfo( object serviceOrPluginInfo )
+        {
+            if( serviceOrPluginInfo == null ) return "No service or plugin given.";
+            if( serviceOrPluginInfo is ServiceInfo )
+            {
+                ServiceInfo service = serviceOrPluginInfo as ServiceInfo;
+                return String.Format( "Service: {0}", service.ServiceFullName );
+            }
+            else if( serviceOrPluginInfo is PluginInfo )
+            {
+                PluginInfo plugin = serviceOrPluginInfo as PluginInfo;
+                if( String.IsNullOrWhiteSpace( plugin.PluginFullName ) )
+                {
+                    return String.Format( "Plugin: Unnamed plugin ({0})", plugin.PluginId.ToString() );
+                }
+                else
+                {
+                    return String.Format( "Plugin: {0}", plugin.PluginFullName );
+                }
+            }
+            else
+            {
+                throw new ArgumentException( "Parameter must be a ServiceInfo instance, a PluginInfo instance, or null.", "serviceOrPluginInfo" );
+            }
+        }
+
+        public string GetDescriptionOfServiceOrPluginId( string serviceOrPluginId )
+        {
+            Guid pluginGuid;
+            bool isPlugin = Guid.TryParse( serviceOrPluginId, out pluginGuid );
+
+            if( isPlugin )
+            {
+                PluginInfo p = PluginInfos.Where( x => x.PluginId == pluginGuid ).FirstOrDefault();
+                if( p != null )
+                {
+                    if( String.IsNullOrWhiteSpace( p.PluginFullName ) )
+                    {
+                        return String.Format( "Plugin: Unnamed plugin ({0})", pluginGuid.ToString() );
+                    }
+                    else
+                    {
+                        return String.Format( "Plugin: {0}", p.PluginFullName );
+                    }
+                }
+                else
+                {
+                    return String.Format( "Plugin: Unknown ({0})", pluginGuid.ToString() );
+                }
+            }
+            else
+            {
+                ServiceInfo s = ServiceInfos.Where( x => x.ServiceFullName == serviceOrPluginId ).FirstOrDefault();
+
+                if( s != null )
+                {
+                    return String.Format( "Service: {0}", serviceOrPluginId );
+                }
+                else
+                {
+                    return String.Format( "Service: Unknown ({0})", serviceOrPluginId );
+                }
+            }
         }
     }
 }

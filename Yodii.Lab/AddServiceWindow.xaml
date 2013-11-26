@@ -13,19 +13,28 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="217*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <TextBlock VerticalAlignment="Center">Service name</TextBlock>
             <TextBlock VerticalAlignment="Center" Grid.Row="1">Generalization</TextBlock>
 
             <TextBox Grid.Column="1" Text="{Binding Path=NewServiceName, UpdateSourceTrigger=PropertyChanged}" x:Name="NewServiceNameTextBox" />
-            <DockPanel Grid.Column="1" Grid.Row="1">
-                <CheckBox VerticalAlignment="Center" Margin="5,0" DockPanel.Dock="Left" IsChecked="{Binding Path=HasGeneralization}" />
-                <ComboBox Margin="5" ItemsSource="{Binding Path=AvailableServices}" SelectedItem="{Binding Path=SelectedGeneralization}" IsEnabled="{Binding Path=HasGeneralization}" IsSynchronizedWithCurrentItem="True">
+
+            <DockPanel
+                Grid.Column="1"
+                Grid.Row="1">
+                <Button
+                    Style="{StaticResource RemoveButtonStyle}"
+                    DockPanel.Dock="Right"
+                    ToolTip="Clear service"
+                    Margin="0,0,5,0"
+                    IsEnabled="{Binding Path=HasGeneralization}"
+                    Click="ClearGeneralizationButton_Click" />
+                <ComboBox Margin="5" ItemsSource="{Binding Path=AvailableServices}" SelectedItem="{Binding Path=SelectedGeneralization}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Path=ServiceFullName}" />

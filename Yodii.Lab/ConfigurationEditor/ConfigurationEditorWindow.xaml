@@ -1,116 +1,186 @@
-﻿<Window x:Class="Yodii.Lab.ConfigurationEditor.ConfigurationEditorWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib" 
-        xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        Title="Configuration editor" Height="500" Width="600">
+﻿<Window
+    x:Class="Yodii.Lab.ConfigurationEditor.ConfigurationEditorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
+    xmlns:local="clr-namespace:Yodii.Lab"
+    xmlns:conf="clr-namespace:Yodii.Lab.ConfigurationEditor"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    Title="Configuration editor"
+    x:Name="ConfigurationEditorWindowRoot"
+    WindowStartupLocation="CenterOwner"
+    
+    Height="250"
+    Width="400">
     <Window.Resources>
+        <local:IntegerToVisibilityConverter
+            x:Key="integerToVisibilityConverter" />
+        <local:ServiceOrPluginIdToDescriptionConverter 
+            x:Key="idToDescriptionConverter" />
 
-        <ObjectDataProvider MethodName="GetValues"
-                        ObjectType="{x:Type sys:Enum}"
-                        x:Key="ConfigurationStatusValues">
+        <!-- ConfigurationStatus enum -->
+        <ObjectDataProvider
+            MethodName="GetValues"
+            ObjectType="{x:Type sys:Enum}"
+            x:Key="ConfigurationStatusValues">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="ym:ConfigurationStatus" />
+                <x:Type
+                    TypeName="ym:ConfigurationStatus" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
-        <DataTemplate DataType="{x:Type ym:ConfigurationLayer}">
-            <Border Margin="3" Padding="5" Background="LightGray" x:Name="ConfigurationLayerBorder">
+        <!-- Configuration layers -->
+        <DataTemplate
+            DataType="{x:Type ym:ConfigurationLayer}">
+            <Border
+                Margin="3pt"
+                Padding="5pt"
+                Background="LightGray"
+                x:Name="ConfigurationLayerBorder">
                 <StackPanel>
                     <DockPanel>
-                        <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteLayerButton_Click">-</Button>
-                        <TextBlock>
+                        <Button
+                            VerticalAlignment="Center"
+                            Style="{StaticResource RemoveButtonStyle}"
+                            DockPanel.Dock="Left"
+                            Margin="0,0,5pt,0"
+                            Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.RemoveLayerCommand}"
+                            CommandParameter="{Binding}" />
+                        <TextBlock
+                            VerticalAlignment="Center">
                             <TextBlock.Style>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Text" Value="{Binding LayerName}"/>
+                                <Style
+                                    TargetType="{x:Type TextBlock}">
+                                    <Setter
+                                        Property="Text"
+                                        Value="{Binding LayerName}" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=LayerName.Length, FallbackValue=0, TargetNullValue=0}" Value="0">
-                                            <Setter Property="Text" Value="(Unnamed layer)"/>
-                                            <Setter Property="Foreground" Value="Gray" />
+                                        <DataTrigger
+                                            Binding="{Binding Path=LayerName.Length, FallbackValue=0, TargetNullValue=0}"
+                                            Value="0">
+                                            <Setter
+                                                Property="Text"
+                                                Value="(Unnamed layer)" />
+                                            <Setter
+                                                Property="Foreground"
+                                                Value="Gray" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
+                        <Button
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Right"
+                            Width="Auto"
+                            HorizontalAlignment="Right"
+                            Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.AddConfigItemCommand}"
+                            CommandParameter="{Binding}">Add configuration</Button>
                     </DockPanel>
-                    <ItemsControl ItemsSource="{Binding Path=Items}">
+                    <ItemsControl
+                        ItemsSource="{Binding Path=Items}">
                     </ItemsControl>
-                    <!-- New item -->
-                    <DockPanel Margin="0,3">
-
-                        <Button DockPanel.Dock="Right" Width="15pt" Click="NewConfigurationItemButton_Click">+</Button>
-                        <ComboBox x:Name="NewConfigurationStatusValue"  DockPanel.Dock="Right"
-                              ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
-                              SelectedIndex="0"
-                              Width="70pt"/>
-
-                        <!--<TextBox x:Name="NewPluginOrServiceId" Text=""/>-->
-                        <xctk:WatermarkTextBox x:Name="NewPluginOrServiceId" Watermark="Service name/Plugin ID" />
-                    </DockPanel>
                 </StackPanel>
-
-
-                <Border.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                    </TransformGroup>
-                </Border.RenderTransform>
 
             </Border>
 
-
-            <DataTemplate.Resources>
-                <Storyboard x:Key="ItemAnimation" AutoReverse="False">
-                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ConfigurationLayerBorder" Storyboard.TargetProperty="(UIElement.Opacity)">
-                        <EasingDoubleKeyFrame KeyTime="0" Value="0" />
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1" />
-                    </DoubleAnimationUsingKeyFrames>
-                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ConfigurationLayerBorder" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
-                        <EasingDoubleKeyFrame KeyTime="0" Value="0" />
-                        <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1" />
-                    </DoubleAnimationUsingKeyFrames>
-                </Storyboard>
-            </DataTemplate.Resources>
-
-            <DataTemplate.Triggers>
-                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                    <BeginStoryboard Storyboard="{StaticResource ItemAnimation}" />
-                </EventTrigger>
-            </DataTemplate.Triggers>
-
-
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type ym:ConfigurationItem}">
-            <DockPanel Margin="0,3">
+        <!-- Configuration items in layer -->
+        <DataTemplate
+            DataType="{x:Type ym:ConfigurationItem}">
+            <DockPanel
+                Margin="0,3pt">
+                <Button
+                    VerticalAlignment="Center"
+                    Style="{StaticResource RemoveButtonStyle}"
+                    DockPanel.Dock="Right"
+                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.RemoveConfigItemCommand}"
+                    CommandParameter="{Binding}"
+                    Margin="5pt,0,0,0" />
+                <!-- TODO -->
+                <ComboBox
+                    VerticalAlignment="Center"
+                    x:Name="ConfigurationStatusValues"
+                    DockPanel.Dock="Right"
+                    SelectedItem="{Binding Path=Status, Mode=OneWay}"
+                    ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+                    Width="60pt">
+                    <ei:Interaction.Triggers>
+                        <ei:EventTrigger
+                            EventName="SelectionChanged">
+                            <ei:InvokeCommandAction
+                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SetConfigItemStatusCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" />
+                        </ei:EventTrigger>
+                    </ei:Interaction.Triggers>
+                </ComboBox>
 
-                <Button DockPanel.Dock="Right" Width="15pt" Click="DeleteConfigurationItemButton_Click">-</Button>
-                <ComboBox x:Name="ConfigurationStatusValues"  DockPanel.Dock="Right"
-                              ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
-                              SelectedItem="{Binding Path=Status, Mode=OneWay}"
-                              SelectionChanged="ConfigurationStatusValues_SelectionChanged"
-                              Width="70pt"/>
-
-                <TextBox Text="{Binding Path=ServiceOrPluginId, Mode=OneWay}" IsEnabled="False" />
+                <TextBlock
+                    VerticalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding
+                            Converter="{StaticResource idToDescriptionConverter}">
+                            <Binding
+                                Path="ServiceOrPluginId" Mode="OneWay" />
+                            <Binding
+                                RelativeSource="{RelativeSource AncestorType={x:Type Window}}"
+                                Path="DataContext.ServiceInfoManager" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
             </DockPanel>
         </DataTemplate>
 
     </Window.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel>
-            <ItemsControl Width="Auto" ItemsSource="{Binding Path=ConfigurationManager.Layers}">
+    <DockPanel>
+        <Border
+            BorderThickness="0,1pt,0,0"
+            BorderBrush="DarkGray"
+            DockPanel.Dock="Bottom"
+            Padding="3pt">
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Right">
+                <Button
+                    Padding="4pt,2pt"
+                    Margin="3pt"
+                    Command="{Binding AddLayerCommand}">New layer</Button>
+                <Button
+                    Padding="4pt,2pt"
+                    Margin="3pt"
+                    Command="{Binding ClearOptionalItemsCommand}">Remove Optional items</Button>
+                <Button
+                    Padding="4pt,2pt"
+                    Margin="3pt"
+                    IsCancel="True"
+                    Click="CloseButton_Click">Close</Button>
+            </StackPanel>
+        </Border>
 
-            </ItemsControl>
+        <ScrollViewer
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border
+                    Visibility="{Binding Path=ConfigurationManager.Layers.Count, Converter={StaticResource ResourceKey=integerToVisibilityConverter}}"
+                    Margin="3pt"
+                    Padding="5pt"
+                    Background="LightGray">
+                    <TextBlock>
+                        This configuration is empty.
+                        <LineBreak />
+                        Click on "New layer" to create a new configuration layer.
+                    </TextBlock>
+                </Border>
 
-
-            <Border Margin="3" Padding="5" Background="LightGray">
-                <DockPanel>
-                    <Button DockPanel.Dock="Right" Width="15pt" Click="NewLayerButton_Click">+</Button>
-                    <!--<TextBox Name="NewLayerName" />-->
-                    <xctk:WatermarkTextBox x:Name="NewLayerName" Watermark="Layer name (optional)" />
-                </DockPanel>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+                <!-- Layer list -->
+                <ItemsControl
+                    Width="Auto"
+                    ItemsSource="{Binding Path=ConfigurationManager.Layers}">
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
 </Window>

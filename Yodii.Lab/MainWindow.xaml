@@ -11,14 +11,16 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     WindowStartupLocation="CenterScreen"
-    WindowState="Maximized"
     x:Name="MainWindowRoot"
     Title="Yodii Lab"
+    
     Height="600"
     Width="800">
     <Fluent:RibbonWindow.Resources>
         <BooleanToVisibilityConverter
             x:Key="boolToVisibilityConverter" />
+        <local:EnumToBooleanConverter
+            x:Key="EnumToBooleanConv" />
 
         <ObjectDataProvider
             MethodName="GetValues"
@@ -56,7 +58,8 @@
             DockPanel.Dock="Top">
             <Fluent:Ribbon.QuickAccessItems>
                 <Fluent:QuickAccessMenuItem
-                    Header="Save" />
+                    Header="Save"
+                    Command="{Binding Path=SaveAsFileCommand}"/>
             </Fluent:Ribbon.QuickAccessItems>
             <!--Tabs-->
             <Fluent:RibbonTabItem
@@ -65,7 +68,7 @@
                     Header="File">
                     <Fluent:Button
                         Header="Open"
-                        Click="OpenFile_Click">
+                        Command="{Binding Path=OpenFileCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -74,7 +77,7 @@
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Save as"
-                        Click="SaveAsFile_Click">
+                        Command="{Binding Path=SaveAsFileCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -85,25 +88,25 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Add service"
-                        Click="NewServiceButton_Click">
+                        Command="{Binding Path=CreateServiceCommand}">
                         <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource ServiceIconBlack}" />
+                            <Image
+                                Height="12pt"
+                                Source="/Yodii.Lab;component/Icons/interface_16xLG.png" />
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Add plugin"
-                        Click="NewPluginButton_Click">
+                        Command="{Binding Path=CreatePluginCommand}">
                         <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource PluginIconBlack}" />
+                            <Image
+                                Height="12pt"
+                                Source="/Yodii.Lab;component/Icons/class_32xLG.png" />
                         </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Delete selected"
-                        Command="{Binding Path=RemoveSelectedVertex}">
+                        Command="{Binding Path=RemoveSelectedVertexCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -114,7 +117,7 @@
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
                         Header="Configuration editor"
-                        Click="ConfEditorButton_Click">
+                        Command="{Binding Path=OpenConfigurationEditorCommand}">
                         <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
@@ -126,19 +129,30 @@
                     <Fluent:SplitButton
                         Header="Reorder graph"
                         ItemsSource="{Binding Path=GraphLayoutAlgorithms}"
-                        MenuItem.Click="NewGraphLayoutButton_Click"
-                        Click="ReorderGraphButton_Click">
+                        Command="{Binding Path=ReorderGraphLayoutCommand}">
                         <Fluent:SplitButton.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
                         </Fluent:SplitButton.LargeIcon>
-                        <!--<Fluent:DropDownButton.ItemTemplate>
-                            <DataTemplate DataType="{x:Type sys:String}">
-                                <Fluent:MenuItem Header="{Binding}"/>
-                            </DataTemplate>
-                        </Fluent:DropDownButton.ItemTemplate>-->
+                        <Fluent:SplitButton.ItemContainerStyle>
+                            <Style
+                                TargetType="{x:Type MenuItem}">
+                                <Setter
+                                    Property="Command"
+                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.ReorderGraphLayoutCommand}" />
+                                <Setter
+                                    Property="CommandParameter"
+                                    Value="{Binding}" />
+                            </Style>
+                        </Fluent:SplitButton.ItemContainerStyle>
                     </Fluent:SplitButton>
+                </Fluent:RibbonGroupBox>
+                <Fluent:RibbonGroupBox>
+                    <Fluent:Button
+                        Header="Run static solver"
+                        Command="{Binding Path=RunStaticSolverCommand}">
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
@@ -170,14 +184,11 @@
                     Padding="30pt">
                     <local:YodiiGraphLayout
                         x:Name="graphLayout"
-                        Margin="0pt"
                         Graph="{Binding Path=Graph}"
-                        LayoutAlgorithmType="EfficientSugiyama"
+                        LayoutAlgorithmType="{Binding Path=GraphLayoutAlgorithmType}"
                         OverlapRemovalAlgorithmType="FSA"
-                        GraphSharp:GraphElementBehaviour.HighlightTrigger="True"
                         HighlightAlgorithmType="Simple"
-                        MaxHeight="2000"
-                        MaxWidth="2000">
+                        RenderTransformOrigin="0.5,0.5">
 
                         <local:YodiiGraphLayout.Resources>
                             <!-- Vertex view structure/data -->
@@ -190,11 +201,6 @@
                                     ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
 
                                 <DataTemplate.Triggers>
-                                    <!-- Bold title on highlight -->
-                                    <!--<DataTrigger Binding="{Binding Path=IsHighlighted, Mode=OneWay}" Value="true">
-                                    <Setter TargetName="VertexTitle" Property="FontWeight" Value="Bold" />
-                                </DataTrigger>-->
-
                                     <!-- IsStarted text -->
                                     <!--<DataTrigger Binding="{Binding Path=IsStarted, Mode=OneWay}" Value="true">
                                     <Setter TargetName="IsStartedText" Property="Text" Value="Started" />
@@ -307,6 +313,40 @@
                                 <Setter
                                     Property="ToolTip"
                                     Value="{StaticResource ToolTipContent}" />
+
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsSpecialization}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Red" />
+                                        <Setter
+                                            Property="StrokeThickness"
+                                            Value="5" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsImplementation}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Blue" />
+                                        <Setter
+                                            Property="StrokeThickness"
+                                            Value="3" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsServiceReference}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Foreground"
+                                            Value="Yellow" />
+                                        <Setter
+                                            Property="StrokeThickness"
+                                            Value="2" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                                
                             </Style>
                         </local:YodiiGraphLayout.Resources>
                     </local:YodiiGraphLayout>

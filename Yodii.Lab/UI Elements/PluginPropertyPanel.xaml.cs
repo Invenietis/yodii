@@ -103,7 +103,7 @@ namespace Yodii.Lab
             LivePluginInfo.PluginInfo.InternalServiceReferences.Add( new MockServiceReferenceInfo( LivePluginInfo.PluginInfo, service, req ) );
         }
 
-        private void HasServiceCheckbox_Unchecked( object sender, RoutedEventArgs e )
+        private void ClearServiceButton_Click( object sender, RoutedEventArgs e )
         {
             if( LivePluginInfo == null ) return;
             LivePluginInfo.PluginInfo.Service = null;

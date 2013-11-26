@@ -23,19 +23,15 @@ namespace Yodii.Lab
     public partial class AddPluginWindow : Window, INotifyPropertyChanged
     {
         public event EventHandler<NewPluginEventArgs> NewPluginCreated;
-        readonly Dictionary<IServiceInfo,DependencyRequirement> _serviceReferences; // TODO
+        readonly Dictionary<IServiceInfo,RunningRequirement> _serviceReferences; // TODO
 
         string _pluginName;
         string _pluginGuidText;
-        bool _hasService;
         IServiceInfo _service;
-
-        IServiceInfo _newReferenceService; // TODO : Need to implement service reference creation
-        DependencyRequirement _newReferenceRequirement; // TODO
 
         public AddPluginWindow( ICKObservableReadOnlyCollection<IServiceInfo> availableServices, IServiceInfo selectedService = null )
         {
-            _serviceReferences = new Dictionary<IServiceInfo,DependencyRequirement>();
+            _serviceReferences = new Dictionary<IServiceInfo,RunningRequirement>();
             AvailableServices = availableServices;
 
             NewPluginGuidText = Guid.NewGuid().ToString();
@@ -43,7 +39,6 @@ namespace Yodii.Lab
             if( selectedService != null )
             {
                 SelectedService = selectedService;
-                HasService = true;
             }
 
             this.DataContext = this;
@@ -63,15 +58,7 @@ namespace Yodii.Lab
 
         public bool HasService
         {
-            get { return _hasService; }
-            set
-            {
-                if( value != _hasService )
-                {
-                    _hasService = value;
-                    RaisePropertyChanged( "HasService" );
-                }
-            }
+            get { return SelectedService != null; }
         }
 
         public string NewPluginName
@@ -109,6 +96,7 @@ namespace Yodii.Lab
                 {
                     _service = value;
                     RaisePropertyChanged( "SelectedService" );
+                    RaisePropertyChanged( "HasService" );
                 }
             }
         }
@@ -142,7 +130,7 @@ namespace Yodii.Lab
             }
         }
 
-        private bool RaiseNewPlugin( Guid newGuid, string newPluginName, IServiceInfo service, Dictionary<IServiceInfo, DependencyRequirement> serviceReferences )
+        private bool RaiseNewPlugin( Guid newGuid, string newPluginName, IServiceInfo service, Dictionary<IServiceInfo, RunningRequirement> serviceReferences )
         {
             if( NewPluginCreated != null )
             {
@@ -172,6 +160,11 @@ namespace Yodii.Lab
             this.Close();
         }
 
+        private void ClearServiceButton_Click( object sender, RoutedEventArgs e )
+        {
+            SelectedService = null;
+        }
+
         #region INotifyPropertyChanged utilities
 
         /// <summary>
@@ -193,6 +186,7 @@ namespace Yodii.Lab
         }
 
         #endregion INotifyPropertyChanged utilities
+
     }
 
     public class NewPluginEventArgs : EventArgs
@@ -201,7 +195,7 @@ namespace Yodii.Lab
         public string PluginName { get; internal set; }
         public IServiceInfo Service { get; internal set; }
 
-        public Dictionary<IServiceInfo, DependencyRequirement> ServiceReferences { get; internal set; }
+        public Dictionary<IServiceInfo, RunningRequirement> ServiceReferences { get; internal set; }
 
         public string CancelReason { get; set; }
     }

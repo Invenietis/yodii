@@ -25,7 +25,6 @@ namespace Yodii.Lab
     {
         public event EventHandler<NewServiceEventArgs> NewServiceCreated;
 
-        bool _hasGeneralization;
         string _serviceName;
         IServiceInfo _generalization;
 
@@ -37,15 +36,7 @@ namespace Yodii.Lab
 
         public bool HasGeneralization
         {
-            get { return _hasGeneralization; }
-            set
-            {
-                if( value != _hasGeneralization )
-                {
-                    _hasGeneralization = value;
-                    RaisePropertyChanged( "HasGeneralization" );
-                }
-            }
+            get { return SelectedGeneralization != null; }
         }
 
         public string NewServiceName
@@ -70,6 +61,7 @@ namespace Yodii.Lab
                 {
                     _generalization = value;
                     RaisePropertyChanged( "SelectedGeneralization" );
+                    RaisePropertyChanged( "HasGeneralization" );
                 }
             }
         }
@@ -82,7 +74,6 @@ namespace Yodii.Lab
 
             if( selectedService != null )
             {
-                HasGeneralization = true;
                 SelectedGeneralization = selectedService;
             }
 
@@ -154,6 +145,11 @@ namespace Yodii.Lab
             {
                 this.Close();
             }
+        }
+
+        private void ClearGeneralizationButton_Click( object sender, RoutedEventArgs e )
+        {
+            SelectedGeneralization = null;
         }
 
     }

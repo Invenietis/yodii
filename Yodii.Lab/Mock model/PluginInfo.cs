@@ -16,6 +16,9 @@ namespace Yodii.Lab.Mocks
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
 
+        bool _hasError;
+        string _errorMessage;
+
         ServiceInfo _service;
         string _pluginFullName;
 
@@ -40,6 +43,21 @@ namespace Yodii.Lab.Mocks
         internal ServiceInfo InternalService
         {
             get { return _service; }
+        }
+
+        public string Description
+        {
+            get
+            {
+                if( String.IsNullOrWhiteSpace( PluginFullName ) )
+                {
+                    return String.Format( "Unnamed plugin ({0})", PluginId.ToString() );
+                }
+                else
+                {
+                    return String.Format( "{0}", PluginFullName );
+                }
+            }
         }
 
         #region IPluginInfo Members
@@ -76,7 +94,8 @@ namespace Yodii.Lab.Mocks
         {
             get { return _service; }
         }
-        public ServiceInfo Service {
+        public ServiceInfo Service
+        {
             get { return _service; }
             set
             {
@@ -99,13 +118,30 @@ namespace Yodii.Lab.Mocks
 
         public bool HasError
         {
-            get { throw new NotImplementedException(); }
+            get { return _hasError; }
+            set
+            {
+                if( value != _hasError )
+                {
+                    _hasError = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
 
         public string ErrorMessage
         {
-            get { throw new NotImplementedException(); }
+            get { return _errorMessage; }
+            set
+            {
+                if( value != _errorMessage )
+                {
+                    _errorMessage = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
+
         public override string ToString()
         {
             return String.Format( "{0} has service {1} ", _pluginFullName, _service );
