@@ -13,7 +13,7 @@ namespace Yodii.Engine
         Exception _currentError;
         readonly IPluginInfo _pluginInfo;
         RunningStatus _runningStatus;
-        PluginDisabledReason _disabledReason;
+        readonly PluginDisabledReason _disabledReason;
         readonly ConfigurationStatus _configOriginalStatus;
         SolvedConfigurationStatus _configSolvedStatus;
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    public interface ILiveServiceInfo : IDynamicSolvedConfiguration, INotifyPropertyChanged
+    public interface ILiveServiceInfo : IDynamicSolvedService, INotifyPropertyChanged
     {
         bool IsRunning { get; }
 

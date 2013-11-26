@@ -61,7 +61,6 @@
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="DependencyRequirement.cs" />
-    <Compile Include="Discoverer.cs" />
     <Compile Include="IConfigurationManagerFailureResult.cs" />
     <Compile Include="Configuration\ConfigurationStatus.cs" />
     <Compile Include="Configuration\FinalConfigurationChange.cs" />

@@ -12,6 +12,7 @@ namespace Yodii.Engine
     {
         ICKObservableReadOnlyList<ILivePluginInfo> _plugins;
         ICKObservableReadOnlyList<ILiveServiceInfo> _services;
+        List<YodiiCommand> _yodiiCommands;
 
         internal LiveInfo()
         {
@@ -30,12 +31,14 @@ namespace Yodii.Engine
 
         public ILiveServiceInfo FindService( string fullName )
         {
-            throw new NotImplementedException();
+            ILiveServiceInfo service = _services.FirstOrDefault(s => s.ServiceInfo.ServiceFullName == fullName);
+            return service;
         }
 
         public ILivePluginInfo FindPlugin( Guid pluginId )
         {
-            throw new NotImplementedException();
+            ILivePluginInfo plugin = _plugins.FirstOrDefault(p => p.PluginInfo.PluginId == pluginId);
+            return plugin;
         }
 
         public void RevokeCaller( object caller )

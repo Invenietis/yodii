@@ -60,23 +60,38 @@ namespace Yodii.Engine
             _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration(AllPlugins, AllServices), BlockingPlugins, BlockingServices );
         }
 
-        internal YodiiEngineResult( IStaticFailureResult staticFailureResult )
+        internal YodiiEngineResult( Dictionary<IServiceInfo, ServiceData> services, Dictionary<IPluginInfo, PluginData> plugins, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo )
         {
-            _staticFailureResult = staticFailureResult;
-        }
+            Debug.Assert( errorInfo.Any() );
 
-        internal YodiiEngineResult( IDynamicFailureResult hostFailureResult )
-        {
-            _hostFailureResult = hostFailureResult;
+            List<IDynamicSolvedPlugin> dynamicPlugins = new List<IDynamicSolvedPlugin>();
+            List<IDynamicSolvedService> dynamicServices = new List<IDynamicSolvedService>();
+            List<PluginRuntimeError> runtimeErrors = new List<PluginRuntimeError>();
+
+            foreach ( ServiceData s in services.Values )
+            {
+                dynamicServices.Add( new SolvedServiceSnapshot( s ) );
+            }
+
+            foreach ( PluginData p in plugins.Values )
+            {
+                dynamicPlugins.Add( new SolvedPluginSnapshot( p ) );
+            }
+
+            for(int i = 0; i < errorInfo.Count(); i++)
+            {
+                IDynamicSolvedPlugin pluginHasError = dynamicPlugins.FirstOrDefault( dynamicPlugin => dynamicPlugin.PluginInfo == errorInfo.ElementAt(i).Item1 );
+                if(pluginHasError != null)
+                {
+                    runtimeErrors.Add( new PluginRuntimeError( pluginHasError, errorInfo.ElementAt( i ).Item2 ) );
+                }
+            }
+            _hostFailureResult = new DynamicFailureResult( new DynamicSolvedConfiguration( dynamicPlugins, dynamicServices ), runtimeErrors.AsReadOnlyList() );
         }
 
         internal YodiiEngineResult( IConfigurationFailureResult configurationFailureResult )
         {
             _configurationFailureResult = configurationFailureResult;
-        }
-
-        internal YodiiEngineResult()
-        {
         }
 
         public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
