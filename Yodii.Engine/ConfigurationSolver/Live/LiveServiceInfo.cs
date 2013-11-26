@@ -10,19 +10,18 @@ namespace Yodii.Engine
     class LiveServiceInfo : ILiveServiceInfo
     {
         RunningStatus _runningStatus;
-        ILiveServiceInfo _generalization;
-        ILivePluginInfo _runningPlugin;
+        readonly ILiveServiceInfo _generalization;
+        readonly ILivePluginInfo _runningPlugin;
         ILivePluginInfo _lastRunningPlugin;
-        IServiceInfo _serviceInfo;
+        readonly IServiceInfo _serviceInfo;
         IReadOnlyList<IDynamicSolvedPlugin> _dynamicPlugins;
         IReadOnlyList<IDynamicSolvedService> _dynamicServices;
 
-        LiveServiceInfo(IDynamicSolvedService dynamicService, ILiveServiceInfo generalization)
+        internal LiveServiceInfo(IDynamicSolvedService dynamicService, ILiveServiceInfo generalization)
         {
             _runningStatus = dynamicService.RunningStatus;
             _generalization = generalization;
             _serviceInfo = dynamicService.ServiceInfo;
-
         }
         public bool IsRunning
         {
@@ -31,47 +30,39 @@ namespace Yodii.Engine
 
         public ILiveServiceInfo Generalization
         {
-            get { throw new NotImplementedException(); }
+            get { return _generalization; }
         }
 
         public ILivePluginInfo RunningPlugin
         {
-            get { throw new NotImplementedException(); }
+            get { return _runningPlugin; }
         }
 
         public ILivePluginInfo LastRunningPlugin
         {
-            get { throw new NotImplementedException(); }
+            get { return _lastRunningPlugin; }
+            set { if ( value != _lastRunningPlugin ) _lastRunningPlugin = value; }
         }
 
         public bool Start( object caller )
         {
-            throw new NotImplementedException();
+            YodiiCommand cmd = new YodiiCommand( caller, true, StartDependencyImpact.None, _serviceInfo.ServiceFullName );
+            return true;
         }
 
         public void Stop( object caller )
         {
-            throw new NotImplementedException();
+            YodiiCommand cmd = new YodiiCommand( caller, false, StartDependencyImpact.None, _serviceInfo.ServiceFullName );
         }
 
         public IReadOnlyList<IDynamicSolvedPlugin> Plugins
         {
-            get { throw new NotImplementedException(); }
+            get { return _dynamicPlugins; }
         }
 
         public IReadOnlyList<IDynamicSolvedService> Services
         {
-            get { throw new NotImplementedException(); }
-        }
-
-        public IDynamicSolvedService FindService( string fullName )
-        {
-            throw new NotImplementedException();
-        }
-
-        public IDynamicSolvedPlugin FindPlugin( Guid pluginId )
-        {
-            throw new NotImplementedException();
+            get { return _dynamicServices; }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
