@@ -24,25 +24,30 @@ namespace Yodii.Lab
     /// </summary>
     public partial class PluginPropertyPanel : UserControl
     {
+        #region Fields
+
+        #endregion
+
+        public PluginPropertyPanel()
+        {
+            InitializeComponent();
+        }
+
+        #region Dependency properties
+
         public static readonly DependencyProperty LivePluginInfoProperty = 
             DependencyProperty.Register( "LivePluginInfo", typeof( LivePluginInfo ),
-            typeof( PluginPropertyPanel ), new FrameworkPropertyMetadata( LivePluginInfoChanged )
+            typeof( PluginPropertyPanel ), new FrameworkPropertyMetadata( DependencyPropertyChanged )
             );
-
-        private static void LivePluginInfoChanged( DependencyObject d, DependencyPropertyChangedEventArgs e )
-        {
-            PluginPropertyPanel p = d as PluginPropertyPanel;
-            if( e.NewValue == null )
-            {
-                // Explicit binding removal is necessary here, or WPF will null the ComboBox binding, effectively removing PluginInfo.Service.
-                p.PluginServiceComboBox.ClearValue( ComboBox.SelectedValueProperty );
-            }
-        }
 
         public static readonly DependencyProperty ServiceInfosProperty = 
             DependencyProperty.Register( "ServiceInfos", typeof( ICKObservableReadOnlyCollection<IServiceInfo> ),
             typeof( PluginPropertyPanel )
             );
+
+        #endregion
+
+        #region Local dependency properties getters/setters
 
         public ICKObservableReadOnlyCollection<IServiceInfo> ServiceInfos
         {
@@ -55,13 +60,36 @@ namespace Yodii.Lab
             get { return (LivePluginInfo)GetValue( LivePluginInfoProperty ); }
             set { SetValue( LivePluginInfoProperty, value ); }
         }
+        #endregion
 
-        public PluginPropertyPanel()
+        #region Command handlers
+        public void ExecuteClearService( object param )
         {
-            InitializeComponent();
+            if( LivePluginInfo == null ) return;
+
+            LivePluginInfo.PluginInfo.Service = null;
         }
+        #endregion
 
+        #region Property change handlers
+        private static void DependencyPropertyChanged( DependencyObject d, DependencyPropertyChangedEventArgs e )
+        {
+            PluginPropertyPanel p = d as PluginPropertyPanel;
+            switch( e.Property.Name )
+            {
+                case "LivePluginInfo":
+                    if( e.NewValue == null )
+                    {
+                        // Explicit binding removal is necessary here, or WPF will null the ComboBox binding, effectively removing PluginInfo.Service.
+                        // Will no longer work once set at null?
+                        p.PluginServiceComboBox.ClearValue( ComboBox.SelectedValueProperty );
+                    }
+                    break;
+            }
+        }
+        #endregion
 
+        #region Event handlers
         private void DeleteReferenceButton_Click( object sender, RoutedEventArgs e )
         {
             Button button = sender as Button;
@@ -71,10 +99,9 @@ namespace Yodii.Lab
             serviceRef.Owner.InternalServiceReferences.Remove( serviceRef );
         }
 
-        private bool isResettingSelection; // Kept if we ever want to cancel selection, but not used yet
         private void ReferenceRequirementComboBox_SelectionChanged( object sender, System.Windows.Controls.SelectionChangedEventArgs e )
         {
-            if( !isResettingSelection && e.RemovedItems.Count == 1 && e.AddedItems.Count == 1 )
+            if( e.RemovedItems.Count == 1 && e.AddedItems.Count == 1 )
             {
                 ComboBox box = sender as ComboBox;
                 FrameworkElement parentElement = box.Parent as FrameworkElement;
@@ -85,7 +112,6 @@ namespace Yodii.Lab
 
                 serviceRef.Requirement = newReq;
             }
-            isResettingSelection = false;
         }
 
         private void CreateReferenceButton_Click( object sender, RoutedEventArgs e )
@@ -106,8 +132,11 @@ namespace Yodii.Lab
         private void ClearServiceButton_Click( object sender, RoutedEventArgs e )
         {
             if( LivePluginInfo == null ) return;
+
             LivePluginInfo.PluginInfo.Service = null;
         }
+        #endregion
+
 
     }
 }

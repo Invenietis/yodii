@@ -24,11 +24,30 @@ namespace Yodii.Lab
     /// </summary>
     public partial class ServicePropertyPanel : UserControl
     {
+        #region Fields
+        bool _resettingGeneralizationComboBox = false;
+        #endregion
+
+        #region Dependency properties
+
         public static readonly DependencyProperty LiveServiceInfoProperty = 
             DependencyProperty.Register( "LiveServiceInfo", typeof( LiveServiceInfo ),
             typeof( ServicePropertyPanel ), new PropertyMetadata( LiveServiceInfoChanged )
             );
 
+        public static readonly DependencyProperty ServiceInfoManagerProperty = 
+            DependencyProperty.Register( "ServiceInfoManager", typeof( ServiceInfoManager ),
+            typeof( ServicePropertyPanel )
+            );
+
+        #endregion
+
+        public ServicePropertyPanel()
+        {
+            InitializeComponent();
+        }
+
+        #region Dependency property change handlers
         private static void LiveServiceInfoChanged( DependencyObject d, DependencyPropertyChangedEventArgs e )
         {
             ServicePropertyPanel p = d as ServicePropertyPanel;
@@ -37,13 +56,16 @@ namespace Yodii.Lab
                 // Explicit binding removal is necessary here, or WPF will null the ComboBox binding, effectively removing ServiceInfo.Generalization.
                 p.GeneralizationComboBox.ClearValue( ComboBox.SelectedValueProperty );
             }
+            // May fire SelectionChanged when switching LiveInfos
+
+            p._resettingGeneralizationComboBox = true;
+
+            p.InvalidateVisual();
+
         }
+        #endregion
 
-        public static readonly DependencyProperty ServiceInfoManagerProperty = 
-            DependencyProperty.Register( "ServiceInfoManager", typeof( ServiceInfoManager ),
-            typeof( ServicePropertyPanel )
-            );
-
+        #region Local property getter/setters
         internal ServiceInfoManager ServiceInfoManager
         {
             get { return (ServiceInfoManager)GetValue( ServiceInfoManagerProperty ); }
@@ -55,19 +77,18 @@ namespace Yodii.Lab
             get { return (LiveServiceInfo)GetValue( LiveServiceInfoProperty ); }
             set { SetValue( LiveServiceInfoProperty, value ); }
         }
+        #endregion
 
-        public ServicePropertyPanel()
-        {
-            InitializeComponent();
-        }
-
+        #region Event handlers
         private void ServiceNamePropertyTextBox_LostFocus( object sender, RoutedEventArgs e )
         {
+            if( LiveServiceInfo == null ) return;
             UpdateServicePropertyNameWithTextbox( sender as System.Windows.Controls.TextBox );
         }
 
         private void ServiceNamePropertyTextBox_KeyDown( object sender, System.Windows.Input.KeyEventArgs e )
         {
+            if( LiveServiceInfo == null ) return;
             if( e.Key == System.Windows.Input.Key.Enter )
             {
                 UpdateServicePropertyNameWithTextbox( sender as System.Windows.Controls.TextBox );
@@ -76,6 +97,7 @@ namespace Yodii.Lab
 
         private void UpdateServicePropertyNameWithTextbox( System.Windows.Controls.TextBox textBox )
         {
+            if( LiveServiceInfo == null ) return;
             LiveServiceInfo liveService = textBox.DataContext as LiveServiceInfo;
 
             if( liveService.ServiceInfo.ServiceFullName == textBox.Text ) return;
@@ -93,7 +115,60 @@ namespace Yodii.Lab
         private void ClearGeneralizationButton_Click( object sender, RoutedEventArgs e )
         {
             if( LiveServiceInfo == null ) return;
+            _resettingGeneralizationComboBox = true;
             LiveServiceInfo.ServiceInfo.Generalization = null;
+
+            InvalidateVisual();
         }
+
+        private void GeneralizationComboBox_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            if( LiveServiceInfo == null ) return;
+
+            ComboBox box = sender as ComboBox;
+
+            if( _resettingGeneralizationComboBox )
+            {
+                _resettingGeneralizationComboBox = false;
+                box.GetBindingExpression( ComboBox.SelectedValueProperty ).UpdateTarget();
+                return;
+            }
+
+            ServiceInfo newGeneralization = (ServiceInfo)box.SelectedValue;
+
+            if( newGeneralization == null ) return;
+            if( newGeneralization == LiveServiceInfo.ServiceInfo.Generalization ) return;
+
+            if( newGeneralization.SpecializesService(this.LiveServiceInfo.ServiceInfo))
+            {
+                MessageBox.Show(
+                    String.Format( "Service {0} is already a generalization of service {1}.\nChanging the generalization of {0} to {1} would create a loop.", this.LiveServiceInfo.ServiceInfo.ServiceFullName, newGeneralization.ServiceFullName ),
+                    "Cannot use this generalization",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Stop,
+                    MessageBoxResult.OK
+                    );
+
+                _resettingGeneralizationComboBox = true;
+            }
+            else if( newGeneralization == this.LiveServiceInfo.ServiceInfo )
+            {
+                MessageBox.Show(
+                    String.Format( "A service cannot specialize itself." ),
+                    "Cannot use this generalization",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Stop,
+                    MessageBoxResult.OK
+                    );
+                _resettingGeneralizationComboBox = true;
+            }
+            else
+            {
+                this.LiveServiceInfo.ServiceInfo.Generalization = newGeneralization;
+            }
+
+            box.GetBindingExpression( ComboBox.SelectedValueProperty ).UpdateTarget();
+        }
+        #endregion
     }
 }

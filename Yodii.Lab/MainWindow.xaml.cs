@@ -112,6 +112,7 @@ namespace Yodii.Lab
 
             YodiiGraphVertex vertex = vertexPanel.DataContext as YodiiGraphVertex;
 
+            _vm.SelectedVertex = null;
             _vm.SelectedVertex = vertex;
         }
 

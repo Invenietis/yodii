@@ -127,6 +127,9 @@
     <Compile Include="ConfigurationEditor\CreateConfigurationLayerWindow.xaml.cs">
       <DependentUpon>CreateConfigurationLayerWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DesignModel\DesignTimeConfigurationEditorWindowViewModel.cs" />
+    <Compile Include="DesignModel\DesignTimeConfigurationManager.cs" />
+    <Compile Include="DesignModel\DesignTimeServiceInfoManager.cs" />
     <Compile Include="Graph elements\GraphUpdateRequestEventArgs.cs" />
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
