@@ -175,7 +175,7 @@ namespace Yodii.Engine
                     }
                     return result;
                 }
-                return new YodiiEngineResult( new ConfigurationManagerFailureResult("Item not found") );
+                return new YodiiEngineResult( new ConfigurationFailureResult("Item not found") );
             }
 
             public ConfigurationItem this[string key]

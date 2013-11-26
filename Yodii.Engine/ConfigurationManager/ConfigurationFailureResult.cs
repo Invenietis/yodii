@@ -8,22 +8,22 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    public class ConfigurationManagerFailureResult : IConfigurationManagerFailureResult
+    public class ConfigurationFailureResult : IConfigurationFailureResult
     {
         readonly List<string> _failureReasons;
 
-        internal ConfigurationManagerFailureResult()
+        internal ConfigurationFailureResult()
         {
             _failureReasons = new List<string>();
         }
 
-        internal ConfigurationManagerFailureResult( string reason )
+        internal ConfigurationFailureResult( string reason )
         {
             _failureReasons = new List<string>();
             _failureReasons.Add( reason );
         }
 
-        internal ConfigurationManagerFailureResult( IReadOnlyList<string> reasons )
+        internal ConfigurationFailureResult( IReadOnlyList<string> reasons )
         {
             _failureReasons = reasons.ToList();
         }

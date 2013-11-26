@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yodii.Model
 {
-    public interface IConfigurationManagerFailureResult
+    public interface IConfigurationFailureResult
     {
         IReadOnlyList<string> FailureReasons { get; }
     }

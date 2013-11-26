@@ -12,32 +12,32 @@ namespace Yodii.Engine
 
         public bool Success
         {
-            get { throw new NotImplementedException(); }
+            get { return true; }
         }
 
-        public IConfigurationManagerFailureResult ConfigurationManagerFailureResult
+        public IConfigurationFailureResult ConfigurationFailureResult
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IStaticFailureResult StaticFailureResult
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IDynamicFailureResult HostFailureResult
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IReadOnlyList<IPluginInfo> PluginCulprits
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         public IReadOnlyList<IServiceInfo> ServiceCulprits
         {
-            get { throw new NotImplementedException(); }
+            get { return null; }
         }
 
         #endregion

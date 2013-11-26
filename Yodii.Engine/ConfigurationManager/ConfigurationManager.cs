@@ -40,7 +40,7 @@ namespace Yodii.Engine
             }
         }
 
-        public ConfigurationManager( YodiiEngine engine )
+        internal ConfigurationManager( YodiiEngine engine )
         {
             _engine = engine;
             _configurationLayerCollection = new ConfigurationLayerCollection( this );
@@ -73,7 +73,7 @@ namespace Yodii.Engine
             _configurationLayerCollection.CheckPosition( layer );
         }
 
-        ConfigurationManagerFailureResult FillFromConfiguration( Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
+        ConfigurationFailureResult FillFromConfiguration( Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
         {
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
@@ -90,7 +90,7 @@ namespace Yodii.Engine
                             }
                             else if( status != item.Status )
                             {
-                                return new ConfigurationManagerFailureResult( String.Format( "Conflict for {0} between statuses {1} and {2}", item.ServiceOrPluginId, item.Status, status ) );
+                                return new ConfigurationFailureResult( String.Format( "Conflict for {0} between statuses {1} and {2}", item.ServiceOrPluginId, item.Status, status ) );
                             }
                         }
                         else
@@ -100,7 +100,7 @@ namespace Yodii.Engine
                     }
                 }
             }
-            return new ConfigurationManagerFailureResult();
+            return new ConfigurationFailureResult();
         }
 
         internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
@@ -111,7 +111,7 @@ namespace Yodii.Engine
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             final.Add( item.ServiceOrPluginId, newStatus );
 
-            ConfigurationManagerFailureResult internalResult = FillFromConfiguration( final, c => c != item );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( final, c => c != item );
             if( internalResult.Success )
             {
                 FinalConfiguration finalConfiguration = new FinalConfiguration( final );
@@ -123,7 +123,7 @@ namespace Yodii.Engine
 
                     if( _currentEventArgs.IsCanceled )
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
                     }
                     return _engine.DynamicResolution();
                 }
@@ -138,7 +138,7 @@ namespace Yodii.Engine
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             final.Add( newItem.ServiceOrPluginId, newItem.Status );
 
-            ConfigurationManagerFailureResult internalResult = FillFromConfiguration( final );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( final );
             if( internalResult.Success )
             {
                 FinalConfiguration finalConfiguration = new FinalConfiguration( final );
@@ -150,7 +150,7 @@ namespace Yodii.Engine
 
                     if( _currentEventArgs.IsCanceled )
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
                     }
                     return _engine.DynamicResolution();
                 }
@@ -164,7 +164,7 @@ namespace Yodii.Engine
         {
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
 
-            ConfigurationManagerFailureResult internalResult = FillFromConfiguration( final, c => c != item );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( final, c => c != item );
             if( internalResult.Success )
             {
                 FinalConfiguration finalConfiguration = new FinalConfiguration( final );
@@ -176,7 +176,7 @@ namespace Yodii.Engine
 
                     if( _currentEventArgs.IsCanceled )
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
                     }
                     return _engine.DynamicResolution();
                 }
@@ -201,7 +201,7 @@ namespace Yodii.Engine
                 final.Add( item.ServiceOrPluginId, item.Status );
             }
 
-            ConfigurationManagerFailureResult internalResult = FillFromConfiguration( final );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( final );
 
             if( internalResult.Success )
             {
@@ -214,7 +214,7 @@ namespace Yodii.Engine
 
                     if( _currentEventArgs.IsCanceled )
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
                     }
                     return _engine.DynamicResolution();
                 }
@@ -228,7 +228,7 @@ namespace Yodii.Engine
         {
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
 
-            ConfigurationManagerFailureResult internalResult = FillFromConfiguration( final, c => c.Layer != layer );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( final, c => c.Layer != layer );
 
             if( internalResult.Success )
             {
@@ -242,7 +242,7 @@ namespace Yodii.Engine
 
                     if( _currentEventArgs.IsCanceled )
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
                     }
                     return _engine.DynamicResolution();
                 }
@@ -326,7 +326,7 @@ namespace Yodii.Engine
                 if( layer == null ) throw new ArgumentNullException( "layer" );
 
                 if( layer.ConfigurationManager == _parent ) return new SuccessYodiiEngineResult();
-                else if( layer.ConfigurationManager != null ) return new YodiiEngineResult( new ConfigurationManagerFailureResult("A ConfigurationManager already contains this layer") );
+                else if( layer.ConfigurationManager != null ) return new YodiiEngineResult( new ConfigurationFailureResult("A ConfigurationManager already contains this layer") );
 
                 IYodiiEngineResult result = _parent.OnConfigurationLayerAdding( layer );
 
@@ -340,7 +340,7 @@ namespace Yodii.Engine
                     }
                     else
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult("A problem has been encountered while adding the ConfigurationLayer in the collection" ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult("A problem has been encountered while adding the ConfigurationLayer in the collection" ) );
                     }
                 }
                 return result;
@@ -361,7 +361,7 @@ namespace Yodii.Engine
                     }
                     else
                     {
-                        return new YodiiEngineResult( new ConfigurationManagerFailureResult( "The layer could not be removed because it could not be found" ) );
+                        return new YodiiEngineResult( new ConfigurationFailureResult( "The layer could not be removed because it could not be found" ) );
                     }
                 }
                 return result;

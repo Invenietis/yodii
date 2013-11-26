@@ -10,7 +10,7 @@ namespace Yodii.Engine
 {
     class YodiiEngineResult : IYodiiEngineResult
     {
-        readonly IConfigurationManagerFailureResult _configurationFailureResult;
+        readonly IConfigurationFailureResult _configurationFailureResult;
         readonly IStaticFailureResult _staticFailureResult;
         readonly IDynamicFailureResult _hostFailureResult;
         readonly IReadOnlyList<IPluginInfo> _pluginCulprits;
@@ -70,7 +70,7 @@ namespace Yodii.Engine
             _hostFailureResult = hostFailureResult;
         }
 
-        internal YodiiEngineResult( IConfigurationManagerFailureResult configurationFailureResult )
+        internal YodiiEngineResult( IConfigurationFailureResult configurationFailureResult )
         {
             _configurationFailureResult = configurationFailureResult;
         }
@@ -81,7 +81,7 @@ namespace Yodii.Engine
 
         public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
 
-        public IConfigurationManagerFailureResult ConfigurationManagerFailureResult
+        public IConfigurationFailureResult ConfigurationFailureResult
         {
             get { return _configurationFailureResult; }
         }
