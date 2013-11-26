@@ -14,7 +14,7 @@ namespace Yodii.Lab
     /// Manager of IServiceInfo and IPluginInfo for the lab.
     /// Handles item bindings.
     /// </summary>
-    public class ServiceInfoManager : IDiscoveredInfo
+    public class ServiceInfoManager : IDiscoveredInfo, IYodiiEngineHost
     {
         #region Fields
         readonly CKObservableSortedArrayKeyList<ServiceInfo, string> _serviceInfos;
@@ -352,5 +352,14 @@ namespace Yodii.Lab
                 }
             }
         }
+
+        #region IYodiiEngineHost Members
+
+        IEnumerable<Tuple<IPluginInfo, Exception>> IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

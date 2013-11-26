@@ -17,7 +17,7 @@ namespace Yodii.Lab.ConfigurationEditor
     /// </summary>
     public partial class ConfigurationEditorWindow : Window
     {
-        internal ConfigurationEditorWindow( ConfigurationManager configurationManager, ServiceInfoManager serviceInfoManager )
+        internal ConfigurationEditorWindow( IConfigurationManager configurationManager, ServiceInfoManager serviceInfoManager )
         {
             var viewModel = new ConfigurationEditorWindowViewModel( this, configurationManager, serviceInfoManager );
 

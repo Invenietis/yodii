@@ -6,7 +6,6 @@
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
     xmlns:local="clr-namespace:Yodii.Lab"
     xmlns:conf="clr-namespace:Yodii.Lab.ConfigurationEditor"
-    xmlns:design="clr-namespace:Yodii.Lab.DesignModel"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -23,12 +22,6 @@
         <local:ServiceOrPluginIdToDescriptionConverter 
             x:Key="idToDescriptionConverter" />
 
-        <!-- Design VM -->
-        <ObjectDataProvider
-            ObjectType="{x:Type design:DesignTimeConfigurationEditorWindowViewModel}"
-            x:Key="DesignTime_ConfigurationEditorWindowViewModel"
-            d:IsDataSource="True" />
-
         <!-- ConfigurationStatus enum -->
         <ObjectDataProvider
             MethodName="GetValues"
@@ -40,112 +33,16 @@
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
-        <!-- Configuration layers -->
-        <DataTemplate
-            DataType="{x:Type ym:ConfigurationLayer}">
-            <Border
-                Margin="3pt"
-                Padding="5pt"
-                Background="LightGray"
-                x:Name="ConfigurationLayerBorder">
-                <StackPanel>
-                    <DockPanel>
-                        <Button
-                            VerticalAlignment="Center"
-                            Style="{StaticResource RemoveButtonStyle}"
-                            DockPanel.Dock="Left"
-                            Margin="0,0,5pt,0"
-                            Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.RemoveLayerCommand}"
-                            CommandParameter="{Binding}" />
-                        <TextBlock
-                            VerticalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style
-                                    TargetType="{x:Type TextBlock}">
-                                    <Setter
-                                        Property="Text"
-                                        Value="{Binding LayerName}" />
-                                    <Style.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding Path=LayerName.Length, FallbackValue=0, TargetNullValue=0}"
-                                            Value="0">
-                                            <Setter
-                                                Property="Text"
-                                                Value="(Unnamed layer)" />
-                                            <Setter
-                                                Property="Foreground"
-                                                Value="Gray" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <Button
-                            VerticalAlignment="Center"
-                            DockPanel.Dock="Right"
-                            Width="Auto"
-                            HorizontalAlignment="Right"
-                            Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.AddConfigItemCommand}"
-                            CommandParameter="{Binding}">Add configuration</Button>
-                    </DockPanel>
-                    <ItemsControl
-                        ItemsSource="{Binding Path=Items}">
-                    </ItemsControl>
-                </StackPanel>
 
-            </Border>
-
-        </DataTemplate>
 
         <!-- Configuration items in layer -->
         <DataTemplate
-            DataType="{x:Type ym:ConfigurationItem}">
-            <DockPanel
-                Margin="0,3pt">
-                <Button
-                    VerticalAlignment="Center"
-                    Style="{StaticResource RemoveButtonStyle}"
-                    DockPanel.Dock="Right"
-                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.RemoveConfigItemCommand}"
-                    CommandParameter="{Binding}"
-                    Margin="5pt,0,0,0" />
-                <!-- TODO -->
-                <ComboBox
-                    VerticalAlignment="Center"
-                    x:Name="ConfigurationStatusValues"
-                    DockPanel.Dock="Right"
-                    SelectedItem="{Binding Path=Status, Mode=OneWay}"
-                    ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
-                    Width="60pt">
-                    <ei:Interaction.Triggers>
-                        <ei:EventTrigger
-                            EventName="SelectionChanged">
-                            <ei:InvokeCommandAction
-                                Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SetConfigItemStatusCommand}"
-                                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" />
-                        </ei:EventTrigger>
-                    </ei:Interaction.Triggers>
-                </ComboBox>
+            DataType="{x:Type ym:IConfigurationItem}">
 
-                <TextBlock
-                    VerticalAlignment="Center">
-                    <TextBlock.Text>
-                        <MultiBinding
-                            Converter="{StaticResource idToDescriptionConverter}">
-                            <Binding
-                                Path="ServiceOrPluginId" Mode="OneWay" />
-                            <Binding
-                                RelativeSource="{RelativeSource AncestorType={x:Type Window}}"
-                                Path="DataContext.ServiceInfoManager" />
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
-            </DockPanel>
         </DataTemplate>
 
     </Window.Resources>
-    <DockPanel
-        d:DataContext="{StaticResource DesignTime_ConfigurationEditorWindowViewModel}">
+    <DockPanel>
         <Border
             BorderThickness="0,1pt,0,0"
             BorderBrush="DarkGray"
@@ -190,6 +87,109 @@
                 <ItemsControl
                     Width="Auto"
                     ItemsSource="{Binding Path=Layers}">
+                    <ItemsControl.ItemTemplate>
+                        <!-- Configuration layers -->
+                        <DataTemplate>
+                            <Border
+                                Margin="3pt"
+                                Padding="5pt"
+                                Background="LightGray"
+                                x:Name="ConfigurationLayerBorder">
+                                <StackPanel>
+                                    <DockPanel>
+                                        <Button
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource RemoveButtonStyle}"
+                                            DockPanel.Dock="Left"
+                                            Margin="0,0,5pt,0"
+                                            Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.RemoveLayerCommand}"
+                                            CommandParameter="{Binding}" />
+                                        <TextBlock
+                                            VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style
+                                                    TargetType="{x:Type TextBlock}">
+                                                    <Setter
+                                                        Property="Text"
+                                                        Value="{Binding LayerName}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger
+                                                            Binding="{Binding Path=LayerName.Length, FallbackValue=0, TargetNullValue=0}"
+                                                            Value="0">
+                                                            <Setter
+                                                                Property="Text"
+                                                                Value="(Unnamed layer)" />
+                                                            <Setter
+                                                                Property="Foreground"
+                                                                Value="Gray" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <Button
+                                            VerticalAlignment="Center"
+                                            DockPanel.Dock="Right"
+                                            Width="Auto"
+                                            HorizontalAlignment="Right"
+                                            Command="{Binding ElementName=ConfigurationEditorWindowRoot, Path=DataContext.AddConfigItemCommand}"
+                                            CommandParameter="{Binding}">Add configuration</Button>
+                                    </DockPanel>
+                                    <ItemsControl
+                                        ItemsSource="{Binding Path=Items}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel
+                                                    Margin="0,3pt">
+                                                    <Button
+                                                        VerticalAlignment="Center"
+                                                        Style="{StaticResource RemoveButtonStyle}"
+                                                        DockPanel.Dock="Right"
+                                                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.RemoveConfigItemCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Margin="5pt,0,0,0" />
+                                                    <!-- TODO -->
+                                                    <ComboBox
+                                                        VerticalAlignment="Center"
+                                                        x:Name="ConfigurationStatusValues"
+                                                        DockPanel.Dock="Right"
+                                                        SelectedItem="{Binding Path=Status, Mode=OneWay}"
+                                                        ItemsSource="{Binding Source={StaticResource ConfigurationStatusValues}}"
+                                                        Width="60pt">
+                                                        <ei:Interaction.Triggers>
+                                                            <ei:EventTrigger
+                                                                EventName="SelectionChanged">
+                                                                <ei:InvokeCommandAction
+                                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.SetConfigItemStatusCommand}"
+                                                                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}" />
+                                                            </ei:EventTrigger>
+                                                        </ei:Interaction.Triggers>
+                                                    </ComboBox>
+
+                                                    <TextBlock
+                                                        VerticalAlignment="Center">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding
+                                                                Converter="{StaticResource idToDescriptionConverter}">
+                                                                <Binding
+                                                                    Path="ServiceOrPluginId"
+                                                                    Mode="OneWay" />
+                                                                <Binding
+                                                                    RelativeSource="{RelativeSource AncestorType={x:Type Window}}"
+                                                                    Path="DataContext.ServiceInfoManager" />
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                            </Border>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>

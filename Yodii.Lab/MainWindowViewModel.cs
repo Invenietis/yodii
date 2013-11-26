@@ -38,7 +38,7 @@ namespace Yodii.Lab
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
 
-        ConfigurationManager _configurationManager; // Can be swapped through XML loading.
+        YodiiEngine _engine; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
         bool _isLive;
         LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
@@ -52,12 +52,12 @@ namespace Yodii.Lab
 
         public MainWindowViewModel()
         {
-            _configurationManager = new ConfigurationManager();
             _serviceInfoManager = new ServiceInfoManager();
+            _engine = new YodiiEngine( _serviceInfoManager );
 
             // Live objects and static infos are managed in the ServiceInfoManager.
 
-            _graph = new YodiiGraph( _configurationManager, _serviceInfoManager );
+            _graph = new YodiiGraph( _engine.ConfigurationManager, _serviceInfoManager );
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
             _runStaticSolverCommand = new RelayCommand( RunStaticSolverExecute );
@@ -200,63 +200,60 @@ namespace Yodii.Lab
 
         private void OpenFileExecute( object param )
         {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            MessageBox.Show( "Loading is temporarily disabled." );
+            return;
+            // TODO
+            //Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckFileExists = true;
-            dlg.CheckPathExists = true;
+            //dlg.DefaultExt = ".xml";
+            //dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            //dlg.CheckFileExists = true;
+            //dlg.CheckPathExists = true;
 
-            Nullable<bool> result = dlg.ShowDialog();
+            //Nullable<bool> result = dlg.ShowDialog();
 
-            if( result == true )
-            {
-                string filePath = dlg.FileName;
-                var r = LoadState( filePath );
-                if( !r )
-                {
-                    MessageBox.Show( r.Reason, "Couldn't open file" );
-                }
-            }
+            //if( result == true )
+            //{
+            //    string filePath = dlg.FileName;
+            //    var r = LoadState( filePath );
+            //    if( !r )
+            //    {
+            //        MessageBox.Show( r.Reason, "Couldn't open file" );
+            //    }
+            //}
         }
 
         private void SaveAsFileExecute( object param )
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            MessageBox.Show( "Saving is temporarily disabled." );
 
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckPathExists = true;
-            dlg.OverwritePrompt = true;
-            dlg.AddExtension = true;
+            // TODO
 
-            Nullable<bool> result = dlg.ShowDialog();
+            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
 
-            if( result == true )
-            {
-                string filePath = dlg.FileName;
-                var r = SaveState( filePath );
-                if( !r )
-                {
-                    MessageBox.Show( r.Reason, "Couldn't save file" );
-                }
-            }
+            //dlg.DefaultExt = ".xml";
+            //dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            //dlg.CheckPathExists = true;
+            //dlg.OverwritePrompt = true;
+            //dlg.AddExtension = true;
+
+            //Nullable<bool> result = dlg.ShowDialog();
+
+            //if( result == true )
+            //{
+            //    string filePath = dlg.FileName;
+            //    var r = SaveState( filePath );
+            //    if( !r )
+            //    {
+            //        MessageBox.Show( r.Reason, "Couldn't save file" );
+            //    }
+            //}
         }
 
         private void RunStaticSolverExecute( object obj )
         {
-            // TODO: Complete static solver.
-            ConfigurationSolver solver = new ConfigurationSolver();
-            var result = solver.Initialize( _configurationManager.FinalConfiguration, _serviceInfoManager );
-
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine( "ConfigurationSolver result:" );
-            if( result.ConfigurationSuccess ) sb.AppendLine( "Success" );
-            else sb.AppendLine( "Failure" );
-            sb.AppendLine( String.Format( "{0} running plugins\n", result.RunningPlugins.Count) );
-
-            MessageBox.Show( sb.ToString() );
+            // TODO
+            MessageBox.Show( "Static resolution is not implemented yet." );
         }
 
         private bool HasSelectedVertex( object obj )
@@ -341,26 +338,11 @@ namespace Yodii.Lab
         /// <summary>
         /// The Yodii ConfigurationManager linked to this Lab.
         /// </summary>
-        public ConfigurationManager ConfigurationManager
+        public IConfigurationManager ConfigurationManager
         {
             get
             {
-                return _configurationManager;
-            }
-            private set
-            {
-                if( value != _configurationManager )
-                {
-                    _configurationManager = value;
-                    _graph.ConfigurationManager = value;
-
-                    if( _activeConfEditorWindow != null )
-                    {
-                        _activeConfEditorWindow.Close();
-                    }
-
-                    RaisePropertyChanged( "ConfigurationManager" );
-                }
+                return _engine.ConfigurationManager;
             }
         }
 
@@ -586,40 +568,42 @@ namespace Yodii.Lab
 
         public DetailedOperationResult SaveState( string tempFilePath )
         {
-            XmlWriterSettings ws = new XmlWriterSettings();
-            ws.NewLineHandling = NewLineHandling.None;
-            ws.Indent = true;
+            // TODO
 
-            try
-            {
-                using( FileStream fs = File.Open( tempFilePath, FileMode.Create ) )
-                {
-                    using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
-                    {
-                        xw.WriteStartDocument( true );
-                        xw.WriteStartElement( "YodiiLabState" );
+            //XmlWriterSettings ws = new XmlWriterSettings();
+            //ws.NewLineHandling = NewLineHandling.None;
+            //ws.Indent = true;
 
-                        xw.WriteStartElement( "ServicePluginInfos" );
+            //try
+            //{
+            //    using( FileStream fs = File.Open( tempFilePath, FileMode.Create ) )
+            //    {
+            //        using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
+            //        {
+            //            xw.WriteStartDocument( true );
+            //            xw.WriteStartElement( "YodiiLabState" );
 
-                        MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
+            //            xw.WriteStartElement( "ServicePluginInfos" );
 
-                        xw.WriteEndElement();
+            //            MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
 
-                        xw.WriteStartElement( "ConfigurationManager" );
+            //            xw.WriteEndElement();
 
-                        ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
+            //            xw.WriteStartElement( "ConfigurationManager" );
 
-                        xw.WriteEndElement();
+            //            ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
 
-                        xw.WriteEndElement();
-                        xw.WriteEndDocument();
-                    }
-                }
-            }
-            catch( Exception e ) // TODO: Detailed exception handling
-            {
-                return new DetailedOperationResult( false, e.Message );
-            }
+            //            xw.WriteEndElement();
+
+            //            xw.WriteEndElement();
+            //            xw.WriteEndDocument();
+            //        }
+            //    }
+            //}
+            //catch( Exception e ) // TODO: Detailed exception handling
+            //{
+            //    return new DetailedOperationResult( false, e.Message );
+            //}
 
             return new DetailedOperationResult( true );
         }
@@ -670,18 +654,20 @@ namespace Yodii.Lab
 
         private void LoadStateFromXmlReader(XmlReader xr)
         {
-            while( xr.Read() )
-            {
-                if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
-                {
-                    _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
-                }
-                else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
-                {
-                    var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-                    ConfigurationManager = manager;
-                }
-            }
+            // TODO
+
+            //while( xr.Read() )
+            //{
+            //    if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
+            //    {
+            //        _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
+            //    }
+            //    else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
+            //    {
+            //        var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
+            //        ConfigurationManager = manager;
+            //    }
+            //}
         }
 
         #endregion Private methods

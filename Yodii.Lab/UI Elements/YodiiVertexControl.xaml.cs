@@ -33,7 +33,7 @@ namespace Yodii.Lab
         }
 
         public static readonly DependencyProperty ConfigurationManagerProperty = 
-            DependencyProperty.Register( "ConfigurationManager", typeof( ConfigurationManager ),
+            DependencyProperty.Register( "ConfigurationManager", typeof( IConfigurationManager ),
             typeof( YodiiVertexControl )
             );
 
@@ -106,9 +106,9 @@ namespace Yodii.Lab
             }
         }
 
-        public ConfigurationManager ConfigurationManager
+        public IConfigurationManager ConfigurationManager
         {
-            get { return (ConfigurationManager)GetValue( ConfigurationManagerProperty ); }
+            get { return (IConfigurationManager)GetValue( ConfigurationManagerProperty ); }
             set { SetValue( ConfigurationManagerProperty, value ); }
         }
 
@@ -127,7 +127,7 @@ namespace Yodii.Lab
             string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LivePluginInfo.PluginInfo.PluginId.ToString() : Vertex.LiveServiceInfo.ServiceInfo.ServiceFullName;
 
             // TODO: Better handling of config change. Current implementation: remove all matching entries, then add the new one.
-            foreach( ConfigurationLayer layer in ConfigurationManager.Layers )
+            foreach( IConfigurationLayer layer in ConfigurationManager.Layers )
             {
                 foreach( var item in layer.Items.ToList() )
                 {
@@ -138,11 +138,10 @@ namespace Yodii.Lab
                 }
             }
 
-            ConfigurationLayer changedLayer;
+            IConfigurationLayer changedLayer;
             if( ConfigurationManager.Layers.Count == 0 )
             {
-                changedLayer = new ConfigurationLayer( "Auto-added layer" );
-                ConfigurationManager.Layers.Add( changedLayer );
+                changedLayer = ConfigurationManager.Layers.Create("Auto-added layer");
             }
             else
             {

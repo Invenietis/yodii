@@ -19,7 +19,7 @@ namespace Yodii.Lab.ConfigurationEditor
     class ConfigurationEditorWindowViewModel : ViewModelBase
     {
         #region Fields
-        readonly ConfigurationManager _configurationManager;
+        readonly IConfigurationManager _configurationManager;
         readonly ServiceInfoManager _serviceInfoManager;
         readonly ConfigurationEditorWindow _window;
 
@@ -53,7 +53,7 @@ namespace Yodii.Lab.ConfigurationEditor
         #endregion
 
         #region Constructor & init
-        internal ConfigurationEditorWindowViewModel( ConfigurationEditorWindow parentWindow, ConfigurationManager configManager, ServiceInfoManager serviceManager )
+        internal ConfigurationEditorWindowViewModel( ConfigurationEditorWindow parentWindow, IConfigurationManager configManager, ServiceInfoManager serviceManager )
         {
             Debug.Assert( configManager != null );
             Debug.Assert( serviceManager != null );
@@ -73,7 +73,7 @@ namespace Yodii.Lab.ConfigurationEditor
         #endregion
 
         #region Properties
-        public ConfigurationManager ConfigurationManager { get { return _configurationManager; } }
+        public IConfigurationManager ConfigurationManager { get { return _configurationManager; } }
         public ServiceInfoManager ServiceInfoManager { get { return _serviceInfoManager; } }
 
         public ICommand AddLayerCommand { get { return _addLayerCommand; } }
@@ -87,14 +87,14 @@ namespace Yodii.Lab.ConfigurationEditor
         #region Command handlers
         private void ExecuteClearOptionalItems( object param )
         {
-            List<ConfigurationLayer> emptyLayersToDelete = new List<ConfigurationLayer>();
+            List<IConfigurationLayer> emptyLayersToDelete = new List<IConfigurationLayer>();
 
-            foreach( ConfigurationLayer layer in _configurationManager.Layers )
+            foreach( IConfigurationLayer layer in _configurationManager.Layers )
             {
                 foreach( string serviceOrPluginId in layer.Items.Where( x => x.Status == ConfigurationStatus.Optional ).Select( x => x.ServiceOrPluginId ).ToList() )
                 {
                     var itemRemoveResult = layer.Items.Remove( serviceOrPluginId );
-                    if( !itemRemoveResult )
+                    if( !itemRemoveResult.Success )
                     {
                         MessageBox.Show( "Item remove failure" ); // TODO: Detailed message
                     }
@@ -106,7 +106,7 @@ namespace Yodii.Lab.ConfigurationEditor
             foreach( var layerToDelete in emptyLayersToDelete )
             {
                 var layerRemoveResult = _configurationManager.Layers.Remove( layerToDelete );
-                if( !layerRemoveResult )
+                if( !layerRemoveResult.Success )
                 {
                     MessageBox.Show( "Layer remove failure" ); // TODO: Detailed message
                 }
@@ -118,12 +118,12 @@ namespace Yodii.Lab.ConfigurationEditor
             if( _isChangingConfig ) return;
             _isChangingConfig = true;
             ComboBox box = (ComboBox)param;
-            ConfigurationItem item = (ConfigurationItem)box.DataContext;
+            IConfigurationItem item = (IConfigurationItem)box.DataContext;
 
             ConfigurationStatus newStatus = (ConfigurationStatus)box.SelectedItem;
 
             var itemSetResult = item.SetStatus( newStatus, "ConfigurationEditor" );
-            if( !itemSetResult )
+            if( !itemSetResult.Success )
             {
                 MessageBox.Show( "Item status set failure" ); // TODO: Detailed message
             }
@@ -134,11 +134,11 @@ namespace Yodii.Lab.ConfigurationEditor
 
         private void ExecuteRemoveConfigItem( object param )
         {
-            Debug.Assert( param is ConfigurationItem );
-            ConfigurationItem item = (ConfigurationItem)param;
+            Debug.Assert( param is IConfigurationItem );
+            IConfigurationItem item = (IConfigurationItem)param;
 
             var itemRemoveResult = item.Layer.Items.Remove( item.ServiceOrPluginId );
-            if( !itemRemoveResult )
+            if( !itemRemoveResult.Success )
             {
                 MessageBox.Show( "Item remove failure" ); // TODO: Detailed message
             }
@@ -148,9 +148,9 @@ namespace Yodii.Lab.ConfigurationEditor
         {
             if( _isChangingConfig ) return;
             _isChangingConfig = true;
-            Debug.Assert( param != null && param is ConfigurationLayer);
+            Debug.Assert( param != null && param is IConfigurationLayer);
 
-            ConfigurationLayer layer = param as ConfigurationLayer;
+            IConfigurationLayer layer = param as IConfigurationLayer;
             CreateConfigurationItemWindow w = new CreateConfigurationItemWindow( _serviceInfoManager );
             w.Owner = _window;
 
@@ -162,7 +162,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 if( serviceOrPluginId != null )
                 {
                     var itemAddResult = layer.Items.Add( serviceOrPluginId, w.ViewModel.SelectedStatus );
-                    if( !itemAddResult )
+                    if( !itemAddResult.Success )
                     {
                         MessageBox.Show( "Item add failure" ); // TODO: Detailed message
                     }
@@ -173,8 +173,8 @@ namespace Yodii.Lab.ConfigurationEditor
 
         private void ExecuteRemoveLayer( object param )
         {
-            Debug.Assert( param is ConfigurationLayer );
-            ConfigurationLayer layer = (ConfigurationLayer)param;
+            Debug.Assert( param is IConfigurationLayer );
+            IConfigurationLayer layer = (IConfigurationLayer)param;
 
             bool cancelled = false;
 
@@ -190,7 +190,7 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 var layerRemoveResult = layer.ConfigurationManager.Layers.Remove( layer );
 
-                if( !layerRemoveResult )
+                if( !layerRemoveResult.Success )
                 {
                     MessageBox.Show( "Remove failure" ); // TODO: Detailed message
                 }
@@ -207,13 +207,7 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 string layerName = w.NewLayerName.Text;
 
-                ConfigurationLayer newLayer = new ConfigurationLayer( layerName );
-                var layerAddResult = _configurationManager.Layers.Add( newLayer );
-
-                if( !layerAddResult )
-                {
-                    MessageBox.Show( "Add failure" ); // TODO: Detailed message
-                }
+                IConfigurationLayer newLayer = _configurationManager.Layers.Create( layerName );
             }
         }
         #endregion

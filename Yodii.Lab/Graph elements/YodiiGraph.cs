@@ -22,14 +22,14 @@ namespace Yodii.Lab
         readonly ICKObservableReadOnlyCollection<LivePluginInfo> _pluginInfos;
         readonly ServiceInfoManager _serviceManager;
 
-        ConfigurationManager _configurationManager;
+        IConfigurationManager _configurationManager;
         bool _lockGraphUpdates;
 
         #region Constructor
         public YodiiGraph()
         { }
 
-        internal YodiiGraph( ConfigurationManager configManager, ServiceInfoManager serviceManager )
+        internal YodiiGraph( IConfigurationManager configManager, ServiceInfoManager serviceManager )
             : base()
         {
             Debug.Assert( serviceManager != null );
@@ -49,7 +49,7 @@ namespace Yodii.Lab
         #endregion Constructor
 
         #region Properties
-        internal ConfigurationManager ConfigurationManager
+        internal IConfigurationManager ConfigurationManager
         {
             get { return _configurationManager; }
             set

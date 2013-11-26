@@ -11,11 +11,18 @@ namespace Yodii.Lab.Mocks
     public class LiveServiceInfo : ViewModelBase, ILiveServiceInfo
     {
         #region Fields
-        private ServiceInfo _serviceInfo;
-        private DependencyRequirement _configRequirement;
-        private RunningStatus _status;
-        private LiveServiceInfo _generalization;
-        private LivePluginInfo _runningPlugin;
+
+        ServiceInfo _serviceInfo;
+        DependencyRequirement _configRequirement;
+        RunningStatus _status;
+        LiveServiceInfo _generalization;
+        LivePluginInfo _runningPlugin;
+        bool _isRunning;
+        LivePluginInfo _lastRunningPlugin;
+        ServiceDisabledReason _disabledReason;
+        ConfigurationStatus _configOriginalStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
+
         #endregion Fields
 
         #region Constructor
@@ -31,11 +38,6 @@ namespace Yodii.Lab.Mocks
         #endregion
 
         #region Properties
-        IServiceInfo ILiveServiceInfo.ServiceInfo
-        {
-            get { return _serviceInfo; }
-        }
-
         public ServiceInfo ServiceInfo
         {
             get { return _serviceInfo; }
@@ -56,11 +58,6 @@ namespace Yodii.Lab.Mocks
             get { return _status == RunningStatus.Running || _status == RunningStatus.RunningLocked; }
         }
 
-        ILiveServiceInfo ILiveServiceInfo.Generalization
-        {
-            get { return _generalization; }
-        }
-
         public LiveServiceInfo Generalization
         {
             get { return _generalization; }
@@ -72,11 +69,6 @@ namespace Yodii.Lab.Mocks
                     RaisePropertyChanged( "Generalization" );
                 }
             }
-        }
-
-        ILivePluginInfo ILiveServiceInfo.RunningPlugin
-        {
-            get { return _runningPlugin; }
         }
 
         public LivePluginInfo RunningPlugin
@@ -106,9 +98,67 @@ namespace Yodii.Lab.Mocks
         #endregion Public methods
 
 
-        RunningStatus? ILiveServiceInfo.Status
+        #region ILiveServiceInfo Members
+
+        ILiveServiceInfo ILiveServiceInfo.Generalization
         {
-            get { throw new NotImplementedException(); }
+            get { return _generalization; }
         }
+
+        ILivePluginInfo ILiveServiceInfo.RunningPlugin
+        {
+            get { return _runningPlugin; }
+        }
+
+        bool ILiveServiceInfo.IsRunning
+        {
+            get { return _isRunning; }
+        }
+
+        ILivePluginInfo ILiveServiceInfo.LastRunningPlugin
+        {
+            get { return _lastRunningPlugin; }
+        }
+
+        bool ILiveServiceInfo.Start( object caller )
+        {
+            throw new NotImplementedException();
+        }
+
+        void ILiveServiceInfo.Stop( object caller )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IDynamicSolvedService Members
+
+        IServiceInfo IDynamicSolvedService.ServiceInfo
+        {
+            get { return _serviceInfo; }
+        }
+
+        ServiceDisabledReason IDynamicSolvedService.DisabledReason
+        {
+            get { return _disabledReason; }
+        }
+
+        ConfigurationStatus IDynamicSolvedService.ConfigOriginalStatus
+        {
+            get { return _configOriginalStatus; }
+        }
+
+        SolvedConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
+        {
+            get { return _configSolvedStatus; }
+        }
+
+        RunningStatus IDynamicSolvedService.RunningStatus
+        {
+            get { return _status; }
+        }
+
+        #endregion
     }
 }

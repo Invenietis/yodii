@@ -39,15 +39,6 @@ namespace Yodii.Lab.Mocks
         }
 
         #region ILivePluginInfo Members
-        IPluginInfo ILivePluginInfo.PluginInfo
-        {
-            get { return _pluginInfo; }
-        }
-
-        DependencyRequirement ILivePluginInfo.ConfigRequirement
-        {
-            get { return _configRequirement; }
-        }
 
         public RunningStatus Status
         {
@@ -74,12 +65,50 @@ namespace Yodii.Lab.Mocks
             throw new NotImplementedException();
         }
 
-        #endregion
+        bool ILivePluginInfo.Start( object caller, StartDependencyImpact impact )
+        {
+            throw new NotImplementedException();
+        }
 
+        void ILivePluginInfo.Stop( object caller )
+        {
+            throw new NotImplementedException();
+        }
 
-        RunningStatus? ILivePluginInfo.Status
+        Exception ILivePluginInfo.CurrentError
         {
             get { throw new NotImplementedException(); }
         }
+
+        #endregion
+
+        #region IDynamicSolvedPlugin Members
+
+        IPluginInfo IDynamicSolvedPlugin.PluginInfo
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        PluginDisabledReason IDynamicSolvedPlugin.DisabledReason
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        ConfigurationStatus IDynamicSolvedPlugin.ConfigOriginalStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        SolvedConfigurationStatus IDynamicSolvedPlugin.ConfigSolvedStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        RunningStatus IDynamicSolvedPlugin.RunningStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
     }
 }
