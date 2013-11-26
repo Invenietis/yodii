@@ -16,7 +16,9 @@ namespace Yodii.Engine.Tests
         [Test]
         public void LayerCreationTest()
         {
-            ConfigurationLayer layer = new ConfigurationLayer( "TestConfig" );
+            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer layer = e.ConfigurationManager.Layers.Create( "TestConfig" );
             Assert.That( layer.Items.Count == 0 );
             Assert.That( layer.LayerName == "TestConfig" );
 
@@ -54,7 +56,8 @@ namespace Yodii.Engine.Tests
         [Test]
         public void LayerAddPrecedenceTest()
         {
-            ConfigurationLayer layer = new ConfigurationLayer( "TestConfig" );
+            var engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "TestConfig" );
 
             IYodiiEngineResult result;
 
@@ -153,16 +156,15 @@ namespace Yodii.Engine.Tests
             };
 
             IYodiiEngineResult result;
-            ConfigurationLayer layer = new ConfigurationLayer( "BaseConfig" );
+            IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "BaseConfig" );
 
-            layer.Items.Add( "Yodii.ManagerService", ConfigurationStatus.Runnable );
-            layer.Items.Add( Guid.NewGuid().ToString(), ConfigurationStatus.Disabled );
-
-            result = engine.ConfigurationManager.Layers.Add( layer ); // Fires Changing => Changed once.
+            result = layer.Items.Add( "Yodii.ManagerService", ConfigurationStatus.Runnable );
+            Assert.That( result.Success, Is.True );
+            result = layer.Items.Add( Guid.NewGuid().ToString(), ConfigurationStatus.Disabled );
             Assert.That( result.Success, Is.True );
 
-            Assert.That( managerChangingCount == 1 );
-            Assert.That( managerChangedCount == 1 );
+            Assert.That( managerChangingCount == 2 );
+            Assert.That( managerChangedCount == 2 );
 
             Assert.That( engine.ConfigurationManager.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
         }

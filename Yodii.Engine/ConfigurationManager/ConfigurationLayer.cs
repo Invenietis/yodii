@@ -13,7 +13,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    public class ConfigurationLayer : IConfigurationLayer
+    internal class ConfigurationLayer : IConfigurationLayer
     {
         #region fields
 
@@ -24,23 +24,12 @@ namespace Yodii.Engine
 
         #endregion fields
 
-        #region constructors
-
-        public ConfigurationLayer()
+        internal ConfigurationLayer( ConfigurationManager owner, string layerName )
         {
-            _layerName = string.Empty;
+            _owner = owner;
+            _layerName = String.IsNullOrWhiteSpace( layerName ) ? String.Empty : layerName;
             _configurationItemCollection = new ConfigurationItemCollection( this );
         }
-
-        public ConfigurationLayer( string configurationName )
-            : this()
-        {
-            if( configurationName == null ) throw new ArgumentNullException( "configurationName" );
-
-            _layerName = configurationName;
-        }
-
-        #endregion constructors
 
         #region properties
 
@@ -49,26 +38,36 @@ namespace Yodii.Engine
             get { return _layerName; }
             set
             {
-                if( value == null ) throw new ArgumentNullException();
-                _layerName = value;
-                if( _owner != null ) _owner.OnLayerNameChanged(this);
-                NotifyPropertyChanged();
+                if ( String.IsNullOrWhiteSpace( value ) ) value = String.Empty;
+                if ( _layerName != value )
+                {
+                    _layerName = value;
+                    if ( _owner != null ) _owner.OnLayerNameChanged( this );
+                    NotifyPropertyChanged();
+                }
             }
         }
 
-        public ConfigurationItemCollection Items
+        public IConfigurationItemCollection Items
         {
             get { return _configurationItemCollection; }
+        }
+
+        IConfigurationManager IConfigurationLayer.ConfigurationManager
+        {
+            get { return _owner; }
         }
 
         public ConfigurationManager ConfigurationManager
         {
             get { return _owner; }
-            internal set 
-            { 
-                _owner = value;
-                NotifyPropertyChanged();
-            }
+        }
+
+        internal void SetConfigurationManager( ConfigurationManager c )
+        {
+            Debug.Assert( c != _owner );
+            _owner = c;
+            NotifyPropertyChanged();
         }
 
         #endregion properties
@@ -96,7 +95,7 @@ namespace Yodii.Engine
         public class ConfigurationItemCollection : IConfigurationItemCollection
         {
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
-            private ConfigurationLayer _layer;
+            ConfigurationLayer _layer;
 
             internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
             {
@@ -147,10 +146,10 @@ namespace Yodii.Engine
             }
 
             /// <summary>
-            /// Removes a configuration.
+            /// Removes a configuration for plugin or a service.
             /// </summary>
             /// <param name="serviceOrPluginId">The identifier.</param>
-            /// <returns>True if the identifier has actually been removed.</returns>
+            /// <returns>Detailed result of the operation.</returns>
             public IYodiiEngineResult Remove( string serviceOrPluginId )
             {
                 if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
@@ -176,11 +175,6 @@ namespace Yodii.Engine
                     return result;
                 }
                 return new YodiiEngineResult( new ConfigurationFailureResult("Item not found") );
-            }
-
-            public ConfigurationItem this[string key]
-            {
-                get { return this._items.GetByKey( key ); }
             }
 
             public int Count
@@ -213,7 +207,7 @@ namespace Yodii.Engine
                 return _items.GetEnumerator();
             }
 
-            IEnumerator<ConfigurationItem> IEnumerable<ConfigurationItem>.GetEnumerator()
+            IEnumerator<IConfigurationItem> IEnumerable<IConfigurationItem>.GetEnumerator()
             {
                 return _items.GetEnumerator();
             }
@@ -223,7 +217,12 @@ namespace Yodii.Engine
                 return _items.IndexOf( item );
             }
 
-            public ConfigurationItem this[int index]
+            public IConfigurationItem this[string key]
+            {
+                get { return this._items.GetByKey( key ); }
+            }
+
+            public IConfigurationItem this[int index]
             {
                 get { return _items[index]; }
             }

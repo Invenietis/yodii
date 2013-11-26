@@ -66,5 +66,30 @@ namespace Yodii.Engine
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public IServiceInfo ServiceInfo
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public ServiceDisabledReason DisabledReason
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public ConfigurationStatus ConfigOriginalStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public SolvedConfigurationStatus ConfigSolvedStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public RunningStatus RunningStatus
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

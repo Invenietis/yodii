@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -19,6 +20,8 @@ namespace Yodii.Engine
 
         bool _isStart;
         ConfigurationSolver _virtualSolver;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public YodiiEngine( IYodiiEngineHost host )
         {
@@ -66,7 +69,7 @@ namespace Yodii.Engine
             get { return _discoveredInfo; }
         }
 
-        public ConfigurationManager ConfigurationManager
+        public IConfigurationManager ConfigurationManager
         {
             get { return _manager; }
         }
@@ -99,6 +102,11 @@ namespace Yodii.Engine
         void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {
             throw new NotImplementedException();
+        }
+
+        public ILiveInfo LiveInfo
+        {
+            get { throw new NotImplementedException(); }
         }
 
     }

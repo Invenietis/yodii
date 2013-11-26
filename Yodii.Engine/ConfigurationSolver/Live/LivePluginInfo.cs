@@ -78,5 +78,11 @@ namespace Yodii.Engine
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+
+        public void Stop( object caller )
+        {
+            throw new NotImplementedException();
+        }
     }
 }

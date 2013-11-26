@@ -13,8 +13,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    //Todo : augmenter la précision de la résolution du layer system
-    public class ConfigurationManager : IConfigurationManager
+    internal class ConfigurationManager : IConfigurationManager
     {
         readonly YodiiEngine _engine;
         readonly ConfigurationLayerCollection _configurationLayerCollection;
@@ -25,7 +24,12 @@ namespace Yodii.Engine
         public event EventHandler<ConfigurationChangingEventArgs> ConfigurationChanging;
         public event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
-        public IConfigurationLayerCollection Layers
+        IConfigurationLayerCollection IConfigurationManager.Layers
+        {
+            get { return _configurationLayerCollection; }
+        }
+
+        public ConfigurationLayerCollection Layers
         {
             get { return _configurationLayerCollection; }
         }
@@ -46,29 +50,7 @@ namespace Yodii.Engine
             _configurationLayerCollection = new ConfigurationLayerCollection( this );
         }
 
-        //private FinalConfiguration ResolveBasicConfiguration(ConfigurationLayer firstLayer)
-        //{
-        //    Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-        //    foreach( ConfigurationItem item in firstLayer.Items )
-        //    {
-        //        final.Add( item.ServiceOrPluginId, item.Status );
-        //    }
-
-        //    _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerAdded, firstLayer );
-        //    RaiseConfigurationChanging( _currentEventArgs );
-
-        //    if( _currentEventArgs.IsCanceled )
-        //    {
-        //        firstLayer.Items.Remove( firstLayer.Items.Last().ServiceOrPluginId );
-        //        return ResolveBasicConfiguration( firstLayer );
-        //    }
-        //    else
-        //    {
-        //        return _currentEventArgs.FinalConfiguration;
-        //    }
-        //}
-
-        internal void OnLayerNameChanged( ConfigurationLayer layer )
+        internal void OnLayerNameChanged( IConfigurationLayer layer )
         {
             _configurationLayerCollection.CheckPosition( layer );
         }
@@ -187,43 +169,6 @@ namespace Yodii.Engine
             return new YodiiEngineResult( internalResult );
         }
 
-        internal IYodiiEngineResult OnConfigurationLayerAdding( ConfigurationLayer layer )
-        {
-            //if( _finalConfiguration == null )
-            //{
-            //    FinalConfiguration = ResolveBasicConfiguration( layer );
-            //    return new ConfigurationResult();
-            //}
-
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            foreach( ConfigurationItem item in layer.Items )
-            {
-                final.Add( item.ServiceOrPluginId, item.Status );
-            }
-
-            ConfigurationFailureResult internalResult = FillFromConfiguration( final );
-
-            if( internalResult.Success )
-            {
-                FinalConfiguration finalConfiguration = new FinalConfiguration( final );
-                IYodiiEngineResult result = _engine.StaticResolution( finalConfiguration );
-                if( result.Success )
-                {
-                    _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerAdded, layer );
-                    RaiseConfigurationChanging( _currentEventArgs );
-
-                    if( _currentEventArgs.IsCanceled )
-                    {
-                        return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
-                    }
-                    return _engine.DynamicResolution();
-                }
-                return result;
-            }
-            internalResult.addFailureReason( String.Format( "{0} cannot be added", layer.LayerName ) );
-            return new YodiiEngineResult( internalResult );
-        }
-
         internal IYodiiEngineResult OnConfigurationLayerRemoving( ConfigurationLayer layer )
         {
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
@@ -305,7 +250,7 @@ namespace Yodii.Engine
             internal ConfigurationLayerCollection( ConfigurationManager parent )
             {
                 _parent = parent;
-                _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.LayerName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), true );
+                _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.LayerName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: true );
 
                 _layers.PropertyChanged += RetrievePropertyEvent;
                 _layers.CollectionChanged += RetrieveCollectionEvent;
@@ -321,58 +266,39 @@ namespace Yodii.Engine
                 FirePropertyChanged( e );
             }
 
-            public IYodiiEngineResult Add( ConfigurationLayer layer )
+            public IConfigurationLayer Create( string layerName = null )
+            {
+                var layer = new ConfigurationLayer( _parent, layerName );
+                _layers.Add( layer );
+                return layer;
+            }
+
+            public IYodiiEngineResult Remove( IConfigurationLayer layer )
             {
                 if( layer == null ) throw new ArgumentNullException( "layer" );
+                if( layer.ConfigurationManager != _parent ) return new SuccessYodiiEngineResult();
+                // When called by a hacker.
+                ConfigurationLayer l = layer as ConfigurationLayer;
+                if ( l == null ) throw new ArgumentException( "Invalid layer.", "layer" );
 
-                if( layer.ConfigurationManager == _parent ) return new SuccessYodiiEngineResult();
-                else if( layer.ConfigurationManager != null ) return new YodiiEngineResult( new ConfigurationFailureResult("A ConfigurationManager already contains this layer") );
+                Debug.Assert( _layers.Contains( layer ), "Since layer.ConfigurationManager == _parent, then it necessarily belongs to us." );
 
-                IYodiiEngineResult result = _parent.OnConfigurationLayerAdding( layer );
-
+                IYodiiEngineResult result = _parent.OnConfigurationLayerRemoving( l );
                 if( result.Success )
                 {
-                    if( _layers.Add( layer ) )
-                    {
-                        layer.ConfigurationManager = _parent;
-                        _parent.OnConfigurationChanged();
-                        return result;
-                    }
-                    else
-                    {
-                        return new YodiiEngineResult( new ConfigurationFailureResult("A problem has been encountered while adding the ConfigurationLayer in the collection" ) );
-                    }
+                    _layers.Remove( l );
+                    l.SetConfigurationManager( null );
+                    _parent.OnConfigurationChanged();
                 }
                 return result;
             }
 
-            public IYodiiEngineResult Remove( ConfigurationLayer layer )
-            {
-                if( layer == null ) throw new ArgumentNullException( "configurationLayer" );
-
-                IYodiiEngineResult result = _parent.OnConfigurationLayerRemoving( layer );
-                if( result.Success )
-                {
-                    if( _layers.Remove( layer ) )
-                    {
-                        layer.ConfigurationManager = null;
-                        _parent.OnConfigurationChanged();
-                        return result;
-                    }
-                    else
-                    {
-                        return new YodiiEngineResult( new ConfigurationFailureResult( "The layer could not be removed because it could not be found" ) );
-                    }
-                }
-                return result;
-            }
-
-            internal void CheckPosition( ConfigurationLayer layer )
+            internal void CheckPosition( IConfigurationLayer layer )
             {
                 _layers.CheckPosition( _layers.IndexOf( layer ) );
             }
 
-            public ConfigurationLayer this[string key]
+            public IConfigurationLayer this[string key]
             {
                 get { return this._layers.GetByKey( key ); }
             }
@@ -409,7 +335,7 @@ namespace Yodii.Engine
 
             #region IEnumerable<ConfigurationLayer> Members
 
-            public IEnumerator<ConfigurationLayer> GetEnumerator()
+            public IEnumerator<IConfigurationLayer> GetEnumerator()
             {
                 return _layers.GetEnumerator();
             }
@@ -427,7 +353,7 @@ namespace Yodii.Engine
 
             #region INotifyCollectionChanged Members
 
-            public event System.Collections.Specialized.NotifyCollectionChangedEventHandler CollectionChanged;
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
 
             #endregion
 
@@ -448,12 +374,18 @@ namespace Yodii.Engine
 
             #region IReadOnlyList<ConfigurationLayer> Members
 
-            public ConfigurationLayer this[int index]
+            public IConfigurationLayer this[int index]
             {
                 get { return _layers[index]; }
             }
 
-            #endregion
+            #endregion           
+        
+
+            IReadOnlyCollection<IConfigurationLayer> IConfigurationLayerCollection.this[string layerName]
+            {
+                get { return _layers.GetAllByKey( String.IsNullOrWhiteSpace( layerName ) ? String.Empty : layerName ); }
+            }
         }
 
     }

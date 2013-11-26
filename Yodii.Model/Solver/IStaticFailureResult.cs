@@ -8,7 +8,7 @@ namespace Yodii.Model
 
     public interface IStaticFailureResult
     {
-        IStaticSolvedConfiguration SolvedConfiguration { get; }
+        IStaticSolvedConfiguration StaticSolvedConfiguration { get; }
 
         IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins { get; }
 
