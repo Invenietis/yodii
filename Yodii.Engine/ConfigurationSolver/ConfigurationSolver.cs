@@ -97,7 +97,7 @@ namespace Yodii.Engine
             {
                 return new YodiiEngineResult(_services, _plugins, blockingPlugins, blockingServices );
             }
-            return null;
+            return new SuccessYodiiEngineResult();
         }
 
         public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )

@@ -50,7 +50,7 @@ namespace Yodii.Engine
                     BlockingPlugins.Add( new SolvedPluginSnapshot( pb ) );
                 }
             }
-            else if ( blockingServices != null )
+            if ( blockingServices != null )
             {
                 foreach ( ServiceData sb in blockingServices )
                 {

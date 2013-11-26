@@ -54,7 +54,9 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationManagerTests.cs" />
-    <Compile Include="ConfigurationSolverTests\ConfigurationSolver.Static.cs" />
+    <Compile Include="ConfigurationSolverTests\ConfigurationSolver.Static.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Mocks\DiscoveredInfo.cs" />
     <Compile Include="Mocks\AssemblyInfo.cs" />
     <Compile Include="Mocks\MockInfoFactory.cs" />
@@ -80,6 +82,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
