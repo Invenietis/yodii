@@ -62,7 +62,11 @@ namespace Yodii.Lab.Mocks
             {
                 if( value != _generalization )
                 {
-                    _generalization = value;
+                    // Safeguard against loops
+                    if( value != this && ( value == null || !((ServiceInfo)value).SpecializesService(this) ) )
+                    {
+                        _generalization = value;
+                    }
                     RaisePropertyChanged( "Generalization" );
                 }
             }
@@ -109,6 +113,26 @@ namespace Yodii.Lab.Mocks
         public override string ToString()
         {
             return String.Format( "{0} ", _serviceFullName );
+        }
+
+        /// <summary>
+        /// Checks if this service is already has the one specified as parameter in his Generalization tree.
+        /// </summary>
+        /// <param name="s">Service to check against.</param>
+        /// <returns>True if service is in this instance's Generalization tree, False if it isn't.</returns>
+        /// <remarks>May cause a stack overflow in case of Generalization loop. TODO</remarks>
+        public bool SpecializesService( IServiceInfo service )
+        {
+            IServiceInfo s = Generalization;
+            while( s != null )
+            {
+                if( s == service )
+                {
+                    return true;
+                }
+                s = s.Generalization;
+            }
+            return false;
         }
     }
 }
