@@ -6,12 +6,15 @@
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
     xmlns:local="clr-namespace:Yodii.Lab"
     xmlns:conf="clr-namespace:Yodii.Lab.ConfigurationEditor"
+    xmlns:design="clr-namespace:Yodii.Lab.DesignModel"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
     Title="Configuration editor"
     x:Name="ConfigurationEditorWindowRoot"
     WindowStartupLocation="CenterOwner"
-    
     Height="250"
     Width="400">
     <Window.Resources>
@@ -19,6 +22,12 @@
             x:Key="integerToVisibilityConverter" />
         <local:ServiceOrPluginIdToDescriptionConverter 
             x:Key="idToDescriptionConverter" />
+
+        <!-- Design VM -->
+        <ObjectDataProvider
+            ObjectType="{x:Type design:DesignTimeConfigurationEditorWindowViewModel}"
+            x:Key="DesignTime_ConfigurationEditorWindowViewModel"
+            d:IsDataSource="True" />
 
         <!-- ConfigurationStatus enum -->
         <ObjectDataProvider
@@ -135,7 +144,8 @@
         </DataTemplate>
 
     </Window.Resources>
-    <DockPanel>
+    <DockPanel
+        d:DataContext="{StaticResource DesignTime_ConfigurationEditorWindowViewModel}">
         <Border
             BorderThickness="0,1pt,0,0"
             BorderBrush="DarkGray"
@@ -162,9 +172,10 @@
 
         <ScrollViewer
             VerticalScrollBarVisibility="Auto">
-            <StackPanel>
+            <StackPanel
+                DataContext="{Binding Path=ConfigurationManager}">
                 <Border
-                    Visibility="{Binding Path=ConfigurationManager.Layers.Count, Converter={StaticResource ResourceKey=integerToVisibilityConverter}}"
+                    Visibility="{Binding Path=Layers.Count, Converter={StaticResource ResourceKey=integerToVisibilityConverter}}"
                     Margin="3pt"
                     Padding="5pt"
                     Background="LightGray">
@@ -178,7 +189,7 @@
                 <!-- Layer list -->
                 <ItemsControl
                     Width="Auto"
-                    ItemsSource="{Binding Path=ConfigurationManager.Layers}">
+                    ItemsSource="{Binding Path=Layers}">
                 </ItemsControl>
             </StackPanel>
         </ScrollViewer>

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.Runtime.CompilerServices;
+using GraphX;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
 
 namespace Yodii.Lab
 {
-    public class YodiiGraphVertex : ViewModelBase
+    public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
         readonly bool _isPlugin;
@@ -22,6 +21,10 @@ namespace Yodii.Lab
         #endregion
 
         #region Constructors
+        public YodiiGraphVertex()
+        {
+
+        }
         /// <summary>
         /// Creates a new plugin vertex.
         /// </summary>
@@ -137,5 +140,27 @@ namespace Yodii.Lab
         {
             RaisePropertyChanged( "Title" );
         }
+
+        #region INotifyPropertyChanged utilities
+
+        /// <summary>
+        /// Occurs when [property changed].
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Throw new PropertyChanged.
+        /// </summary>
+        /// <param name="caller">Fill with Member name, when called from a property.</param>
+        protected void RaisePropertyChanged( [CallerMemberName] string caller = null )
+        {
+            Debug.Assert( caller != null );
+            if( PropertyChanged != null )
+            {
+                PropertyChanged( this, new PropertyChangedEventArgs( caller ) );
+            }
+        }
+
+        #endregion INotifyPropertyChanged utilities
     }
 }

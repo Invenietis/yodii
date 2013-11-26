@@ -18,8 +18,13 @@ namespace Yodii.Lab
 
             YodiiGraphVertex vertex = (YodiiGraphVertex)item;
 
-            if( vertex.IsPlugin ) { return PluginPropertiesTemplate; }
-            else return ServicePropertiesTemplate;
+            if( vertex.IsPlugin ) {
+                return PluginPropertiesTemplate;
+            }
+            else
+            {
+                return ServicePropertiesTemplate;
+            }
 
         }
     }
