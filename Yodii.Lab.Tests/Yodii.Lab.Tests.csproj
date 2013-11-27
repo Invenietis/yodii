@@ -35,14 +35,13 @@
     <Reference Include="CK.Core">
       <HintPath>..\packages\CK.Core.2.8.14\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="GraphX">
-      <HintPath>..\packages\GraphX.1.0.1\lib\net40\GraphX.dll</HintPath>
+    <Reference Include="CK.GraphX">
+      <HintPath>..\packages\CK.GraphX.1.0.1\lib\net40\CK.GraphX.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="QuickGraph, Version=3.6.61114.0, Culture=neutral, PublicKeyToken=f3fb40175eec2af3, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="QuickGraph">
       <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
     </Reference>
     <Reference Include="QuickGraph.Data">

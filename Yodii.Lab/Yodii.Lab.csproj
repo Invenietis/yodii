@@ -44,11 +44,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.2.8.14\lib\net40\CK.Core.dll</HintPath>
     </Reference>
+    <Reference Include="CK.GraphX">
+      <HintPath>..\packages\CK.GraphX.1.0.1\lib\net40\CK.GraphX.dll</HintPath>
+    </Reference>
     <Reference Include="Fluent">
       <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\Fluent.dll</HintPath>
-    </Reference>
-    <Reference Include="GraphX">
-      <HintPath>..\packages\GraphX.1.0.1\lib\net40\GraphX.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
