@@ -24,6 +24,8 @@ namespace Yodii.Lab
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        public event EventHandler<NotificationEventArgs> NewNotification;
+
         #region Fields
 
         readonly YodiiGraph _graph;
@@ -37,6 +39,9 @@ namespace Yodii.Lab
         readonly ICommand _createServiceCommand;
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
+
+        readonly ActivityMonitor _activityMonitor;
+        readonly IActivityMonitorClient _logClient;
 
         YodiiEngine _engine; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
@@ -52,6 +57,10 @@ namespace Yodii.Lab
 
         public MainWindowViewModel()
         {
+            _activityMonitor = new ActivityMonitor();
+
+            _activityMonitor.OpenTrace().Send( "Hello world" );
+
             _serviceInfoManager = new ServiceInfoManager();
             _engine = new YodiiEngine( _serviceInfoManager );
 
@@ -105,6 +114,7 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
+            RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
             if( param == null )
             {
                 // Refresh layout.
@@ -143,10 +153,12 @@ namespace Yodii.Lab
             {
                 if( ServiceInfos.Any( si => si.ServiceFullName == nse.ServiceName ) )
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Service {0} already exists", nse.ServiceName ) } );
                     nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
                 }
                 else
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Created service {0}", nse.ServiceName ) } );
                     IServiceInfo newService = CreateNewService( nse.ServiceName, nse.Generalization );
                     SelectService( newService );
                 }
@@ -180,10 +192,12 @@ namespace Yodii.Lab
             {
                 if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
                 {
+                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
                     npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
                 }
                 else
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Created plugin {0}", npe.PluginName ) } );
                     IPluginInfo newPlugin = CreateNewPlugin( npe.PluginId, npe.PluginName, npe.Service );
                     foreach( var kvp in npe.ServiceReferences )
                     {
@@ -252,8 +266,15 @@ namespace Yodii.Lab
 
         private void RunStaticSolverExecute( object obj )
         {
-            // TODO
-            MessageBox.Show( "Static resolution is not implemented yet." );
+            var setInfoResult = _engine.SetDiscoveredInfo( _serviceInfoManager );
+
+            if( !setInfoResult.Success)
+            {
+                MessageBox.Show( "SetDiscoveredInfo failed." );
+                return;
+            }
+
+            MessageBox.Show( "SetDiscoveredInfo returned successfully." );
         }
 
         private bool HasSelectedVertex( object obj )
@@ -267,11 +288,15 @@ namespace Yodii.Lab
 
             if( SelectedVertex.IsPlugin )
             {
+                var name = SelectedVertex.LivePluginInfo.PluginInfo.Description;
                 this.RemovePlugin( SelectedVertex.LivePluginInfo.PluginInfo );
+                RaiseNewNotification( new Notification() { Title = String.Format( "Deleted plugin {0}", name ) } );
             }
             else if( SelectedVertex.IsService )
             {
+                var name = SelectedVertex.LiveServiceInfo.ServiceInfo.ServiceFullName;
                 this.RemoveService( SelectedVertex.LiveServiceInfo.ServiceInfo );
+                RaiseNewNotification( new Notification() { Title = String.Format( "Deleted service {0}", name ) } );
             }
 
             SelectedVertex = null;
@@ -670,6 +695,15 @@ namespace Yodii.Lab
             //}
         }
 
+        private void RaiseNewNotification(Notification n)
+        {
+            if( NewNotification != null )
+            {
+                NewNotification( this, new NotificationEventArgs( n ) );
+            }
+        }
+
         #endregion Private methods
     }
+
 }

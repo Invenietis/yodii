@@ -27,6 +27,7 @@ namespace Yodii.Lab
         {
             _vm = new MainWindowViewModel();
             this.DataContext = _vm;
+            _vm.NewNotification += _vm_NewNotification;
             InitializeComponent();
 
             GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
@@ -51,6 +52,14 @@ namespace Yodii.Lab
             GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
 
             this.Loaded += MainWindow_Loaded;
+        }
+
+        void _vm_NewNotification( object sender, NotificationEventArgs e )
+        {
+            if( this.NotificationControl != null )
+            {
+                this.NotificationControl.AddNotification( e.Notification );
+            }
         }
 
         void MainWindow_Loaded( object sender, RoutedEventArgs e )

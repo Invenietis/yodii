@@ -369,6 +369,13 @@
                 </Style>
             </Grid.Resources>
 
+            <!-- Notification holder -->
+            <local:NotificationsContainerUserControl
+                x:Name="NotificationControl"
+                Panel.ZIndex="10"
+                Grid.Column="0"
+                Grid.Row="0" />
+            
             <!-- Graph viewer -->
             <gxc:ZoomControl
                 x:Name="ZoomBox"
