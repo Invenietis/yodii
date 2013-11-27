@@ -38,7 +38,7 @@ namespace Yodii.Engine
             {
                 Debug.Assert( _virtualSolver == null );
                 _virtualSolver = new ConfigurationSolver();
-            IYodiiEngineResult result =  _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo );
+                IYodiiEngineResult result =  _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo );
                 if( !result.Success ) _virtualSolver = null;
                 return result;
             }
@@ -54,7 +54,7 @@ namespace Yodii.Engine
                 var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
                 if( errors != null && errors.Any() )
                 {
-                IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
+                    IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
                     _virtualSolver = null;
                     return result;
                 }
