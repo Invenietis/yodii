@@ -9,17 +9,15 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    //Can do : gerer 
     public class YodiiEngine : IYodiiEngine
     {
-        IDiscoveredInfo _discoveredInfo;
         readonly ConfigurationManager _manager;
-        ConfigurationSolver _currentSolver;
         readonly List<YodiiCommand> _yodiiCommands;
         readonly IYodiiEngineHost _host;
 
-        bool _isStart;
+        IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _virtualSolver;
+        ConfigurationSolver _currentSolver;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -34,11 +32,11 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfiguration )
         {
-            if( _isStart )
+            if( IsRunning )
             {
                 Debug.Assert( _virtualSolver == null );
                 _virtualSolver = new ConfigurationSolver();
-            IYodiiEngineResult result =  _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo );
+                IYodiiEngineResult result =  _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo );
                 if( !result.Success ) _virtualSolver = null;
                 return result;
             }
@@ -47,7 +45,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult DynamicResolution()
         {
-            if( _isStart )
+            if( IsRunning )
             {
                 Debug.Assert( _virtualSolver != null );
                 var toDo = _virtualSolver.DynamicResolution( _yodiiCommands );
@@ -74,20 +72,32 @@ namespace Yodii.Engine
             get { return _manager; }
         }
 
-        public bool IsStart
+        public bool IsRunning
         {
-            get { return _isStart; }
+            get { return _currentSolver != null; }
         }
 
         public IYodiiEngineResult Start()
         {
-            _isStart = true;
-            return null;
+            ConfigurationSolver solver = new ConfigurationSolver();
+            IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, _discoveredInfo );
+            if( !result.Success ) return result;
+            var toDo = solver.DynamicResolution( _yodiiCommands );
+            var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
+            if( errors != null && errors.Any() )
+            {
+                result =  solver.CreateDynamicFailureResult( errors );
+            }
+            if( result.Success )
+            {
+                _currentSolver = solver;
+            }
+            return result;
         }
 
         public void Stop()
         {
-            _isStart = false;
+            _currentSolver = null;
         }
 
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
