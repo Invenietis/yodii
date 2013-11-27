@@ -68,7 +68,7 @@ namespace Yodii.Lab
             _createServiceCommand = new RelayCommand( CreateServiceExecute );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.Tree;
+            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.KK;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             LoadDefaultState();
