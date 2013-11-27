@@ -27,10 +27,18 @@ namespace Yodii.Engine
         {
             Debug.Assert( !Disabled && _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
             Debug.Assert( _dynamicStatus == RunningStatus.Stopped );
-            if(impact == StartDependencyImpact.None)
+            switch( impact )
             {
-                PropagationNoneImpact( Service );
-                
+                case StartDependencyImpact.None : 
+                    PropagationNoneImpact();
+                    break;
+                case StartDependencyImpact.StartRecommended :
+                    PropagationStartRecommandedImpact();
+                    break;
+            }
+            if( impact == StartDependencyImpact.None )
+            {
+                PropagationNoneImpact();
             }
             
             if ( true )
@@ -43,26 +51,50 @@ namespace Yodii.Engine
             Debug.Assert( _dynamicStatus == RunningStatus.Stopped );
             return false;
         }
-        bool PropagationNoneImpact()
+
+        void PropagationNoneImpact()
         {
             //parcours tout le graph à partir du root, peut être trouver plus rapide ? 
-            StopConcurrentPlugin( Service.GeneralizationRoot );
-
-            List<IServiceReferenceInfo> serviceInfos = new List<IServiceReferenceInfo>();
-            List<ServiceData> servicesToStart = new List<ServiceData>();
+            bool result = StopConcurrentPlugin( Service.GeneralizationRoot );
+            Debug.Assert( result == true );
 
             foreach( var s in PluginInfo.ServiceReferences)
             {
-                serviceInfos.Add(s);
+                if( s.Requirement == DependencyRequirement.Running )
+                    _allServices[s.Reference].DynamicStatus = RunningStatus.Running;
             }
+
+            PropagationRunning();
         }
+
+        void PropagationStartRecommandedImpact()
+        {
+            //parcours tout le graph à partir du root, peut être trouver plus rapide ? 
+            bool result = StopConcurrentPlugin( Service.GeneralizationRoot );
+            Debug.Assert( result == true );
+
+            foreach( var s in PluginInfo.ServiceReferences )
+            {
+                if( s.Requirement == DependencyRequirement.Running 
+                    || s.Requirement == DependencyRequirement.RunnableTryStart
+                    || s.Requirement == DependencyRequirement.OptionalTryStart )
+                {
+                    if( _allServices[s.Reference].DynamicStatus != RunningStatus.RunningLocked && _allServices[s.Reference].DynamicStatus != RunningStatus.Disabled )
+                        _allServices[s.Reference].DynamicStatus = RunningStatus.Running;
+                }
+            }
+
+            PropagationRunning();
+        }
+
         bool StopConcurrentPlugin(ServiceData service)
         {
             if ( service.DynamicStatus == RunningStatus.Stopped || service.DynamicStatus == RunningStatus.Disabled )
             {
-                if ( service.NextSpecialization != null )
+                if( service.NextSpecialization != null )
+                {
                     return StopConcurrentPlugin( service.NextSpecialization );
-                else return false;
+                }
             }
             PluginData pd = service.FirstPlugin;
             while ( pd != null )
@@ -76,6 +108,17 @@ namespace Yodii.Engine
             }
             return StopConcurrentPlugin( service.FirstSpecialization );
         }
+
+        void PropagationRunning()
+        {
+            ServiceData service = Service;
+            while( service != null )
+            {
+                service.DynamicStatus = RunningStatus.Running;
+                service = service.Generalization;
+            }
+        }
+
         bool CheckReferencesWhenMustRun()
         {
             foreach ( var sRef in PluginInfo.ServiceReferences )
