@@ -52,7 +52,7 @@ namespace Yodii.Engine
                 var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
                 if( errors != null && errors.Any() )
                 {
-                IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
+                    IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
                     _virtualSolver = null;
                     return result;
                 }
