@@ -373,6 +373,8 @@
             <local:NotificationsContainerUserControl
                 x:Name="NotificationControl"
                 Panel.ZIndex="10"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
                 Grid.Column="0"
                 Grid.Row="0" />
             

@@ -5,33 +5,34 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     mc:Ignorable="d"
+    HorizontalAlignment="Right"
+    HorizontalContentAlignment="Right"
     d:DesignHeight="600"
     d:DesignWidth="800">
     <UserControl.Resources>
-        <Style
-            x:Key="Collapse"
-            TargetType="Grid">
-
-            <Setter
-                Property="RenderTransform">
-                <Setter.Value>
-                    <ScaleTransform />
-                </Setter.Value>
-            </Setter>
-        </Style>
         <Storyboard
             x:Key="CollapseStoryboard">
-            <DoubleAnimation
+            <!--<DoubleAnimationUsingKeyFrames
+                BeginTime="00:00:00"
+                Storyboard.TargetProperty="(FrameworkElement.LayoutTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
+                <SplineDoubleKeyFrame
+                    KeyTime="00:00:00"
+                    Value="1" />
+                <SplineDoubleKeyFrame
+                    KeyTime="00:00:00.3000000"
+                    Value="0" />
+            </DoubleAnimationUsingKeyFrames>-->
+            <!--<DoubleAnimation
                 From="50"
                 To="0"
                 Storyboard.TargetProperty="Height"
-                Duration="0:0:0:5" />
-            <!--<DoubleAnimation
-                Storyboard.TargetName="MyScaleTransform"
-                Storyboard.TargetProperty="ScaleY"
-                From="1"
-                To="0"
-                Duration="0:0:1" />-->
+                Duration="0:0:0.5" />-->
+            <DoubleAnimation
+                Storyboard.TargetName="ScaleYTransform"
+                Storyboard.TargetProperty="(ScaleTransform.ScaleY)"
+                From="1.0"
+                To="0.0"
+                Duration="0:0:1" />
         </Storyboard>
         <DataTemplate
             x:Key="MessageTemplate"
@@ -40,11 +41,15 @@
                 x:Name="NotificationWindow"
                 Tag="{Binding Path=Id}"
                 Background="Transparent"
+                Height="Auto"
                 SizeChanged="NotificationWindowSizeChanged">
-                <Grid.RenderTransform>
+                <Grid.LayoutTransform>
                     <ScaleTransform
-                        x:Name="MyScaleTransform" ScaleY="1" />
-                </Grid.RenderTransform>
+                        x:Name="ScaleYTransform" />
+                </Grid.LayoutTransform>
+                <!--<Grid.RenderTransform>
+                    <ScaleTransform x:Name="ScaleYTransform" ScaleY="1" />
+                </Grid.RenderTransform>-->
                 <Border
                     Name="border"
                     Background="#882a3345"
@@ -133,13 +138,13 @@
                                 From="0.01"
                                 To="1"
                                 Storyboard.TargetProperty="Opacity"
-                                Duration="0:0:0:1" />
+                                Duration="0:0:1" />
                             <DoubleAnimation
                                 Storyboard.TargetName="NotificationWindow"
                                 From="1"
                                 To="0"
                                 Storyboard.TargetProperty="Opacity"
-                                Duration="0:0:0:2"
+                                Duration="0:0:1"
                                 BeginTime="0:0:3" />
                         </Storyboard>
                     </BeginStoryboard>
@@ -172,7 +177,7 @@
                                 From="1"
                                 To="0"
                                 Storyboard.TargetProperty="(Grid.Opacity)"
-                                Duration="0:0:0" />
+                                Duration="0:0:0.05" />
                         </Storyboard>
                     </BeginStoryboard>
                 </EventTrigger>

@@ -96,7 +96,10 @@ namespace Yodii.Lab.ConfigurationEditor
                     var itemRemoveResult = layer.Items.Remove( serviceOrPluginId );
                     if( !itemRemoveResult.Success )
                     {
-                        MessageBox.Show( "Item remove failure" ); // TODO: Detailed message
+                        RaiseUserError("Couldn't remove item", String.Format("Failed to remove {0}.\n\n{1}", 
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId(serviceOrPluginId),
+                            String.Join("; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons))
+                            );
                     }
                 }
 
@@ -108,7 +111,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 var layerRemoveResult = _configurationManager.Layers.Remove( layerToDelete );
                 if( !layerRemoveResult.Success )
                 {
-                    MessageBox.Show( "Layer remove failure" ); // TODO: Detailed message
+                        RaiseUserError("Couldn't remove layer", String.Format("Failed to remove layer.\n\n{1}", String.Join("; ", layerRemoveResult.ConfigurationFailureResult.FailureReasons)));
                 }
             }
         }
@@ -125,7 +128,11 @@ namespace Yodii.Lab.ConfigurationEditor
             var itemSetResult = item.SetStatus( newStatus, "ConfigurationEditor" );
             if( !itemSetResult.Success )
             {
-                MessageBox.Show( "Item status set failure" ); // TODO: Detailed message
+                        RaiseUserError("Couldn't set item", String.Format("Failed to set {0} to {2}.\n\n{1}",
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId(item.ServiceOrPluginId),
+                            String.Join("; ", itemSetResult.ConfigurationFailureResult.FailureReasons),
+                            newStatus.ToString() )
+                            );
             }
 
             _isChangingConfig = false;
@@ -140,7 +147,10 @@ namespace Yodii.Lab.ConfigurationEditor
             var itemRemoveResult = item.Layer.Items.Remove( item.ServiceOrPluginId );
             if( !itemRemoveResult.Success )
             {
-                MessageBox.Show( "Item remove failure" ); // TODO: Detailed message
+                RaiseUserError( "Couldn't remove item", String.Format( "Failed to remove {0}.\n\n{1}",
+                    _serviceInfoManager.GetDescriptionOfServiceOrPluginId( item.ServiceOrPluginId ),
+                    String.Join( "; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons ) )
+                    );
             }
         }
 
@@ -164,7 +174,10 @@ namespace Yodii.Lab.ConfigurationEditor
                     var itemAddResult = layer.Items.Add( serviceOrPluginId, w.ViewModel.SelectedStatus );
                     if( !itemAddResult.Success )
                     {
-                        MessageBox.Show( "Item add failure" ); // TODO: Detailed message
+                        RaiseUserError( "Couldn't add item", String.Format( "Failed to add {0}.\n\n{1}",
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId( serviceOrPluginId ),
+                            String.Join( "; ", itemAddResult.ConfigurationFailureResult.FailureReasons ) )
+                            );
                     }
                 }
             }
@@ -192,7 +205,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
                 if( !layerRemoveResult.Success )
                 {
-                    MessageBox.Show( "Remove failure" ); // TODO: Detailed message
+                    RaiseUserError( "Couldn't remove layer", String.Format( "Failed to remove layer.\n\n{1}", String.Join( "; ", layerRemoveResult.ConfigurationFailureResult.FailureReasons ) ) );
                 }
             }
         }
@@ -213,6 +226,10 @@ namespace Yodii.Lab.ConfigurationEditor
         #endregion
 
         #region Private methods
+        void RaiseUserError(string title, string message)
+        {
+            MessageBox.Show( message, title, MessageBoxButton.OK, MessageBoxImage.Stop, MessageBoxResult.OK );
+        }
         #endregion
     }
 }
