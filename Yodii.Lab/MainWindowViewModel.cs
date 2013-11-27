@@ -24,6 +24,8 @@ namespace Yodii.Lab
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        public event EventHandler<NotificationEventArgs> NewNotification;
+
         #region Fields
 
         readonly YodiiGraph _graph;
@@ -37,6 +39,9 @@ namespace Yodii.Lab
         readonly ICommand _createServiceCommand;
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
+
+        readonly ActivityMonitor _activityMonitor;
+        readonly IActivityMonitorClient _logClient;
 
         YodiiEngine _engine; // Can be swapped through XML loading.
         YodiiGraphVertex _selectedVertex;
@@ -52,6 +57,10 @@ namespace Yodii.Lab
 
         public MainWindowViewModel()
         {
+            _activityMonitor = new ActivityMonitor();
+
+            _activityMonitor.OpenTrace().Send( "Hello world" );
+
             _serviceInfoManager = new ServiceInfoManager();
             _engine = new YodiiEngine( _serviceInfoManager );
 
@@ -68,7 +77,7 @@ namespace Yodii.Lab
             _createServiceCommand = new RelayCommand( CreateServiceExecute );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.Tree;
+            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.KK;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             LoadDefaultState();
@@ -88,7 +97,7 @@ namespace Yodii.Lab
 
         private void OpenConfigurationEditorExecute( object param )
         {
-            Debug.Assert( param == null || param is Window);
+            Debug.Assert( param == null || param is Window );
             if( _activeConfEditorWindow != null )
             {
                 _activeConfEditorWindow.Activate();
@@ -105,6 +114,7 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
+            RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
             if( param == null )
             {
                 // Refresh layout.
@@ -114,7 +124,7 @@ namespace Yodii.Lab
             {
                 // Re-create graph with new layout and parameters.
                 GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
-                GraphLayoutParameters = GetDefaultLayoutParameters(GraphLayoutAlgorithmType);
+                GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
                 Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
             }
@@ -143,10 +153,12 @@ namespace Yodii.Lab
             {
                 if( ServiceInfos.Any( si => si.ServiceFullName == nse.ServiceName ) )
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Service {0} already exists", nse.ServiceName ) } );
                     nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
                 }
                 else
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Created service {0}", nse.ServiceName ) } );
                     IServiceInfo newService = CreateNewService( nse.ServiceName, nse.Generalization );
                     SelectService( newService );
                 }
@@ -180,10 +192,12 @@ namespace Yodii.Lab
             {
                 if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
                 {
+                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
                     npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
                 }
                 else
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Created plugin {0}", npe.PluginName ) } );
                     IPluginInfo newPlugin = CreateNewPlugin( npe.PluginId, npe.PluginName, npe.Service );
                     foreach( var kvp in npe.ServiceReferences )
                     {
@@ -200,60 +214,60 @@ namespace Yodii.Lab
 
         private void OpenFileExecute( object param )
         {
-            MessageBox.Show( "Loading is temporarily disabled." );
-            return;
-            // TODO
-            //Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
-            //dlg.DefaultExt = ".xml";
-            //dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            //dlg.CheckFileExists = true;
-            //dlg.CheckPathExists = true;
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckFileExists = true;
+            dlg.CheckPathExists = true;
 
-            //Nullable<bool> result = dlg.ShowDialog();
+            Nullable<bool> result = dlg.ShowDialog();
 
-            //if( result == true )
-            //{
-            //    string filePath = dlg.FileName;
-            //    var r = LoadState( filePath );
-            //    if( !r )
-            //    {
-            //        MessageBox.Show( r.Reason, "Couldn't open file" );
-            //    }
-            //}
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = LoadState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                }
+            }
         }
 
         private void SaveAsFileExecute( object param )
         {
-            MessageBox.Show( "Saving is temporarily disabled." );
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
 
-            // TODO
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckPathExists = true;
+            dlg.OverwritePrompt = true;
+            dlg.AddExtension = true;
 
-            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            Nullable<bool> result = dlg.ShowDialog();
 
-            //dlg.DefaultExt = ".xml";
-            //dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            //dlg.CheckPathExists = true;
-            //dlg.OverwritePrompt = true;
-            //dlg.AddExtension = true;
-
-            //Nullable<bool> result = dlg.ShowDialog();
-
-            //if( result == true )
-            //{
-            //    string filePath = dlg.FileName;
-            //    var r = SaveState( filePath );
-            //    if( !r )
-            //    {
-            //        MessageBox.Show( r.Reason, "Couldn't save file" );
-            //    }
-            //}
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = SaveState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+            }
         }
 
         private void RunStaticSolverExecute( object obj )
         {
-            // TODO
-            MessageBox.Show( "Static resolution is not implemented yet." );
+            var setInfoResult = _engine.SetDiscoveredInfo( _serviceInfoManager );
+
+            if( !setInfoResult.Success )
+            {
+                MessageBox.Show( "SetDiscoveredInfo failed." );
+                return;
+            }
+
+            MessageBox.Show( "SetDiscoveredInfo returned successfully." );
         }
 
         private bool HasSelectedVertex( object obj )
@@ -267,11 +281,15 @@ namespace Yodii.Lab
 
             if( SelectedVertex.IsPlugin )
             {
+                var name = SelectedVertex.LivePluginInfo.PluginInfo.Description;
                 this.RemovePlugin( SelectedVertex.LivePluginInfo.PluginInfo );
+                RaiseNewNotification( new Notification() { Title = String.Format( "Deleted plugin {0}", name ) } );
             }
             else if( SelectedVertex.IsService )
             {
+                var name = SelectedVertex.LiveServiceInfo.ServiceInfo.ServiceFullName;
                 this.RemoveService( SelectedVertex.LiveServiceInfo.ServiceInfo );
+                RaiseNewNotification( new Notification() { Title = String.Format( "Deleted service {0}", name ) } );
             }
 
             SelectedVertex = null;
@@ -554,57 +572,59 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LoadStateFromXmlReader(xr);
+                        LoadStateFromXmlReader( xr );
                     }
                 }
             }
-            catch( Exception e ) // TODO: Detailed exception handling and undo
+            catch( Exception e ) // TODO: Detailed exception handling and _serviceInfoManager undo
             {
                 return new DetailedOperationResult( false, e.Message );
             }
 
+            RaiseNewNotification( new Notification() { Title = "Loaded state", Message = filePath } );
             return new DetailedOperationResult( true );
         }
 
-        public DetailedOperationResult SaveState( string tempFilePath )
+        public DetailedOperationResult SaveState( string filePath )
         {
-            // TODO
+            XmlWriterSettings ws = new XmlWriterSettings();
+            ws.NewLineHandling = NewLineHandling.None;
+            ws.Indent = true;
 
-            //XmlWriterSettings ws = new XmlWriterSettings();
-            //ws.NewLineHandling = NewLineHandling.None;
-            //ws.Indent = true;
+            try
+            {
+                using( FileStream fs = File.Open( filePath, FileMode.Create ) )
+                {
+                    using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
+                    {
+                        xw.WriteStartDocument( true );
+                        xw.WriteStartElement( "YodiiLabState" );
 
-            //try
-            //{
-            //    using( FileStream fs = File.Open( tempFilePath, FileMode.Create ) )
-            //    {
-            //        using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
-            //        {
-            //            xw.WriteStartDocument( true );
-            //            xw.WriteStartElement( "YodiiLabState" );
+                        xw.WriteStartElement( "ServicePluginInfos" );
 
-            //            xw.WriteStartElement( "ServicePluginInfos" );
+                        MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
 
-            //            MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
+                        xw.WriteEndElement();
 
-            //            xw.WriteEndElement();
+                        xw.WriteStartElement( "ConfigurationManager" );
 
-            //            xw.WriteStartElement( "ConfigurationManager" );
+                        //TODO: ConfigurationManager XML serializer
+                        RaiseNewNotification( new Notification() { Title = "Could not save ConfigurationManager", Message = "Saving of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
+                        //ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
 
-            //            ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
+                        xw.WriteEndElement();
 
-            //            xw.WriteEndElement();
+                        xw.WriteEndElement();
+                        xw.WriteEndDocument();
+                    }
+                }
+            }
+            catch( Exception e ) // TODO: Detailed exception handling
+            {
+                return new DetailedOperationResult( false, e.Message );
+            }
 
-            //            xw.WriteEndElement();
-            //            xw.WriteEndDocument();
-            //        }
-            //    }
-            //}
-            //catch( Exception e ) // TODO: Detailed exception handling
-            //{
-            //    return new DetailedOperationResult( false, e.Message );
-            //}
-
+            RaiseNewNotification(new Notification() { Title = "Saved state", Message = filePath});
             return new DetailedOperationResult( true );
         }
 
@@ -628,7 +648,7 @@ namespace Yodii.Lab
 
         #region Private methods
 
-        private static ILayoutParameters GetDefaultLayoutParameters(LayoutAlgorithmTypeEnum layoutType)
+        private static ILayoutParameters GetDefaultLayoutParameters( LayoutAlgorithmTypeEnum layoutType )
         {
             switch( layoutType )
             {
@@ -652,24 +672,33 @@ namespace Yodii.Lab
             }
         }
 
-        private void LoadStateFromXmlReader(XmlReader xr)
+        private void LoadStateFromXmlReader( XmlReader xr )
         {
-            // TODO
+            while( xr.Read() )
+            {
+                if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
+                {
+                    _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
+                }
+                else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
+                {
+                    //TODO: Adapt ConfigurationManagerXmlSerializer with new Engine.ConfigurationManager
+                    //var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
+                    //ConfigurationManager = manager;
+                    RaiseNewNotification( new Notification() { Title = "Could not load ConfigurationManager", Message = "Loading of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
+                }
+            }
+        }
 
-            //while( xr.Read() )
-            //{
-            //    if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
-            //    {
-            //        _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
-            //    }
-            //    else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
-            //    {
-            //        var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-            //        ConfigurationManager = manager;
-            //    }
-            //}
+        private void RaiseNewNotification( Notification n )
+        {
+            if( NewNotification != null )
+            {
+                NewNotification( this, new NotificationEventArgs( n ) );
+            }
         }
 
         #endregion Private methods
     }
+
 }

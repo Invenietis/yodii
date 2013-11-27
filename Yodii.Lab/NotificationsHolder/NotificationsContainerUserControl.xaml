@@ -1,0 +1,207 @@
+﻿<UserControl
+    x:Class="Yodii.Lab.NotificationsContainerUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    HorizontalAlignment="Right"
+    HorizontalContentAlignment="Right"
+    d:DesignHeight="600"
+    d:DesignWidth="800">
+    <UserControl.Resources>
+        <Storyboard
+            x:Key="CollapseStoryboard">
+            <!--<DoubleAnimationUsingKeyFrames
+                BeginTime="00:00:00"
+                Storyboard.TargetProperty="(FrameworkElement.LayoutTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
+                <SplineDoubleKeyFrame
+                    KeyTime="00:00:00"
+                    Value="1" />
+                <SplineDoubleKeyFrame
+                    KeyTime="00:00:00.3000000"
+                    Value="0" />
+            </DoubleAnimationUsingKeyFrames>-->
+            <!--<DoubleAnimation
+                From="50"
+                To="0"
+                Storyboard.TargetProperty="Height"
+                Duration="0:0:0.5" />-->
+            <DoubleAnimation
+                Storyboard.TargetName="ScaleYTransform"
+                Storyboard.TargetProperty="(ScaleTransform.ScaleY)"
+                From="1.0"
+                To="0.0"
+                Duration="0:0:1" />
+        </Storyboard>
+        <DataTemplate
+            x:Key="MessageTemplate"
+            DataType="Model:Notification">
+            <Grid
+                x:Name="NotificationWindow"
+                Tag="{Binding Path=Id}"
+                Background="Transparent"
+                Height="Auto"
+                SizeChanged="NotificationWindowSizeChanged">
+                <Grid.LayoutTransform>
+                    <ScaleTransform
+                        x:Name="ScaleYTransform" />
+                </Grid.LayoutTransform>
+                <!--<Grid.RenderTransform>
+                    <ScaleTransform x:Name="ScaleYTransform" ScaleY="1" />
+                </Grid.RenderTransform>-->
+                <Border
+                    Name="border"
+                    Background="#882a3345"
+                    BorderThickness="0"
+                    CornerRadius="10"
+                    HorizontalAlignment="Right"
+                    Margin="3pt">
+                    <Border.Effect>
+                        <DropShadowEffect
+                            ShadowDepth="0"
+                            Opacity="0.8"
+                            BlurRadius="10" />
+                    </Border.Effect>
+                    <Grid
+                        MaxWidth="280"
+                        Margin="3pt">
+                        <Grid.RowDefinitions>
+                            <RowDefinition
+                                Height="Auto"></RowDefinition>
+                            <RowDefinition
+                                Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition
+                                Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition
+                                Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <!--<Image
+                        Grid.RowSpan="2"
+                        Source="{Binding Path=ImageUrl}"
+                        Margin="4"
+                        Width="80"></Image>-->
+                        <DockPanel
+                            Grid.Column="1">
+
+                            <Button
+                                DockPanel.Dock="Right"
+                                x:Name="CloseButton"
+                                TextBlock.LineStackingStrategy="MaxHeight"
+                                Width="16"
+                                Height="16"
+                                FontSize="6pt"
+                                HorizontalAlignment="Right"
+                                Margin="0,0,2pt,0"
+                                Style="{StaticResource RemoveButtonStyle}" />
+                            <TextBlock
+                                Text="{Binding Path=Title}"
+                                TextOptions.TextRenderingMode="ClearType"
+                                TextOptions.TextFormattingMode="Display"
+                                Foreground="White"
+                                FontFamily="Arial"
+                                FontSize="12pt"
+                                FontWeight="Bold"
+                                VerticalAlignment="Center"
+                                Margin="1pt"
+                                TextWrapping="Wrap"
+                                TextTrimming="CharacterEllipsis" />
+
+                        </DockPanel>
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Text="{Binding Path=Message}"
+                            TextOptions.TextRenderingMode="ClearType"
+                            TextOptions.TextFormattingMode="Display"
+                            Foreground="White"
+                            FontFamily="Arial"
+                            VerticalAlignment="Top"
+                            Margin="2,2,4,4"
+                            TextWrapping="Wrap"
+                            Visibility="{Binding Path=MessageVisibility}"
+                            TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                </Border>
+            </Grid>
+            <DataTemplate.Triggers>
+                <EventTrigger
+                    RoutedEvent="UserControl.Loaded"
+                    SourceName="NotificationWindow">
+                    <BeginStoryboard
+                        x:Name="FadeInStoryBoard">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="NotificationWindow"
+                                From="0.01"
+                                To="1"
+                                Storyboard.TargetProperty="Opacity"
+                                Duration="0:0:1" />
+                            <DoubleAnimation
+                                Storyboard.TargetName="NotificationWindow"
+                                From="1"
+                                To="0"
+                                Storyboard.TargetProperty="Opacity"
+                                Duration="0:0:1"
+                                BeginTime="0:0:3" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <Trigger
+                    Property="IsMouseOver"
+                    Value="True">
+                    <Trigger.EnterActions>
+                        <SeekStoryboard
+                            Offset="0:0:3"
+                            BeginStoryboardName="FadeInStoryBoard" />
+                        <PauseStoryboard
+                            BeginStoryboardName="FadeInStoryBoard" />
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <SeekStoryboard
+                            Offset="0:0:3"
+                            BeginStoryboardName="FadeInStoryBoard" />
+                        <ResumeStoryboard
+                            BeginStoryboardName="FadeInStoryBoard"></ResumeStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+                <EventTrigger
+                    RoutedEvent="Button.Click"
+                    SourceName="CloseButton">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="NotificationWindow"
+                                From="1"
+                                To="0"
+                                Storyboard.TargetProperty="(Grid.Opacity)"
+                                Duration="0:0:0.05" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <Trigger
+                    SourceName="NotificationWindow"
+                    Property="Opacity"
+                    Value="0">
+                    <Setter
+                        TargetName="NotificationWindow"
+                        Property="Visibility"
+                        Value="Hidden"></Setter>
+                    <Trigger.EnterActions>
+                        <BeginStoryboard
+                            Storyboard="{StaticResource CollapseStoryboard}" />
+                    </Trigger.EnterActions>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </UserControl.Resources>
+    <!--d:DataContext="{d:DesignData Source=DesignTimeNotificationData.xaml}"-->
+    <ItemsControl
+        x:Name="NotificationsControl"
+        d:DataContext="{d:DesignData Source=DesignTimeNotificationData.xaml}"
+        FocusVisualStyle="{x:Null}"
+        ItemsSource="{Binding .}"
+        ItemTemplate="{StaticResource MessageTemplate}" />
+</UserControl>
