@@ -23,100 +23,114 @@ namespace Yodii.Engine
             }
         }
 
-        public bool Start( StartDependencyImpact impact)
+        public bool Start( StartDependencyImpact impact )
         {
-            Debug.Assert( !Disabled && _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
-            Debug.Assert( _dynamicStatus == RunningStatus.Stopped );
-            switch( impact )
+            if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
+            if( CanStart() )
             {
-                case StartDependencyImpact.None : 
-                    PropagationNoneImpact();
-                    break;
-                case StartDependencyImpact.StartRecommended :
-                    PropagationStartRecommandedImpact();
-                    break;
+                DoStart( impact );
+                Debug.Assert( _dynamicStatus.Value == RunningStatus.Running );
+                return true;
             }
-            if( impact == StartDependencyImpact.None )
-            {
-                PropagationNoneImpact();
-            }
-            
-            if ( true )
-            {
-                //The plugin can be started now
-                _dynamicStatus = RunningStatus.Running;
-                Debug.Assert( _dynamicStatus == RunningStatus.Running );
-            }
-            //The plugin could not be started
-            Debug.Assert( _dynamicStatus == RunningStatus.Stopped );
+            DoStop();
             return false;
         }
 
-        void PropagationNoneImpact()
+        public bool Stop()
         {
-            //parcours tout le graph à partir du root, peut être trouver plus rapide ? 
-            bool result = StopConcurrentPlugin( Service.GeneralizationRoot );
-            Debug.Assert( result == true );
-
-            foreach( var s in PluginInfo.ServiceReferences)
-            {
-                if( s.Requirement == DependencyRequirement.Running )
-                    _allServices[s.Reference].DynamicStatus = RunningStatus.Running;
-            }
-
-            PropagationRunning();
+            if( _dynamicStatus != null ) return _dynamicStatus.Value < RunningStatus.Running;
+            Debug.Assert( CanStop() );
+            DoStop();
+            Debug.Assert( _dynamicStatus.Value == RunningStatus.Stopped );
+            return true;
         }
 
-        void PropagationStartRecommandedImpact()
+        bool CanStop()
         {
-            //parcours tout le graph à partir du root, peut être trouver plus rapide ? 
-            bool result = StopConcurrentPlugin( Service.GeneralizationRoot );
-            Debug.Assert( result == true );
+            if( _dynamicStatus.HasValue ) return _dynamicStatus.Value < RunningStatus.Running;
+            return true;
+        }
 
+        bool CanStart()
+        {
+            if( _dynamicStatus.HasValue ) return _dynamicStatus.Value >= RunningStatus.Running;
             foreach( var s in PluginInfo.ServiceReferences )
             {
-                if( s.Requirement == DependencyRequirement.Running 
-                    || s.Requirement == DependencyRequirement.RunnableTryStart
-                    || s.Requirement == DependencyRequirement.OptionalTryStart )
+                if( s.Requirement == DependencyRequirement.Running && !_allServices[s.Reference].CanStart() )
                 {
-                    if( _allServices[s.Reference].DynamicStatus != RunningStatus.RunningLocked && _allServices[s.Reference].DynamicStatus != RunningStatus.Disabled )
-                        _allServices[s.Reference].DynamicStatus = RunningStatus.Running;
+                    return false;
                 }
             }
-
-            PropagationRunning();
+            return true;
         }
 
-        bool StopConcurrentPlugin(ServiceData service)
+
+        bool DoStart( StartDependencyImpact impact )
         {
-            if ( service.DynamicStatus == RunningStatus.Stopped || service.DynamicStatus == RunningStatus.Disabled )
+            Debug.Assert( _dynamicStatus == null );
+            if( impact == StartDependencyImpact.None )
             {
-                if( service.NextSpecialization != null )
+                foreach( var s in PluginInfo.ServiceReferences )
                 {
-                    return StopConcurrentPlugin( service.NextSpecialization );
+                    if( !PropagateRunningDependancyRequirement( s ) ) return false;
                 }
             }
-            PluginData pd = service.FirstPlugin;
-            while ( pd != null )
+            else if( impact == StartDependencyImpact.StartRecommended )
             {
-                if ( pd.DynamicStatus == RunningStatus.Running )
+                foreach( var s in PluginInfo.ServiceReferences )
                 {
-                    pd.DynamicStatus = RunningStatus.Stopped;
-                    return true;
+                    if( !PropagateRunningDependancyRequirement( s ) ) return false;
+                    if( s.Requirement == DependencyRequirement.RunnableTryStart
+                        || s.Requirement == DependencyRequirement.OptionalTryStart )
+                    {
+                        _allServices[s.Reference].SetDynamicStatus( RunningStatus.Running );
+                    }
                 }
-                pd = pd.NextPluginForService;
             }
-            return StopConcurrentPlugin( service.FirstSpecialization );
+            else if( impact == StartDependencyImpact.StopOptionalAndRunnable )
+            {
+                foreach( var s in PluginInfo.ServiceReferences )
+                {
+                    if( !PropagateRunningDependancyRequirement( s ) ) return false;
+                    if( s.Requirement == DependencyRequirement.Optional
+                        || s.Requirement == DependencyRequirement.Runnable )
+                    {
+                        _allServices[s.Reference].SetDynamicStatus( RunningStatus.Stopped );
+                    }
+                }
+            }
+            else if( impact == StartDependencyImpact.FullStop )
+            {
+                foreach( var s in PluginInfo.ServiceReferences )
+                {
+                    if( !PropagateRunningDependancyRequirement( s ) ) return false;
+                    _allServices[s.Reference].SetDynamicStatus( RunningStatus.Stopped );
+                }
+            }
+            else if( impact == StartDependencyImpact.FullStart )
+            {
+                foreach( var s in PluginInfo.ServiceReferences )
+                {
+                    if( !PropagateRunningDependancyRequirement( s ) ) return false;
+                    _allServices[s.Reference].SetDynamicStatus( RunningStatus.Running );
+                }
+            }
+            if( Service.SetDynamicStatus( RunningStatus.Running ) )
+            {
+                _dynamicStatus = RunningStatus.Running;
+            }
         }
 
-        void PropagationRunning()
+        bool PropagateRunningDependancyRequirement( IServiceReferenceInfo s )
         {
-            ServiceData service = Service;
-            while( service != null )
+            if( s.Requirement == DependencyRequirement.Running
+                            && (_allServices[s.Reference].DynamicStatus != RunningStatus.Running || _allServices[s.Reference].DynamicStatus != RunningStatus.RunningLocked)
+                            && !_allServices[s.Reference].SetDynamicStatus( RunningStatus.Running ) )
             {
-                service.DynamicStatus = RunningStatus.Running;
-                service = service.Generalization;
+                _dynamicStatus = RunningStatus.Stopped;
+                return false;
             }
+            return true;
         }
 
         bool CheckReferencesWhenMustRun()
