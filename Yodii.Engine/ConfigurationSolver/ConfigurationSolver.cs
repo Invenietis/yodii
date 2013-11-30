@@ -14,6 +14,7 @@ namespace Yodii.Engine
         Dictionary<IServiceInfo,ServiceData> _services;
         List<ServiceRootData> _serviceRoots;
         Dictionary<IPluginInfo,PluginData> _plugins;
+        int _runnablePluginsCount = 0;
 
         public ConfigurationSolver()
         {
@@ -99,11 +100,25 @@ namespace Yodii.Engine
             }
             return new SuccessYodiiEngineResult();
         }
-
+        /// <summary>
+        /// First this function will reset the dynamic state of all plugins and services. This means the RunningStatus? is set from the SolvedConfigurationStatus.
+        /// RunnablePluginsCount holds the total number of plugins that are runnable and have a runningStatus either null or Stopped.
+        /// We then apply all commands except the one at the top of the list. It'll be applied last as it must always be true.
+        /// </summary>
+        /// <param name="commands"></param>
+        /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
+        /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )
         {
-            foreach ( var p in _plugins.Values ) p.ResetDynamicState();
+            foreach ( var p in _plugins.Values )
+            {
+                //Keeps the latest RunningStatus if set instead of setting it from the SolvedConfigurationStatus
+                if( p.DynamicStatus == null ) p.ResetDynamicState();
+                if ( p.DynamicStatus == null ) _runnablePluginsCount++;
+            }
             foreach ( var s in _services.Values ) s.ResetDynamicState();
+
+            if ( _runnablePluginsCount == 1 ) StartTheOnlyPlugin();
 
             for ( int i = 0; i < commands.Count; ++i )
             {
@@ -113,10 +128,16 @@ namespace Yodii.Engine
                     commands.RemoveAt( i-- );
                 }
             }
+
             Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
             return Tuple.Create( _plugins.Values.Where( p => p.Disabled ).Select( p => p.PluginInfo ),
                                  _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Stopped ).Select( p => p.PluginInfo ),
                                  _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Running || p.DynamicStatus == RunningStatus.RunningLocked ).Select( p => p.PluginInfo ) );
+        }
+
+        private void StartTheOnlyPlugin()
+        {
+            
         }
 
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
@@ -135,9 +156,14 @@ namespace Yodii.Engine
                 PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
                 if ( p != null )
                 {
-                    if ( cmd.Start ) return p.Start( cmd.Impact );
-                    return p.Stop();
+                    if ( cmd.Start )
+                    {
+                        if ( p.Start( cmd.Impact ) ) _runnablePluginsCount--;
+                    }
+                    else if ( p.Stop() ) _runnablePluginsCount++;
+                    return true;
                 }
+                return false;
             }
             return true;
         }
@@ -187,5 +213,7 @@ namespace Yodii.Engine
         {
             return new YodiiEngineResult( _services, _plugins, errors );
         }
+
+        public int RunnablePluginsCount { get { return _runnablePluginsCount; } }
     }
 }

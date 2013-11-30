@@ -18,6 +18,7 @@ namespace Yodii.Engine
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _virtualSolver;
         ConfigurationSolver _currentSolver;
+        LiveInfo _liveInfo;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -52,7 +53,7 @@ namespace Yodii.Engine
                 var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
                 if( errors != null && errors.Any() )
                 {
-                IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
+                    IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
                     _virtualSolver = null;
                     return result;
                 }
@@ -62,9 +63,8 @@ namespace Yodii.Engine
             return new SuccessYodiiEngineResult();
         }
 
-        ConfigurationSolver CurrentSolver
+        internal ConfigurationSolver CurrentSolver
         {
-            get { return _currentSolver; }
             set
             {
                 _currentSolver = value;
@@ -110,6 +110,12 @@ namespace Yodii.Engine
             return result;
         }
 
+        private void InitializeLiveInfo()
+        {
+            Debug.Assert(_liveInfo == null);
+            _liveInfo = new LiveInfo();
+        }
+
         public void Stop()
         {
             CurrentSolver = null;
@@ -152,6 +158,13 @@ namespace Yodii.Engine
         {
             get { throw new NotImplementedException(); }
         }
-
+        public IYodiiEngineHost Host
+        {
+            get { return _host; }
+        }
+        //public List<YodiiCommand> YodiiCommands
+        //{
+        //    get { return _yodiiCommands; }
+        //}
     }
 }

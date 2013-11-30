@@ -36,6 +36,11 @@ namespace Yodii.Engine
             return false;
         }
 
+        private void DoStop()
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Stop()
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value < RunningStatus.Running;
@@ -118,7 +123,9 @@ namespace Yodii.Engine
             if( Service.SetDynamicStatus( RunningStatus.Running ) )
             {
                 _dynamicStatus = RunningStatus.Running;
+                return true;
             }
+            return false;
         }
 
         bool PropagateRunningDependancyRequirement( IServiceReferenceInfo s )
@@ -131,29 +138,6 @@ namespace Yodii.Engine
                 return false;
             }
             return true;
-        }
-
-        bool CheckReferencesWhenMustRun()
-        {
-            foreach ( var sRef in PluginInfo.ServiceReferences )
-            {
-                SolvedConfigurationStatus propagation = (SolvedConfigurationStatus)sRef.Requirement;
-                if ( _configSolvedStatus < propagation ) propagation = _configSolvedStatus;
-
-                ServiceData sr = _allServices[sRef.Reference];
-                if ( !sr.SetSolvedConfigurationStatus( propagation, ServiceSolvedConfigStatusReason.FromMustExistReference ) )
-                {
-                    if ( !Disabled ) SetDisabled( PluginDisabledReason.RequirementPropagationToReferenceFailed );
-                    break;
-                }
-            }
-            return true;
-        }
-
-
-        public bool Stop()
-        {
-            return true;
-        }
+        }        
     }
 }
