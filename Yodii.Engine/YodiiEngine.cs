@@ -158,13 +158,10 @@ namespace Yodii.Engine
         {
             get { throw new NotImplementedException(); }
         }
+
         public IYodiiEngineHost Host
         {
             get { return _host; }
         }
-        //public List<YodiiCommand> YodiiCommands
-        //{
-        //    get { return _yodiiCommands; }
-        //}
     }
 }

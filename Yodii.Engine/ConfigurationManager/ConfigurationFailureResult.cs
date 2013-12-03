@@ -8,43 +8,47 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    public class ConfigurationFailureResult : IConfigurationFailureResult
+    class ConfigurationFailureResult : IConfigurationFailureResult
     {
-        readonly List<string> _failureReasons;
+        readonly IReadOnlyList<string> _failureReasons;
 
+        /// <summary>
+        /// Initializes a new success result.
+        /// </summary>
         internal ConfigurationFailureResult()
         {
-            _failureReasons = new List<string>();
         }
 
+        /// <summary>
+        /// Initializes a failure result from the FillConfiguration: only one
+        /// blocking condition can be detected.
+        /// </summary>
+        /// <param name="reason"></param>
         internal ConfigurationFailureResult( string reason )
         {
-            _failureReasons = new List<string>();
-            _failureReasons.Add( reason );
+            Debug.Assert( !String.IsNullOrWhiteSpace( reason ) );
+            _failureReasons = new CKReadOnlyListMono<string>( reason );
         }
 
+        /// <summary>
+        /// Initializes a failure result due to cancellations by external code (from ConfigurationChanging event).
+        /// </summary>
+        /// <param name="reasons">Multiple reasons.</param>
         internal ConfigurationFailureResult( IReadOnlyList<string> reasons )
         {
-            _failureReasons = reasons.ToList();
-        }
-
-        internal void addFailureReason( string reason )
-        {
-            _failureReasons.Add( reason );
+            Debug.Assert( reasons != null && reasons.Count > 0 );
+            _failureReasons = reasons;
         }
 
         public bool Success
         {
-            get { return _failureReasons.Count == 0; }
+            get { return _failureReasons == null; }
         }
-
-        #region IConfigurationManagerFailureResult Members
 
         public IReadOnlyList<string> FailureReasons
         {
-            get { return _failureReasons.AsReadOnlyList(); }
+            get { return _failureReasons; }
         }
 
-        #endregion
     }
 }

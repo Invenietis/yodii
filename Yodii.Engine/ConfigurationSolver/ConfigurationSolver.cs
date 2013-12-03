@@ -11,18 +11,15 @@ namespace Yodii.Engine
 {
     class ConfigurationSolver
     {
-        Dictionary<IServiceInfo,ServiceData> _services;
+        Dictionary<string,ServiceData> _services;
         List<ServiceRootData> _serviceRoots;
-        Dictionary<IPluginInfo,PluginData> _plugins;
-        int _runnablePluginsCount = 0;
-        bool _firstCall;
+        Dictionary<Guid,PluginData> _plugins;
 
         public ConfigurationSolver()
         {
-            _services = new Dictionary<IServiceInfo, ServiceData>();
+            _services = new Dictionary<string, ServiceData>();
             _serviceRoots = new List<ServiceRootData>();
-            _plugins = new Dictionary<IPluginInfo, PluginData>();
-            _firstCall = true;
+            _plugins = new Dictionary<Guid, PluginData>();
         }
 
         public IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
@@ -62,7 +59,7 @@ namespace Yodii.Engine
                 // When a plugin is disabled because of a disabled required service reference and it implements a service, the service
                 // becomes disabled (if it has no more available implementations) and that triggers disabling of plugins that require
                 // the service. This works because disable flag on each participant is carefully set before propagating the
-                // information to others to avoid loops and because such plugins reference themselves at the required service (AddMustExistReferencer).
+                // information to others to avoid loops and because such plugins reference themselves at the required service (AddRunnableReferencer).
                 if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
@@ -118,45 +115,24 @@ namespace Yodii.Engine
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )
         {
-            if ( _firstCall == true )
-            {
-                List<YodiiCommand> persistentYodiiCommands =  RetrievePersistentYodiiCommands();
-                if ( persistentYodiiCommands != null && persistentYodiiCommands.Any() ) commands.AddRange( persistentYodiiCommands );
-
-                foreach ( var p in _plugins.Values )
-                {
-                    p.ResetDynamicState();
-                    if ( p.DynamicStatus == null ) _runnablePluginsCount++;
-                }
-                foreach ( var s in _services.Values )
-                {
-                    s.ResetDynamicState();
-                }
-                _firstCall = false;
-            }
-
-            Debug.Assert( _firstCall == false );
-            if ( _runnablePluginsCount == 1 ) StartTheOnlyPlugin();
+            foreach( var s in _services.Values ) s.ResetDynamicState();
+            foreach( var p in _plugins.Values ) p.ResetDynamicState();
             
-            //Applying all commands but the 1st one
-            for ( int i = 0; i < commands.Count; ++i )
+            #if DEBUG
+            foreach( var s in _services.Values ) s.OnAllPluginsDynamicStateInitialized();
+            #endif
+                       
+            for( int i = 0; i < commands.Count; ++i )
             {
                 if ( !ApplyAndTellMeIfCommandMustBeKept( commands[i] ) )
                 {
-                    Debug.Assert( i > 0 );
+                    Debug.Assert( i > 0, "First command is necessarily okay." );
                     commands.RemoveAt( i-- );
                 }
             }
 
-            //Applying the most recent command (1st)
-            if ( !ApplyAndTellMeIfCommandMustBeKept( commands[0] ) )
-            {
-                ApplyAndTellMeIfCommandMustBeKept( commands[1] );
-                commands.RemoveAt( 0 );
-            }
-
             //This LINQ query guarantees all plugins running status are not null just before sending them to the host for injection.
-            _plugins.Values.Where( p => p.DynamicStatus.Value == null ).ToList().ForEach(pp => pp.DynamicStatus = RunningStatus.Stopped);
+            //_plugins.Values.Where( p => p.DynamicStatus.Value == null ).ToList().ForEach(pp => pp.DynamicStatus = RunningStatus.Stopped);
 
             Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
             return Tuple.Create( _plugins.Values.Where( p => p.Disabled ).Select( p => p.PluginInfo ),
@@ -170,10 +146,6 @@ namespace Yodii.Engine
             throw new NotImplementedException();
         }
 
-        private void StartTheOnlyPlugin()
-        {
-            
-        }
 
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
@@ -182,23 +154,17 @@ namespace Yodii.Engine
                 ServiceData s = _services.Values.FirstOrDefault( i => i.ServiceInfo.ServiceFullName == cmd.FullName );
                 if ( s != null )
                 {
-                    if ( cmd.Start ) return s.Start();
-                    return s.Stop();
+                    if ( cmd.Start ) return s.StartByCommand();
+                    return s.StopByCommand();
                 }
+                return true;
             }
-            else
+            // Starts or stops the plugin.
+            PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
+            if ( p != null )
             {
-                PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
-                if ( p != null )
-                {
-                    if ( cmd.Start )
-                    {
-                        if ( p.Start( cmd.Impact ) ) _runnablePluginsCount--;
-                    }
-                    else if ( p.Stop() ) _runnablePluginsCount++;
-                    return true;
-                }
-                return false;
+                if ( cmd.Start ) return p.StartByCommand( cmd.Impact );
+                else return p.StopByCommand();
             }
             return true;
         }
@@ -206,7 +172,7 @@ namespace Yodii.Engine
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )
         {
             ServiceData data;
-            if( _services.TryGetValue( s, out data ) ) return data;
+            if( _services.TryGetValue( s.ServiceFullName, out data ) ) return data;
 
             //Set default status
             ConfigurationStatus serviceStatus = finalConfig.GetStatus( s.ServiceFullName );
@@ -227,20 +193,20 @@ namespace Yodii.Engine
             {
                 data = new ServiceData( _services, s, dataGen, serviceStatus, externalService => true );
             }
-            _services.Add( s, data );
+            _services.Add( s.ServiceFullName, data );
             return data;
         }
 
         PluginData RegisterPlugin( FinalConfiguration finalConfig, IPluginInfo p )
         {
             PluginData data;
-            if( _plugins.TryGetValue( p, out data ) ) return data;
+            if( _plugins.TryGetValue( p.PluginId, out data ) ) return data;
 
             //Set default status
             ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
-            ServiceData service = p.Service != null ? _services[p.Service] : null;
+            ServiceData service = p.Service != null ? _services[p.Service.ServiceFullName] : null;
             data = new PluginData( _services, p, service, pluginStatus );
-            _plugins.Add( p, data );
+            _plugins.Add( p.PluginId, data );
             return data;
         }
 
@@ -249,6 +215,5 @@ namespace Yodii.Engine
             return new YodiiEngineResult( _services, _plugins, errors );
         }
 
-        public int RunnablePluginsCount { get { return _runnablePluginsCount; } }
     }
 }

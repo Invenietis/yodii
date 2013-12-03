@@ -12,7 +12,7 @@ namespace Yodii.Engine
         ServiceData _mustExistService;
         PluginData _mustExistPluginByConfig;
 
-        internal ServiceRootData( Dictionary<IServiceInfo, ServiceData> allServices, IServiceInfo s, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
+        internal ServiceRootData( Dictionary<string, ServiceData> allServices, IServiceInfo s, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
             : base( allServices, s, null, serviceStatus, isExternalServiceAvailable )
         {
         }

@@ -55,7 +55,7 @@ namespace Yodii.Engine
             _configurationLayerCollection.CheckPosition( layer );
         }
 
-        ConfigurationFailureResult FillFromConfiguration( Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
+        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
         {
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
@@ -72,7 +72,7 @@ namespace Yodii.Engine
                             }
                             else if( status != item.Status )
                             {
-                                return new ConfigurationFailureResult( String.Format( "Conflict for {0} between statuses {1} and {2}", item.ServiceOrPluginId, item.Status, status ) );
+                                return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginId, item.Status, status ) );
                             }
                         }
                         else
@@ -93,7 +93,7 @@ namespace Yodii.Engine
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             final.Add( item.ServiceOrPluginId, newStatus );
 
-            ConfigurationFailureResult internalResult = FillFromConfiguration( final, c => c != item );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
             if( internalResult.Success )
             {
                 FinalConfiguration finalConfiguration = new FinalConfiguration( final );
@@ -111,7 +111,6 @@ namespace Yodii.Engine
                 }
                 return result;
             }
-            internalResult.addFailureReason( String.Format( "The status of {0} cannot be changed", item.ServiceOrPluginId ) );
             return new YodiiEngineResult( internalResult );
         }
 
@@ -120,7 +119,7 @@ namespace Yodii.Engine
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
             final.Add( newItem.ServiceOrPluginId, newItem.Status );
 
-            ConfigurationFailureResult internalResult = FillFromConfiguration( final );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
             if( internalResult.Success )
             {
                 FinalConfiguration finalConfiguration = new FinalConfiguration( final );
@@ -138,7 +137,6 @@ namespace Yodii.Engine
                 }
                 return result;
             }
-            internalResult.addFailureReason( String.Format( "{0} cannot be added", newItem.ServiceOrPluginId ) );
             return new YodiiEngineResult( internalResult );
         }
 
@@ -146,7 +144,7 @@ namespace Yodii.Engine
         {
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
 
-            ConfigurationFailureResult internalResult = FillFromConfiguration( final, c => c != item );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c != item );
             if( internalResult.Success )
             {
                 FinalConfiguration finalConfiguration = new FinalConfiguration( final );
@@ -165,7 +163,6 @@ namespace Yodii.Engine
                 return result;
             }
             Debug.Fail( "Removing a configuration item can not lead to an impossibility." );
-            internalResult.addFailureReason( "Removing a configuration item can not lead to an impossibility." );
             return new YodiiEngineResult( internalResult );
         }
 
@@ -173,7 +170,7 @@ namespace Yodii.Engine
         {
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
 
-            ConfigurationFailureResult internalResult = FillFromConfiguration( final, c => c.Layer != layer );
+            ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c.Layer != layer );
 
             if( internalResult.Success )
             {
@@ -183,8 +180,6 @@ namespace Yodii.Engine
                 {
                     _currentEventArgs = new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerRemoved, layer );
                     RaiseConfigurationChanging( _currentEventArgs );
-
-
                     if( _currentEventArgs.IsCanceled )
                     {
                         return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
@@ -194,7 +189,6 @@ namespace Yodii.Engine
                 return new SuccessYodiiEngineResult();
             }
             Debug.Fail( "Removing a configuration layer can not lead to an impossibility." );
-            internalResult.addFailureReason( "Removing a configuration layer can not lead to an impossibility." );
             return new YodiiEngineResult( internalResult );
         }
 

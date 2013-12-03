@@ -115,7 +115,7 @@ namespace Yodii.Lab
                 {
                     NewPluginGuidText = Guid.NewGuid().ToString();
                 }
-                return; // Stop here on wrong GUID.
+                return; // StopByCommand here on wrong GUID.
             }
 
             IServiceInfo service = SelectedService;

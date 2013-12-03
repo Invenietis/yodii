@@ -9,13 +9,28 @@ namespace Yodii.Engine
 {   
     internal partial class ServiceData
     {
-        readonly Dictionary<IServiceInfo,ServiceData> _allServices;
+        readonly Dictionary<string,ServiceData> _allServices;
         ServiceDisabledReason _configDisabledReason;
         SolvedConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
         ServiceData _configMustExistSpecialization;
         ServiceData _configDirectMustExistSpecialization;
-        List<PluginData> _configMustExistReferencer;
+
+        class BackReference
+        {
+            public readonly PluginData PluginData;
+            public readonly DependencyRequirement Requirement;
+            public readonly BackReference Next;
+
+            public BackReference( BackReference next, PluginData p, DependencyRequirement req )
+            {
+                PluginData = p;
+                Requirement = req;
+                Next = next;
+            }
+
+        }
+        BackReference _firstBackRunnableReference;
 
         public readonly IServiceInfo ServiceInfo;
 
@@ -35,7 +50,7 @@ namespace Yodii.Engine
         /// </summary>
         public readonly ConfigurationStatus ConfigOriginalStatus;
 
-        internal ServiceData( Dictionary<IServiceInfo, ServiceData> allServices, IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
+        internal ServiceData( Dictionary<string, ServiceData> allServices, IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
         {
             _allServices = allServices;
             ServiceInfo = s;
@@ -135,14 +150,11 @@ namespace Yodii.Engine
             Debug.Assert( _theOnlyPlugin == null && _commonReferences == null, "Disabling all plugins must have set them to null." );
             // The _mustExistReferencer list contains plugins that has at least a MustExist reference to this service
             // and have been initialized when this Service was not yet disabled.
-            if( _configMustExistReferencer != null )
+            BackReference br = _firstBackRunnableReference;
+            while( br != null )
             {
-                foreach( PluginData p in _configMustExistReferencer )
-                {
-                    if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
-                }
-                // It is useless to keep them.
-                _configMustExistReferencer = null;
+                if( !br.PluginData.Disabled ) br.PluginData.SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
+                br = br.Next;
             }
             _configDirectMustExistSpecialization = null;
             _configMustExistSpecialization = null;
@@ -441,6 +453,25 @@ namespace Yodii.Engine
             return specMustExist;
         }
 
+
+        PluginData FindFirstPluginData( Func<PluginData, bool> filter )
+        {
+            PluginData p = FirstPlugin;
+            while( p != null )
+            {
+                if( filter( p ) ) return p;
+                p = p.NextPluginForService;
+            }
+            ServiceData s = FirstSpecialization;
+            while( s != null )
+            {
+                p = s.FindFirstPluginData( filter );
+                if( p != null ) return p;
+                s = s.NextSpecialization;
+            }
+            return null;
+        }
+
         internal void AddPlugin( PluginData p )
         {
             // Consider its RunningRequirements to detect trivial case: the fact that another plugin 
@@ -468,11 +499,15 @@ namespace Yodii.Engine
             while( g != null );
         }
 
-        internal void AddMustExistReferencer( PluginData plugin )
+        /// <summary>
+        /// Adds a plugin that requires this service with Runnable, RunnableTryStart or Running requirement.
+        /// </summary>
+        /// <param name="plugin">The plugin that references us.</param>
+        internal void AddRunnableReferencer( PluginData plugin, DependencyRequirement req )
         {
             Debug.Assert( !Disabled );
-            if( _configMustExistReferencer == null ) _configMustExistReferencer = new List<PluginData>();
-            _configMustExistReferencer.Add( plugin );
+            Debug.Assert( req >= DependencyRequirement.Runnable );
+            _firstBackRunnableReference = new BackReference( _firstBackRunnableReference, plugin, req );
         }
 
         internal virtual void OnAllPluginsAdded()

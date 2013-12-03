@@ -9,7 +9,7 @@ namespace Yodii.Engine
 {
     partial class PluginData
     {
-        readonly Dictionary<IServiceInfo,ServiceData> _allServices;
+        readonly Dictionary<string,ServiceData> _allServices;
         PluginDisabledReason _configDisabledReason;
         SolvedConfigurationStatus _configSolvedStatus;
         PluginRunningRequirementReason _configSolvedStatusReason;
@@ -34,7 +34,7 @@ namespace Yodii.Engine
 
         internal static readonly PluginData[] EmptyArray = new PluginData[0];
 
-        internal PluginData( Dictionary<IServiceInfo,ServiceData> allServices, IPluginInfo p, ServiceData service, ConfigurationStatus pluginStatus )
+        internal PluginData( Dictionary<string,ServiceData> allServices, IPluginInfo p, ServiceData service, ConfigurationStatus pluginStatus )
         {
             _allServices = allServices;
             PluginInfo = p;
@@ -73,13 +73,13 @@ namespace Yodii.Engine
                             SetDisabled( PluginDisabledReason.MustExistReferenceServiceIsOnError );
                             break;
                         }
-                        ServiceData sr = allServices[sRef.Reference];
+                        ServiceData sr = allServices[sRef.Reference.ServiceFullName];
                         if( sr.Disabled )
                         {
                             SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
                             break;
                         }
-                        sr.AddMustExistReferencer( this );
+                        sr.AddRunnableReferencer( this, sRef.Requirement );
                     }
                 }
             }
@@ -202,7 +202,7 @@ namespace Yodii.Engine
                 SolvedConfigurationStatus propagation = (SolvedConfigurationStatus)sRef.Requirement;
                 if( _configSolvedStatus < propagation ) propagation = _configSolvedStatus;
 
-                ServiceData sr = _allServices[sRef.Reference];
+                ServiceData sr = _allServices[sRef.Reference.ServiceFullName];
                 if( !sr.SetSolvedConfigurationStatus( propagation, ServiceSolvedConfigStatusReason.FromMustExistReference ) )
                 {
                     if( !Disabled ) SetDisabled( PluginDisabledReason.RequirementPropagationToReferenceFailed );
