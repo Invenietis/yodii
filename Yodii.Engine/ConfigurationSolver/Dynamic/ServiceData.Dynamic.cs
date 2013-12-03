@@ -30,13 +30,23 @@ namespace Yodii.Engine
         /// <returns></returns>
         public bool Start()
         {
+            if ( CanStart() )
+            {
+                DoStart();
+                return true;
+            }
+            else return false;
+        }
+
+        public bool DoStart()
+        {
             ServiceData rootNode = GeneralizationRoot;
-            if( rootNode != this )
+            if ( rootNode != this )
             {
                 ServiceData NeedsToRun = this;
                 ServiceData Parent = Generalization;
                 Debug.Assert( NeedsToRun.IsStrictGeneralizationOf( Parent ) );
-                while(Parent != rootNode)
+                while ( Parent != rootNode )
                 {
                     ServiceData s = Parent.FirstSpecialization;
                     while ( s != null && s != NeedsToRun )
@@ -49,7 +59,7 @@ namespace Yodii.Engine
                     Parent = Parent.Generalization;
                 }
                 ServiceData s1 = rootNode.FirstSpecialization;
-                while(s1 != null )
+                while ( s1 != null )
                 {
                     if ( !s1.IsStrictGeneralizationOf( this ) ) s1.DynamicStatus = RunningStatus.Stopped;
                     s1 = s1.NextSpecialization;
@@ -65,6 +75,55 @@ namespace Yodii.Engine
         }
         public bool Stop()
         {
+            if ( CanStop() ) 
+            {
+                DoStop();
+                return true;
+            }
+            return false;
+        }
+
+        private void DoStop()
+        {
+            ServiceData rootNode = GeneralizationRoot;
+            if ( rootNode != this )
+            {
+                ServiceData NeedsToRun = this;
+                ServiceData Parent = Generalization;
+                Debug.Assert( NeedsToRun.IsStrictGeneralizationOf( Parent ) );
+                while ( Parent != rootNode )
+                {
+                    ServiceData s = Parent.FirstSpecialization;
+                    while ( s != null && s != NeedsToRun )
+                    {
+                        s.DynamicStatus = RunningStatus.Stopped;
+                        s = s.NextSpecialization;
+                    }
+                    NeedsToRun.DynamicStatus = RunningStatus.Stopped;
+                    NeedsToRun = Parent;
+                    Parent = Parent.Generalization;
+                }
+                ServiceData s1 = rootNode.FirstSpecialization;
+                while ( s1 != null )
+                {
+                    if ( !s1.IsStrictGeneralizationOf( this ) ) s1.DynamicStatus = RunningStatus.Stopped;
+                    s1 = s1.NextSpecialization;
+                }
+            }
+            else
+            {
+                //In this case, we are the root so all we need to do is to Start.
+                //No need to start the upper nodes (there is none) or to stop the upper nodes or upper nodes siblings
+                _dynamicStatus = RunningStatus.Running;
+            }
+        }
+
+        private bool CanStop()
+        {
+            if ( DynamicStatus.HasValue )
+            {
+
+            }
             return true;
         }
         public bool SetDynamicStatus(RunningStatus runningStatus)
@@ -74,7 +133,29 @@ namespace Yodii.Engine
 
         internal bool CanStart()
         {
-            throw new NotImplementedException();
+            ServiceData rootNode = GeneralizationRoot;
+            if ( rootNode != this )
+            {
+                ServiceData NeedsToRun = this;
+                ServiceData Parent = Generalization;
+                Debug.Assert( NeedsToRun.IsStrictGeneralizationOf( Parent ) );
+                while ( Parent != rootNode )
+                {
+                    if ( NeedsToRun.ThisMinimalRunningRequirement >= SolvedConfigurationStatus.Runnable
+                        && Parent.ThisMinimalRunningRequirement >= SolvedConfigurationStatus.Runnable )
+                    {
+                        NeedsToRun = Parent;
+                        Parent = Parent.Generalization;
+                    }
+                    else return false;
+                }
+                return true;
+            }
+            else
+            {
+                if ( rootNode.ThisMinimalRunningRequirement >= SolvedConfigurationStatus.Runnable ) return true;
+                return false;
+            }
         }
     }
 }

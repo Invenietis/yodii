@@ -33,7 +33,7 @@ namespace Yodii.Engine
         internal YodiiCommand( object caller, bool start, StartDependencyImpact impact, string fullName )
             : this( caller, start, impact )
         {
-            Debug.Assert(string.IsNullOrEmpty(fullName) != true);
+            Debug.Assert( string.IsNullOrEmpty( fullName ) != true );
             FullName = fullName;
         }
     }

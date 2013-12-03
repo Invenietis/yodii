@@ -27,6 +27,7 @@ namespace Yodii.Engine
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value < RunningStatus.Running;
             Debug.Assert( CanStop() );
+            Debug.Assert( _dynamicStatus.Value == RunningStatus.Running );
             DoStop();
             Debug.Assert( _dynamicStatus.Value == RunningStatus.Stopped );
             return true;
@@ -49,6 +50,7 @@ namespace Yodii.Engine
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
             if( CanStart() )
             {
+                Debug.Assert( _dynamicStatus.Value == RunningStatus.Stopped || _dynamicStatus.Value == null );
                 DoStart( impact );
                 Debug.Assert( _dynamicStatus.Value == RunningStatus.Running );
                 return true;

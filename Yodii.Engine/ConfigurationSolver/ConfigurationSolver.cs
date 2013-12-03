@@ -15,12 +15,14 @@ namespace Yodii.Engine
         List<ServiceRootData> _serviceRoots;
         Dictionary<IPluginInfo,PluginData> _plugins;
         int _runnablePluginsCount = 0;
+        bool _firstCall;
 
         public ConfigurationSolver()
         {
             _services = new Dictionary<IServiceInfo, ServiceData>();
             _serviceRoots = new List<ServiceRootData>();
             _plugins = new Dictionary<IPluginInfo, PluginData>();
+            _firstCall = true;
         }
 
         public IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
@@ -101,25 +103,42 @@ namespace Yodii.Engine
             return new SuccessYodiiEngineResult();
         }
         /// <summary>
-        /// First this function will reset the dynamic state of all plugins and services. This means the RunningStatus? is set from the SolvedConfigurationStatus.
-        /// RunnablePluginsCount holds the total number of plugins that are runnable and have a runningStatus either null or Stopped.
-        /// We then apply all commands except the one at the top of the list. It'll be applied last as it must always be true.
+        /// On the first time it is called, this function will reset the dynamic state of all plugins and services. This means the RunningStatus? is set from the SolvedConfigurationStatus.
+        /// RunnablePluginsCount holds the total number of plugins that are deemed to be runnable by the Static resolution. 
+        /// Their RunningStatus is either null or Stopped. We then apply all existing commands except the one at the top of the list.
+        /// It'll be applied last as it must always be true.
+        /// 
+        /// From this moment on, all plugins/services must have a running status NOT null.
+        /// 
+        /// Then, this same function will be called again from the engine to dynamically start/stop plugins/services. 
+        /// ResetDynamicState must not be called as we must keep the dynamic state of the objects. 
         /// </summary>
         /// <param name="commands"></param>
         /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )
         {
-            foreach ( var p in _plugins.Values )
+            if ( _firstCall == true )
             {
-                //Keeps the latest RunningStatus if set instead of setting it from the SolvedConfigurationStatus
-                if( p.DynamicStatus == null ) p.ResetDynamicState();
-                if ( p.DynamicStatus == null ) _runnablePluginsCount++;
+                List<YodiiCommand> persistentYodiiCommands =  RetrievePersistentYodiiCommands();
+                if ( persistentYodiiCommands != null && persistentYodiiCommands.Any() ) commands.AddRange( persistentYodiiCommands );
+
+                foreach ( var p in _plugins.Values )
+                {
+                    p.ResetDynamicState();
+                    if ( p.DynamicStatus == null ) _runnablePluginsCount++;
+                }
+                foreach ( var s in _services.Values )
+                {
+                    s.ResetDynamicState();
+                }
+                _firstCall = false;
             }
-            foreach ( var s in _services.Values ) s.ResetDynamicState();
 
+            Debug.Assert( _firstCall == false );
             if ( _runnablePluginsCount == 1 ) StartTheOnlyPlugin();
-
+            
+            //Applying all commands but the 1st one
             for ( int i = 0; i < commands.Count; ++i )
             {
                 if ( !ApplyAndTellMeIfCommandMustBeKept( commands[i] ) )
@@ -129,10 +148,26 @@ namespace Yodii.Engine
                 }
             }
 
+            //Applying the most recent command (1st)
+            if ( !ApplyAndTellMeIfCommandMustBeKept( commands[0] ) )
+            {
+                ApplyAndTellMeIfCommandMustBeKept( commands[1] );
+                commands.RemoveAt( 0 );
+            }
+
+            //This LINQ query guarantees all plugins running status are not null just before sending them to the host for injection.
+            _plugins.Values.Where( p => p.DynamicStatus.Value == null ).ToList().ForEach(pp => pp.DynamicStatus = RunningStatus.Stopped);
+
             Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
             return Tuple.Create( _plugins.Values.Where( p => p.Disabled ).Select( p => p.PluginInfo ),
                                  _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Stopped ).Select( p => p.PluginInfo ),
                                  _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Running || p.DynamicStatus == RunningStatus.RunningLocked ).Select( p => p.PluginInfo ) );
+        }
+        
+        /// This function retrieves persistent YodiiCommands (from XML?) and adds them to the current list.
+        private List<YodiiCommand> RetrievePersistentYodiiCommands()
+        {
+            throw new NotImplementedException();
         }
 
         private void StartTheOnlyPlugin()
