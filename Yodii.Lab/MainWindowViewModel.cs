@@ -56,6 +56,9 @@ namespace Yodii.Lab
             _labStateManager = new LabStateManager();
             _engine = _labStateManager.Engine;
 
+            _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
+            _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
+
             _activityMonitor = new ActivityMonitor();
 
             _activityMonitor.OpenTrace().Send( "Hello world" );
@@ -76,6 +79,62 @@ namespace Yodii.Lab
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             LoadDefaultState();
+        }
+
+        void PluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IPluginInfo newPlugin = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin added",
+                            String.Format( "Added new plugin: '{0}' ({1})", newPlugin.PluginFullName, newPlugin.PluginId )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IPluginInfo oldPlugin = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin removed",
+                            String.Format( "Removed plugin: '{0}' ({1})", oldPlugin.PluginFullName, oldPlugin.PluginId )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    RaiseNewNotification( "Plugins reset", "Removed all plugins." );
+                    break;
+            }
+        }
+
+        void ServiceInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IServiceInfo newService = (IServiceInfo)i;
+                        RaiseNewNotification( "Service added",
+                            String.Format( "Added new service: '{0}'", newService.ServiceFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IServiceInfo oldService = (IServiceInfo)i;
+                        RaiseNewNotification( "Service removed",
+                            String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    RaiseNewNotification( "Services reset", "Removed all services." );
+                    break;
+            }
         }
 
         private void LoadDefaultState()
@@ -153,7 +212,6 @@ namespace Yodii.Lab
                 }
                 else
                 {
-                    RaiseNewNotification( new Notification() { Title = String.Format( "Created service {0}", nse.ServiceName ) } );
                     IServiceInfo newService = CreateNewService( nse.ServiceName, nse.Generalization );
                     SelectService( newService );
                 }
@@ -190,14 +248,13 @@ namespace Yodii.Lab
                     RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
                     npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
                 }
-                else if ( String.IsNullOrWhiteSpace( npe.PluginName ) )
+                else if( String.IsNullOrWhiteSpace( npe.PluginName ) )
                 {
                     RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
                     npe.CancelReason = "Please enter a name for this plugin.";
                 }
                 else
                 {
-                    RaiseNewNotification( new Notification() { Title = String.Format( "Created plugin {0}", npe.PluginName ) } );
                     IPluginInfo newPlugin = CreateNewPlugin( npe.PluginId, npe.PluginName, npe.Service );
                     foreach( var kvp in npe.ServiceReferences )
                     {
@@ -259,6 +316,7 @@ namespace Yodii.Lab
 
         private void StartEngineExecute( object obj )
         {
+            RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
             var startResult = _engine.Start();
 
             if( startResult == null )
@@ -269,11 +327,11 @@ namespace Yodii.Lab
 
             if( !startResult.Success )
             {
-                MessageBox.Show( "Start failed." );
+                RaiseNewNotification( "Startup failed", "Couldn't start engine." );
                 return;
             }
 
-            RaiseNewNotification( "Engine start", startResult.Describe() );
+            RaiseNewNotification( "Engine startup detail", startResult.Describe() );
         }
 
         private bool HasSelectedVertex( object obj )
@@ -289,13 +347,11 @@ namespace Yodii.Lab
             {
                 var name = SelectedVertex.LivePluginInfo.PluginInfo.Description;
                 this.RemovePlugin( SelectedVertex.LivePluginInfo.PluginInfo );
-                RaiseNewNotification( new Notification() { Title = String.Format( "Deleted plugin {0}", name ) } );
             }
             else if( SelectedVertex.IsService )
             {
                 var name = SelectedVertex.LiveServiceInfo.ServiceInfo.ServiceFullName;
                 this.RemoveService( SelectedVertex.LiveServiceInfo.ServiceInfo );
-                RaiseNewNotification( new Notification() { Title = String.Format( "Deleted service {0}", name ) } );
             }
 
             SelectedVertex = null;
