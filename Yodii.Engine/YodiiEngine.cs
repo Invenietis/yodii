@@ -9,17 +9,16 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    //Can do : gerer 
     public class YodiiEngine : IYodiiEngine
     {
-        IDiscoveredInfo _discoveredInfo;
         readonly ConfigurationManager _manager;
-        ConfigurationSolver _currentSolver;
         readonly List<YodiiCommand> _yodiiCommands;
         readonly IYodiiEngineHost _host;
 
-        bool _isStart;
+        IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _virtualSolver;
+        ConfigurationSolver _currentSolver;
+        LiveInfo _liveInfo;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -34,11 +33,11 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfiguration )
         {
-            if( _isStart )
+            if( IsRunning )
             {
                 Debug.Assert( _virtualSolver == null );
                 _virtualSolver = new ConfigurationSolver();
-            IYodiiEngineResult result =  _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo );
+                IYodiiEngineResult result =  _virtualSolver.StaticResolution( finalConfiguration, _discoveredInfo );
                 if( !result.Success ) _virtualSolver = null;
                 return result;
             }
@@ -47,26 +46,40 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult DynamicResolution()
         {
-            if( _isStart )
+            if( IsRunning )
             {
                 Debug.Assert( _virtualSolver != null );
                 var toDo = _virtualSolver.DynamicResolution( _yodiiCommands );
                 var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
                 if( errors != null && errors.Any() )
                 {
-                IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
+                    IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
                     _virtualSolver = null;
                     return result;
                 }
-                _currentSolver = _virtualSolver;
+                CurrentSolver = _virtualSolver;
             }
             _virtualSolver = null;
             return new SuccessYodiiEngineResult();
         }
 
+        internal ConfigurationSolver CurrentSolver
+        {
+            set
+            {
+                _currentSolver = value;
+                RaisePropertyChanged("IsRunning");
+            }
+        }
+
         public IDiscoveredInfo DiscoveredInfo
         {
             get { return _discoveredInfo; }
+            private set
+            {
+                _discoveredInfo = value;
+                RaisePropertyChanged();
+            }
         }
 
         public IConfigurationManager ConfigurationManager
@@ -74,34 +87,71 @@ namespace Yodii.Engine
             get { return _manager; }
         }
 
-        public bool IsStart
+        public bool IsRunning
         {
-            get { return _isStart; }
+            get { return _currentSolver != null; }
         }
 
         public IYodiiEngineResult Start()
         {
-            _isStart = true;
-            return null;
+            ConfigurationSolver solver = new ConfigurationSolver();
+            IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, _discoveredInfo );
+            if( !result.Success ) return result;
+            var toDo = solver.DynamicResolution( _yodiiCommands );
+            var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
+            if( errors != null && errors.Any() )
+            {
+                result =  solver.CreateDynamicFailureResult( errors );
+            }
+            if( result.Success )
+            {
+                CurrentSolver = solver;
+            }
+            return result;
+        }
+
+        private void InitializeLiveInfo()
+        {
+            Debug.Assert(_liveInfo == null);
+            _liveInfo = new LiveInfo();
         }
 
         public void Stop()
         {
-            _isStart = false;
+            CurrentSolver = null;
         }
 
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
         {
-            if ( info == null ) throw new ArgumentNullException( "DiscoveredInfo" );
-            IYodiiEngineResult staticResult = StaticResolution( _manager.FinalConfiguration );
-            if ( !staticResult.Success ) return staticResult;
-            IYodiiEngineResult dynamicResult = DynamicResolution();
-            return dynamicResult;
+            if( info == null ) throw new ArgumentNullException( "info" );
+            if( IsRunning )
+            {
+                ConfigurationSolver solver = new ConfigurationSolver();
+                IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, info );
+                if( !result.Success ) return result;
+                var toDo = solver.DynamicResolution( _yodiiCommands );
+                var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
+                if( errors != null && errors.Any() )
+                {
+                    result = solver.CreateDynamicFailureResult( errors );
+                }
+                if( result.Success )
+                {
+                    DiscoveredInfo = info;
+                }
+                return result;
+            }
+            else
+            {
+                DiscoveredInfo = info;
+                return new SuccessYodiiEngineResult();
+            }
         }
 
         void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {
-            throw new NotImplementedException();
+            var h = PropertyChanged;
+            if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
         public ILiveInfo LiveInfo
@@ -109,5 +159,9 @@ namespace Yodii.Engine
             get { throw new NotImplementedException(); }
         }
 
+        public IYodiiEngineHost Host
+        {
+            get { return _host; }
+        }
     }
 }

@@ -70,6 +70,7 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="DiscoveredInfoExtension.cs" />
     <Compile Include="DependencyRequirement.cs" />
     <Compile Include="IConfigurationManagerFailureResult.cs" />
     <Compile Include="Configuration\ConfigurationStatus.cs" />
@@ -83,6 +84,8 @@
     <Compile Include="IYodiiEngineHost.cs" />
     <Compile Include="IYodiiEngineResult.cs" />
     <Compile Include="LiveModel\ILiveInfo.cs" />
+    <Compile Include="LiveModel\PluginRunningStatusReason.cs" />
+    <Compile Include="LiveModel\ServiceRunningStatusReason.cs" />
     <Compile Include="LiveModel\StartDependencyImpact.cs" />
     <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="PluginDisabledReason.cs" />

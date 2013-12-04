@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,12 +26,14 @@ namespace Yodii.Engine
         internal YodiiCommand( object caller, bool start, StartDependencyImpact impact, Guid pluginId )
             : this( caller, start, impact )
         {
+            Debug.Assert( pluginId != null );
             PluginId = pluginId;
         }
 
         internal YodiiCommand( object caller, bool start, StartDependencyImpact impact, string fullName )
             : this( caller, start, impact )
         {
+            Debug.Assert( string.IsNullOrEmpty( fullName ) != true );
             FullName = fullName;
         }
     }
