@@ -55,7 +55,7 @@ namespace Yodii.Lab
             _engine.PropertyChanged += _engine_PropertyChanged;
 
 
-            Debug.Assert( _engine.IsStart == false );
+            Debug.Assert( _engine.IsRunning == false );
             _engine.SetDiscoveredInfo( this );
 
             _serviceInfos = new CKObservableSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
