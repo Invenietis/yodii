@@ -21,5 +21,7 @@ namespace Yodii.Model
         ILiveInfo LiveInfo { get; }
 
         bool IsRunning { get; }
+        
+        IObservableReadOnlyList<YodiiCommand> YodiiCommands { get; }
     }
 }

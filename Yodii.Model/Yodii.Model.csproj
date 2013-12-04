@@ -78,6 +78,7 @@
     <Compile Include="IDiscoveredInfo.cs" />
     <Compile Include="IAssemblyInfo.cs" />
     <Compile Include="IDiscoveredItem.cs" />
+    <Compile Include="IObservableReadOnlyList.cs" />
     <Compile Include="IPluginInfo.cs" />
     <Compile Include="IServiceInfo.cs" />
     <Compile Include="IServiceReferenceInfo.cs" />
@@ -88,6 +89,7 @@
     <Compile Include="LiveModel\ServiceRunningStatusReason.cs" />
     <Compile Include="LiveModel\StartDependencyImpact.cs" />
     <Compile Include="LiveModel\YodiiCommand.cs" />
+    <Compile Include="ObservableReadOnlyList.cs" />
     <Compile Include="PluginDisabledReason.cs" />
     <Compile Include="PluginInfo.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
