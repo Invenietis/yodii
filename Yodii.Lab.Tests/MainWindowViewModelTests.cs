@@ -40,30 +40,30 @@ namespace Yodii.Lab.Tests
             // Check integrity, by service
             foreach( var serviceInfo in vm.ServiceInfos )
             {
-                Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.LiveServiceInfo.ServiceInfo == serviceInfo ) );
+                Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.LabServiceInfo.ServiceInfo == serviceInfo ) );
                 if( serviceInfo.Generalization != null )
                 {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Specialization && e.Source.LiveServiceInfo.ServiceInfo == serviceInfo && e.Target.LiveServiceInfo.ServiceInfo == serviceInfo.Generalization ) );
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Specialization && e.Source.LabServiceInfo.ServiceInfo == serviceInfo && e.Target.LabServiceInfo.ServiceInfo == serviceInfo.Generalization ) );
                 }
                 foreach( var p in serviceInfo.Implementations )
                 {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Implementation && e.Source.LivePluginInfo.PluginInfo == p && e.Target.LiveServiceInfo.ServiceInfo == serviceInfo ) );
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Implementation && e.Source.LabPluginInfo.PluginInfo == p && e.Target.LabServiceInfo.ServiceInfo == serviceInfo ) );
                 }
             }
 
             // Check by plugin
             foreach( var pluginInfo in vm.PluginInfos )
             {
-                Assert.That( vm.Graph.Vertices.Any( v => v.IsPlugin && v.LivePluginInfo.PluginInfo == pluginInfo ) );
+                Assert.That( vm.Graph.Vertices.Any( v => v.IsPlugin && v.LabPluginInfo.PluginInfo == pluginInfo ) );
 
                 if( pluginInfo.Service != null )
                 {
-                    Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.LiveServiceInfo.ServiceInfo == pluginInfo.Service ) );
+                    Assert.That( vm.Graph.Vertices.Any( v => v.IsService && v.LabServiceInfo.ServiceInfo == pluginInfo.Service ) );
                 }
 
                 foreach( var reference in pluginInfo.ServiceReferences )
                 {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.ServiceReference && e.Source.LivePluginInfo.PluginInfo == reference.Owner && e.Target.LiveServiceInfo.ServiceInfo == reference.Reference && e.ReferenceRequirement == reference.Requirement ) );
+                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.ServiceReference && e.Source.LabPluginInfo.PluginInfo == reference.Owner && e.Target.LabServiceInfo.ServiceInfo == reference.Reference && e.ReferenceRequirement == reference.Requirement ) );
                 }
             }
 
@@ -302,7 +302,7 @@ namespace Yodii.Lab.Tests
              */
             MainWindowViewModel vm = new MainWindowViewModel();
 
-            Assert.That( vm.IsLive, Is.False );
+            Assert.That( vm.LabState.Engine.IsRunning, Is.False );
 
             // Services
             IServiceInfo serviceA = vm.CreateNewService( "ServiceA" );
@@ -312,7 +312,7 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.LabServiceInfos.Count == 1 );
             Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).Count() == 1 );
 
-            ILiveServiceInfo liveServiceA = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
+            LabServiceInfo labServiceA = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
 
             IServiceInfo serviceB = vm.CreateNewService( "ServiceB" );
 
@@ -328,9 +328,9 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.LabServiceInfos.Count == 3 );
             Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).Count() == 1 );
 
-            ILiveServiceInfo liveServiceAx = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
+            LabServiceInfo labServiceAx = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
 
-            Assert.That( liveServiceAx.Generalization == liveServiceA );
+            Assert.That( labServiceAx.ServiceInfo.Generalization == labServiceA.ServiceInfo );
 
             Assert.That( serviceA.Generalization == null );
             Assert.That( serviceB.Generalization == null );

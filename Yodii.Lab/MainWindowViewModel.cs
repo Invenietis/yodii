@@ -37,11 +37,10 @@ namespace Yodii.Lab
         readonly ICommand _openConfigurationEditorCommand;
 
         readonly ActivityMonitor _activityMonitor;
-        readonly IActivityMonitorClient _logClient;
 
         readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
-        bool _isLive;
+
         LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
         ILayoutParameters _graphLayoutParameters;
 
@@ -51,34 +50,52 @@ namespace Yodii.Lab
 
         #region Constructor
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(bool loadDefaultState = false)
         {
+            // Lab objects, live objects and static infos are managed in the LabStateManager.
             _labStateManager = new LabStateManager();
             _engine = _labStateManager.Engine;
 
+            _labStateManager.Engine.PropertyChanged += Engine_PropertyChanged;
             _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
             _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
 
             _activityMonitor = new ActivityMonitor();
 
             _activityMonitor.OpenTrace().Send( "Hello world" );
-            // Live objects and static infos are managed in the ServiceInfoManager.
 
             _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
 
-            _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
+            _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, CanEditSelectedVertex );
             _startEngineCommand = new RelayCommand( StartEngineExecute );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
-            _createPluginCommand = new RelayCommand( CreatePluginExecute );
-            _createServiceCommand = new RelayCommand( CreateServiceExecute );
+            _createPluginCommand = new RelayCommand( CreatePluginExecute, CanEditItems );
+            _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
 
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.KK;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-            LoadDefaultState();
+            if( loadDefaultState ) LoadDefaultState();
+        }
+
+        void Engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            switch( e.PropertyName )
+            {
+                case "IsRunning":
+                    if( _engine.IsRunning )
+                    {
+                        RaiseNewNotification( "Entering simulation mode", "Yodii engine is now running." );
+                    }
+                    else
+                    {
+                        RaiseNewNotification( "Entering build mode", "Yodii engine has been stopped." );
+                    }
+                    break;
+            }
         }
 
         void PluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -88,6 +105,12 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach( var i in e.NewItems )
                     {
+                        // Reset selection if deleted vertex was selected.
+                        if( SelectedVertex != null && SelectedVertex.IsService && SelectedVertex.LabServiceInfo.ServiceInfo == i )
+                        {
+                            SelectedVertex = null;
+                        }
+
                         IPluginInfo newPlugin = (IPluginInfo)i;
                         RaiseNewNotification( "Plugin added",
                             String.Format( "Added new plugin: '{0}' ({1})", newPlugin.PluginFullName, newPlugin.PluginId )
@@ -97,6 +120,12 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     foreach( var i in e.OldItems )
                     {
+                        // Reset selection if deleted vertex was selected.
+                        if( SelectedVertex != null && SelectedVertex.IsPlugin && SelectedVertex.LabPluginInfo.PluginInfo == i)
+                        {
+                            SelectedVertex = null;
+                        }
+
                         IPluginInfo oldPlugin = (IPluginInfo)i;
                         RaiseNewNotification( "Plugin removed",
                             String.Format( "Removed plugin: '{0}' ({1})", oldPlugin.PluginFullName, oldPlugin.PluginId )
@@ -158,7 +187,7 @@ namespace Yodii.Lab
             }
             else
             {
-                _activeConfEditorWindow = new ConfigurationEditorWindow( ConfigurationManager, ServiceInfoManager );
+                _activeConfEditorWindow = new ConfigurationEditorWindow( ConfigurationManager, LabState );
                 _activeConfEditorWindow.Owner = (Window)param;
                 _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
 
@@ -186,6 +215,12 @@ namespace Yodii.Lab
 
         private void CreateServiceExecute( object param )
         {
+            if( _engine.IsRunning )
+            {
+                RaiseNewNotification( "Engine is running", "Cannot create Services while engine is running." );
+                return;
+            }
+
             Debug.Assert( param == null || param is Window );
             IServiceInfo selectedService = null;
 
@@ -193,11 +228,11 @@ namespace Yodii.Lab
             {
                 if( SelectedVertex.IsService )
                 {
-                    selectedService = SelectedVertex.LiveServiceInfo.ServiceInfo;
+                    selectedService = SelectedVertex.LabServiceInfo.ServiceInfo;
                 }
                 else if( SelectedVertex.IsPlugin )
                 {
-                    selectedService = SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                    selectedService = SelectedVertex.LabPluginInfo.PluginInfo.Service;
                 }
             }
 
@@ -224,6 +259,12 @@ namespace Yodii.Lab
 
         private void CreatePluginExecute( object param )
         {
+            if( _engine.IsRunning )
+            {
+                RaiseNewNotification( "Engine is running", "Cannot create Plugins while engine is running." );
+                return;
+            }
+
             Debug.Assert( param != null || param is Window );
             IServiceInfo selectedService = null;
 
@@ -231,11 +272,11 @@ namespace Yodii.Lab
             {
                 if( SelectedVertex.IsService )
                 {
-                    selectedService = SelectedVertex.LiveServiceInfo.ServiceInfo;
+                    selectedService = SelectedVertex.LabServiceInfo.ServiceInfo;
                 }
                 else if( SelectedVertex.IsPlugin )
                 {
-                    selectedService = SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                    selectedService = SelectedVertex.LabPluginInfo.PluginInfo.Service;
                 }
             }
 
@@ -334,9 +375,14 @@ namespace Yodii.Lab
             RaiseNewNotification( "Engine startup detail", startResult.Describe() );
         }
 
-        private bool HasSelectedVertex( object obj )
+        private bool CanEditSelectedVertex( object obj )
         {
-            return SelectedVertex != null;
+            return SelectedVertex != null && CanEditItems(null);
+        }
+
+        private bool CanEditItems( object obj )
+        {
+            return !_engine.IsRunning;
         }
 
         private void RemoveSelectedVertexExecute( object obj )
@@ -345,13 +391,13 @@ namespace Yodii.Lab
 
             if( SelectedVertex.IsPlugin )
             {
-                var name = SelectedVertex.LivePluginInfo.PluginInfo.Description;
-                this.RemovePlugin( SelectedVertex.LivePluginInfo.PluginInfo );
+                var name = SelectedVertex.LabPluginInfo.PluginInfo.Description;
+                this.RemovePlugin( SelectedVertex.LabPluginInfo.PluginInfo );
             }
             else if( SelectedVertex.IsService )
             {
-                var name = SelectedVertex.LiveServiceInfo.ServiceInfo.ServiceFullName;
-                this.RemoveService( SelectedVertex.LiveServiceInfo.ServiceInfo );
+                var name = SelectedVertex.LabServiceInfo.ServiceInfo.ServiceFullName;
+                this.RemoveService( SelectedVertex.LabServiceInfo.ServiceInfo );
             }
 
             SelectedVertex = null;
@@ -360,17 +406,6 @@ namespace Yodii.Lab
         #endregion Command handlers
 
         #region Properties
-        /// <summary>
-        /// Returns true if the Lab is live and running (plugins can be started, stopped, and monitored).
-        /// Returns false if the Lab is not running (plugins can be changed).
-        /// </summary>
-        public bool IsLive
-        {
-            get
-            {
-                return _isLive;
-            }
-        }
 
         /// <summary>
         /// Services created in this Lab.
@@ -507,7 +542,7 @@ namespace Yodii.Lab
             get { return SelectedVertex != null; }
         }
 
-        public LabStateManager ServiceInfoManager
+        public LabStateManager LabState
         {
             get { return _labStateManager; }
         }
@@ -692,13 +727,13 @@ namespace Yodii.Lab
 
         public void SelectService( IServiceInfo serviceInfo )
         {
-            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LiveServiceInfo.ServiceInfo == serviceInfo ).First();
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LabServiceInfo.ServiceInfo == serviceInfo ).First();
             SelectedVertex = vertexToSelect;
         }
 
         public void SelectPlugin( IPluginInfo pluginInfo )
         {
-            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LivePluginInfo.PluginInfo == pluginInfo ).First();
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LabPluginInfo.PluginInfo == pluginInfo ).First();
             SelectedVertex = vertexToSelect;
         }
 

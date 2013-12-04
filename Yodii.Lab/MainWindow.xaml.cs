@@ -13,7 +13,7 @@ namespace Yodii.Lab
 
         public MainWindow()
         {
-            _vm = new MainWindowViewModel();
+            _vm = new MainWindowViewModel(true);
             this.DataContext = _vm;
             _vm.NewNotification += _vm_NewNotification;
             InitializeComponent();

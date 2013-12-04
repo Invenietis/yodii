@@ -109,13 +109,13 @@ namespace Yodii.Lab
             get
             {
                 if( IsService )
-                    return LiveServiceInfo.ServiceInfo.ServiceFullName;
+                    return LabServiceInfo.ServiceInfo.ServiceFullName;
                 else
-                    return LivePluginInfo.PluginInfo.Description;
+                    return LabPluginInfo.PluginInfo.Description;
             }
         }
-        public LabServiceInfo LiveServiceInfo { get { return _liveService; } }
-        public LabPluginInfo LivePluginInfo { get { return _livePlugin; } }
+        public LabServiceInfo LabServiceInfo { get { return _liveService; } }
+        public LabPluginInfo LabPluginInfo { get { return _livePlugin; } }
 
         #endregion Properties
 
@@ -129,10 +129,10 @@ namespace Yodii.Lab
         {
             if( IsService )
             {
-                _parentGraph.RemoveService( LiveServiceInfo.ServiceInfo );
+                _parentGraph.RemoveService( LabServiceInfo.ServiceInfo );
             } else if (IsPlugin)
             {
-                _parentGraph.RemovePlugin( LivePluginInfo.PluginInfo );
+                _parentGraph.RemovePlugin( LabPluginInfo.PluginInfo );
             }
         }
 
