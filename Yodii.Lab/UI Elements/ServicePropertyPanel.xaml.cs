@@ -31,12 +31,12 @@ namespace Yodii.Lab
         #region Dependency properties
 
         public static readonly DependencyProperty LiveServiceInfoProperty = 
-            DependencyProperty.Register( "LiveServiceInfo", typeof( LiveServiceInfo ),
+            DependencyProperty.Register( "LiveServiceInfo", typeof( LabServiceInfo ),
             typeof( ServicePropertyPanel ), new PropertyMetadata( LiveServiceInfoChanged )
             );
 
         public static readonly DependencyProperty ServiceInfoManagerProperty = 
-            DependencyProperty.Register( "ServiceInfoManager", typeof( ServiceInfoManager ),
+            DependencyProperty.Register( "ServiceInfoManager", typeof( LabStateManager ),
             typeof( ServicePropertyPanel )
             );
 
@@ -66,15 +66,15 @@ namespace Yodii.Lab
         #endregion
 
         #region Local property getter/setters
-        internal ServiceInfoManager ServiceInfoManager
+        internal LabStateManager ServiceInfoManager
         {
-            get { return (ServiceInfoManager)GetValue( ServiceInfoManagerProperty ); }
+            get { return (LabStateManager)GetValue( ServiceInfoManagerProperty ); }
             set { SetValue( ServiceInfoManagerProperty, value ); }
         }
 
-        public LiveServiceInfo LiveServiceInfo
+        public LabServiceInfo LiveServiceInfo
         {
-            get { return (LiveServiceInfo)GetValue( LiveServiceInfoProperty ); }
+            get { return (LabServiceInfo)GetValue( LiveServiceInfoProperty ); }
             set { SetValue( LiveServiceInfoProperty, value ); }
         }
         #endregion
@@ -98,7 +98,7 @@ namespace Yodii.Lab
         private void UpdateServicePropertyNameWithTextbox( System.Windows.Controls.TextBox textBox )
         {
             if( LiveServiceInfo == null ) return;
-            LiveServiceInfo liveService = textBox.DataContext as LiveServiceInfo;
+            LabServiceInfo liveService = textBox.DataContext as LabServiceInfo;
 
             if( liveService.ServiceInfo.ServiceFullName == textBox.Text ) return;
             if( String.IsNullOrWhiteSpace( textBox.Text ) ) return;

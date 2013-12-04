@@ -140,8 +140,6 @@ namespace Yodii.Engine.Tests
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
-            Assert.That( engine.ConfigurationManager.FinalConfiguration == null, "Initial FinalConfiguration is null." );
-
             engine.ConfigurationManager.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
             {
                 Assert.That( e.IsCanceled == false, "Configuration manager does not cancel by default." );

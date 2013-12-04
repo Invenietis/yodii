@@ -61,21 +61,21 @@ namespace Yodii.Lab
                 if( IsSpecialization )
                 {
                     return String.Format( "Specialization:\n\nService {0} specializes service {1}.",
-                        Source.LiveServiceInfo.ServiceInfo.ServiceFullName,
-                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName );
+                        Source.LabServiceInfo.ServiceInfo.ServiceFullName,
+                        Target.LabServiceInfo.ServiceInfo.ServiceFullName );
                 }
                 else if( IsImplementation )
                 {
                     return String.Format( "Implementation:\n\nPlugin {0} implements service {1}.",
-                        Source.LivePluginInfo.PluginInfo.Description,
-                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName );
+                        Source.LabPluginInfo.PluginInfo.Description,
+                        Target.LabServiceInfo.ServiceInfo.ServiceFullName );
                 }
                 else
                 {
                     return String.Format( "Service reference ({0}):\n\nPlugin {1} references service {2} with requirement: {0}.",
                         ReferenceRequirement.ToString(),
-                        Source.LivePluginInfo.PluginInfo.Description,
-                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName);
+                        Source.LabPluginInfo.PluginInfo.Description,
+                        Target.LabServiceInfo.ServiceInfo.ServiceFullName);
                 }
             }
         }

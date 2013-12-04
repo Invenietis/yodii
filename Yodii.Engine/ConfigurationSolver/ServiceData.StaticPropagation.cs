@@ -49,7 +49,7 @@ namespace Yodii.Engine
             }
 
             /// <summary>
-            /// Returs true if there is at least one Service referenced by ALL of our implementations. 
+            /// Returns true if there is at least one Service referenced by ALL of our implementations. 
             /// </summary>
             /// <param name="s"></param>
             /// <returns></returns>
@@ -105,7 +105,7 @@ namespace Yodii.Engine
                 }
             }
 
-            void Add( Dictionary<IServiceInfo, ServiceData> allServices, PluginData p )
+            void Add( Dictionary<string, ServiceData> allServices, PluginData p )
             {
                 if( _initialized ) IntersectWith( p );
                 else 
@@ -115,11 +115,11 @@ namespace Yodii.Engine
                 }
             }
 
-            void Initialize( Dictionary<IServiceInfo, ServiceData> allServices, PluginData p )
+            void Initialize( Dictionary<string, ServiceData> allServices, PluginData p )
             {
                 foreach( IServiceReferenceInfo sr in p.PluginInfo.ServiceReferences )
                 {
-                    _firstRef = new Ref( _firstRef, allServices[sr.Reference], sr.Requirement );
+                    _firstRef = new Ref( _firstRef, allServices[sr.Reference.ServiceFullName], sr.Requirement );
                 }
             }
 

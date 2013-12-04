@@ -36,7 +36,7 @@ namespace Yodii.Lab
         #region Dependency properties
 
         public static readonly DependencyProperty LivePluginInfoProperty = 
-            DependencyProperty.Register( "LivePluginInfo", typeof( LivePluginInfo ),
+            DependencyProperty.Register( "LivePluginInfo", typeof( LabPluginInfo ),
             typeof( PluginPropertyPanel ), new FrameworkPropertyMetadata( DependencyPropertyChanged )
             );
 
@@ -55,9 +55,9 @@ namespace Yodii.Lab
             set { SetValue( ServiceInfosProperty, value ); }
         }
 
-        public LivePluginInfo LivePluginInfo
+        public LabPluginInfo LivePluginInfo
         {
-            get { return (LivePluginInfo)GetValue( LivePluginInfoProperty ); }
+            get { return (LabPluginInfo)GetValue( LivePluginInfoProperty ); }
             set { SetValue( LivePluginInfoProperty, value ); }
         }
         #endregion

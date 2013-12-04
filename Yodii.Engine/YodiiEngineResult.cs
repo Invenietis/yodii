@@ -17,13 +17,13 @@ namespace Yodii.Engine
         readonly IReadOnlyList<IServiceInfo> _serviceCulprits;
 
         /// <summary>
-        /// Static failure resoltion constructor.
+        /// Static failure resolution constructor.
         /// </summary>
         /// <param name="services"></param>
         /// <param name="plugins"></param>
         /// <param name="blockingPlugins"></param>
         /// <param name="blockingServices"></param>
-        public YodiiEngineResult( Dictionary<IServiceInfo, ServiceData> services, Dictionary<IPluginInfo, PluginData> plugins, List<PluginData> blockingPlugins, List<ServiceData> blockingServices )
+        public YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<Guid, PluginData> plugins, List<PluginData> blockingPlugins, List<ServiceData> blockingServices )
         {
             Debug.Assert( blockingPlugins != null || blockingServices != null );
             Debug.Assert( services != null || plugins != null );
@@ -60,7 +60,7 @@ namespace Yodii.Engine
             _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration(AllPlugins, AllServices), BlockingPlugins, BlockingServices );
         }
 
-        internal YodiiEngineResult( Dictionary<IServiceInfo, ServiceData> services, Dictionary<IPluginInfo, PluginData> plugins, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo )
+        internal YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<Guid, PluginData> plugins, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo )
         {
             Debug.Assert( errorInfo.Any() );
 
@@ -91,6 +91,7 @@ namespace Yodii.Engine
 
         internal YodiiEngineResult( IConfigurationFailureResult configurationFailureResult )
         {
+            Debug.Assert( configurationFailureResult.FailureReasons != null && configurationFailureResult.FailureReasons.Count > 0 );
             _configurationFailureResult = configurationFailureResult;
         }
 

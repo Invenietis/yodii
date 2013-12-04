@@ -152,8 +152,8 @@
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
-                        Header="Run static solver"
-                        Command="{Binding Path=RunStaticSolverCommand}">
+                        Header="Start engine"
+                        Command="{Binding Path=StartEngineCommand}">
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>

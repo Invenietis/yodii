@@ -92,24 +92,6 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
-    </Reference>
     <Reference Include="YAXLib">
       <HintPath>..\packages\YAXLib.2.12\lib\YAXLib.dll</HintPath>
     </Reference>
@@ -136,6 +118,7 @@
     <Compile Include="ConfigurationEditor\CreateConfigurationLayerWindow.xaml.cs">
       <DependentUpon>CreateConfigurationLayerWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DebugExtensions\DebugExtensions.cs" />
     <Compile Include="Graph elements\GraphUpdateRequestEventArgs.cs" />
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
@@ -168,8 +151,8 @@
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
     <Compile Include="Mock model\ServiceInfo.cs" />
-    <Compile Include="Mock model\LivePluginInfo.cs" />
-    <Compile Include="Mock model\LiveServiceInfo.cs" />
+    <Compile Include="Mock model\LabPluginInfo.cs" />
+    <Compile Include="Mock model\LabServiceInfo.cs" />
     <Compile Include="ServiceInfoManager.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
     <Compile Include="Utils\DetailedOperationResult.cs" />

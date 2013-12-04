@@ -676,6 +676,44 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
+        public void ConfigurationSolverCreation003MinusPluginA2()
+        {
+            #region graph
+            /**
+             *  +--------+
+             *  |ServiceA| 
+             *  |Disabled| 
+             *  +---+----+ 
+             *      |      
+             *      |      
+             *      |      
+             *      |      
+             *  +---+-----+
+             *  |PluginA-1|
+             *  |Running  |
+             *  +---------+
+             */
+            #endregion
+
+            DiscoveredInfo info = MockInfoFactory.CreateGraph003();
+
+            info.PluginInfos.Remove( info.FindPlugin( "PluginA-2" ) );
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
+            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Running );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+
+            Assert.That( res.Success, Is.False );
+            Assert.That( res.StaticFailureResult, Is.Not.Null );
+            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
+            Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
+        }
+
+        [Test]
         public void ConfigurationSolverCreation004a()
         {
             #region graph
