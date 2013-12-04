@@ -20,7 +20,7 @@ namespace Yodii.Lab.ConfigurationEditor
     {
         #region Fields
         readonly IConfigurationManager _configurationManager;
-        readonly ServiceInfoManager _serviceInfoManager;
+        readonly LabStateManager _serviceInfoManager;
         readonly ConfigurationEditorWindow _window;
 
         readonly ICommand _addLayerCommand;
@@ -53,7 +53,7 @@ namespace Yodii.Lab.ConfigurationEditor
         #endregion
 
         #region Constructor & init
-        internal ConfigurationEditorWindowViewModel( ConfigurationEditorWindow parentWindow, IConfigurationManager configManager, ServiceInfoManager serviceManager )
+        internal ConfigurationEditorWindowViewModel( ConfigurationEditorWindow parentWindow, IConfigurationManager configManager, LabStateManager serviceManager )
         {
             Debug.Assert( configManager != null );
             Debug.Assert( serviceManager != null );
@@ -74,7 +74,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
         #region Properties
         public IConfigurationManager ConfigurationManager { get { return _configurationManager; } }
-        public ServiceInfoManager ServiceInfoManager { get { return _serviceInfoManager; } }
+        public LabStateManager ServiceInfoManager { get { return _serviceInfoManager; } }
 
         public ICommand AddLayerCommand { get { return _addLayerCommand; } }
         public ICommand RemoveLayerCommand { get { return _removeLayerCommand; } }

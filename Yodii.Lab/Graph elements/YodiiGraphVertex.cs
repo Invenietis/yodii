@@ -11,8 +11,8 @@ namespace Yodii.Lab
     {
         #region Fields
         readonly bool _isPlugin;
-        readonly LiveServiceInfo _liveService;
-        readonly LivePluginInfo _livePlugin;
+        readonly LabServiceInfo _liveService;
+        readonly LabPluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
 
         bool _isSelected = false;
@@ -30,7 +30,7 @@ namespace Yodii.Lab
         /// </summary>
         /// <param name="parentGraph"></param>
         /// <param name="plugin"></param>
-        internal YodiiGraphVertex( YodiiGraph parentGraph, LivePluginInfo plugin )
+        internal YodiiGraphVertex( YodiiGraph parentGraph, LabPluginInfo plugin )
         {
             Debug.Assert( parentGraph != null );
             Debug.Assert( plugin != null );
@@ -47,7 +47,7 @@ namespace Yodii.Lab
         /// </summary>
         /// <param name="parentGraph"></param>
         /// <param name="service"></param>
-        internal YodiiGraphVertex( YodiiGraph parentGraph, LiveServiceInfo service )
+        internal YodiiGraphVertex( YodiiGraph parentGraph, LabServiceInfo service )
         {
             Debug.Assert( parentGraph != null );
             Debug.Assert( service != null );
@@ -114,8 +114,8 @@ namespace Yodii.Lab
                     return LivePluginInfo.PluginInfo.Description;
             }
         }
-        public LiveServiceInfo LiveServiceInfo { get { return _liveService; } }
-        public LivePluginInfo LivePluginInfo { get { return _livePlugin; } }
+        public LabServiceInfo LiveServiceInfo { get { return _liveService; } }
+        public LabPluginInfo LivePluginInfo { get { return _livePlugin; } }
 
         #endregion Properties
 

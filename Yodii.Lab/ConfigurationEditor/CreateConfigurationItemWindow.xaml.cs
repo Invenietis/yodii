@@ -24,7 +24,7 @@ namespace Yodii.Lab.ConfigurationEditor
     {
         internal readonly CreateConfigurationItemWindowViewModel ViewModel;
 
-        public CreateConfigurationItemWindow(ServiceInfoManager serviceManager)
+        public CreateConfigurationItemWindow(LabStateManager serviceManager)
         {
             Debug.Assert( serviceManager != null );
 

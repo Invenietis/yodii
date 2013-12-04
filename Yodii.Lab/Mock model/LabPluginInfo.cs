@@ -8,12 +8,12 @@ using Yodii.Model;
 namespace Yodii.Lab.Mocks
 {
     [DebuggerDisplay( "Live {PluginInfo.PluginFullName} = {PluginInfo.PluginId}" )]
-    public class LivePluginInfo : ViewModelBase, ILivePluginInfo
+    public class LabPluginInfo : ViewModelBase, ILivePluginInfo
     {
         private PluginInfo _pluginInfo;
         private DependencyRequirement _configRequirement;
         private RunningStatus _status;
-        private LiveServiceInfo _service;
+        private LabServiceInfo _service;
 
         #region Properties
         public PluginInfo PluginInfo
@@ -21,13 +21,13 @@ namespace Yodii.Lab.Mocks
             get { return _pluginInfo; }
         }
 
-        public LiveServiceInfo Service
+        public LabServiceInfo Service
         {
             get { return _service; }
         }
         #endregion Properties
 
-        internal LivePluginInfo( PluginInfo pluginInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LiveServiceInfo liveServiceInfo = null )
+        internal LabPluginInfo( PluginInfo pluginInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LabServiceInfo liveServiceInfo = null )
         {
             Debug.Assert( pluginInfo != null );
 

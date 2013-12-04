@@ -29,10 +29,10 @@ namespace Yodii.Lab
         #region Fields
 
         readonly YodiiGraph _graph;
-        readonly ServiceInfoManager _serviceInfoManager;
+        readonly LabStateManager _labStateManager;
 
         readonly ICommand _removeSelectedVertexCommand;
-        readonly ICommand _runStaticSolverCommand;
+        readonly ICommand _startEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
         readonly ICommand _reorderGraphLayoutCommand;
@@ -43,7 +43,7 @@ namespace Yodii.Lab
         readonly ActivityMonitor _activityMonitor;
         readonly IActivityMonitorClient _logClient;
 
-        YodiiEngine _engine; // Can be swapped through XML loading.
+        readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
         bool _isLive;
         LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
@@ -57,19 +57,18 @@ namespace Yodii.Lab
 
         public MainWindowViewModel()
         {
+            _labStateManager = new LabStateManager();
+            _engine = _labStateManager.Engine;
+
             _activityMonitor = new ActivityMonitor();
 
             _activityMonitor.OpenTrace().Send( "Hello world" );
-
-            _serviceInfoManager = new ServiceInfoManager();
-            _engine = new YodiiEngine( _serviceInfoManager );
-
             // Live objects and static infos are managed in the ServiceInfoManager.
 
-            _graph = new YodiiGraph( _engine.ConfigurationManager, _serviceInfoManager );
+            _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
-            _runStaticSolverCommand = new RelayCommand( RunStaticSolverExecute );
+            _startEngineCommand = new RelayCommand( StartEngineExecute );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
@@ -85,7 +84,7 @@ namespace Yodii.Lab
 
         private void LoadDefaultState()
         {
-            _serviceInfoManager.ClearState();
+            _labStateManager.ClearState();
             XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
 
             LoadStateFromXmlReader( r );
@@ -257,17 +256,23 @@ namespace Yodii.Lab
             }
         }
 
-        private void RunStaticSolverExecute( object obj )
+        private void StartEngineExecute( object obj )
         {
-            var setInfoResult = _engine.SetDiscoveredInfo( _serviceInfoManager );
+            var startResult = _engine.Start();
 
-            if( !setInfoResult.Success )
+            if( startResult == null )
             {
-                MessageBox.Show( "SetDiscoveredInfo failed." );
+                RaiseNewNotification( "Error", "YodiiEngine.Start() returned null!" );
                 return;
             }
 
-            MessageBox.Show( "SetDiscoveredInfo returned successfully." );
+            if( !startResult.Success )
+            {
+                MessageBox.Show( "Start failed." );
+                return;
+            }
+
+            RaiseNewNotification( "Engine start", startResult.Describe() );
         }
 
         private bool HasSelectedVertex( object obj )
@@ -315,7 +320,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IServiceInfo> ServiceInfos
         {
-            get { return _serviceInfoManager.ServiceInfos; }
+            get { return _labStateManager.ServiceInfos; }
         }
 
         /// <summary>
@@ -323,7 +328,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IPluginInfo> PluginInfos
         {
-            get { return _serviceInfoManager.PluginInfos; }
+            get { return _labStateManager.PluginInfos; }
         }
 
         /// <summary>
@@ -331,7 +336,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<ILiveServiceInfo> LiveServiceInfos
         {
-            get { return _serviceInfoManager.LiveServiceInfos; }
+            get { return _labStateManager.LiveServiceInfos; }
         }
 
         /// <summary>
@@ -339,7 +344,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<ILivePluginInfo> LivePluginInfos
         {
-            get { return _serviceInfoManager.LivePluginInfos; }
+            get { return _labStateManager.LivePluginInfos; }
         }
 
         /// <summary>
@@ -445,14 +450,14 @@ namespace Yodii.Lab
             get { return SelectedVertex != null; }
         }
 
-        public ServiceInfoManager ServiceInfoManager
+        public LabStateManager ServiceInfoManager
         {
-            get { return _serviceInfoManager; }
+            get { return _labStateManager; }
         }
 
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
         public ICommand OpenConfigurationEditorCommand { get { return _openConfigurationEditorCommand; } }
-        public ICommand RunStaticSolverCommand { get { return _runStaticSolverCommand; } }
+        public ICommand StartEngineCommand { get { return _startEngineCommand; } }
         public ICommand OpenFileCommand { get { return _openFileCommand; } }
         public ICommand SaveAsFileCommand { get { return _saveAsFileCommand; } }
         public ICommand ReorderGraphLayoutCommand { get { return _reorderGraphLayoutCommand; } }
@@ -482,7 +487,7 @@ namespace Yodii.Lab
         {
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
-            ServiceInfo newService = _serviceInfoManager.CreateNewService( serviceName, (ServiceInfo)generalization );
+            ServiceInfo newService = _labStateManager.CreateNewService( serviceName, (ServiceInfo)generalization );
 
 
             return newService;
@@ -513,7 +518,7 @@ namespace Yodii.Lab
 
             if( service != null && !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
-            PluginInfo newPlugin = _serviceInfoManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
+            PluginInfo newPlugin = _labStateManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
 
             return newPlugin;
         }
@@ -532,37 +537,37 @@ namespace Yodii.Lab
             if( !ServiceInfos.Contains( (ServiceInfo)service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
             if( !PluginInfos.Contains( (PluginInfo)plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
 
-            _serviceInfoManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
+            _labStateManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
         }
 
         public void RemovePlugin( IPluginInfo pluginInfo )
         {
-            _serviceInfoManager.RemovePlugin( (PluginInfo)pluginInfo );
+            _labStateManager.RemovePlugin( (PluginInfo)pluginInfo );
         }
 
         public void RemoveService( IServiceInfo serviceInfo )
         {
-            _serviceInfoManager.RemoveService( (ServiceInfo)serviceInfo );
+            _labStateManager.RemoveService( (ServiceInfo)serviceInfo );
         }
 
         public ServiceInfo GetServiceInfoByName( string name )
         {
-            return _serviceInfoManager.ServiceInfos.Where( x => x.ServiceFullName == name ).First();
+            return _labStateManager.ServiceInfos.Where( x => x.ServiceFullName == name ).First();
         }
 
         public IEnumerable<PluginInfo> GetPluginInfosByName( string name )
         {
-            return _serviceInfoManager.PluginInfos.Where( x => x.PluginFullName == name );
+            return _labStateManager.PluginInfos.Where( x => x.PluginFullName == name );
         }
 
         public PluginInfo GetPluginInfoById( Guid guid )
         {
-            return _serviceInfoManager.PluginInfos.Where( x => x.PluginId == guid ).First();
+            return _labStateManager.PluginInfos.Where( x => x.PluginId == guid ).First();
         }
 
         public DetailedOperationResult LoadState( string filePath )
         {
-            _serviceInfoManager.ClearState();
+            _labStateManager.ClearState();
 
             XmlReaderSettings rs = new XmlReaderSettings();
 
@@ -624,7 +629,7 @@ namespace Yodii.Lab
                 return new DetailedOperationResult( false, e.Message );
             }
 
-            RaiseNewNotification(new Notification() { Title = "Saved state", Message = filePath});
+            RaiseNewNotification( new Notification() { Title = "Saved state", Message = filePath } );
             return new DetailedOperationResult( true );
         }
 
@@ -642,7 +647,7 @@ namespace Yodii.Lab
 
         public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
         {
-            return _serviceInfoManager.RenameService( serviceInfo, newName );
+            return _labStateManager.RenameService( serviceInfo, newName );
         }
         #endregion Public methods
 
@@ -678,7 +683,7 @@ namespace Yodii.Lab
             {
                 if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
                 {
-                    _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
+                    _labStateManager.LoadFromXmlReader( xr.ReadSubtree() );
                 }
                 else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
                 {
@@ -696,6 +701,17 @@ namespace Yodii.Lab
             {
                 NewNotification( this, new NotificationEventArgs( n ) );
             }
+        }
+
+        private void RaiseNewNotification( string title = "Notification", string message = "" )
+        {
+            Notification n = new Notification()
+            {
+                Title = title,
+                Message = message
+            };
+
+            RaiseNewNotification( n );
         }
 
         #endregion Private methods

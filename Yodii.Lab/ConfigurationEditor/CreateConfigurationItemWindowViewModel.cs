@@ -12,14 +12,14 @@ namespace Yodii.Lab.ConfigurationEditor
     class CreateConfigurationItemWindowViewModel : ViewModelBase
     {
         #region Fields
-        readonly ServiceInfoManager _serviceInfoManager;
+        readonly LabStateManager _serviceInfoManager;
         readonly ICommand _selectItemCommand;
 
         object _selectedItem;
         ConfigurationStatus _selectedStatus;
         #endregion
         #region Constructor
-        public CreateConfigurationItemWindowViewModel( ServiceInfoManager serviceManager )
+        public CreateConfigurationItemWindowViewModel( LabStateManager serviceManager )
         {
             Debug.Assert( serviceManager != null );
 
@@ -74,14 +74,14 @@ namespace Yodii.Lab.ConfigurationEditor
                 }
                 else
                 {
-                    return ServiceInfoManager.GetDescriptionOfServiceOrPluginInfo( SelectedItem );
+                    return LabStateManager.GetDescriptionOfServiceOrPluginInfo( SelectedItem );
                 }
             }
         }
 
         #endregion
         #region Properties
-        public ServiceInfoManager ServiceInfoManager { get { return _serviceInfoManager; } }
+        public LabStateManager ServiceInfoManager { get { return _serviceInfoManager; } }
         public ICommand SelectItemCommand { get { return _selectItemCommand; } }
 
         public string SelectedServiceOrPluginId

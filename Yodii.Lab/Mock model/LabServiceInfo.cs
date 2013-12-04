@@ -8,17 +8,17 @@ using Yodii.Model;
 namespace Yodii.Lab.Mocks
 {
     [DebuggerDisplay( "Live {ServiceInfo.ServiceFullName}" )]
-    public class LiveServiceInfo : ViewModelBase, ILiveServiceInfo
+    public class LabServiceInfo : ViewModelBase, ILiveServiceInfo
     {
         #region Fields
 
         ServiceInfo _serviceInfo;
         DependencyRequirement _configRequirement;
         RunningStatus _status;
-        LiveServiceInfo _generalization;
-        LivePluginInfo _runningPlugin;
+        LabServiceInfo _generalization;
+        LabPluginInfo _runningPlugin;
         bool _isRunning;
-        LivePluginInfo _lastRunningPlugin;
+        LabPluginInfo _lastRunningPlugin;
         ServiceDisabledReason _disabledReason;
         ConfigurationStatus _configOriginalStatus;
         SolvedConfigurationStatus _configSolvedStatus;
@@ -26,7 +26,7 @@ namespace Yodii.Lab.Mocks
         #endregion Fields
 
         #region Constructor
-        internal LiveServiceInfo( ServiceInfo serviceInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LiveServiceInfo generalization = null)
+        internal LabServiceInfo( ServiceInfo serviceInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LabServiceInfo generalization = null)
         {
             Debug.Assert( serviceInfo != null );
 
@@ -58,7 +58,7 @@ namespace Yodii.Lab.Mocks
             get { return _status == RunningStatus.Running || _status == RunningStatus.RunningLocked; }
         }
 
-        public LiveServiceInfo Generalization
+        public LabServiceInfo Generalization
         {
             get { return _generalization; }
             set
@@ -71,7 +71,7 @@ namespace Yodii.Lab.Mocks
             }
         }
 
-        public LivePluginInfo RunningPlugin
+        public LabPluginInfo RunningPlugin
         {
             get { return _runningPlugin; }
             set
