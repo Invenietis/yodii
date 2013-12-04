@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Yodii.Model;
 
@@ -9,87 +11,206 @@ namespace Yodii.Engine
 {
     class LiveServiceInfo : ILiveServiceInfo
     {
-        RunningStatus _runningStatus;
-        readonly ILiveServiceInfo _generalization;
-        readonly ILivePluginInfo _runningPlugin;
-        ILivePluginInfo _lastRunningPlugin;
-        readonly IServiceInfo _serviceInfo;
-        IReadOnlyList<IDynamicSolvedPlugin> _dynamicPlugins;
-        IReadOnlyList<IDynamicSolvedService> _dynamicServices;
+        YodiiEngine _engine;
 
-        internal LiveServiceInfo(IDynamicSolvedService dynamicService, ILiveServiceInfo generalization)
+        //set with cosntrutor
+        readonly IServiceInfo _serviceInfo;
+        ServiceDisabledReason _disabledReason;
+        ConfigurationStatus _configOriginalStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
+        RunningStatus _runningStatus;
+
+        //set with function
+        LiveServiceInfo _generalization;
+        LivePluginInfo _runningPlugin;
+        LivePluginInfo _lastRunningPlugin;
+
+        internal LiveServiceInfo( ServiceData serviceData, YodiiEngine engine )
         {
-            _runningStatus = dynamicService.RunningStatus;
-            _generalization = generalization;
-            _serviceInfo = dynamicService.ServiceInfo;
+            Debug.Assert( serviceData != null );
+            _serviceInfo = serviceData.ServiceInfo;
+            _disabledReason = serviceData.DisabledReason;
+            _configOriginalStatus = serviceData.ConfigOriginalStatus;
+            _configSolvedStatus = serviceData.ConfigSolvedStatus;
+
+            Debug.Assert( serviceData.DynamicStatus != null );
+            _runningStatus = serviceData.DynamicStatus.Value;
         }
+
+        public YodiiEngine Engine
+        {
+            get { return _engine; }
+            internal set 
+            {
+                Debug.Assert( value != null &&  _engine != null );
+                _engine = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        #region ILiveServiceInfo Members
+
         public bool IsRunning
         {
-            get { return _runningStatus == RunningStatus.Running || _runningStatus == RunningStatus.RunningLocked; }
+            get
+            {
+                return _runningStatus >= RunningStatus.Running; 
+            }
         }
 
-        public ILiveServiceInfo Generalization
+        public ILiveServiceInfo ILiveServiceInfo.Generalization
         {
             get { return _generalization; }
         }
 
-        public ILivePluginInfo RunningPlugin
+        internal LiveServiceInfo Generalization
+        {
+            set
+            {
+                if( _generalization != value )
+                {
+                    Debug.Assert( value != null );
+                    _generalization = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public ILivePluginInfo ILivePluginInfo.RunningPlugin
         {
             get { return _runningPlugin; }
         }
 
-        public ILivePluginInfo LastRunningPlugin
+        internal LivePluginInfo RunningPlugin
+        {
+            set
+            {
+                if( _runningPlugin != value )
+                {
+                    LastRunningPlugin = _runningPlugin;
+                    _runningPlugin = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public ILivePluginInfo ILivePluginInfo.LastRunningPlugin
         {
             get { return _lastRunningPlugin; }
-            set { if ( value != _lastRunningPlugin ) _lastRunningPlugin = value; }
         }
 
-        public bool Start( object caller )
+        internal LivePluginInfo LastRunningPlugin
         {
-            YodiiCommand cmd = new YodiiCommand( caller, true, StartDependencyImpact.None, _serviceInfo.ServiceFullName );
-            return true;
+            set
+            {
+                if( _lastRunningPlugin != value )
+                {
+                    _lastRunningPlugin = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
-        public void Stop( object caller )
-        {
-            YodiiCommand cmd = new YodiiCommand( caller, false, StartDependencyImpact.None, _serviceInfo.ServiceFullName );
-        }
+        #endregion
 
-        public IReadOnlyList<IDynamicSolvedPlugin> Plugins
-        {
-            get { return _dynamicPlugins; }
-        }
-
-        public IReadOnlyList<IDynamicSolvedService> Services
-        {
-            get { return _dynamicServices; }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public IServiceInfo ServiceInfo
-        {
-            get { throw new NotImplementedException(); }
-        }
+        #region IDynamicSolvedService Members
 
         public ServiceDisabledReason DisabledReason
         {
-            get { throw new NotImplementedException(); }
+            get { return _disabledReason; }
+            set
+            {
+                if( _disabledReason != value )
+                {
+                    _disabledReason = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public IServiceInfo ServiceInfo
+        {
+            get { return _serviceInfo; }
         }
 
         public ConfigurationStatus ConfigOriginalStatus
         {
-            get { throw new NotImplementedException(); }
+            get { return _configOriginalStatus; }
+            set
+            {
+                if( _configOriginalStatus != value )
+                {
+                    _configOriginalStatus = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public SolvedConfigurationStatus ConfigSolvedStatus
         {
-            get { throw new NotImplementedException(); }
+            get { return _configSolvedStatus; }
+            set
+            {
+                if( _configSolvedStatus != value )
+                {
+                    _configSolvedStatus = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public RunningStatus RunningStatus
         {
-            get { throw new NotImplementedException(); }
+            get { return _runningStatus; }
+            set
+            {
+                if( _runningStatus != value )
+                {
+                    _runningStatus = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
+
+        #endregion
+
+        public bool Start( object caller )
+        {
+            if( caller == null ) throw new ArgumentNullException( "caller" );
+            YodiiCommand command = new YodiiCommand( caller, true, _serviceInfo.ServiceFullName );
+            _engine
+        }
+
+        public void Stop( object caller )
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void UpdateInfo( ServiceData s )
+        {
+            DisabledReason = s.DisabledReason;
+            ConfigOriginalStatus = s.ConfigOriginalStatus;
+            ConfigSolvedStatus = s.ConfigSolvedStatus;
+            RunningStatus = s.DynamicStatus.Value;
+
+            if( s.DynamicStatus <= RunningStatus.Stopped && _runningPlugin != null )
+            {
+                _lastRunningPlugin = _runningPlugin;
+                _runningPlugin = null;
+            }
+        }
+        
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged( [CallerMemberName]string propertyName = "" )
+        {
+            var h = PropertyChanged;
+            if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
+        }
+
+        #endregion
+        
     }
 }

@@ -16,22 +16,22 @@ namespace Yodii.Engine
         public readonly StartDependencyImpact Impact;
         public readonly string FullName;
 
-        private YodiiCommand( object caller, bool start, StartDependencyImpact impact )
+        private YodiiCommand( object caller, bool start )
         {
             Caller = caller;
             Start = start;
-            Impact = impact;
         }
 
         internal YodiiCommand( object caller, bool start, StartDependencyImpact impact, Guid pluginId )
-            : this( caller, start, impact )
+            : this( caller, start )
         {
             Debug.Assert( pluginId != null );
             PluginId = pluginId;
+            Impact = impact;
         }
 
-        internal YodiiCommand( object caller, bool start, StartDependencyImpact impact, string fullName )
-            : this( caller, start, impact )
+        internal YodiiCommand( object caller, bool start, string fullName )
+            : this( caller, start )
         {
             Debug.Assert( string.IsNullOrEmpty( fullName ) != true );
             FullName = fullName;

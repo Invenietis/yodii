@@ -156,7 +156,6 @@ namespace Yodii.Engine
             throw new NotImplementedException();
         }
 
-
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
             if ( cmd.FullName != null )
@@ -223,6 +222,33 @@ namespace Yodii.Engine
         internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
         {
             return new YodiiEngineResult( _services, _plugins, errors );
+        }
+
+        internal void UpdateNewResultInLiveInfo( LiveInfo liveInfo )
+        {
+            Debug.Assert( liveInfo != null );
+            foreach( var s in _services.Values )
+            {
+                liveInfo.UpdateInfo( s );
+            }
+            foreach( var p in _plugins.Values )
+            {
+                liveInfo.UpdateInfo( p );
+            }
+        }
+
+        internal void FillNewLiveInfo( LiveInfo liveInfo )
+        {
+            foreach( var s in _services.Values )
+            {
+                liveInfo.AddInfo( s );
+            }
+            foreach( var p in _plugins.Values )
+            {
+                liveInfo.AddInfo( p );
+            }
+
+            liveInfo.CreateGraphOfDependencies();
         }
 
     }

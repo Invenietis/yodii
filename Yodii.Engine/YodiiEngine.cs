@@ -55,15 +55,17 @@ namespace Yodii.Engine
                 {
                     IYodiiEngineResult result =  _virtualSolver.CreateDynamicFailureResult( errors );
                     _virtualSolver = null;
+                    _liveInfo.UpdateError( errors );
                     return result;
                 }
                 CurrentSolver = _virtualSolver;
+                _virtualSolver.UpdateNewResultInLiveInfo( _liveInfo );
             }
             _virtualSolver = null;
             return new SuccessYodiiEngineResult();
         }
 
-        internal ConfigurationSolver CurrentSolver
+        ConfigurationSolver CurrentSolver
         {
             set
             {
@@ -106,6 +108,7 @@ namespace Yodii.Engine
             if( result.Success )
             {
                 CurrentSolver = solver;
+                LiveInfo = solver.CreateLiveInfo();
             }
             return result;
         }
@@ -113,11 +116,12 @@ namespace Yodii.Engine
         private void InitializeLiveInfo()
         {
             Debug.Assert(_liveInfo == null);
-            _liveInfo = new LiveInfo();
+            _liveInfo = new LiveInfo( this );
         }
 
         public void Stop()
         {
+            LiveInfo = null;
             CurrentSolver = null;
         }
 
@@ -138,6 +142,8 @@ namespace Yodii.Engine
                 if( result.Success )
                 {
                     DiscoveredInfo = info;
+                    _currentSolver = solver;
+                    LiveInfo = solver.CreateLiveInfo();
                 }
                 return result;
             }
@@ -154,9 +160,14 @@ namespace Yodii.Engine
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
-        public ILiveInfo LiveInfo
+        public ILiveInfo ILiveInfo.LiveInfo
         {
             get { throw new NotImplementedException(); }
+        }
+
+        LiveInfo LiveInfo
+        {
+            set { throw new NotImplementedException(); }
         }
 
         public IYodiiEngineHost Host
