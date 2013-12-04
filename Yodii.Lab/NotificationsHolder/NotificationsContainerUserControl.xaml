@@ -47,9 +47,6 @@
                     <ScaleTransform
                         x:Name="ScaleYTransform" />
                 </Grid.LayoutTransform>
-                <!--<Grid.RenderTransform>
-                    <ScaleTransform x:Name="ScaleYTransform" ScaleY="1" />
-                </Grid.RenderTransform>-->
                 <Border
                     Name="border"
                     Background="#882a3345"
@@ -64,7 +61,6 @@
                             BlurRadius="10" />
                     </Border.Effect>
                     <Grid
-                        MaxWidth="280"
                         Margin="3pt">
                         <Grid.RowDefinitions>
                             <RowDefinition
@@ -94,10 +90,12 @@
                                 Height="16"
                                 FontSize="6pt"
                                 HorizontalAlignment="Right"
-                                Margin="0,0,2pt,0"
-                                Style="{StaticResource RemoveButtonStyle}" />
+                                VerticalAlignment="Top"
+                                Margin="0,1pt,1pt,0"
+                                Style="{StaticResource RemoveButtonStyle}"
+                                Opacity="0.3"/>
                             <TextBlock
-                                Text="{Binding Path=Title}"
+                                Text="Can't add plugin"
                                 TextOptions.TextRenderingMode="ClearType"
                                 TextOptions.TextFormattingMode="Display"
                                 Foreground="White"
@@ -105,12 +103,13 @@
                                 FontSize="12pt"
                                 FontWeight="Bold"
                                 VerticalAlignment="Center"
-                                Margin="1pt"
-                                TextWrapping="Wrap"
+                                Margin="1pt,0,3pt,2pt"
+                                TextWrapping="NoWrap"
                                 TextTrimming="CharacterEllipsis" />
 
                         </DockPanel>
                         <TextBlock
+                            MaxWidth="300pt"
                             Grid.Row="1"
                             Grid.Column="1"
                             Text="{Binding Path=Message}"
@@ -120,7 +119,7 @@
                             FontFamily="Arial"
                             VerticalAlignment="Top"
                             Margin="2,2,4,4"
-                            TextWrapping="Wrap"
+                            TextWrapping="WrapWithOverflow"
                             Visibility="{Binding Path=MessageVisibility}"
                             TextTrimming="CharacterEllipsis" />
                     </Grid>
@@ -197,7 +196,6 @@
             </DataTemplate.Triggers>
         </DataTemplate>
     </UserControl.Resources>
-    <!--d:DataContext="{d:DesignData Source=DesignTimeNotificationData.xaml}"-->
     <ItemsControl
         x:Name="NotificationsControl"
         d:DataContext="{d:DesignData Source=DesignTimeNotificationData.xaml}"
