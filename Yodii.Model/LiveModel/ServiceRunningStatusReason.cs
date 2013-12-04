@@ -28,10 +28,11 @@ namespace Yodii.Model
         StartedByRunnableReference,
         StartedByRunnableTryStartReference,
         StartedByRunningReference,
-        
+
         StoppedByOptionalReference,
         StoppedByOptionalTryStartReference,
         StoppedByRunnableReference,
         StoppedByRunnableTryStartReference,
+        StoppedByFinalDecision,
     }
 }
