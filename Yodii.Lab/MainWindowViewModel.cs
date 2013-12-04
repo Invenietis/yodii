@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using CK.Core;
-using Yodii.Lab.Mocks;
-using Yodii.Model;
-using System.Windows.Input;
-using System.Collections.Specialized;
-using Yodii.Lab.Utils;
-using System.Xml;
 using System.IO;
-using Yodii.Engine;
-using Yodii.Lab.ConfigurationEditor;
+using System.Linq;
 using System.Windows;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
-using GraphX.GraphSharp.Algorithms.Layout;
+using System.Windows.Input;
+using System.Xml;
+using CK.Core;
 using GraphX;
+using GraphX.GraphSharp.Algorithms.Layout;
+using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
 using GraphX.GraphSharp.Algorithms.Layout.Simple.Tree;
+using Yodii.Lab.ConfigurationEditor;
+using Yodii.Lab.Mocks;
+using Yodii.Lab.Utils;
+using Yodii.Model;
 
 namespace Yodii.Lab
 {
@@ -193,6 +189,11 @@ namespace Yodii.Lab
                 {
                     RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
                     npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
+                }
+                else if ( String.IsNullOrWhiteSpace( npe.PluginName ) )
+                {
+                    RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
+                    npe.CancelReason = "Please enter a name for this plugin.";
                 }
                 else
                 {
