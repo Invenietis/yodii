@@ -14,7 +14,6 @@ namespace Yodii.Engine
         SolvedConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
         ServiceData _configRunningSpecialization;
-        ServiceData _configDirectRunningSpecialization;
 
         class BackReference
         {
@@ -156,10 +155,8 @@ namespace Yodii.Engine
                 if( !br.PluginData.Disabled ) br.PluginData.SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
                 br = br.Next;
             }
-            _configDirectRunningSpecialization = null;
             _configRunningSpecialization = null;
         }
-
 
         /// <summary>
         /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
@@ -172,7 +169,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the minimal running requirement for this service (not the one of MustExistSpecialization if it exists).
         /// </summary>
-        public SolvedConfigurationStatus ThisMinimalRunningRequirement
+        public SolvedConfigurationStatus ThisConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -180,7 +177,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the strongest reason that explains this service ThisMinimalRunningRequirement. 
         /// </summary>
-        public ServiceSolvedConfigStatusReason ThisRunningRequirementReason 
+        public ServiceSolvedConfigStatusReason ThisConfigSolvedStatusReason 
         {
             get { return _configSolvedStatusReason; }
         }
@@ -257,65 +254,51 @@ namespace Yodii.Engine
                 _configSolvedStatus = SolvedConfigurationStatus.Running;
             }
             Debug.Assert( _configSolvedStatus == SolvedConfigurationStatus.Running );
-            // From a non running requirement to a running requirement.
-            var currentRunning = _configRunningSpecialization;
-            
-            //
-            // Only 3 possible cases here:
-            //
-            // - There is no current Runnable Service for our Generalization.
-            // - we are the current one... We are necessarily already be Runnable.
-            // - We specialize the current one.
-            //
-            Debug.Assert( currentRunning == null || currentRunning.IsStrictGeneralizationOf( this ) );
-            // Note: The other cases would be:
-            //    - We are a Generalization of the current one. This is not possible since SetRunningRequirement is routed to the _mustExistSpecialization if it exists.
-            //    - a specialization exists and we are not a specialization nor a generalization of it: this is not possible since we would have been disabled.
-            //
 
-            // We must disable all sibling services (and plugins) from this up to Runnable (when Runnable is null, up to the root).
-            _configRunningSpecialization = this;
-            var g = Generalization;
-            if( g != null )
+            Debug.Assert( _configRunningSpecialization != this, "SetSolvedConfigurationStatus filters this thanks to the _configSolvedStatus." );
+
+            var currentRunning = GeneralizationRoot._configRunningSpecialization;
+            if( currentRunning != null )
             {
-                var specThatMustExist = this;
-                do
-                {
-                    g._configRunningSpecialization = this;
-                    g._configDirectRunningSpecialization = specThatMustExist;
-                    specThatMustExist = g;
-                    g = g.Generalization;
-                }
-                while( g != null );
+                // If there is already a current specialized service, we ONLY accept a more specialized 
+                // running service than the current one: if this service is not a specialization, we reject the change.
+                if( !currentRunning.IsStrictGeneralizationOf( this ) ) return false;
+            }
+            DoSetAsRunningService( currentRunning );
+            return !Disabled;
+        }
+
+        internal void DoSetAsRunningService( ServiceData prevCurrentRunning )
+        {
+            // We first set the new specialization from this service up to the root.
+            var g = this;
+            while( g != null )
+            {
+                g._configRunningSpecialization = this;
+                g = g.Generalization;
             }
 
+            // We must now disable all sibling services (and plugins) from this up to the currently running one and 
+            // when the current one is null, up to the root.
             g = Generalization;
-            if( g != null )
+            var specThatMustExist = this;
+            while( g != prevCurrentRunning )
             {
-                var specThatMustExist = this;
-                do
+                var spec = g.FirstSpecialization;
+                while( spec != null )
                 {
-                    Debug.Assert( g._configRunningSpecialization == this );
-                    Debug.Assert( g._configDirectRunningSpecialization == specThatMustExist );
-                    var spec = g.FirstSpecialization;
-                    while( spec != null )
-                    {
-                        if( spec != specThatMustExist && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustRun );
-                        spec = spec.NextSpecialization;
-                    }
-                    PluginData p = g.FirstPlugin;
-                    while( p != null )
-                    {
-                        if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.ServiceSpecializationMustRun );
-                        p = p.NextPluginForService;
-                    }
-                    specThatMustExist = g;
-                    g = g.Generalization;
+                    if( spec != specThatMustExist && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustRun );
+                    spec = spec.NextSpecialization;
                 }
-                while( g != null );
+                PluginData p = g.FirstPlugin;
+                while( p != null )
+                {
+                    if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.ServiceSpecializationMustRun );
+                    p = p.NextPluginForService;
+                }
+                specThatMustExist = g;
+                g = g.Generalization;
             }
-            if( Disabled ) return false;
-            return true;
         }
 
         /// <summary>
@@ -444,7 +427,6 @@ namespace Yodii.Engine
                         spec = spec.NextSpecialization;
                     }
                     _configRunningSpecialization = specRunning;
-                    _configDirectRunningSpecialization = directSpecThatMustRun;
                 }
                 Debug.Assert( !Disabled, "The fact that this service (or a specialization) must exist, can not disable this service." );
             }
@@ -472,7 +454,7 @@ namespace Yodii.Engine
 
         internal void AddPlugin( PluginData p )
         {
-            // Consider its RunningRequirements to detect trivial case: the fact that another plugin 
+            // Consider its ConfigSolvedStatus to detect a trivial case: the fact that another plugin 
             // must run for the same Generalization service.
             // The less trivially case when this running plugin conflicts with some other Running at the services level
             // is already handled in PluginData constructor thanks to service.MustExistSpecialization being not null that 

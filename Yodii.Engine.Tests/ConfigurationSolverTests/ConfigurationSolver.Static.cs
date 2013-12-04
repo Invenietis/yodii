@@ -52,10 +52,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationSolver cs = new ConfigurationSolver();
             IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 2 ) );
-            Assert.That( res.StaticFailureResult.BlockingServices, Is.Empty);
-            CollectionAssert.AreEquivalent( new[] { "PluginA-2", "PluginA-1" }, res.StaticFailureResult.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName ) );
+            Assert.That( res.Success, Is.True );
         }
 
         [Test]
@@ -344,10 +341,10 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Not.Null );
 
             Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 2 ) );
-            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 2 ) );
+            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 1 ) );
+            Assert.That( res.StaticFailureResult.BlockingPlugins, Is.Empty );
 
-            CollectionAssert.AreEquivalent( new[] { "ServiceA", "ServiceAx" }, res.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
+            Assert.That( res.StaticFailureResult.BlockingServices.Single().DisabledReason, Is.EqualTo( ServiceDisabledReason.NoPlugin ) );
         }
 
         [Test]
@@ -404,12 +401,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationSolver cs = new ConfigurationSolver();
             IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices, Is.Empty );
-            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 3 ) );
-            CollectionAssert.AreEquivalent( new[] { "PluginA-2", "PluginA-1", "PluginAx-1" }, res.StaticFailureResult.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName ) );
+            Assert.That( res.Success, Is.True );
         }
 
         [Test]
@@ -668,11 +660,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             ConfigurationSolver cs = new ConfigurationSolver();
             IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
-            Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
+            Assert.That( res.Success, Is.True );
+            Assert.That( res.StaticFailureResult, Is.Null );
         }
 
         [Test]

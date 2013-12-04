@@ -39,7 +39,8 @@ namespace Yodii.Engine
             base.OnAllPluginsAdded();
             if( !Disabled && _runningPluginByConfig != null )
             {
-                _runningPluginByConfig.Service.SetAsRunningService( fromRunningPlugin: true );
+                _runningPluginByConfig.Service.DoSetAsRunningService( null );
+                _theOnlyPlugin = _runningPluginByConfig;
             }
         }
 
