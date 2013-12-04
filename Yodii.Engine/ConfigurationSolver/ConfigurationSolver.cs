@@ -151,7 +151,7 @@ namespace Yodii.Engine
         {
             if ( cmd.FullName != null )
             {
-                ServiceData s = _services.Values.FirstOrDefault( i => i.ServiceInfo.ServiceFullName == cmd.FullName );
+                ServiceData s = _services[cmd.FullName];
                 if ( s != null )
                 {
                     if ( cmd.Start ) return s.StartByCommand();
@@ -160,7 +160,7 @@ namespace Yodii.Engine
                 return true;
             }
             // Starts or stops the plugin.
-            PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
+            PluginData p = _plugins[cmd.PluginId];
             if ( p != null )
             {
                 if ( cmd.Start ) return p.StartByCommand( cmd.Impact );
