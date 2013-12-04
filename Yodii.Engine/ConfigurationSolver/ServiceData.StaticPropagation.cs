@@ -190,9 +190,9 @@ namespace Yodii.Engine
         void InitializePropagation( int nbAvailable, bool fromConfig )
         {
             Debug.Assert( nbAvailable == TotalAvailablePluginCount );
-            if( nbAvailable == 1 )
+            if ( nbAvailable == 1 )
             {
-                RetrieveTheOnlyPlugin( fromConfig );
+                if( _theOnlyPlugin == null ) RetrieveTheOnlyPlugin( fromConfig );
             }
             else if( ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
             {
@@ -223,7 +223,7 @@ namespace Yodii.Engine
         void RetrieveTheOnlyPlugin( bool fromConfig )
         {
             Debug.Assert( _theOnlyPlugin == null && TotalAvailablePluginCount == 1 );
-            if( DisabledPluginCount == PluginCount )
+            if ( AvailablePluginCount == 0 )
             {
                 ServiceData spec = FirstSpecialization;
                 while( spec != null )

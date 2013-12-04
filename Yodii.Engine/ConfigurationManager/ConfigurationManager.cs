@@ -48,6 +48,7 @@ namespace Yodii.Engine
         {
             _engine = engine;
             _configurationLayerCollection = new ConfigurationLayerCollection( this );
+            _finalConfiguration = new FinalConfiguration();
         }
 
         internal void OnLayerNameChanged( IConfigurationLayer layer )
