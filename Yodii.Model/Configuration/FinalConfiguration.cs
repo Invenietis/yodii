@@ -24,9 +24,17 @@ namespace Yodii.Model
         }
 
         public FinalConfiguration( Dictionary<string, ConfigurationStatus> finalStatus )
+            : this()
+        {
+            foreach( var item in finalStatus ) _items.Add( new FinalConfigurationItem( item.Key, item.Value ) );
+        }
+
+        /// <summary>
+        /// Creates a new, empty FinalConfiguration.
+        /// </summary>
+        public FinalConfiguration()
         {
             _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginId, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
-            foreach( var item in finalStatus ) _items.Add( new FinalConfigurationItem( item.Key, item.Value ) );
         }
     }
 }
