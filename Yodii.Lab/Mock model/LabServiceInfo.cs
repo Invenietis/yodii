@@ -1,164 +1,71 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
-    [DebuggerDisplay( "Live {ServiceInfo.ServiceFullName}" )]
-    public class LabServiceInfo : ViewModelBase, ILiveServiceInfo
+    [DebuggerDisplay( "Lab {ServiceInfo.ServiceFullName}" )]
+    public class LabServiceInfo : ViewModelBase
     {
         #region Fields
 
         ServiceInfo _serviceInfo;
-        DependencyRequirement _configRequirement;
-        RunningStatus _status;
-        LabServiceInfo _generalization;
-        LabPluginInfo _runningPlugin;
-        bool _isRunning;
-        LabPluginInfo _lastRunningPlugin;
-        ServiceDisabledReason _disabledReason;
-        ConfigurationStatus _configOriginalStatus;
-        SolvedConfigurationStatus _configSolvedStatus;
+        //LabServiceInfo _generalization;
+
+        ILiveServiceInfo _liveServiceInfo;
 
         #endregion Fields
 
         #region Constructor
-        internal LabServiceInfo( ServiceInfo serviceInfo, DependencyRequirement configRequirement = DependencyRequirement.Optional, LabServiceInfo generalization = null)
+        internal LabServiceInfo( ServiceInfo serviceInfo)
         {
             Debug.Assert( serviceInfo != null );
 
             _serviceInfo = serviceInfo;
-            _configRequirement = configRequirement;
-            _status = RunningStatus.Stopped; // TODO: Status changes
-            _generalization = generalization;
+            //_generalization = generalization;
         }
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Attached service info. Read-only.
+        /// </summary>
         public ServiceInfo ServiceInfo
         {
             get { return _serviceInfo; }
         }
 
-        public DependencyRequirement ConfigRequirement
+        /// <summary>
+        /// Active LiveServiceInfo attached to this lab.
+        /// Null if the lab is in building mode, when the engine hasn't started.
+        /// </summary>
+        public ILiveServiceInfo LiveServiceInfo
         {
-            get { return _configRequirement; }
-        }
-
-        public RunningStatus Status
-        {
-            get { return _status; }
-        }
-
-        public bool IsRunning
-        {
-            get { return _status == RunningStatus.Running || _status == RunningStatus.RunningLocked; }
-        }
-
-        public LabServiceInfo Generalization
-        {
-            get { return _generalization; }
-            set
+            get { return _liveServiceInfo; }
+            internal set
             {
-                if( value != _generalization )
+                if( value != null )
                 {
-                    _generalization = value;
-                    RaisePropertyChanged( "Generalization" );
+                    Debug.Assert( value.ServiceInfo == ServiceInfo );
+
+                    _liveServiceInfo = value;
                 }
+
+                RaisePropertyChanged();
+                RaisePropertyChanged("IsLive");
             }
         }
 
-        public LabPluginInfo RunningPlugin
+        /// <summary>
+        /// True if the lab is in simulation mode, and this LabServiceInfo has a LiveServiceInfo.
+        /// False if the lab is in building mode.
+        /// </summary>
+        public bool IsLive
         {
-            get { return _runningPlugin; }
-            set
+            get
             {
-                if( value != _runningPlugin )
-                {
-                    _runningPlugin = value;
-                    RaisePropertyChanged( "RunningPlugin" );
-                }
+                return LiveServiceInfo != null;
             }
         }
         #endregion Properties
-
-        #region Public methods
-        public bool Start( Object o )
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop( Object o )
-        {
-            throw new NotImplementedException();
-        }
-        #endregion Public methods
-
-
-        #region ILiveServiceInfo Members
-
-        ILiveServiceInfo ILiveServiceInfo.Generalization
-        {
-            get { return _generalization; }
-        }
-
-        ILivePluginInfo ILiveServiceInfo.RunningPlugin
-        {
-            get { return _runningPlugin; }
-        }
-
-        bool ILiveServiceInfo.IsRunning
-        {
-            get { return _isRunning; }
-        }
-
-        ILivePluginInfo ILiveServiceInfo.LastRunningPlugin
-        {
-            get { return _lastRunningPlugin; }
-        }
-
-        bool ILiveServiceInfo.Start( object caller )
-        {
-            throw new NotImplementedException();
-        }
-
-        void ILiveServiceInfo.Stop( object caller )
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region IDynamicSolvedService Members
-
-        IServiceInfo IDynamicSolvedService.ServiceInfo
-        {
-            get { return _serviceInfo; }
-        }
-
-        ServiceDisabledReason IDynamicSolvedService.DisabledReason
-        {
-            get { return _disabledReason; }
-        }
-
-        ConfigurationStatus IDynamicSolvedService.ConfigOriginalStatus
-        {
-            get { return _configOriginalStatus; }
-        }
-
-        SolvedConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
-        {
-            get { return _configSolvedStatus; }
-        }
-
-        RunningStatus IDynamicSolvedService.RunningStatus
-        {
-            get { return _status; }
-        }
-
-        #endregion
     }
 }

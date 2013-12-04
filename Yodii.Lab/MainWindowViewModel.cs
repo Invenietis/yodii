@@ -335,17 +335,17 @@ namespace Yodii.Lab
         /// <summary>
         /// Services created in this Lab (live).
         /// </summary>
-        public ICKObservableReadOnlyCollection<ILiveServiceInfo> LiveServiceInfos
+        public ICKObservableReadOnlyCollection<LabServiceInfo> LabServiceInfos
         {
-            get { return _labStateManager.LiveServiceInfos; }
+            get { return _labStateManager.LabServiceInfos; }
         }
 
         /// <summary>
         /// Plugins created in this Lab (live).
         /// </summary>
-        public ICKObservableReadOnlyCollection<ILivePluginInfo> LivePluginInfos
+        public ICKObservableReadOnlyCollection<LabPluginInfo> LabPluginInfos
         {
-            get { return _labStateManager.LivePluginInfos; }
+            get { return _labStateManager.LabPluginInfos; }
         }
 
         /// <summary>

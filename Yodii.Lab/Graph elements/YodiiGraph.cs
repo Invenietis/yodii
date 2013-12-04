@@ -35,8 +35,8 @@ namespace Yodii.Lab
             Debug.Assert( serviceManager != null );
             Debug.Assert( configManager != null );
 
-            _serviceInfos = serviceManager.LiveServiceInfos;
-            _pluginInfos = serviceManager.LivePluginInfos;
+            _serviceInfos = serviceManager.LabServiceInfos;
+            _pluginInfos = serviceManager.LabPluginInfos;
             _configurationManager = configManager;
             _serviceManager = serviceManager;
 
@@ -130,9 +130,9 @@ namespace Yodii.Lab
             liveService.ServiceInfo.PropertyChanged += ServiceInfo_PropertyChanged;
 
 
-            if( liveService.Generalization != null )
+            if( liveService.ServiceInfo.Generalization != null )
             {
-                YodiiGraphVertex generalizationVertex = FindOrCreateServiceVertex( liveService.Generalization );
+                YodiiGraphVertex generalizationVertex = FindOrCreateServiceVertex( liveService.ServiceInfo.Generalization );
 
                 YodiiGraphEdge edge = new YodiiGraphEdge( serviceVertex, generalizationVertex, YodiiGraphEdgeType.Specialization ) { ID = currentId++ };
 
@@ -168,7 +168,7 @@ namespace Yodii.Lab
 
             if( livePlugin.PluginInfo.Service != null )
             {
-                YodiiGraphVertex serviceVertex = FindOrCreateServiceVertex( livePlugin.Service );
+                YodiiGraphVertex serviceVertex = FindOrCreateServiceVertex( livePlugin.PluginInfo.Service );
 
                 YodiiGraphEdge serviceEdge = new YodiiGraphEdge( pluginVertex, serviceVertex, YodiiGraphEdgeType.Implementation ) { ID = currentId++ };
                 this.AddEdge( serviceEdge );
@@ -345,12 +345,6 @@ namespace Yodii.Lab
                     YodiiGraphVertex newGeneralizationVertex = FindOrCreateServiceVertex( service.Generalization );
                     YodiiGraphEdge newEdge = new YodiiGraphEdge( serviceVertex, newGeneralizationVertex, YodiiGraphEdgeType.Specialization ) { ID = currentId++ };
                     AddEdge( newEdge );
-                    serviceVertex.LiveServiceInfo.Generalization = newGeneralizationVertex.LiveServiceInfo;
-                }
-                else
-                {
-
-                    serviceVertex.LiveServiceInfo.Generalization = null;
                 }
 
             }

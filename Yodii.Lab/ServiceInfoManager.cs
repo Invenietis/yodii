@@ -67,10 +67,50 @@ namespace Yodii.Lab
         void _engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
         {
             Debug.Assert( sender == _engine );
+
             switch( e.PropertyName )
             {
-                case "":
+                case "IsRunning":
+                    if( _engine.IsRunning )
+                    {
+                        OnEngineStarted();
+                    }
+                    else
+                    {
+                        OnEngineStopped();
+                    }
                     break;
+            }
+        }
+
+        private void OnEngineStopped()
+        {
+            foreach( LabServiceInfo labService in _labServiceInfos )
+            {
+                labService.LiveServiceInfo = null;
+            }
+
+            foreach( LabPluginInfo labPlugin in _labPluginInfos )
+            {
+                labPlugin.LivePluginInfo = null;
+            }
+        }
+
+        private void OnEngineStarted()
+        {
+            foreach( ILiveServiceInfo liveService in _engine.LiveInfo.Services )
+            {
+                Debug.Assert( liveService.ServiceInfo is ServiceInfo );
+ 
+                LabServiceInfo labService = _labServiceInfos.GetByKey( (ServiceInfo)liveService.ServiceInfo );
+                labService.LiveServiceInfo = liveService;
+            }
+            foreach( ILivePluginInfo livePlugin in _engine.LiveInfo.Plugins )
+            {
+                Debug.Assert( livePlugin.PluginInfo is PluginInfo );
+
+                LabPluginInfo labPlugin = _labPluginInfos.GetByKey( (PluginInfo)livePlugin.PluginInfo );
+                labPlugin.LivePluginInfo = livePlugin;
             }
         }
         #endregion
@@ -103,7 +143,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Wrappers of services created in this Lab.
         /// </summary>
-        public ICKObservableReadOnlyCollection<LabServiceInfo> LiveServiceInfos
+        public ICKObservableReadOnlyCollection<LabServiceInfo> LabServiceInfos
         {
             get { return _labServiceInfos; }
         }
@@ -111,7 +151,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Wrappers of plugins reated in this lab.
         /// </summary>
-        public ICKObservableReadOnlyCollection<LabPluginInfo> LivePluginInfos
+        public ICKObservableReadOnlyCollection<LabPluginInfo> LabPluginInfos
         {
             get { return _labPluginInfos; }
         }
@@ -209,7 +249,28 @@ namespace Yodii.Lab
 
         IEnumerable<Tuple<IPluginInfo, Exception>> IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
         {
-            throw new NotImplementedException();
+            List<Tuple<IPluginInfo, Exception>> exceptionList = new List<Tuple<IPluginInfo, Exception>>();
+
+            // TODO
+            Console.WriteLine( "Disabling:" );
+            foreach( var plugin in toDisable )
+            {
+                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+            }
+
+            Console.WriteLine( "Stopping:" );
+            foreach( var plugin in toStop )
+            {
+                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+            }
+
+            Console.WriteLine( "Starting:" );
+            foreach( var plugin in toStart )
+            {
+                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+            }
+
+            return exceptionList;
         }
 
         #endregion
@@ -222,7 +283,11 @@ namespace Yodii.Lab
         /// </summary>
         internal void ClearState()
         {
-            // TODO: Stop engine, if applicable
+            if( _engine.IsRunning )
+            {
+                _engine.Stop();
+            }
+
             _labPluginInfos.Clear();
             _labServiceInfos.Clear();
             _pluginInfos.Clear();
@@ -236,8 +301,13 @@ namespace Yodii.Lab
         /// <param name="serviceName">Name of the new service</param>
         /// <param name="generalization">Specialized service</param>
         /// <returns>New service</returns>
+        /// <remarks>Cannot be used when engine is running.</remarks>
         internal ServiceInfo CreateNewService( string serviceName, ServiceInfo generalization = null )
         {
+            if( _engine.IsRunning )
+            {
+                throw new InvalidOperationException( "Cannot create Service while Engine is running." );
+            }
             Debug.Assert( serviceName != null );
             Debug.Assert( _serviceInfos.Any( x => x.ServiceFullName == serviceName ) == false, "Service does not exist and can be added" );
 
@@ -261,6 +331,11 @@ namespace Yodii.Lab
         /// <returns>New plugin</returns>
         internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName = null, ServiceInfo service = null )
         {
+            if( _engine.IsRunning )
+            {
+                throw new InvalidOperationException( "Cannot create Plugin while Engine is running." );
+            }
+
             Debug.Assert( pluginGuid != null );
             if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
@@ -281,6 +356,10 @@ namespace Yodii.Lab
         /// <param name="runningRequirement">How the plugin depends on the service</param>
         internal void SetPluginDependency( PluginInfo plugin, ServiceInfo service, DependencyRequirement runningRequirement )
         {
+            if( _engine.IsRunning )
+            {
+                throw new InvalidOperationException( "Cannot create reference while Engine is running." );
+            }
             Debug.Assert( plugin != null );
             Debug.Assert( service != null );
             Debug.Assert( ServiceInfos.Contains( service ) );
@@ -297,6 +376,10 @@ namespace Yodii.Lab
         /// <param name="serviceInfo">Mock service info to remove</param>
         internal void RemoveService( ServiceInfo serviceInfo )
         {
+            if( _engine.IsRunning )
+            {
+                throw new InvalidOperationException( "Cannot remove Service while Engine is running." );
+            }
             // If we delete a service : Unbind linked plugins and services.
 
             // Unbind generalized services
@@ -331,6 +414,11 @@ namespace Yodii.Lab
         /// <param name="pluginInfo">Mock plugin info to remove</param>
         internal void RemovePlugin( PluginInfo pluginInfo )
         {
+            if( _engine.IsRunning )
+            {
+                throw new InvalidOperationException( "Cannot remove Plugin while Engine is running." );
+            }
+
             if( pluginInfo.Service != null )
             {
                 pluginInfo.InternalService.InternalImplementations.Remove( pluginInfo );
@@ -352,6 +440,11 @@ namespace Yodii.Lab
         /// </remarks>
         internal Utils.DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
         {
+            if( _engine.IsRunning )
+            {
+                throw new InvalidOperationException( "Cannot rename Service while Engine is running." );
+            }
+
             bool exists;
             ServiceInfo existingInfo = _serviceInfos.GetByKey( newName, out exists );
 
@@ -397,7 +490,7 @@ namespace Yodii.Lab
             if( s.Generalization != null )
             {
                 LabServiceInfo generalizationLiveInfo = _labServiceInfos.GetByKey( (ServiceInfo)s.Generalization );
-                newServiceInfo = new LabServiceInfo( s, DependencyRequirement.Optional, generalizationLiveInfo ); // TODO: Running requirement
+                newServiceInfo = new LabServiceInfo( s ); // TODO: Running requirement
             }
             else
             {
@@ -418,7 +511,7 @@ namespace Yodii.Lab
             {
                 p.Service.InternalImplementations.Add( p );
                 LabServiceInfo liveService = _labServiceInfos.GetByKey( p.Service );
-                lp = new LabPluginInfo( p, DependencyRequirement.Optional, liveService ); // TODO: Running requirement
+                lp = new LabPluginInfo( p );
             }
             else
             {

@@ -73,8 +73,8 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.Graph.Vertices.Count() == 7 );
             Assert.That( vm.Graph.Edges.Count() == 6 );
 
-            Assert.That( vm.LivePluginInfos.Count == 4 );
-            Assert.That( vm.LiveServiceInfos.Count == 3 );
+            Assert.That( vm.LabPluginInfos.Count == 4 );
+            Assert.That( vm.LabServiceInfos.Count == 3 );
             /**
              *                 +--------+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
@@ -100,8 +100,8 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.Graph.Vertices.Count() == 6 );
             Assert.That( vm.Graph.Edges.Count() == 4 );
 
-            Assert.That( vm.LivePluginInfos.Count == 4 );
-            Assert.That( vm.LiveServiceInfos.Count == 2 );
+            Assert.That( vm.LabPluginInfos.Count == 4 );
+            Assert.That( vm.LabServiceInfos.Count == 2 );
             /**
              *                 +--------+                              +--------+
              *                 |ServiceA+-------+   *----------------->|ServiceB|
@@ -118,8 +118,8 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 5 );
             Assert.That( vm.Graph.Edges.Count() == 4 );
-            Assert.That( vm.LivePluginInfos.Count == 3 );
-            Assert.That( vm.LiveServiceInfos.Count == 2 );
+            Assert.That( vm.LabPluginInfos.Count == 3 );
+            Assert.That( vm.LabServiceInfos.Count == 2 );
 
 
             // Removing a plugin also removes its references
@@ -127,8 +127,8 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 4 );
             Assert.That( vm.Graph.Edges.Count() == 2 );
-            Assert.That( vm.LivePluginInfos.Count == 2 );
-            Assert.That( vm.LiveServiceInfos.Count == 2 );
+            Assert.That( vm.LabPluginInfos.Count == 2 );
+            Assert.That( vm.LabServiceInfos.Count == 2 );
             /**
              * +--------+     +--------+
              * |ServiceA|     |ServiceB|
@@ -309,26 +309,26 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.ServiceInfos.Contains( serviceA ) );
             Assert.That( vm.ServiceInfos.Count == 1 );
-            Assert.That( vm.LiveServiceInfos.Count == 1 );
-            Assert.That( vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceA ).Count() == 1 );
+            Assert.That( vm.LabServiceInfos.Count == 1 );
+            Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).Count() == 1 );
 
-            ILiveServiceInfo liveServiceA = vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
+            ILiveServiceInfo liveServiceA = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
 
             IServiceInfo serviceB = vm.CreateNewService( "ServiceB" );
 
             Assert.That( vm.ServiceInfos.Contains( serviceB ) );
             Assert.That( vm.ServiceInfos.Count == 2 );
-            Assert.That( vm.LiveServiceInfos.Count == 2 );
-            Assert.That( vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceB ).Count() == 1 );
+            Assert.That( vm.LabServiceInfos.Count == 2 );
+            Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceB ).Count() == 1 );
 
             IServiceInfo serviceAx = vm.CreateNewService( "ServiceAx", serviceA );
 
             Assert.That( vm.ServiceInfos.Contains( serviceAx ) );
             Assert.That( vm.ServiceInfos.Count == 3 );
-            Assert.That( vm.LiveServiceInfos.Count == 3 );
-            Assert.That( vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceAx ).Count() == 1 );
+            Assert.That( vm.LabServiceInfos.Count == 3 );
+            Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).Count() == 1 );
 
-            ILiveServiceInfo liveServiceAx = vm.LiveServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
+            ILiveServiceInfo liveServiceAx = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
 
             Assert.That( liveServiceAx.Generalization == liveServiceA );
 

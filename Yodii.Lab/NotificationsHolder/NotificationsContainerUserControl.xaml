@@ -95,7 +95,7 @@
                                 Style="{StaticResource RemoveButtonStyle}"
                                 Opacity="0.3"/>
                             <TextBlock
-                                Text="Can't add plugin"
+                                Text="{Binding Path=Title}"
                                 TextOptions.TextRenderingMode="ClearType"
                                 TextOptions.TextFormattingMode="Display"
                                 Foreground="White"
