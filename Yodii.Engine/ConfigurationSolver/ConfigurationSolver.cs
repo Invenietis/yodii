@@ -122,7 +122,7 @@ namespace Yodii.Engine
                     commands.RemoveAt( i-- );
                 }
             }
-            foreach( var s in _services.Values )
+            foreach( var s in _services.Values.OrderBy( s => s.ServiceInfo.ServiceFullName ) )
             {
                 if( s.DynamicStatus == null ) s.StopBy( ServiceRunningStatusReason.StoppedByFinalDecision );
                 else if( s.DynamicStatus.Value >= RunningStatus.Running ) s.EnsureRunningPlugin();
@@ -144,6 +144,7 @@ namespace Yodii.Engine
                 {
                     Debug.Assert( p.Service == null );
                     p.StopByFinalDecision();
+                    stopped.Add( p.PluginInfo );
                 }
             }
             return new Tuple<IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>>( disabled, stopped, running );

@@ -78,6 +78,7 @@ namespace Yodii.Engine
         internal void StopByFinalDecision()
         {
             Debug.Assert( _dynamicStatus == null );
+            Debug.Assert( Service == null );
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = PluginRunningStatusReason.StoppedByFinalDecision;
         }
