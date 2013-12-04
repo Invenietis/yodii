@@ -185,7 +185,7 @@ namespace Yodii.Engine
 
         /// <summary>
         /// Called by OnAllPluginsAdded or OnPluginDisabled if there is at least one available plugin.
-        /// Called by SetRunningRequirement whenever the MinimalRunningRequirement becomes MustExist.
+        /// Called by SetRunningRequirement whenever the MinimalRunningRequirement becomes Runnable.
         /// </summary>
         void InitializePropagation( int nbAvailable, bool fromConfig )
         {

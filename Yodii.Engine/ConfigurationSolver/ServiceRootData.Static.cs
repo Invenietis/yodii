@@ -9,17 +9,11 @@ namespace Yodii.Engine
 {
     partial class ServiceRootData : ServiceData
     {
-        ServiceData _mustExistService;
-        PluginData _mustExistPluginByConfig;
+        PluginData _runningPluginByConfig;
 
         internal ServiceRootData( Dictionary<string, ServiceData> allServices, IServiceInfo s, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
             : base( allServices, s, null, serviceStatus, isExternalServiceAvailable )
         {
-        }
-
-        public ServiceData MustExistService
-        {
-            get { return _mustExistService; }
         }
 
         public PluginData TheOnlyPlugin
@@ -27,54 +21,47 @@ namespace Yodii.Engine
             get { return _theOnlyPlugin; }
         }
 
-        public PluginData RunnablePluginByConfig
+        public PluginData RunningPluginByConfig
         {
-            get { return _mustExistPluginByConfig; }
+            get { return _runningPluginByConfig; }
         }
 
-        internal void InitializeMustExistService()
+        internal void InitializeRunningService()
         {
             Debug.Assert( !Disabled );
-            _mustExistService = GetMustExistService();
-            if( _mustExistService == null && ConfigOriginalStatus >= ConfigurationStatus.Runnable ) _mustExistService = this;
+            var s = GetRunningService();
+            Debug.Assert( ConfigOriginalStatus != ConfigurationStatus.Running  || (s != null || s.Disabled), "ConfigOriginalStatus == ConfigurationStatus.Running  ==>  s != null || s.Disabled" );
         }
 
         internal override void OnAllPluginsAdded()
         {
             Debug.Assert( !Disabled );
             base.OnAllPluginsAdded();
-            if( !Disabled && _mustExistPluginByConfig != null )
+            if( !Disabled && _runningPluginByConfig != null )
             {
-                _mustExistPluginByConfig.Service.SetAsRunnableService( fromRunnablePlugin: true );
+                _runningPluginByConfig.Service.SetAsRunningService( fromRunningPlugin: true );
             }
         }
 
         internal override void SetDisabled( ServiceDisabledReason r )
         {
             base.SetDisabled( r );
-            _mustExistService = null;
-            _mustExistPluginByConfig = null;
-        }
-
-        internal void MustExistServiceChanged( ServiceData s )
-        {
-            Debug.Assert( !Disabled );
-            _mustExistService = s;
+            _runningPluginByConfig = null;
         }
 
         /// <summary>
         /// Called by ServiceData.PluginData during plugin registration.
-        /// This does not immediatly call ServiceData.SetAsMustExistService() in order to offer PluginDisabledReason.AnotherPluginAlreadyExistForTheSameService reason
-        /// rather than PluginDisabledReason.ServiceSpecializationMustExist for next conflicting plugins.
+        /// This does not immediately call ServiceData.SetAsRunningService() in order to offer PluginDisabledReason.AnotherPluginAlreadyExistForTheSameService reason
+        /// rather than PluginDisabledReason.ServiceSpecializationMustRun for next conflicting plugins.
         /// </summary>
-        internal void SetMustExistPluginByConfig( PluginData p )
+        internal void SetRunningPluginByConfig( PluginData p )
         {
             Debug.Assert( !Disabled );
             Debug.Assert( p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable );
-            Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData ctor, Service is not yet set." );
-            if( _mustExistPluginByConfig == null )
+            Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData constructor, Service is not yet set." );
+            if( _runningPluginByConfig == null )
             {
-                _mustExistPluginByConfig = p;
+                _runningPluginByConfig = p;
             }
             else
             {

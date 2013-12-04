@@ -40,7 +40,7 @@ namespace Yodii.Model
         /// <summary>
         /// Sets by ServiceData.GetMustExistService.
         /// </summary>
-        MultipleSpecializationsMustExistByConfig,
+        MultipleSpecializationsRunningByConfig,
 
         /// <summary>
         /// Sets by ServiceData.GetMustExistService.
@@ -55,7 +55,7 @@ namespace Yodii.Model
         /// <summary>
         /// Sets by ServiceData.SetRunningRequirement method.
         /// </summary>
-        AnotherSpecializationMustExist,
+        AnotherSpecializationMustRun,
 
         /// <summary>
         /// Sets by ServiceData.OnAllPluginsAdded method.

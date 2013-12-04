@@ -55,7 +55,7 @@ namespace Yodii.Engine
                 }
                 else if( service.MustExistSpecialization != null && service.MustExistSpecialization != service )
                 {
-                    _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustExist;
+                    _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustRun;
                 }
             }
             if( !Disabled )

@@ -39,7 +39,7 @@ namespace Yodii.Engine
             // root otherwise it is a configuration error.
             foreach( var root in _serviceRoots )
             {
-                if( !root.Disabled ) root.InitializeMustExistService();
+                if( !root.Disabled ) root.InitializeRunningService();
             }
             // We can now instantiate plugin data. 
             _plugins.Clear();
