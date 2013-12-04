@@ -178,6 +178,7 @@ namespace Yodii.Engine
 
         LiveInfo LiveInfo
         {
+            get { return _liveInfo; }
             set
             {
                 if( _liveInfo != value )
