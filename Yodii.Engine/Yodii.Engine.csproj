@@ -72,7 +72,6 @@
     <Compile Include="ConfigurationSolver\Static\StaticSolvedConfiguration.cs" />
     <Compile Include="ConfigurationSolver\SuccessYodiiEngineResult.cs" />
     <Compile Include="YodiiEngineResult.cs" />
-    <Compile Include="ConfigurationSolver\Dynamic\YodiiCommand.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Static.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\PluginData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\PluginRunningRequirementReason.cs" />
