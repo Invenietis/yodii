@@ -12,8 +12,8 @@ namespace Yodii.Engine
     class LiveInfo : ILiveInfo
     {
         readonly YodiiEngine _engine;
-        CKObservableSortedArrayKeyList<LivePluginInfo,Guid> _plugins;
-        CKObservableSortedArrayKeyList<LiveServiceInfo,string> _services;
+        readonly CKObservableSortedArrayKeyList<LivePluginInfo,Guid> _plugins;
+        readonly CKObservableSortedArrayKeyList<LiveServiceInfo,string> _services;
 
         internal LiveInfo(YodiiEngine engine)
         {

@@ -42,7 +42,7 @@ namespace Yodii.Engine
             get { return _runningStatus >= RunningStatus.Running; }
         }
 
-        public ILiveServiceInfo ILiveServiceInfo.Service
+        ILiveServiceInfo ILivePluginInfo.Service
         {
             get { return _service; }
         }

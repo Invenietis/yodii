@@ -6,14 +6,16 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Yodii.Model;
+using CK.Core;
+using System.Collections.ObjectModel;
 
 namespace Yodii.Engine
 {
     public class YodiiEngine : IYodiiEngine
     {
         readonly ConfigurationManager _manager;
-        readonly List<YodiiCommand> _yodiiCommands;
         readonly IYodiiEngineHost _host;
+        readonly ObservableReadOnlyList<YodiiCommand> _yodiiCommands;
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _virtualSolver;
@@ -28,7 +30,13 @@ namespace Yodii.Engine
             _host = host;
             _discoveredInfo = EmptyDiscoveredInfo.Empty;
             _manager = new ConfigurationManager( this );
-            _yodiiCommands = new List<YodiiCommand>();
+            _yodiiCommands = new ObservableReadOnlyList<YodiiCommand>(); //future deserialization
+        }
+
+        public void ResetYodiiCommands()
+        {
+            if( IsRunning ) throw new InvalidOperationException( "Cannot reset YodiiCommands when the engine is start" );
+            _yodiiCommands.Clear();
         }
 
         internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfiguration )
@@ -108,15 +116,11 @@ namespace Yodii.Engine
             if( result.Success )
             {
                 CurrentSolver = solver;
-                LiveInfo = solver.CreateLiveInfo();
+                LiveInfo liveInfo = new LiveInfo( this );
+                solver.FillNewLiveInfo( liveInfo );
+                LiveInfo = liveInfo;
             }
             return result;
-        }
-
-        private void InitializeLiveInfo()
-        {
-            Debug.Assert(_liveInfo == null);
-            _liveInfo = new LiveInfo( this );
         }
 
         public void Stop()
@@ -143,7 +147,9 @@ namespace Yodii.Engine
                 {
                     DiscoveredInfo = info;
                     _currentSolver = solver;
-                    LiveInfo = solver.CreateLiveInfo();
+                    LiveInfo liveInfo = new LiveInfo( this );
+                    solver.FillNewLiveInfo( liveInfo );
+                    LiveInfo = liveInfo;
                 }
                 return result;
             }
@@ -154,20 +160,32 @@ namespace Yodii.Engine
             }
         }
 
+        IObservableReadOnlyList<YodiiCommand> IYodiiEngine.YodiiCommands
+        {
+            get { return _yodiiCommands; }
+        }
+
         void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {
             var h = PropertyChanged;
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
-        public ILiveInfo ILiveInfo.LiveInfo
+        ILiveInfo IYodiiEngine.LiveInfo
         {
-            get { throw new NotImplementedException(); }
+            get { return _liveInfo; }
         }
 
         LiveInfo LiveInfo
         {
-            set { throw new NotImplementedException(); }
+            set
+            {
+                if( _liveInfo != value )
+                {
+                    _liveInfo = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
 
         public IYodiiEngineHost Host

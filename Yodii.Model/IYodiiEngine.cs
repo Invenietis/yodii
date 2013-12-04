@@ -19,5 +19,7 @@ namespace Yodii.Model
         void Stop();
 
         ILiveInfo LiveInfo { get; }
+
+        IObservableReadOnlyList<YodiiCommand> YodiiCommands { get; }
     }
 }

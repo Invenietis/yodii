@@ -28,6 +28,10 @@ namespace Yodii.Engine
         internal LiveServiceInfo( ServiceData serviceData, YodiiEngine engine )
         {
             Debug.Assert( serviceData != null );
+            Debug.Assert( engine != null );
+
+            _engine = engine;
+
             _serviceInfo = serviceData.ServiceInfo;
             _disabledReason = serviceData.DisabledReason;
             _configOriginalStatus = serviceData.ConfigOriginalStatus;
@@ -58,7 +62,7 @@ namespace Yodii.Engine
             }
         }
 
-        public ILiveServiceInfo ILiveServiceInfo.Generalization
+        ILiveServiceInfo ILiveServiceInfo.Generalization
         {
             get { return _generalization; }
         }
@@ -76,7 +80,7 @@ namespace Yodii.Engine
             }
         }
 
-        public ILivePluginInfo ILivePluginInfo.RunningPlugin
+        ILivePluginInfo ILiveServiceInfo.RunningPlugin
         {
             get { return _runningPlugin; }
         }
@@ -94,7 +98,7 @@ namespace Yodii.Engine
             }
         }
 
-        public ILivePluginInfo ILivePluginInfo.LastRunningPlugin
+        ILivePluginInfo ILiveServiceInfo.LastRunningPlugin
         {
             get { return _lastRunningPlugin; }
         }
@@ -178,7 +182,8 @@ namespace Yodii.Engine
         {
             if( caller == null ) throw new ArgumentNullException( "caller" );
             YodiiCommand command = new YodiiCommand( caller, true, _serviceInfo.ServiceFullName );
-            _engine
+            //_engine
+            return false;
         }
 
         public void Stop( object caller )

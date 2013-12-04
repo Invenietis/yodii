@@ -105,7 +105,7 @@ namespace Yodii.Engine
         /// <param name="commands"></param>
         /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
-        public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )
+        public Tuple<IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>> DynamicResolution( ObservableReadOnlyList<YodiiCommand> commands )
         {
             foreach( var s in _services.Values ) s.ResetDynamicState();
             foreach( var p in _plugins.Values ) p.ResetDynamicState();
