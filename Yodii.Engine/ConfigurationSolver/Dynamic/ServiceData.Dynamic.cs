@@ -11,6 +11,7 @@ namespace Yodii.Engine
     {
         RunningStatus? _dynamicStatus;
         ServiceRunningStatusReason _dynamicReason;
+        PluginData _runningPlugin;
         int _nbAllAvailablePlugins;
 
         public RunningStatus? DynamicStatus { get { return _dynamicStatus; } set { _dynamicStatus = value; } }
@@ -32,6 +33,8 @@ namespace Yodii.Engine
                     {
                         _dynamicReason = ServiceRunningStatusReason.StartedByConfig;
                         _dynamicStatus = RunningStatus.RunningLocked;
+                        // This can be null if we have more than one available plugins.
+                        _runningPlugin = Generalization._theOnlyPlugin;
                         break;
                     }
                 default:
@@ -49,6 +52,7 @@ namespace Yodii.Engine
         /// </summary>
         internal void OnPluginAvailable()
         {
+            Debug.Assert( _runningPlugin == null );
             ++_nbAllAvailablePlugins;
             if( Generalization != null ) Generalization.OnPluginAvailable();
         }
@@ -99,7 +103,7 @@ namespace Yodii.Engine
             return false;
         }
 
-        internal void OnSpecializationStarted( ServiceData runningSpec )
+        internal void OnSpecializationStarted( ServiceData runningSpec, PluginData runningPlugin = null )
         {
             Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value >= RunningStatus.Running );
             if( _dynamicStatus != null ) return;
@@ -107,7 +111,10 @@ namespace Yodii.Engine
             _dynamicStatus = RunningStatus.Running;
             _dynamicReason = ServiceRunningStatusReason.StartedBySpecialization;
 
-            if( Generalization != null ) Generalization.OnSpecializationStarted( this );
+            Debug.Assert( runningPlugin == null || _runningPlugin == null, "runningPlugin != null ==> _runningPlugin == null" );
+            _runningPlugin = runningPlugin;
+
+            if( Generalization != null ) Generalization.OnSpecializationStarted( this, runningPlugin );
 
             ServiceData s = FirstSpecialization;
             while( s != null )
@@ -248,6 +255,10 @@ namespace Yodii.Engine
                 _dynamicStatus = RunningStatus.Running;
                 _dynamicReason = ServiceRunningStatusReason.StartedByPlugin;
             }
+            
+            Debug.Assert( runningPlugin == null || _runningPlugin == null, "runningPlugin != null ==> _runningPlugin == null" );
+            _runningPlugin = runningPlugin;
+            
             // Stops all plugins except the one that started.
             PluginData p = FirstPlugin;
             while( p != null )
@@ -267,7 +278,7 @@ namespace Yodii.Engine
                 s = s.NextSpecialization;
             }
 
-            if( Generalization != null ) Generalization.OnSpecializationStarted( this );
+            if( Generalization != null ) Generalization.OnSpecializationStarted( this, runningPlugin );
         }
 
         internal bool CanStart()
@@ -276,6 +287,24 @@ namespace Yodii.Engine
             Debug.Assert( _nbAllAvailablePlugins > 0 );
             Debug.Assert( FindFirstPluginData( p => p.CanStart() ) != null );
             return true;
+        }
+
+        internal void EnsureRunningPlugin()
+        {
+            Debug.Assert( _dynamicStatus != null && _dynamicStatus.Value >= RunningStatus.Running );
+            if( _runningPlugin == null )
+            {
+                Debug.Assert( _nbAllAvailablePlugins > 1 );
+                // To be deterministic we must consider the same plugin under the same circumstances.
+                // Finding the first available plugin that have the smallest Guid below us does the job.
+                // (If a subordinated Service is running, selected plugin will be one of its plugin: we are not 
+                // dependent of the actual Service in the line on specialization that first must EnsureRunningPlugin.)
+                //PluginData p = SelectRunningPluginData();
+                // This sets Running on plugin generalizations that may be one of our specialization.
+                // p.StartBy( PluginRunningStatusReason.StartedByRunningService );
+                // Debug.Assert( _runningPlugin == p );
+            }
+
         }
     }
 }

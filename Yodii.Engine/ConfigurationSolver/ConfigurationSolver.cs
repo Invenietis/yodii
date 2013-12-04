@@ -100,15 +100,7 @@ namespace Yodii.Engine
             return new SuccessYodiiEngineResult();
         }
         /// <summary>
-        /// On the first time it is called, this function will reset the dynamic state of all plugins and services. This means the RunningStatus? is set from the SolvedConfigurationStatus.
-        /// RunnablePluginsCount holds the total number of plugins that are deemed to be runnable by the Static resolution. 
-        /// Their RunningStatus is either null or Stopped. We then apply all existing commands except the one at the top of the list.
-        /// It'll be applied last as it must always be true.
-        /// 
-        /// From this moment on, all plugins/services must have a running status NOT null.
-        /// 
-        /// Then, this same function will be called again from the engine to dynamically start/stop plugins/services. 
-        /// ResetDynamicState must not be called as we must keep the dynamic state of the objects. 
+        /// Solves undetermined status based on commands.
         /// </summary>
         /// <param name="commands"></param>
         /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
@@ -130,14 +122,32 @@ namespace Yodii.Engine
                     commands.RemoveAt( i-- );
                 }
             }
+            foreach( var s in _services.Values.OrderBy( s => s.ServiceInfo.ServiceFullName ) )
+            {
+                if( s.DynamicStatus == null ) s.StopBy( ServiceRunningStatusReason.StoppedByFinalDecision );
+                else if( s.DynamicStatus.Value >= RunningStatus.Running ) s.EnsureRunningPlugin();
+            }
 
-            //This LINQ query guarantees all plugins running status are not null just before sending them to the host for injection.
-            //_plugins.Values.Where( p => p.DynamicStatus.Value == null ).ToList().ForEach(pp => pp.DynamicStatus = RunningStatus.Stopped);
+            List<IPluginInfo> disabled = new List<IPluginInfo>();
+            List<IPluginInfo> stopped = new List<IPluginInfo>();
+            List<IPluginInfo> running = new List<IPluginInfo>();
 
-            Debug.Assert( _plugins.Values.All( p => p.DynamicStatus.HasValue ) && _services.Values.All( s => s.DynamicStatus.HasValue ) );
-            return Tuple.Create( _plugins.Values.Where( p => p.Disabled ).Select( p => p.PluginInfo ),
-                                 _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Stopped ).Select( p => p.PluginInfo ),
-                                 _plugins.Values.Where( p => p.DynamicStatus == RunningStatus.Running || p.DynamicStatus == RunningStatus.RunningLocked ).Select( p => p.PluginInfo ) );
+            foreach( var p in _plugins.Values )
+            {
+                if( p.DynamicStatus != null )
+                {
+                    if( p.DynamicStatus.Value == RunningStatus.Disabled ) disabled.Add( p.PluginInfo );
+                    else if( p.DynamicStatus.Value == RunningStatus.Stopped ) stopped.Add( p.PluginInfo );
+                    else running.Add( p.PluginInfo );
+                }
+                else
+                {
+                    Debug.Assert( p.Service == null );
+                    p.StopByFinalDecision();
+                    stopped.Add( p.PluginInfo );
+                }
+            }
+            return new Tuple<IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>>( disabled, stopped, running );
         }
         
         /// This function retrieves persistent YodiiCommands (from XML?) and adds them to the current list.

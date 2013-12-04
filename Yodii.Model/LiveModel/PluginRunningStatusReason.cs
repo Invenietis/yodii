@@ -20,6 +20,7 @@ namespace Yodii.Model
         StartedByCommand,
         StoppedByCommand,
         StoppedByRunningSibling,
-        StoppedByStoppedReference
+        StoppedByStoppedReference,
+        StoppedByFinalDecision
     }
 }
