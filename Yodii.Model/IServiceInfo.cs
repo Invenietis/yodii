@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Service information.
+    /// </summary>
     public interface IServiceInfo : IDiscoveredItem
     {
         /// <summary>

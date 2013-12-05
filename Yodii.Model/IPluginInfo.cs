@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Plugin information.
+    /// </summary>
     public interface IPluginInfo : IDiscoveredItem
     {
         /// <summary>
-        /// Gets the unique identifier of the plugin. This is an alias to <see cref="IUniqueId.UniqueId"/>.
+        /// Gets the unique identifier of the plugin.
         /// </summary>
         Guid PluginId { get; }
 

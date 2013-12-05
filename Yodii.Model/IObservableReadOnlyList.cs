@@ -7,6 +7,10 @@ using System.Text;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Observable, read-only list.
+    /// </summary>
+    /// <typeparam name="T">Type of the list items.</typeparam>
     public interface IObservableReadOnlyList<T> : INotifyPropertyChanged, IReadOnlyList<T>, INotifyCollectionChanged
     {
     }

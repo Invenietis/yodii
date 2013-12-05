@@ -7,16 +7,25 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Read-only configuration item.
+    /// </summary>
     public struct FinalConfigurationItem
     {
         readonly string _serviceOrPluginId;
         readonly ConfigurationStatus _status;
 
+        /// <summary>
+        /// Service or plugin ID.
+        /// </summary>
         public string ServiceOrPluginId
         {
             get { return _serviceOrPluginId; }
         }
 
+        /// <summary>
+        /// Required configuration status.
+        /// </summary>
         public ConfigurationStatus Status
         {
             get { return _status; }

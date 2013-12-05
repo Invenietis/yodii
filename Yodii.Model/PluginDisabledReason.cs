@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Reasons for which a plugin was disabled.
+    /// </summary>
     public enum PluginDisabledReason
     {
         /// <summary>

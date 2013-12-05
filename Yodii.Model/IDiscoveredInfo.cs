@@ -4,15 +4,18 @@ using System.Collections.Generic;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Interface containing all ServiceInfos discovered on a system.
+    /// </summary>
     public interface IDiscoveredInfo
     {
         /// <summary>
-        /// Gets the list of service.
+        /// Lists of all discovered services on this system.
         /// </summary>
         IReadOnlyList<IServiceInfo> ServiceInfos { get; }
 
         /// <summary>
-        /// Gets the list of plugins.
+        /// List of all discovered plugins on this system.
         /// </summary>
         IReadOnlyList<IPluginInfo> PluginInfos { get; }
 

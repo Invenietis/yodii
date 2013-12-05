@@ -7,6 +7,9 @@ using Yodii.Model;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Details of a ConfigurationChanging event.
+    /// </summary>
     public class ConfigurationChangingEventArgs : EventArgs
     {
         readonly FinalConfiguration _finalConfiguration;
@@ -16,36 +19,60 @@ namespace Yodii.Model
 
         List<string> _externalReasons;
 
+        /// <summary>
+        /// New FinalConfiguration.
+        /// </summary>
         public FinalConfiguration FinalConfiguration
         {
             get { return _finalConfiguration; }
         }
 
+        /// <summary>
+        /// Details of changes in the FinalConfiguration.
+        /// </summary>
         public FinalConfigurationChange FinalConfigurationChange
         {
             get { return _finalConfigurationChange; }
         }
 
+        /// <summary>
+        /// Changed item.
+        /// </summary>
         public IConfigurationItem ConfigurationItemChanged
         {
             get { return _configurationItemChanged; }
         }
 
+        /// <summary>
+        /// Changed layer.
+        /// </summary>
         public IConfigurationLayer ConfigurationLayerChanged
         {
             get { return _configurationLayerChanged; }
         }
 
+        /// <summary>
+        /// Whether the change was canceled.
+        /// </summary>
         public bool IsCanceled
         {
             get { return _externalReasons != null; }
         }
 
+        /// <summary>
+        /// List of reasons of why the change was canceled.
+        /// </summary>
         public IReadOnlyList<string> FailureExternalReasons
         {
             get { return _externalReasons != null ? _externalReasons.AsReadOnlyList() : CKReadOnlyListEmpty<string>.Empty; }
         }
-
+        
+        /// <summary>
+        /// Creates a new instance of ConfigurationChangingEventArgs, provoked by a ConfigurationItem.
+        /// </summary>
+        /// <param name="finalConfiguration">New FinalConfiguration</param>
+        /// <param name="finalConfigurationChanged">Details of changes in the new FinalConfiguration</param>
+        /// <param name="configurationItem">Item that provoked this change</param>
         public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationItem configurationItem )
         {
             _finalConfiguration = finalConfiguration;
@@ -53,6 +80,12 @@ namespace Yodii.Model
             _configurationItemChanged = configurationItem;
         }
 
+        /// <summary>
+        /// Creates a new instance of ConfigurationChangingEventArgs, provoked by a ConfigurationLayer.
+        /// </summary>
+        /// <param name="finalConfiguration">New FinalConfiguration</param>
+        /// <param name="finalConfigurationChanged">Details of changes in the new FinalConfiguration</param>
+        /// <param name="configurationLayer">Layer that provoked this change</param>
         public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
         {
             _finalConfiguration = finalConfiguration;
@@ -60,6 +93,10 @@ namespace Yodii.Model
             _configurationLayerChanged = configurationLayer;
         }
 
+        /// <summary>
+        /// Cancel this change with a reason.
+        /// </summary>
+        /// <param name="reason">Why this change is cancelled.</param>
         public void CancelForExternalReason( string reason )
         {
             if( String.IsNullOrWhiteSpace( reason ) ) throw new ArgumentException();

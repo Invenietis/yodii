@@ -6,8 +6,12 @@ using System.Text;
 namespace Yodii.Model
 {
     /// <summary>
-    /// 
+    /// Impact of a plugin start over its dependencies.
     /// </summary>
+    /// <remarks>
+    /// Defines whether the plugin starting will also attempt to start everything it has references to,
+    /// or only the minimum required services.
+    /// </remarks>
     public enum StartDependencyImpact
     {
         /// <summary>

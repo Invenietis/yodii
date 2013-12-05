@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Service reference information.
+    /// </summary>
     public interface IServiceReferenceInfo
     {
         /// <summary>
@@ -36,7 +39,7 @@ namespace Yodii.Model
         int ConstructorParameterIndex { get; }
 
         /// <summary>
-        /// Gets whether the <see cref="Reference"/> is wrapped in <see cref="IService{T}"/>.
+        /// Gets whether the <see cref="Reference"/> is wrapped..
         /// This is used by the dependency injection engine (IServiceHost and IPluginHost).
         /// </summary>
         bool IsIServiceWrapped { get; }

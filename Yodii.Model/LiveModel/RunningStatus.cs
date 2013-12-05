@@ -13,7 +13,6 @@ namespace Yodii.Model
     {
         /// <summary>
         /// The plugin (or service) is disabled.
-        /// 
         /// </summary>
         Disabled,
 

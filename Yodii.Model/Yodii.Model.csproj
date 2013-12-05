@@ -62,7 +62,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
     <Compile Include="Configuration\FinalConfiguration.cs" />
@@ -93,7 +92,6 @@
     <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="ObservableReadOnlyList.cs" />
     <Compile Include="PluginDisabledReason.cs" />
-    <Compile Include="PluginInfo.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />
     <Compile Include="IYodiiEngine.cs" />
