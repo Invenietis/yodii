@@ -140,7 +140,7 @@ namespace Yodii.Engine.Tests
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
-            Assert.That( engine.ConfigurationManager.FinalConfiguration == null, "Initial FinalConfiguration is null." );
+            Assert.That( engine.ConfigurationManager.FinalConfiguration.Items, Is.Empty, "Initial FinalConfiguration items is empty." );
 
             engine.ConfigurationManager.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
             {
