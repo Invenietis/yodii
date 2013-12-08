@@ -14,9 +14,9 @@ namespace Yodii.Model
 
         ILiveServiceInfo Service { get; }
 
-        bool Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None );
+        IYodiiEngineResult Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None );
 
-        void Stop( object caller );
+        IYodiiEngineResult Stop( object caller );
 
         Exception CurrentError { get; }
     }

@@ -73,6 +73,26 @@ namespace Yodii.Engine
             return new SuccessYodiiEngineResult();
         }
 
+        internal IYodiiEngineResult DynamicResolutionByLiveInfo()
+        {
+            if( IsRunning )
+            {
+                ConfigurationSolver solver = new ConfigurationSolver();
+                var toDo = solver.DynamicResolution( _yodiiCommands );
+                var errors = _host.Apply( toDo.Item1, toDo.Item2, toDo.Item3 );
+                if( errors != null && errors.Any() )
+                {
+                    IYodiiEngineResult result =  solver.CreateDynamicFailureResult( errors );
+                    _liveInfo.UpdateError( errors );
+                    return result;
+                }
+                _currentSolver = solver;
+                _currentSolver.UpdateNewResultInLiveInfo( _liveInfo );
+            }
+            Debug.Fail( "Cannot call this function when the engine is not running" );
+            return new SuccessYodiiEngineResult();
+        }
+
         ConfigurationSolver CurrentSolver
         {
             set
@@ -165,6 +185,11 @@ namespace Yodii.Engine
             get { return _yodiiCommands; }
         }
 
+        internal ObservableReadOnlyList<YodiiCommand> YodiiCommands
+        {
+            get { return _yodiiCommands; }
+        }
+
         void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {
             var h = PropertyChanged;
@@ -191,6 +216,15 @@ namespace Yodii.Engine
         public IYodiiEngineHost Host
         {
             get { return _host; }
+        }
+
+        internal void CleanYodiiCommands( YodiiCommand command )
+        {
+            Debug.Assert( command != null );
+            Debug.Assert( command.PluginId != null || _yodiiCommands.Where( y => y != command && y.FullName == command.FullName ).Count() == 1 );
+            Debug.Assert( command.FullName != null || _yodiiCommands.Where( y => y != command && y.PluginId == command.PluginId ).Count() == 1 );
+            if( command.FullName != null ) _yodiiCommands.RemoveWhereAndReturnsRemoved( y => y != command && y.FullName == command.FullName );
+            else _yodiiCommands.RemoveWhereAndReturnsRemoved( y => y != command && y.PluginId == command.PluginId );
         }
     }
 }

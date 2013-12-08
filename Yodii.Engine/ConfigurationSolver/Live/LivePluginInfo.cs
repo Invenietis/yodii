@@ -126,14 +126,44 @@ namespace Yodii.Engine
             }
         }
 
-        public bool Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None )
+        public IYodiiEngineResult Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None )
         {
-            throw new NotImplementedException();
+            if( caller == null ) throw new ArgumentNullException( "caller" );
+            if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
+
+            YodiiCommand command = new YodiiCommand( caller, true, impact, _pluginInfo.PluginId );
+            _engine.YodiiCommands.Insert( 0, command );
+
+            if( RunningStatus >= RunningStatus.Running ) return new SuccessYodiiEngineResult();
+
+            IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
+            if( result.Success )
+            {
+                _engine.CleanYodiiCommands( command );
+                return result;
+            }
+            _engine.YodiiCommands.RemoveAt( 0 );
+            return result;
         }
 
-        public void Stop( object caller )
+        public IYodiiEngineResult Stop( object caller )
         {
-            throw new NotImplementedException();
+            if( caller == null ) throw new ArgumentNullException( "caller" );
+            if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
+
+            YodiiCommand command = new YodiiCommand( caller, false, StartDependencyImpact.None, _pluginInfo.PluginId );
+            _engine.YodiiCommands.Insert( 0, command );
+
+            if( RunningStatus <= RunningStatus.Stopped ) return new SuccessYodiiEngineResult();
+
+            IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
+            if( result.Success )
+            {
+                _engine.CleanYodiiCommands( command );
+                return result;
+            }
+            _engine.YodiiCommands.RemoveAt( 0 );
+            return result;
         }
 
         internal void UpdateInfo( PluginData p )

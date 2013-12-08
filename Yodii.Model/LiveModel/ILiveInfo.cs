@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
-    public interface ILiveInfo : INotifyPropertyChanged
+    public interface ILiveInfo
     {
         ICKObservableReadOnlyList<ILivePluginInfo> Plugins { get; }
         

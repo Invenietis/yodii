@@ -18,8 +18,8 @@ namespace Yodii.Model
 
         ILivePluginInfo LastRunningPlugin { get; }
 
-        bool Start( object caller );
+        IYodiiEngineResult Start( object caller );
 
-        void Stop( object caller );
+        IYodiiEngineResult Stop( object caller );
     }
 }

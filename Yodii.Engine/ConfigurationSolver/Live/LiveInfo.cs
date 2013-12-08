@@ -35,14 +35,14 @@ namespace Yodii.Engine
 
         public ILiveServiceInfo FindService( string fullName )
         {
-            ILiveServiceInfo service = _services.FirstOrDefault(s => s.ServiceInfo.ServiceFullName == fullName);
-            return service;
+            if( fullName == null ) throw new ArgumentNullException( "fullName" );
+            return _services.GetByKey( fullName );
         }
 
         public ILivePluginInfo FindPlugin( Guid pluginId )
         {
-            ILivePluginInfo plugin = _plugins.FirstOrDefault(p => p.PluginInfo.PluginId == pluginId);
-            return plugin;
+            if( pluginId == null ) throw new ArgumentNullException( "pluginId" );
+            return _plugins.GetByKey( pluginId );
         }
 
         internal void UpdateInfo( ServiceData serviceData )
@@ -119,7 +119,5 @@ namespace Yodii.Engine
         {
             throw new NotImplementedException();
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }
