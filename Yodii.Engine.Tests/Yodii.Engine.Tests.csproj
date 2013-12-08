@@ -66,6 +66,7 @@
     <Compile Include="ConfigurationSolverTests\ConfigurationSolver.Static.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ConfigurationSolverTests\CurrentFailure\CurrentFailureTests.cs" />
     <Compile Include="Mocks\DiscoveredInfo.cs" />
     <Compile Include="Mocks\AssemblyInfo.cs" />
     <Compile Include="Mocks\MockInfoFactory.cs" />

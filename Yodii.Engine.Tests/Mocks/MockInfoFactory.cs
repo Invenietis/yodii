@@ -397,5 +397,116 @@ namespace Yodii.Engine.Tests.Mocks
 
             return d;
         }
+
+        public static DiscoveredInfo CreateGraph005c()
+        {
+            #region graph
+            /*
+            *                  +--------+                            +--------+
+            *      +-----------|Service1+                            |Service2|---------------+
+            *      |           |Running |                            |Running |               |      
+            *      |           +---+----+                            +----+---+               |      
+            *      |               |                                      |                   |      
+            *      |               |                                      |                   |      
+            *      |               |                                      |                   |      
+            *  +---+-----+         |                                      |                   |      
+            *  |Plugin1  |     +---+-----+                            +---+-----+         +---+-----+
+            *  |Optional |     |Plugin2  |                            |Plugin3  |         |Plugin4  +--------------------+
+            *  +----+----+     |Optional |------------------------+   |Optional |         |Optional |                    | 
+            *       |          +---------+                        |   +---------+         +---------+                    | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+             *      |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |           +--------+    |       |                                              |          
+            *       |                   |           |Service3+    |       |                   +--------+                 |          
+            *       |       +-----------|-----------|Optional|    |       |                   |Service4+                 |          
+            *       |       |           |           +---+----+    |       |       +-----------|Optional|-------+         |            
+            *       |       |           |               |         |       |       |           +---+----+       |         |               
+            *       |       |           |               |         |       |       |                            |         |           
+            *       |   +---+-------+   |          +----+------+  |       |       |                            |         |           
+            *       |   |Service3.1 |   |          |Service3.2 |  |       |    +--+--------+             +-----+-----+   |       
+            *       +-->|Optional   |   |          |Optional   |  +-------|--->|Service4.1 |             |Service4.2 |   |       
+             *          +-----------+   |          +-----+-----+          |    |Optional   |             |Optional   |<--+       
+             *              |           |                |                |    +-----------+             +-----+-----+     
+             *              |           |                |                |        |                           |           
+             *          +---+-------+   +--------->+-----+-----+          |        |                           |
+             *          |Service3.3 |              |Service3.4 |          | +---+-------+              +----+------+  
+             *          |Optional   |              |Optional   |          +>|Service4.3 |              |Service4.4 |  
+             *          +--+--------+              +-----------+            |Optional   |              |Optional   |  
+             *             |                            |                   +--+--------+              +-----------+ 
+             *             |                            |                      |                            |
+             *             |                            |                      |                            |
+             *          +--+-----+                  +---+----+                 |                            |
+             *          |Plugin5 |                  |Plugin6 |              +--+-----+                  +---+----+
+             *          |Optional|                  |Optional|              |Plugin7 |                  |Plugin8 |
+             *          +--------+                  +--------+              |Optional|                  |Optional|
+             *                                                              +--------+                  +--------+
+            */
+            #endregion
+
+            var d = new DiscoveredInfo();
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service4", d.DefaultAssembly ) );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.3", d.DefaultAssembly ) );
+            d.FindService( "Service3.1" ).Generalization = d.FindService( "Service3" );
+            d.FindService( "Service3.3" ).Generalization = d.FindService( "Service3.1" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.4", d.DefaultAssembly ) );
+            d.FindService( "Service3.2" ).Generalization = d.FindService( "Service3" );
+            d.FindService( "Service3.4" ).Generalization = d.FindService( "Service3.2" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service4.1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service4.3", d.DefaultAssembly ) );
+            d.FindService( "Service4.1" ).Generalization = d.FindService( "Service4" );
+            d.FindService( "Service4.3" ).Generalization = d.FindService( "Service4.1" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service4.2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service4.4", d.DefaultAssembly ) );
+            d.FindService( "Service4.2" ).Generalization = d.FindService( "Service4" );
+            d.FindService( "Service4.4" ).Generalization = d.FindService( "Service4.2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service1" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin4", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin4" ).Service = d.FindService( "Service2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin5", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin5" ).Service = d.FindService( "Service3.3" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin6", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin6" ).Service = d.FindService( "Service3.4" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin7", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin7" ).Service = d.FindService( "Service4.3" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin8", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin8" ).Service = d.FindService( "Service4.4" );
+
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service3.1" ), DependencyRequirement.Running );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service3.4" ), DependencyRequirement.Running );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service4.1" ), DependencyRequirement.Running );
+
+            d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service4.3" ), DependencyRequirement.Running );
+            d.FindPlugin( "Plugin4" ).AddServiceReference( d.FindService( "Service4.2" ), DependencyRequirement.Running );
+
+            return d;
+        }        
     }
 }
