@@ -203,7 +203,7 @@ namespace Yodii.Engine
             // New requirement is stronger than the previous one.
             // We now try to honor the requirement at the service level.
             // If we fail, this service will be disabled, but we set the requirement to prevent reentrancy.
-            // Reentrancy can nevertheless be caused by subsequent requirements MustExistTryStart or MustExistAndRun:
+            // Reentrancy can nevertheless be caused by subsequent requirements RunnableTryStart or Running:
             // we allow this (there will be at most 3 reentrant calls to this method). 
             // Note that we capture the reason only on the first call, not on each failing call: the reason is not necessarily 
             // associated to the running requirement.
@@ -213,23 +213,23 @@ namespace Yodii.Engine
             if( s < SolvedConfigurationStatus.Runnable )
             {
                 _configSolvedStatusReason = reason;
-                // Propagate TryStart.
+                // Propagate OptionalTryStart.
                 PropagateRunningRequirementToOnlyPluginOrCommonReferences();
                 return true;
             }
             // The new requirement is at least Runnable.
-            // If this is already disabled, there is nothing to do.
+            // If this service is already disabled, there is nothing to do.
             if( Disabled ) return false;
 
             _configSolvedStatusReason = reason;
 
-            // Call SetAsRunningService only if this Service becomes Runnable or Running.
+            // Call SetAsRunningService only if this Service becomes Running.
             if( _configSolvedStatus == SolvedConfigurationStatus.Running && current < SolvedConfigurationStatus.Running )
             {
                 if( !SetAsRunningService() ) return false;
             }
             Debug.Assert( !Disabled );
-            // Now, if the OnlyPlugin exists, propagate the MustExist (or more) requirement to it.
+            // Now, if the OnlyPlugin exists, propagate the Runnable, Runnable or Running requirement to it.
             // MustExist requirement triggers MustExist on MustExist plugins to services requirements.
             // (This can be easily propagated if there is one and only one plugin for the service.)
             //
@@ -268,6 +268,11 @@ namespace Yodii.Engine
             return !Disabled;
         }
 
+        /// <summary>
+        /// Called by SetSolvedConfigurationStatus whenever the Requirement becomes Running, or by ServiceRootData.OnAllPluginsAdded
+        /// if a RunningPluginByConfig exists for the root.
+        /// </summary>
+        /// <returns></returns>
         internal void DoSetAsRunningService( ServiceData prevCurrentRunning )
         {
             // We first set the new specialization from this service up to the root.

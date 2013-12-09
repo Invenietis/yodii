@@ -14,6 +14,9 @@ namespace Yodii.Engine
         internal PluginData _theOnlyPlugin;
         CommonServiceReferences _commonReferences;
 
+        /// <summary>
+        /// Captures common service references of all plugins.
+        /// </summary>
         class CommonServiceReferences
         {
             Ref _firstRef;
