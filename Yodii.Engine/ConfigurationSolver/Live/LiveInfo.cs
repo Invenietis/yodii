@@ -87,7 +87,7 @@ namespace Yodii.Engine
             _plugins.Add( new LivePluginInfo( pluginData, _engine ) );
         }
 
-        internal void UpdateError( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
         {
             foreach( var e in errors )
             {
@@ -98,7 +98,7 @@ namespace Yodii.Engine
                 }
                 else
                 {
-                    Debug.Fail( "The plugin cannot be not found in UpdateError function" );
+                    Debug.Fail( "The plugin cannot be not found in UpdateRuntimeErrors function" );
                 }
             }
         }

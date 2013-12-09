@@ -8,8 +8,6 @@ namespace Yodii.Engine
 {
     class SuccessYodiiEngineResult : IYodiiEngineResult
     {
-        #region IYodiiEngineResult Members
-
         public bool Success
         {
             get { return true; }
@@ -40,6 +38,5 @@ namespace Yodii.Engine
             get { return null; }
         }
 
-        #endregion
     }
 }

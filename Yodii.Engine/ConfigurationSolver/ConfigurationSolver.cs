@@ -63,6 +63,7 @@ namespace Yodii.Engine
                 if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
+                    p.CheckServicesWhenMustBeDisabled();
                 }
             }
             // Time to conclude about configuration and to initialize dynamic resolution.
@@ -99,13 +100,14 @@ namespace Yodii.Engine
             }
             return new SuccessYodiiEngineResult();
         }
+
         /// <summary>
         /// Solves undetermined status based on commands.
         /// </summary>
         /// <param name="commands"></param>
         /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
-        public Tuple<IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>> DynamicResolution( ObservableReadOnlyList<YodiiCommand> commands )
+        public DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
         {
             foreach( var s in _services.Values ) s.ResetDynamicState();
             foreach( var p in _plugins.Values ) p.ResetDynamicState();
@@ -113,13 +115,23 @@ namespace Yodii.Engine
             #if DEBUG
             foreach( var s in _services.Values ) s.OnAllPluginsDynamicStateInitialized();
             #endif
-                       
-            for( int i = 0; i < commands.Count; ++i )
+
+            List<YodiiCommand> commands = new List<YodiiCommand>();
+            if( newOne != null )
             {
-                if ( !ApplyAndTellMeIfCommandMustBeKept( commands[i] ) )
+                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne );
+                Debug.Assert( alwaysTrue, "The newly added command is necessarily okay." );
+                commands.Add( newOne );
+            }
+
+            foreach( var previous in pastCommands )
+            {
+                if( newOne == null || newOne.Caller != previous.Caller || newOne.FullName != previous.FullName || newOne.PluginId != previous.PluginId )
                 {
-                    Debug.Assert( i > 0, "First command is necessarily okay." );
-                    commands.RemoveAt( i-- );
+                    if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
+                    {
+                        commands.Add( previous );
+                    }
                 }
             }
             foreach( var s in _services.Values.OrderBy( s => s.ServiceInfo.ServiceFullName ) )
@@ -147,15 +159,9 @@ namespace Yodii.Engine
                     stopped.Add( p.PluginInfo );
                 }
             }
-            return new Tuple<IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>>( disabled, stopped, running );
+            return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
         
-        /// This function retrieves persistent YodiiCommands (from XML?) and adds them to the current list.
-        private List<YodiiCommand> RetrievePersistentYodiiCommands()
-        {
-            throw new NotImplementedException();
-        }
-
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
             if ( cmd.FullName != null )
