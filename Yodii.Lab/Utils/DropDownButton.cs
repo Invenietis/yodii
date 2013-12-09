@@ -9,15 +9,19 @@ using System.Windows.Data;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// DropDown button. Spawns a menu on click.
+    /// </summary>
     public class DropDownButton : ToggleButton
     {
-        // *** Dependency Properties ***
-
-
+        /// <summary>
+        /// DropDownProperty
+        /// </summary>
         public static readonly DependencyProperty DropDownProperty = DependencyProperty.Register( "DropDown", typeof( ContextMenu ), typeof( DropDownButton ), new UIPropertyMetadata( null ) );
 
-        // *** Constructors *** 
-
+        /// <summary>
+        /// Creates a nex DropDownButton.
+        /// </summary>
         public DropDownButton()
         {
             // Bind the ToogleButton.IsChecked property to the drop-down's IsOpen property 
@@ -27,8 +31,9 @@ namespace Yodii.Lab
             this.SetBinding( IsCheckedProperty, binding );
         }
 
-        // *** Properties *** 
-
+        /// <summary>
+        /// DropDown menu, shown on click.
+        /// </summary>
         public ContextMenu DropDown
         {
             get
@@ -41,8 +46,9 @@ namespace Yodii.Lab
             }
         }
 
-        // *** Overridden Methods *** 
-
+        /// <summary>
+        /// Overriden OnClick().
+        /// </summary>
         protected override void OnClick()
         {
             if( DropDown != null )

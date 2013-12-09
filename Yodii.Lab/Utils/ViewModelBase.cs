@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// Base class for view models, or most other INotifyPropertyChanged implementations. 
+    /// </summary>
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
         #region INotifyPropertyChanged utilities

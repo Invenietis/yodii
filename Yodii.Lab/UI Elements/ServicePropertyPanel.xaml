@@ -1,5 +1,6 @@
 ﻿<UserControl
     x:Class="Yodii.Lab.ServicePropertyPanel"
+    x:ClassModifier="internal"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
@@ -18,7 +19,7 @@
     <Border
         Padding="5pt">
         <StackPanel
-            DataContext="{Binding Path=LiveServiceInfo}">
+            DataContext="{Binding Path=LabServiceInfo}">
             <TextBlock
                 FontWeight="Bold">
                         Service properties

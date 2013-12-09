@@ -16,6 +16,9 @@ namespace Yodii.Lab
     public class YodiiGraph : BidirectionalGraph<YodiiGraphVertex, YodiiGraphEdge>
     {
         int currentId = 0;
+        /// <summary>
+        /// Fired when graph content changes, requesting a new layout update.
+        /// </summary>
         public event EventHandler<GraphUpdateRequestEventArgs> GraphUpdateRequested;
 
         readonly ICKObservableReadOnlyCollection<LabServiceInfo> _serviceInfos;
@@ -23,9 +26,11 @@ namespace Yodii.Lab
         readonly LabStateManager _serviceManager;
 
         IConfigurationManager _configurationManager;
-        bool _lockGraphUpdates;
 
         #region Constructor
+        /// <summary>
+        /// Used for GraphX serialization. Not implemented.
+        /// </summary>
         public YodiiGraph()
         { }
 
@@ -251,7 +256,6 @@ namespace Yodii.Lab
             GraphX.LayoutAlgorithmTypeEnum? newLayout = null,
             GraphX.GraphSharp.Algorithms.Layout.ILayoutParameters algoParams = null )
         {
-            if( _lockGraphUpdates ) return;
             if( this.GraphUpdateRequested != null )
             {
                 this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type, newLayout, algoParams ) );

@@ -5,9 +5,16 @@ using System.Windows;
 
 namespace Yodii.Lab
 {
-    public class Notification : INotifyPropertyChanged
+    /// <summary>
+    /// Notification to display to the user.
+    /// </summary>
+    internal class Notification : ViewModelBase
     {
         private string message;
+
+        /// <summary>
+        /// Notification message.
+        /// </summary>
         public string Message
         {
             get { return message; }
@@ -16,11 +23,14 @@ namespace Yodii.Lab
             {
                 if( message == value ) return;
                 message = value;
-                OnPropertyChanged( "Message" );
-                OnPropertyChanged( "MessageVisibility" );
+                RaisePropertyChanged();
+                RaisePropertyChanged( "MessageVisibility" );
             }
         }
 
+        /// <summary>
+        /// Whether the message should be displayed, true if message is not empty.
+        /// </summary>
         public Visibility MessageVisibility
         {
             get
@@ -31,6 +41,9 @@ namespace Yodii.Lab
         }
 
         private int id;
+        /// <summary>
+        /// Notification ID.
+        /// </summary>
         public int Id
         {
             get { return id; }
@@ -39,11 +52,14 @@ namespace Yodii.Lab
             {
                 if( id == value ) return;
                 id = value;
-                OnPropertyChanged( "Id" );
+                RaisePropertyChanged();
             }
         }
 
         private string imageUrl;
+        /// <summary>
+        /// Notification image URI.
+        /// </summary>
         public string ImageUrl
         {
             get { return imageUrl; }
@@ -52,11 +68,14 @@ namespace Yodii.Lab
             {
                 if( imageUrl == value ) return;
                 imageUrl = value;
-                OnPropertyChanged( "ImageUrl" );
+                RaisePropertyChanged();
             }
         }
 
         private string title;
+        /// <summary>
+        /// Norification title.
+        /// </summary>
         public string Title
         {
             get { return title; }
@@ -65,18 +84,10 @@ namespace Yodii.Lab
             {
                 if( title == value ) return;
                 title = value;
-                OnPropertyChanged( "Title" );
+                RaisePropertyChanged();
             }
         }
-
-        protected virtual void OnPropertyChanged( string propertyName )
-        {
-            var handler = PropertyChanged;
-            if( handler != null ) handler( this, new PropertyChangedEventArgs( propertyName ) );
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    public class Notifications : ObservableCollection<Notification> { }
+    internal class Notifications : ObservableCollection<Notification> { }
 }

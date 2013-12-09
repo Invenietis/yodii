@@ -11,7 +11,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Interaction logic for AddPluginWindow.xaml
     /// </summary>
-    public partial class AddPluginWindow : Window, INotifyPropertyChanged
+    internal partial class AddPluginWindow : Window, INotifyPropertyChanged
     {
         public event EventHandler<NewPluginEventArgs> NewPluginCreated;
         readonly Dictionary<IServiceInfo,DependencyRequirement> _serviceReferences; // TODO
@@ -180,7 +180,7 @@ namespace Yodii.Lab
 
     }
 
-    public class NewPluginEventArgs : EventArgs
+    internal class NewPluginEventArgs : EventArgs
     {
         public Guid PluginId { get; internal set; }
         public string PluginName { get; internal set; }

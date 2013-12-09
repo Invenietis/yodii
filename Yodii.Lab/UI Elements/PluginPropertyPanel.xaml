@@ -1,5 +1,6 @@
 ﻿<UserControl
     x:Class="Yodii.Lab.PluginPropertyPanel"
+    x:ClassModifier="internal"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -41,7 +42,7 @@
     <Border
         Padding="5pt">
         <StackPanel
-            DataContext="{Binding Path=LivePluginInfo}">
+            DataContext="{Binding Path=LabPluginInfo}">
             <TextBlock
                 FontWeight="Bold">
                         Plugin properties

@@ -7,6 +7,9 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// Edge between two vertices in the Yoddi.Lab graph.
+    /// </summary>
     public class YodiiGraphEdge : GraphX.EdgeBase<YodiiGraphVertex>, INotifyPropertyChanged
     {
         readonly YodiiGraphEdgeType _type;
@@ -18,6 +21,9 @@ namespace Yodii.Lab
             _type = type;
         }
 
+        /// <summary>
+        /// Used for GraphX serialization. Not implemented.
+        /// </summary>
         public YodiiGraphEdge()
             : base(null, null, 1)
         {
@@ -35,10 +41,13 @@ namespace Yodii.Lab
             if( e.PropertyName == "Requirement" ) ReferenceRequirement = (sender as MockServiceReferenceInfo).Requirement;
         }
 
+        /// <summary>
+        /// Requirement type of this edge, if it's a service reference.
+        /// </summary>
         public DependencyRequirement ReferenceRequirement
         {
             get { return _referenceRequirement; }
-            set
+            internal set
             {
                 if( value != _referenceRequirement )
                 {
@@ -48,12 +57,30 @@ namespace Yodii.Lab
                 }
             }
         }
+
+        /// <summary>
+        /// Type of edge.
+        /// </summary>
         public YodiiGraphEdgeType Type { get { return _type; } }
 
+        /// <summary>
+        /// True if edge is a specialization (Service specializes service).
+        /// </summary>
         public bool IsSpecialization { get { return Type == YodiiGraphEdgeType.Specialization; } }
+        
+        /// <summary>
+        /// True if edge is an implementation (Plugin implements Service).
+        /// </summary>
         public bool IsImplementation { get { return Type == YodiiGraphEdgeType.Implementation; } }
+        
+        /// <summary>
+        /// True if edge is a service reference (Plugin refers to Service).
+        /// </summary>
         public bool IsServiceReference { get { return Type == YodiiGraphEdgeType.ServiceReference; } }
 
+        /// <summary>
+        /// Description of this edge.
+        /// </summary>
         public string Description
         {
             get

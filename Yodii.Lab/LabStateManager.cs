@@ -533,7 +533,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Creates a lab wrapper item around an existing mock plugin, and adds it to our collection.
         /// </summary>
-        /// <param name="s">Existing mock plugin</param>
+        /// <param name="p">Existing mock plugin</param>
         private void CreateLabPlugin( PluginInfo p )
         {
             LabPluginInfo lp;
@@ -572,7 +572,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Loads a foreign mock plugin info into our collections.
         /// </summary>
-        /// <param name="serviceInfo">Foreign mock plugin info</param>
+        /// <param name="pluginInfo">Foreign mock plugin info</param>
         private void LoadPluginInfo( PluginInfo pluginInfo )
         {
             if( _pluginInfos.Contains( pluginInfo ) ) return; // Already loaded

@@ -18,9 +18,15 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// View model for the main window.
+    /// </summary>
     public class MainWindowViewModel : ViewModelBase
     {
-        public event EventHandler<NotificationEventArgs> NewNotification;
+        /// <summary>
+        /// Fired when a new notification is requested, to display data the user should see.
+        /// </summary>
+        internal event EventHandler<NotificationEventArgs> NewNotification;
 
         #region Fields
 
@@ -50,6 +56,10 @@ namespace Yodii.Lab
 
         #region Constructor
 
+        /// <summary>
+        /// Creates a new instance of this ViewModel.
+        /// </summary>
+        /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
         public MainWindowViewModel(bool loadDefaultState = false)
         {
             // Lab objects, live objects and static infos are managed in the LabStateManager.
@@ -424,22 +434,6 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Services created in this Lab (live).
-        /// </summary>
-        public ICKObservableReadOnlyCollection<LabServiceInfo> LabServiceInfos
-        {
-            get { return _labStateManager.LabServiceInfos; }
-        }
-
-        /// <summary>
-        /// Plugins created in this Lab (live).
-        /// </summary>
-        public ICKObservableReadOnlyCollection<LabPluginInfo> LabPluginInfos
-        {
-            get { return _labStateManager.LabPluginInfos; }
-        }
-
-        /// <summary>
         /// Active graph.
         /// </summary>
         public YodiiGraph Graph
@@ -542,18 +536,45 @@ namespace Yodii.Lab
             get { return SelectedVertex != null; }
         }
 
+        /// <summary>
+        /// State manager for this lab.
+        /// </summary>
         public LabStateManager LabState
         {
             get { return _labStateManager; }
         }
 
+        /// <summary>
+        /// Command to remove a vertex that was selected beforehand.
+        /// </summary>
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
+        /// <summary>
+        /// Command to open the ConfigurationManager editor.
+        /// </summary>
         public ICommand OpenConfigurationEditorCommand { get { return _openConfigurationEditorCommand; } }
+        /// <summary>
+        /// Command to start the engine.
+        /// </summary>
         public ICommand StartEngineCommand { get { return _startEngineCommand; } }
+        /// <summary>
+        /// Command to open a state file and load it.
+        /// </summary>
         public ICommand OpenFileCommand { get { return _openFileCommand; } }
+        /// <summary>
+        /// Command to select a state file to save to, then save.
+        /// </summary>
         public ICommand SaveAsFileCommand { get { return _saveAsFileCommand; } }
+        /// <summary>
+        /// Command to reorder the graph, or to change the graph's layout.
+        /// </summary>
         public ICommand ReorderGraphLayoutCommand { get { return _reorderGraphLayoutCommand; } }
+        /// <summary>
+        /// Command to open a window allowing creation of a new plugin.
+        /// </summary>
         public ICommand CreatePluginCommand { get { return _createPluginCommand; } }
+        /// <summary>
+        /// Command to open a window allowing creation of a new service.
+        /// </summary>
         public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
         #endregion Properties
 
@@ -632,31 +653,59 @@ namespace Yodii.Lab
             _labStateManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
         }
 
+        /// <summary>
+        /// Removes and deletes a plugin.
+        /// </summary>
+        /// <param name="pluginInfo">Plugin to remove</param>
         public void RemovePlugin( IPluginInfo pluginInfo )
         {
             _labStateManager.RemovePlugin( (PluginInfo)pluginInfo );
         }
 
+        /// <summary>
+        /// Removes and deletes a service.
+        /// </summary>
+        /// <param name="serviceInfo">Service to remove</param>
         public void RemoveService( IServiceInfo serviceInfo )
         {
             _labStateManager.RemoveService( (ServiceInfo)serviceInfo );
         }
 
+        /// <summary>
+        /// Gets a service from the state manager with its name.
+        /// </summary>
+        /// <param name="name">Service name</param>
+        /// <returns>Service</returns>
         public ServiceInfo GetServiceInfoByName( string name )
         {
             return _labStateManager.ServiceInfos.Where( x => x.ServiceFullName == name ).First();
         }
 
+        /// <summary>
+        /// Get plugins with names matching this one.
+        /// </summary>
+        /// <param name="name">Plugin name.</param>
+        /// <returns>Plugins matching name.</returns>
         public IEnumerable<PluginInfo> GetPluginInfosByName( string name )
         {
             return _labStateManager.PluginInfos.Where( x => x.PluginFullName == name );
         }
 
+        /// <summary>
+        /// Get plugin associated to this GUID.
+        /// </summary>
+        /// <param name="guid">Plugin GUID.</param>
+        /// <returns>Plugin.</returns>
         public PluginInfo GetPluginInfoById( Guid guid )
         {
             return _labStateManager.PluginInfos.Where( x => x.PluginId == guid ).First();
         }
 
+        /// <summary>
+        /// Load the lab state from a XML file.
+        /// </summary>
+        /// <param name="filePath">XML file to load</param>
+        /// <returns>Operation result</returns>
         public DetailedOperationResult LoadState( string filePath )
         {
             _labStateManager.ClearState();
@@ -682,6 +731,11 @@ namespace Yodii.Lab
             return new DetailedOperationResult( true );
         }
 
+        /// <summary>
+        /// Saves the lab state to a file.
+        /// </summary>
+        /// <param name="filePath">XML file to use</param>
+        /// <returns>Operation result</returns>
         public DetailedOperationResult SaveState( string filePath )
         {
             XmlWriterSettings ws = new XmlWriterSettings();
@@ -725,19 +779,33 @@ namespace Yodii.Lab
             return new DetailedOperationResult( true );
         }
 
+        /// <summary>
+        /// Sets service as selected.
+        /// </summary>
+        /// <param name="serviceInfo">Service to select</param>
         public void SelectService( IServiceInfo serviceInfo )
         {
             YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LabServiceInfo.ServiceInfo == serviceInfo ).First();
             SelectedVertex = vertexToSelect;
         }
 
+        /// <summary>
+        /// Sets plugin as selected.
+        /// </summary>
+        /// <param name="pluginInfo">Plugin to select</param>
         public void SelectPlugin( IPluginInfo pluginInfo )
         {
             YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LabPluginInfo.PluginInfo == pluginInfo ).First();
             SelectedVertex = vertexToSelect;
         }
 
-        public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
+        /// <summary>
+        /// Attempts to rename a service.
+        /// </summary>
+        /// <param name="serviceInfo">Service to rename</param>
+        /// <param name="newName">New service name</param>
+        /// <returns>Operation result</returns>
+        internal DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
         {
             return _labStateManager.RenameService( serviceInfo, newName );
         }

@@ -9,19 +9,30 @@ namespace Yodii.Lab
     /// <summary>
     /// Interaction logic for NotificationsContainerUserControl.xaml
     /// </summary>
-    public partial class NotificationsContainerUserControl : UserControl, INotificationManager
+    internal partial class NotificationsContainerUserControl : UserControl, INotificationManager
     {
         private const byte MAX_NOTIFICATIONS = 50;
         private int count;
-        public Notifications Notifications = new Notifications();
         private readonly Notifications buffer = new Notifications();
 
+        /// <summary>
+        /// Notification list.
+        /// </summary>
+        public Notifications Notifications = new Notifications();
+
+        /// <summary>
+        /// Creates a new NotificationsContainerUserControl.
+        /// </summary>
         public NotificationsContainerUserControl()
         {
             InitializeComponent();
             NotificationsControl.DataContext = Notifications;
         }
 
+        /// <summary>
+        /// Adds a notification to the queue, and display it if applicable.
+        /// </summary>
+        /// <param name="notification">Notification to add</param>
         public void AddNotification( Notification notification )
         {
             notification.Id = count++;
@@ -34,6 +45,10 @@ namespace Yodii.Lab
                 this.Visibility = System.Windows.Visibility.Visible;
         }
 
+        /// <summary>
+        /// Removes a notification from the queue, clearing it.
+        /// </summary>
+        /// <param name="notification">Notification to remove.</param>
         public void RemoveNotification( Notification notification )
         {
             if( Notifications.Contains( notification ) )
