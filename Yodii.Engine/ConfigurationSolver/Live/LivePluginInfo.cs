@@ -137,12 +137,7 @@ namespace Yodii.Engine
             if( RunningStatus >= RunningStatus.Running ) return new SuccessYodiiEngineResult();
 
             IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
-            if( result.Success )
-            {
-                _engine.CleanYodiiCommands( command );
-                return result;
-            }
-            _engine.YodiiCommands.RemoveAt( 0 );
+            if( !result.Success ) _engine.YodiiCommands.RemoveAt( 0 );
             return result;
         }
 
@@ -157,12 +152,7 @@ namespace Yodii.Engine
             if( RunningStatus <= RunningStatus.Stopped ) return new SuccessYodiiEngineResult();
 
             IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
-            if( result.Success )
-            {
-                _engine.CleanYodiiCommands( command );
-                return result;
-            }
-            _engine.YodiiCommands.RemoveAt( 0 );
+            if( !result.Success ) _engine.YodiiCommands.RemoveAt( 0 );
             return result;
         }
 
@@ -175,6 +165,7 @@ namespace Yodii.Engine
 
             if( _service != null && p.DynamicStatus >= RunningStatus.Running ) _service.RunningPlugin = this;
         }
+
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
