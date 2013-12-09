@@ -63,6 +63,7 @@ namespace Yodii.Engine
                 if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
+                    p.CheckServicesWhenMustBeDisabled();
                 }
             }
             // Time to conclude about configuration and to initialize dynamic resolution.
