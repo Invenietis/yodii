@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Yodii.Model.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Yodii.Model.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -60,7 +62,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
     <Compile Include="Configuration\FinalConfiguration.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="IDiscoveredInfo.cs" />
     <Compile Include="IAssemblyInfo.cs" />
     <Compile Include="IDiscoveredItem.cs" />
+    <Compile Include="IObservableReadOnlyList.cs" />
     <Compile Include="IPluginInfo.cs" />
     <Compile Include="IServiceInfo.cs" />
     <Compile Include="IServiceReferenceInfo.cs" />
@@ -88,8 +90,8 @@
     <Compile Include="LiveModel\ServiceRunningStatusReason.cs" />
     <Compile Include="LiveModel\StartDependencyImpact.cs" />
     <Compile Include="LiveModel\YodiiCommand.cs" />
+    <Compile Include="ObservableReadOnlyList.cs" />
     <Compile Include="PluginDisabledReason.cs" />
-    <Compile Include="PluginInfo.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />
     <Compile Include="IYodiiEngine.cs" />

@@ -10,7 +10,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Window used to add and create a service.
     /// </summary>
-    public partial class AddServiceWindow : Window, INotifyPropertyChanged
+    internal partial class AddServiceWindow : Window, INotifyPropertyChanged
     {
         public event EventHandler<NewServiceEventArgs> NewServiceCreated;
 
@@ -143,7 +143,7 @@ namespace Yodii.Lab
 
     }
 
-    public class NewServiceEventArgs : EventArgs
+    internal class NewServiceEventArgs : EventArgs
     {
         public string ServiceName { get; internal set; }
         public IServiceInfo Generalization { get; internal set; }

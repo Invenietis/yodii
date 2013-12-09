@@ -19,7 +19,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Interaction logic for YodiiVertexControl.xaml
     /// </summary>
-    public partial class YodiiVertexControl : UserControl
+    internal partial class YodiiVertexControl : UserControl
     {
 
         public static readonly DependencyProperty VertexProperty = 

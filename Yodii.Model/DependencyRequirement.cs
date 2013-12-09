@@ -9,7 +9,7 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Describes how a service or a plugin is required. 
-    /// A requirement is a gradation between <see cref="Optional"/> and <see cref="MustExistAndRun"/>.
+    /// A requirement is a gradation between <see cref="Optional"/> and <see cref="Running"/>.
     /// </summary>
     [Flags]
     public enum DependencyRequirement

@@ -73,8 +73,8 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.Graph.Vertices.Count() == 7 );
             Assert.That( vm.Graph.Edges.Count() == 6 );
 
-            Assert.That( vm.LabPluginInfos.Count == 4 );
-            Assert.That( vm.LabServiceInfos.Count == 3 );
+            Assert.That( vm.LabState.LabPluginInfos.Count == 4 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 3 );
             /**
              *                 +--------+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
@@ -100,8 +100,8 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.Graph.Vertices.Count() == 6 );
             Assert.That( vm.Graph.Edges.Count() == 4 );
 
-            Assert.That( vm.LabPluginInfos.Count == 4 );
-            Assert.That( vm.LabServiceInfos.Count == 2 );
+            Assert.That( vm.LabState.LabPluginInfos.Count == 4 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 2 );
             /**
              *                 +--------+                              +--------+
              *                 |ServiceA+-------+   *----------------->|ServiceB|
@@ -118,8 +118,8 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 5 );
             Assert.That( vm.Graph.Edges.Count() == 4 );
-            Assert.That( vm.LabPluginInfos.Count == 3 );
-            Assert.That( vm.LabServiceInfos.Count == 2 );
+            Assert.That( vm.LabState.LabPluginInfos.Count == 3 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 2 );
 
 
             // Removing a plugin also removes its references
@@ -127,8 +127,8 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.Graph.Vertices.Count() == 4 );
             Assert.That( vm.Graph.Edges.Count() == 2 );
-            Assert.That( vm.LabPluginInfos.Count == 2 );
-            Assert.That( vm.LabServiceInfos.Count == 2 );
+            Assert.That( vm.LabState.LabPluginInfos.Count == 2 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 2 );
             /**
              * +--------+     +--------+
              * |ServiceA|     |ServiceB|
@@ -187,60 +187,6 @@ namespace Yodii.Lab.Tests
             vm.SelectedVertex = null;
             Assert.That( vm.SelectedVertex == null );
             Assert.That( !vm.HasSelection );
-        }
-
-        [Test]
-        public void XmlWriteSerializationTest()
-        {
-            var vm = CreateViewModelWithGraph001();
-
-            XmlWriterSettings ws = new XmlWriterSettings();
-            ws.NewLineHandling = NewLineHandling.None;
-
-            XmlReaderSettings rs = new XmlReaderSettings();
-            MockInfoXmlSerializer.PluginServiceInfoState state;
-
-            using( MemoryStream ms = new MemoryStream() )
-            {
-                using( XmlWriter xw = XmlWriter.Create( ms, ws ) )
-                {
-                    MockInfoXmlSerializer.SerializeLabStateToXmlWriter( vm, xw );
-                }
-
-                ms.Seek( 0, System.IO.SeekOrigin.Begin );
-
-                // Debug string
-                //using( StreamReader sr = new StreamReader( ms ) )
-                //{
-                //    string s = sr.ReadToEnd();
-                //}
-                
-                using( XmlReader r = XmlReader.Create( ms, rs ) )
-                {
-                    state = MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( r );
-                }
-            }
-
-            CollectionAssert.IsNotEmpty( state.ServiceInfos, "Deserialized service collection is not empty" );
-            CollectionAssert.IsNotEmpty( state.PluginInfos, "Deserialized plugin collection is not empty" );
-
-            Assert.That( vm.PluginInfos.Count == state.PluginInfos.Count() );
-            foreach( var infoB in state.PluginInfos )
-            {
-                Assert.That( vm.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).Count() == 1 );
-                IPluginInfo infoA = vm.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).First();
-
-                TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
-            }
-
-            Assert.That( vm.ServiceInfos.Count == state.ServiceInfos.Count() );
-            foreach( var infoB in state.ServiceInfos )
-            {
-                Assert.That( vm.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
-                var infoA = vm.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();
-
-                TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
-            }
         }
 
         [Test]
@@ -309,26 +255,26 @@ namespace Yodii.Lab.Tests
 
             Assert.That( vm.ServiceInfos.Contains( serviceA ) );
             Assert.That( vm.ServiceInfos.Count == 1 );
-            Assert.That( vm.LabServiceInfos.Count == 1 );
-            Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).Count() == 1 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 1 );
+            Assert.That( vm.LabState.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).Count() == 1 );
 
-            LabServiceInfo labServiceA = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
+            LabServiceInfo labServiceA = vm.LabState.LabServiceInfos.Where( x => x.ServiceInfo == serviceA ).First();
 
             IServiceInfo serviceB = vm.CreateNewService( "ServiceB" );
 
             Assert.That( vm.ServiceInfos.Contains( serviceB ) );
             Assert.That( vm.ServiceInfos.Count == 2 );
-            Assert.That( vm.LabServiceInfos.Count == 2 );
-            Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceB ).Count() == 1 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 2 );
+            Assert.That( vm.LabState.LabServiceInfos.Where( x => x.ServiceInfo == serviceB ).Count() == 1 );
 
             IServiceInfo serviceAx = vm.CreateNewService( "ServiceAx", serviceA );
 
             Assert.That( vm.ServiceInfos.Contains( serviceAx ) );
             Assert.That( vm.ServiceInfos.Count == 3 );
-            Assert.That( vm.LabServiceInfos.Count == 3 );
-            Assert.That( vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).Count() == 1 );
+            Assert.That( vm.LabState.LabServiceInfos.Count == 3 );
+            Assert.That( vm.LabState.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).Count() == 1 );
 
-            LabServiceInfo labServiceAx = vm.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
+            LabServiceInfo labServiceAx = vm.LabState.LabServiceInfos.Where( x => x.ServiceInfo == serviceAx ).First();
 
             Assert.That( labServiceAx.ServiceInfo.Generalization == labServiceA.ServiceInfo );
 

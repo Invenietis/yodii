@@ -3,6 +3,9 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
+    /// <summary>
+    /// Lab service. Wrapper class around a mock ServiceInfo, binding a LiveServiceInfo when the engine is started.
+    /// </summary>
     [DebuggerDisplay( "Lab {ServiceInfo.ServiceFullName}" )]
     public class LabServiceInfo : ViewModelBase
     {

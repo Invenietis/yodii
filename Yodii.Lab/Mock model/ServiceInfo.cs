@@ -10,6 +10,9 @@ using System.Collections;
 
 namespace Yodii.Lab.Mocks
 {
+    /// <summary>
+    /// Mock service info, created by the lab.
+    /// </summary>
     [DebuggerDisplay( "{ServiceFullName}" )]
     public class ServiceInfo : ViewModelBase, IServiceInfo
     {
@@ -42,6 +45,9 @@ namespace Yodii.Lab.Mocks
 
         #region IServiceInfo Members
 
+        /// <summary>
+        /// Service full name. Used as identifier.
+        /// </summary>
         public string ServiceFullName
         {
             get { return _serviceFullName; }
@@ -55,6 +61,9 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Service generalization.
+        /// </summary>
         public IServiceInfo Generalization
         {
             get { return _generalization; }
@@ -72,11 +81,17 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Information on the assembly this service is in.
+        /// </summary>
         public IAssemblyInfo AssemblyInfo
         {
             get { return _assemblyInfo; }
         }
 
+        /// <summary>
+        /// List of plugin implementations.
+        /// </summary>
         public IReadOnlyList<IPluginInfo> Implementations
         {
             get { return _implementations.AsReadOnlyList(); }
@@ -84,6 +99,9 @@ namespace Yodii.Lab.Mocks
 
         #endregion
 
+        /// <summary>
+        /// True if service has error.
+        /// </summary>
         public bool HasError
         {
             get { return _hasError; }
@@ -97,6 +115,9 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Service error message.
+        /// </summary>
         public string ErrorMessage
         {
             get { return _errorMessage; }
@@ -110,15 +131,19 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Prints service mane.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
-            return String.Format( "{0} ", _serviceFullName );
+            return String.Format( "{0}", _serviceFullName );
         }
 
         /// <summary>
         /// Checks if this service is already has the one specified as parameter in his Generalization tree.
         /// </summary>
-        /// <param name="s">Service to check against.</param>
+        /// <param name="service">Service to check against.</param>
         /// <returns>True if service is in this instance's Generalization tree, False if it isn't.</returns>
         /// <remarks>May cause a stack overflow in case of Generalization loop. TODO</remarks>
         public bool SpecializesService( IServiceInfo service )

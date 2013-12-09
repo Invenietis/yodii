@@ -8,18 +8,42 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Live status of a service, when the engine is started.
+    /// </summary>
     public interface ILiveServiceInfo : IDynamicSolvedService, INotifyPropertyChanged
     {
+        /// <summary>
+        /// Whether this service is running.
+        /// </summary>
         bool IsRunning { get; }
 
+        /// <summary>
+        /// Live generalization, if this service has one.
+        /// </summary>
         ILiveServiceInfo Generalization { get; }
 
+        /// <summary>
+        /// Running plugin that implements this service when started.
+        /// </summary>
         ILivePluginInfo RunningPlugin { get; }
 
+        /// <summary>
+        /// Last running plugin.
+        /// </summary>
         ILivePluginInfo LastRunningPlugin { get; }
 
+        /// <summary>
+        /// Attempts to start the service.
+        /// </summary>
+        /// <param name="caller">Caller object.</param>
+        /// <returns>True if the service was successfully started, false otherwise.</returns>
         bool Start( object caller );
 
+        /// <summary>
+        /// Stops the service.
+        /// </summary>
+        /// <param name="caller">Caller object.</param>
         void Stop( object caller );
     }
 }

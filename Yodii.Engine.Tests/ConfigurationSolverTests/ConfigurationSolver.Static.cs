@@ -757,5 +757,122 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 2 ) );
             CollectionAssert.AreEquivalent( new[] { "ServiceAx1", "ServiceAx2" }, res.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
         }
+
+        [Test]
+        public void ConfigurationSolverCommonReferencesWork()
+        {
+        #region graph
+            /*
+            *                  +--------+                            +--------+
+            *      +-----------|Service1+                            |Service2|---------------+
+            *      |           |Running |                            |Running |               |
+            *      |           +---+----+                            +---+----+               |
+            *      |               |                                      |                   |
+            *      |               |                                      |                   |
+            *      |               |                                      |                   |
+            *  +---+-----+         |                                      |                   |
+            *  |Plugin1  |     +---+-----+                            +---+-----+         +---+-----+
+            *  |Optional |     |Plugin2  |                            |Plugin3  |         |Plugin4  |
+            *  +----+----+     |Optional |                            |Optional |         |Optional |
+            *       |          +---------+                            +---------+         +-----+---+
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+             *      |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |           +--------+            |                     |
+            *       |                   |           |Service3+            |                     |
+            *       |       +-----------|-----------|Optional|------------|------+--------------+-----------+
+            *       |       |           |           +---+----+            |      |              |           |                
+            *       |       |           |               |                 |      |              |           |                
+            *       |       |           |               |                 |      |              |           |                
+            *       |   +---+-------+   +-------->+-----+-----+           |  +---+-------+      |       +---+-------+        
+            *       |   |Service3.1 |             |Service3.2 |           |  |Service3.3 |      |       |Service3.4 |        
+            *       +-->|Optional   |             |Optional   |           +->|Optional   |<-----+       |Optional   |        
+             *          +-----------+             +-----------+              +-----------+              +-----------+        
+             *          |           |             |           |              |           |              |           |        
+             *          |           |             |           |              |           |              |           |        
+             *          |           |             |           |              |           |              |           |        
+             *      +---+-----+ +---+-----+   +---+-----+ +---+-----+    +---+-----+ +---+-----+    +---+-----+ +---+-----+  
+             *      |Plugin5  | |Plugin6  |   |Plugin7  | |Plugin8  |    |Plugin9  | |Plugin10 |    |Plugin11 | |Plugin12 |  
+             *      |Optional | |Optional |   |Optional | |Optional |    |Optional | |Optional |    |Optional | |Optional |  
+             *      +---------+ +---------+   +---------+ +---------+    +---------+ +---------+    +---------+ +---------+  
+             * 
+            */
+        #endregion
+            DiscoveredInfo info = MockInfoFactory.CreateGraph005();
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
+            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+            cl.Items.Add( "Service2", ConfigurationStatus.Running );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+
+            Assert.That( res.Success, Is.False );
+            Assert.That( res.StaticFailureResult, Is.Not.Null );
+        }
+
+        [Test]
+        public void ConfigurationSolverCommonReferencesWorkb()
+        {
+            #region graph
+            /*
+            *                  +--------+                            +--------+
+            *      +-----------|Service1+                            |Service2|---------------+
+            *      |           |Running |                            |Running |               |
+            *      |           +---+----+                            +---+----+               |
+            *      |               |                                      |                   |
+            *      |               |                                      |                   |
+            *      |               |                                      |                   |
+            *  +---+-----+         |                                      |                   |
+            *  |Plugin1  |     +---+-----+                            +---+-----+         +---+-----+
+            *  |Optional |     |Plugin2  |                            |Plugin3  |         |Plugin4  |
+            *  +----+----+     |Optional |                            |Optional |         |Optional |
+            *       |          +---------+                            +---------+         +-----+---+
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |                                 |                     |
+             *      |                   |                                 |                     |
+            *       |                   |                                 |                     |
+            *       |                   |           +--------+            |                     |
+            *       |                   |           |Service3+            |                     |
+            *       |       +-----------|-----------|Optional|------------|------+--------------+-----------+
+            *       |       |           |           +---+----+            |      |              |           |                
+            *       |       |           |               |                 |      |              |           |                
+            *       |       |           |               |                 |      |              |           |                
+            *       |   +---+-------+   +-------->+-----+-----+           |  +---+-------+      |       +---+-------+        
+            *       |   |Service3.1 |             |Service3.2 |           |  |Service3.3 |      |       |Service3.4 |        
+            *       +-->|Optional   |             |Optional   |           +->|Optional   |      +------>|Optional   |        
+             *          +-----------+             +-----------+              +-----------+              +-----------+        
+             *          |           |             |           |              |           |              |           |        
+             *          |           |             |           |              |           |              |           |        
+             *          |           |             |           |              |           |              |           |        
+             *      +---+-----+ +---+-----+   +---+-----+ +---+-----+    +---+-----+ +---+-----+    +---+-----+ +---+-----+  
+             *      |Plugin5  | |Plugin6  |   |Plugin7  | |Plugin8  |    |Plugin9  | |Plugin10 |    |Plugin11 | |Plugin12 |  
+             *      |Optional | |Optional |   |Optional | |Optional |    |Optional | |Optional |    |Optional | |Optional |  
+             *      +---------+ +---------+   +---------+ +---------+    +---------+ +---------+    +---------+ +---------+  
+             * 
+            */
+            #endregion
+            DiscoveredInfo info = MockInfoFactory.CreateGraph005b();
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
+            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+            cl.Items.Add( "Service2", ConfigurationStatus.Running );
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+
+            Assert.That( res.Success, Is.False );
+            Assert.That( res.StaticFailureResult, Is.Null );
+        }
+
     }
 }

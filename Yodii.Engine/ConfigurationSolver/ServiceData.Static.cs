@@ -545,23 +545,22 @@ namespace Yodii.Engine
 
         internal void OnPluginDisabled( PluginData p )
         {
-            Debug.Assert( p.Service == this && p.Disabled );
-            ++DisabledPluginCount;
-            // We must update and check the total number of plugins.
-            ServiceData g = this;
-            while( g != null )
+            Debug.Assert( (p.Service == this || IsStrictGeneralizationOf( p.Service )) && p.Disabled );
+            if( p.Service == this ) ++DisabledPluginCount;
+            ++TotalDisabledPluginCount;
+            if ( !Disabled )
             {
-                ++g.TotalDisabledPluginCount;
                 int nbAvailable = TotalAvailablePluginCount;
-                if( nbAvailable == 0 )
+                if ( nbAvailable == 0 )
                 {
                     _theOnlyPlugin = null;
                     _commonReferences = null;
-                    if( !g.Disabled ) SetDisabled( ServiceDisabledReason.AllPluginsAreDisabled );
+                    SetDisabled( ServiceDisabledReason.AllPluginsAreDisabled );
                 }
-                else InitializePropagation( nbAvailable, fromConfig: false ); 
-                g = g.Generalization;
+                else InitializePropagation( nbAvailable, fromConfig: false );
             }
+            // We must update and check the total number of plugins.
+            if( Generalization != null ) Generalization.OnPluginDisabled( p );
         }
 
         public override string ToString()

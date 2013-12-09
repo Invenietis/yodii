@@ -9,6 +9,9 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
+    /// <summary>
+    /// Mock plugin info, for Yodii.Lab.
+    /// </summary>
     [DebuggerDisplay( "{PluginFullName} = {PluginId}" )]
     public class PluginInfo : ViewModelBase, IPluginInfo
     {
@@ -45,6 +48,9 @@ namespace Yodii.Lab.Mocks
             get { return _service; }
         }
 
+        /// <summary>
+        /// Description of this PluginInfo.
+        /// </summary>
         public string Description
         {
             get
@@ -62,11 +68,17 @@ namespace Yodii.Lab.Mocks
 
         #region IPluginInfo Members
 
+        /// <summary>
+        /// Plugin GUID
+        /// </summary>
         public Guid PluginId
         {
             get { return _guid; }
         }
 
+        /// <summary>
+        /// Plugin display name
+        /// </summary>
         public string PluginFullName
         {
             get { return _pluginFullName; }
@@ -80,11 +92,17 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Plugin assembly
+        /// </summary>
         public IAssemblyInfo AssemblyInfo
         {
             get { return _assemblyInfo; }
         }
 
+        /// <summary>
+        /// Plugin's service references
+        /// </summary>
         public IReadOnlyList<IServiceReferenceInfo> ServiceReferences
         {
             get { return _serviceReferences.AsReadOnlyList(); }
@@ -94,6 +112,9 @@ namespace Yodii.Lab.Mocks
         {
             get { return _service; }
         }
+        /// <summary>
+        /// Mock ServiceInfo of Service
+        /// </summary>
         public ServiceInfo Service
         {
             get { return _service; }
@@ -116,6 +137,9 @@ namespace Yodii.Lab.Mocks
 
         #endregion
 
+        /// <summary>
+        /// True if plugin has error
+        /// </summary>
         public bool HasError
         {
             get { return _hasError; }
@@ -129,6 +153,9 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Plugin error message
+        /// </summary>
         public string ErrorMessage
         {
             get { return _errorMessage; }
@@ -142,9 +169,13 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Returns plugin information.
+        /// </summary>
+        /// <returns>Plugin information.</returns>
         public override string ToString()
         {
-            return String.Format( "{0} has service {1} ", _pluginFullName, _service );
+            return String.Format( "{0} has service {1}", _pluginFullName, _service );
         }
     }
 }

@@ -10,7 +10,7 @@ using Yodii.Model;
 namespace Yodii.Lab.Mocks
 {
     [DebuggerDisplay( "=> {Reference.ServiceFullName} ({Requirement})" )]
-    public class MockServiceReferenceInfo : ViewModelBase, IServiceReferenceInfo
+    internal class MockServiceReferenceInfo : ViewModelBase, IServiceReferenceInfo
     {
         readonly PluginInfo _owner;
         readonly ServiceInfo _reference;

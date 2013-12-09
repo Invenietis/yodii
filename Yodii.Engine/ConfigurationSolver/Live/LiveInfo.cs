@@ -5,18 +5,22 @@ using System.Text;
 using Yodii.Model;
 using CK.Core;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Yodii.Engine
 {
     class LiveInfo : ILiveInfo
     {
-        ICKObservableReadOnlyList<ILivePluginInfo> _plugins;
-        ICKObservableReadOnlyList<ILiveServiceInfo> _services;
-        List<YodiiCommand> _yodiiCommands;
+        readonly YodiiEngine _engine;
+        readonly CKObservableSortedArrayKeyList<LivePluginInfo,Guid> _plugins;
+        readonly CKObservableSortedArrayKeyList<LiveServiceInfo,string> _services;
 
-        internal LiveInfo()
+        internal LiveInfo(YodiiEngine engine)
         {
-
+            Debug.Assert( engine != null );
+            _engine = engine;
+            _plugins = new CKObservableSortedArrayKeyList<LivePluginInfo, Guid>( l => l.PluginInfo.PluginId );
+            _services = new CKObservableSortedArrayKeyList<LiveServiceInfo, string>( l => l.ServiceInfo.ServiceFullName );
         }
 
         public ICKObservableReadOnlyList<ILivePluginInfo> Plugins
@@ -39,6 +43,76 @@ namespace Yodii.Engine
         {
             ILivePluginInfo plugin = _plugins.FirstOrDefault(p => p.PluginInfo.PluginId == pluginId);
             return plugin;
+        }
+
+        internal void UpdateInfo( ServiceData serviceData )
+        {
+            Debug.Assert( serviceData != null );
+            LiveServiceInfo serviceInfo = _services.GetByKey( serviceData.ServiceInfo.ServiceFullName );
+            if( serviceInfo != null )
+            {
+                serviceInfo.UpdateInfo( serviceData );
+            }
+            else
+            {
+                Debug.Fail( "serviceData cannot be not found in UpdateInfo function" );
+            }
+        }
+
+        internal void UpdateInfo( PluginData pluginData )
+        {
+            Debug.Assert( pluginData != null );
+            LivePluginInfo pluginInfo = _plugins.GetByKey( pluginData.PluginInfo.PluginId );
+            if( pluginInfo != null )
+            {
+                pluginInfo.UpdateInfo( pluginData );
+            }
+            else
+            {
+                Debug.Fail( "pluginData cannot be not found in UpdateInfo function" );
+            }
+        }
+
+        internal void AddInfo( ServiceData serviceData )
+        {
+            Debug.Assert( serviceData != null );
+            Debug.Assert( !_services.Contains( serviceData.ServiceInfo.ServiceFullName ) );
+            _services.Add( new LiveServiceInfo( serviceData, _engine ) );
+        }
+
+        internal void AddInfo( PluginData pluginData )
+        {
+            Debug.Assert( pluginData != null );
+            Debug.Assert( !_plugins.Contains( pluginData.PluginInfo.PluginId ) );
+            _plugins.Add( new LivePluginInfo( pluginData, _engine ) );
+        }
+
+        internal void UpdateError( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        {
+            foreach( var e in errors )
+            {
+                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginId );
+                if( pluginInfo != null )
+                {
+                    pluginInfo.CurrentError = e.Item2;
+                }
+                else
+                {
+                    Debug.Fail( "The plugin cannot be not found in UpdateError function" );
+                }
+            }
+        }
+
+        internal void CreateGraphOfDependencies()
+        {
+            foreach( var p in _plugins )
+            {
+                if( p.PluginInfo.Service != null ) p.Service = _services.GetByKey( p.PluginInfo.Service.ServiceFullName );
+            }
+            foreach( var s in _services )
+            {
+                if( s.ServiceInfo.Generalization != null ) s.Generalization = _services.GetByKey( s.ServiceInfo.Generalization.ServiceFullName );
+            }
         }
 
         public void RevokeCaller( object caller )

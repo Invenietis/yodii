@@ -16,7 +16,7 @@ namespace Yodii.Lab.ConfigurationEditor
     /// <summary>
     /// Interaction logic for CreateConfigurationLayerWindow.xaml
     /// </summary>
-    public partial class CreateConfigurationLayerWindow : Window
+    internal partial class CreateConfigurationLayerWindow : Window
     {
         public CreateConfigurationLayerWindow()
         {

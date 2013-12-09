@@ -22,7 +22,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Interaction logic for ServicePropertyPanel.xaml
     /// </summary>
-    public partial class ServicePropertyPanel : UserControl
+    internal partial class ServicePropertyPanel : UserControl
     {
         #region Fields
         bool _resettingGeneralizationComboBox = false;

@@ -26,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Yodii.Lab.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +36,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Yodii.Lab.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -153,7 +155,7 @@
     <Compile Include="Mock model\ServiceInfo.cs" />
     <Compile Include="Mock model\LabPluginInfo.cs" />
     <Compile Include="Mock model\LabServiceInfo.cs" />
-    <Compile Include="ServiceInfoManager.cs" />
+    <Compile Include="LabStateManager.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
     <Compile Include="Utils\DetailedOperationResult.cs" />
     <Compile Include="Utils\RelayCommand.cs" />

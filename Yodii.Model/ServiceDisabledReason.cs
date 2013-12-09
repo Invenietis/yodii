@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Reasons for which a service was disabled.
+    /// </summary>
     public enum ServiceDisabledReason
     {
         /// <summary>
@@ -68,7 +71,7 @@ namespace Yodii.Model
         AllPluginsAreDisabled,
 
         /// <summary>
-        /// The service is not a dynamic service (it does not extend <see cref="IDynamicService"/>) and can not be 
+        /// The service is not a dynamic service (it does not extend IDynamicService) and can not be 
         /// found in the Service provider. 
         /// </summary>
         ExternalServiceUnavailable

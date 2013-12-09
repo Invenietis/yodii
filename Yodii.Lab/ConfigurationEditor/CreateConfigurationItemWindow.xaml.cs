@@ -20,7 +20,7 @@ namespace Yodii.Lab.ConfigurationEditor
     /// <summary>
     /// Interaction logic for CreateConfigurationItemWindow.xaml
     /// </summary>
-    public partial class CreateConfigurationItemWindow : Window
+    internal partial class CreateConfigurationItemWindow : Window
     {
         internal readonly CreateConfigurationItemWindowViewModel ViewModel;
 

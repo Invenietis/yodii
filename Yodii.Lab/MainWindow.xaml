@@ -35,16 +35,16 @@
             x:Key="serviceVertexPropertiesTemplate"
             DataType="local:YodiiGraphVertex">
             <local:ServicePropertyPanel
-                LiveServiceInfo="{Binding Path=LiveServiceInfo, Mode=OneWay}"
-                ServiceInfoManager="{Binding Path=DataContext.ServiceInfoManager, ElementName=MainWindowRoot, Mode=OneWay}" />
+                LiveServiceInfo="{Binding Path=LabServiceInfo, Mode=OneWay}"
+                ServiceInfoManager="{Binding Path=DataContext.LabState, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
         <DataTemplate
             x:Key="pluginVertexPropertiesTemplate"
             DataType="local:YodiiGraphVertex">
             <local:PluginPropertyPanel
-                LivePluginInfo="{Binding Path=LivePluginInfo, Mode=OneWay}"
-                ServiceInfos="{Binding Path=DataContext.ServiceInfos, ElementName=MainWindowRoot, Mode=OneWay}" />
+                LivePluginInfo="{Binding Path=LabPluginInfo, Mode=OneWay}"
+                ServiceInfos="{Binding Path=DataContext.LabState, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
         <local:VertexPropertiesTemplateSelector

@@ -8,21 +8,36 @@ using CK.Core;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Resolved, read-only configuration.
+    /// </summary>
     public class FinalConfiguration
     {
         readonly CKSortedArrayKeyList<FinalConfigurationItem, string> _items;
 
+        /// <summary>
+        /// Items of this final configuration.
+        /// </summary>
         public IReadOnlyList<FinalConfigurationItem> Items
         {
             get { return _items; }
         }
 
+        /// <summary>
+        /// Gets the final configuration status for a given service or plugin ID.
+        /// </summary>
+        /// <param name="serviceOrPluginId">Service or plugin ID to check.</param>
+        /// <returns>The status of the item, or Optional if the item does not exist.</returns>
         public ConfigurationStatus GetStatus( string serviceOrPluginId )
         {
             Debug.Assert( ConfigurationStatus.Optional == 0 );
             return _items.GetByKey( serviceOrPluginId ).Status;
         }
 
+        /// <summary>
+        /// Creates a new instance of FinalConfiguration, using given statuses.
+        /// </summary>
+        /// <param name="finalStatus">Statuses to set.</param>
         public FinalConfiguration( Dictionary<string, ConfigurationStatus> finalStatus )
             : this()
         {

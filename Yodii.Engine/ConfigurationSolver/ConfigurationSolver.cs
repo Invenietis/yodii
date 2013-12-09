@@ -105,7 +105,7 @@ namespace Yodii.Engine
         /// <param name="commands"></param>
         /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
-        public Tuple<IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> DynamicResolution( List<YodiiCommand> commands )
+        public Tuple<IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>, IEnumerable<IPluginInfo>> DynamicResolution( ObservableReadOnlyList<YodiiCommand> commands )
         {
             foreach( var s in _services.Values ) s.ResetDynamicState();
             foreach( var p in _plugins.Values ) p.ResetDynamicState();
@@ -156,12 +156,11 @@ namespace Yodii.Engine
             throw new NotImplementedException();
         }
 
-
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
             if ( cmd.FullName != null )
             {
-                ServiceData s = _services.Values.FirstOrDefault( i => i.ServiceInfo.ServiceFullName == cmd.FullName );
+                ServiceData s = _services[cmd.FullName];
                 if ( s != null )
                 {
                     if ( cmd.Start ) return s.StartByCommand();
@@ -170,7 +169,7 @@ namespace Yodii.Engine
                 return true;
             }
             // Starts or stops the plugin.
-            PluginData p = _plugins.Values.FirstOrDefault( i => i.PluginInfo.PluginId == cmd.PluginId );
+            PluginData p = _plugins[cmd.PluginId];
             if ( p != null )
             {
                 if ( cmd.Start ) return p.StartByCommand( cmd.Impact );
@@ -223,6 +222,33 @@ namespace Yodii.Engine
         internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
         {
             return new YodiiEngineResult( _services, _plugins, errors );
+        }
+
+        internal void UpdateNewResultInLiveInfo( LiveInfo liveInfo )
+        {
+            Debug.Assert( liveInfo != null );
+            foreach( var s in _services.Values )
+            {
+                liveInfo.UpdateInfo( s );
+            }
+            foreach( var p in _plugins.Values )
+            {
+                liveInfo.UpdateInfo( p );
+            }
+        }
+
+        internal void FillNewLiveInfo( LiveInfo liveInfo )
+        {
+            foreach( var s in _services.Values )
+            {
+                liveInfo.AddInfo( s );
+            }
+            foreach( var p in _plugins.Values )
+            {
+                liveInfo.AddInfo( p );
+            }
+
+            liveInfo.CreateGraphOfDependencies();
         }
 
     }

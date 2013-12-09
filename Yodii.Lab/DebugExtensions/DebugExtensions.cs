@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
-    public static class DebugExtensions
+    internal static class DebugExtensions
     {
         public static string Describe( this IYodiiEngineResult result )
         {

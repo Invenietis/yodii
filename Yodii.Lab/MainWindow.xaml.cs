@@ -11,6 +11,9 @@ namespace Yodii.Lab
     {
         readonly MainWindowViewModel _vm;
 
+        /// <summary>
+        /// Creates the main window.
+        /// </summary>
         public MainWindow()
         {
             _vm = new MainWindowViewModel(true);

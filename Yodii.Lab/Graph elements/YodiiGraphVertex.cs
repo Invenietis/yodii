@@ -7,6 +7,9 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// Vertex from a Yodii graph. Represents either a lab service or a lab plugin.
+    /// </summary>
     public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
@@ -21,6 +24,9 @@ namespace Yodii.Lab
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new, empty vertex. Used by GraphX serialization, not implemented yet.
+        /// </summary>
         public YodiiGraphVertex()
         {
 
@@ -61,9 +67,26 @@ namespace Yodii.Lab
         #endregion Constructors
 
         #region Properties
+
+        /// <summary>
+        /// True if the element represented by this vertex is a plugin.
+        /// </summary>
+        /// <remarks>
+        /// LabPluginInfo contains something in this case.
+        /// </remarks>
         public bool IsPlugin { get { return _isPlugin; } }
+
+        /// <summary>
+        /// True if the element represented by this vertex is a service.
+        /// </summary>
+        /// <remarks>
+        /// LabServiceInfo contains something in this case.
+        /// </remarks>
         public bool IsService { get { return !_isPlugin; } }
 
+        /// <summary>
+        /// Whether this vertex is currently selected by the user.
+        /// </summary>
         public bool IsSelected
         {
             get { return _isSelected; }
@@ -77,6 +100,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// Whether the Configuration contains a configuration for this element.
+        /// </summary>
         public bool HasConfiguration
         {
             get { return _hasConfiguration; }
@@ -90,6 +116,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// The configuration status for this element, from the ConfigurationManager.
+        /// </summary>
         public ConfigurationStatus ConfigurationStatus
         {
             get { return _configStatus; }
@@ -103,7 +132,9 @@ namespace Yodii.Lab
             }
         }
 
-        // Global view properties
+        /// <summary>
+        /// Title of this vertex.
+        /// </summary>
         public string Title
         {
             get
@@ -114,7 +145,15 @@ namespace Yodii.Lab
                     return LabPluginInfo.PluginInfo.Description;
             }
         }
+
+        /// <summary>
+        /// LabServiceInfo attached to this vertex, if it's representing a service.
+        /// </summary>
         public LabServiceInfo LabServiceInfo { get { return _liveService; } }
+
+        /// <summary>
+        /// LabPluginInfo attached to this vertex, if it's representing a plugin.
+        /// </summary>
         public LabPluginInfo LabPluginInfo { get { return _livePlugin; } }
 
         #endregion Properties

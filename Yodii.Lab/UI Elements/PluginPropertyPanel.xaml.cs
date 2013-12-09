@@ -22,7 +22,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Interaction logic for PluginPropertyPanel.xaml
     /// </summary>
-    public partial class PluginPropertyPanel : UserControl
+    internal partial class PluginPropertyPanel : UserControl
     {
         #region Fields
 
