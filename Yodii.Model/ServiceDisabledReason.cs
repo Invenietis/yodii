@@ -46,7 +46,7 @@ namespace Yodii.Model
         /// Sets by ServiceData.GetMustExistService.
         /// </summary>
         AnotherSpecializationMustExistByConfig,
-        
+
         /// <summary>
         /// Sets by ServiceData.SetDisabled.
         /// </summary>
@@ -61,7 +61,7 @@ namespace Yodii.Model
         /// Sets by ServiceData.OnAllPluginsAdded method.
         /// </summary>
         NoPlugin,
-        
+
         /// <summary>
         /// Sets by ServiceData.OnAllPluginsAdded method and ServiceData.OnPluginDisabled.
         /// </summary>
@@ -71,7 +71,8 @@ namespace Yodii.Model
         /// The service is not a dynamic service (it does not extend <see cref="IDynamicService"/>) and can not be 
         /// found in the Service provider. 
         /// </summary>
-        ExternalServiceUnavailable
+        ExternalServiceUnavailable,
+        SiblingIsRunning
     }
 
 }

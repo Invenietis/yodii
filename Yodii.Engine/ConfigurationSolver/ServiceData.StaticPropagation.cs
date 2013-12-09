@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using Yodii.Model;
+using Yodii.Engine.ConfigurationSolver;
 
 namespace Yodii.Engine
 {
@@ -267,5 +268,34 @@ namespace Yodii.Engine
             }
         }
 
+        public bool DisableSiblingServices()
+        {        
+            List<ServiceData> _mustBeDisabledServices = new List<ServiceData>();
+            Debug.Assert( !Disabled && ConfigSolvedStatus == SolvedConfigurationStatus.Running );
+            ServiceData root = GeneralizationRoot;
+            ServiceData parent = Generalization;
+            ServiceData s = this;
+
+            while ( s != root )
+            {
+                ServiceData sibling = parent.FirstSpecialization;
+                while ( sibling != null && sibling != s)
+                {
+                    if ( sibling.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+                    {
+                        if ( !sibling.Disabled )
+                        {
+                            sibling.SetDisabled( ServiceDisabledReason.SiblingIsRunning );
+                            _mustBeDisabledServices.Add( sibling );
+                        }
+                    }
+                    sibling = parent.NextSpecialization;
+                }
+                s = parent;
+                parent = parent.Generalization;   
+            }
+            return true;
+       }
+        
     }
 }
