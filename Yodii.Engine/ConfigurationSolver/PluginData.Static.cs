@@ -55,7 +55,7 @@ namespace Yodii.Engine
                 }
                 else if( service.MustExistSpecialization != null && service.MustExistSpecialization != service )
                 {
-                    _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustExist;
+                    _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustRun;
                 }
             }
             if( !Disabled )
@@ -203,21 +203,36 @@ namespace Yodii.Engine
                 if( _configSolvedStatus < propagation ) propagation = _configSolvedStatus;
 
                 ServiceData sr = _allServices[sRef.Reference.ServiceFullName];
-                if( !sr.SetSolvedConfigurationStatus( propagation, ServiceSolvedConfigStatusReason.FromMustExistReference ) )
+                if ( !sr.SetSolvedConfigurationStatus( propagation, ServiceSolvedConfigStatusReason.FromMustExistReference ) )
                 {
-                    if( !Disabled ) SetDisabled( PluginDisabledReason.RequirementPropagationToReferenceFailed );
+                    if ( !Disabled ) SetDisabled( PluginDisabledReason.RequirementPropagationToReferenceFailed );
                     break;
                 }
             }
             return !Disabled;
         }
+
+        internal bool CheckServicesWhenMustBeDisabled()
+        {
+            Debug.Assert( !Disabled && _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
+
+            if ( Service.DisableSiblingServices() )
+            {
+                foreach(IServiceReferenceInfo sRef in PluginInfo.ServiceReferences)
+                {
+                    ServiceData sr = _allServices[sRef.Reference.ServiceFullName];
+                    sr.DisableSiblingServices();
+                }
+                return true;
+            }
+            return false;
+        }
+
                   
         public override string ToString()
         //_status is obtained through the PluginData.Dynamic partial class
         {
             return String.Format( "{0} - {1} - {2} => (Dynamic: {3})", PluginInfo.PluginFullName, Disabled ? DisabledReason.ToString() : "!Disabled", ConfigSolvedStatus, _dynamicStatus );
         }
-
     }
-
 }

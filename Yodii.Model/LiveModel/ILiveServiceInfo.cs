@@ -38,12 +38,13 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="caller">Caller object.</param>
         /// <returns>True if the service was successfully started, false otherwise.</returns>
-        bool Start( object caller );
+        IYodiiEngineResult Start( string callerKey );
 
         /// <summary>
         /// Stops the service.
         /// </summary>
         /// <param name="caller">Caller object.</param>
-        void Stop( object caller );
+         IYodiiEngineResult Stop( string callerKey );
+
     }
 }

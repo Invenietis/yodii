@@ -90,7 +90,6 @@
     <Compile Include="LiveModel\ServiceRunningStatusReason.cs" />
     <Compile Include="LiveModel\StartDependencyImpact.cs" />
     <Compile Include="LiveModel\YodiiCommand.cs" />
-    <Compile Include="ObservableReadOnlyList.cs" />
     <Compile Include="PluginDisabledReason.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />

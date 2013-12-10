@@ -35,6 +35,7 @@ namespace Yodii.Lab
 
         readonly ICommand _removeSelectedVertexCommand;
         readonly ICommand _startEngineCommand;
+        readonly ICommand _stopEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
         readonly ICommand _reorderGraphLayoutCommand;
@@ -77,7 +78,8 @@ namespace Yodii.Lab
             _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, CanEditSelectedVertex );
-            _startEngineCommand = new RelayCommand( StartEngineExecute );
+            _startEngineCommand = new RelayCommand( StartEngineExecute, CanStartEngine );
+            _stopEngineCommand = new RelayCommand( StopEngineExecute, CanStopEngine );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
@@ -413,6 +415,23 @@ namespace Yodii.Lab
             SelectedVertex = null;
         }
 
+        private bool CanStopEngine( object obj )
+        {
+            return LabState.Engine.IsRunning;
+        }
+
+        private bool CanStartEngine( object obj )
+        {
+            return !LabState.Engine.IsRunning;
+        }
+
+        private void StopEngineExecute( object obj )
+        {
+            if( !LabState.Engine.IsRunning ) return;
+
+            LabState.Engine.Stop();
+        }
+
         #endregion Command handlers
 
         #region Properties
@@ -556,6 +575,10 @@ namespace Yodii.Lab
         /// Command to start the engine.
         /// </summary>
         public ICommand StartEngineCommand { get { return _startEngineCommand; } }
+        /// <summary>
+        /// Command to stop the engine.
+        /// </summary>
+        public ICommand StopEngineCommand { get { return _stopEngineCommand; } }
         /// <summary>
         /// Command to open a state file and load it.
         /// </summary>

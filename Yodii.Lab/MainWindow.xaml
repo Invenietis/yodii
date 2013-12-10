@@ -155,6 +155,10 @@
                         Header="Start engine"
                         Command="{Binding Path=StartEngineCommand}">
                     </Fluent:Button>
+                    <Fluent:Button
+                        Header="Stop engine"
+                        Command="{Binding Path=StopEngineCommand}">
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
         </Fluent:Ribbon>
@@ -377,7 +381,7 @@
                 VerticalAlignment="Top"
                 Grid.Column="0"
                 Grid.Row="0" />
-            
+
             <!-- Graph viewer -->
             <gxc:ZoomControl
                 x:Name="ZoomBox"

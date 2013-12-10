@@ -15,6 +15,10 @@
     <UserControl.Resources>
         <local:EnumToBooleanConverter
             x:Key="EnumToBooleanConv" />
+        <BooleanToVisibilityConverter
+            x:Key="BoolToVisibilityConv" />
+        
+        
         
         <ObjectDataProvider
             MethodName="GetValues"
@@ -83,6 +87,13 @@
                             </Style>
                         </Image.Style>
                     </Image>
+                    <!--<Image
+                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConv}, Path=IsLive}"
+                        Height="12pt"
+                        Width="12pt"
+                        VerticalAlignment="Stretch"
+                        Margin="0,0,3pt,0">
+                    </Image>-->
                     <TextBlock
                         VerticalAlignment="Center"
                         x:Name="VertexTitle"

@@ -178,17 +178,22 @@ namespace Yodii.Engine
 
         #endregion
 
-        public bool Start( object caller )
+        public IYodiiEngineResult Start( string callerKey )
         {
-            if( caller == null ) throw new ArgumentNullException( "caller" );
-            YodiiCommand command = new YodiiCommand( caller, true, _serviceInfo.ServiceFullName );
-            //_engine
-            return false;
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
+
+            YodiiCommand command = new YodiiCommand( callerKey, _serviceInfo.ServiceFullName, true );
+            return _engine.AddYodiiCommand( command );
         }
 
-        public void Stop( object caller )
+        public IYodiiEngineResult Stop( string callerKey )
         {
-            throw new NotImplementedException();
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
+
+            YodiiCommand command = new YodiiCommand( callerKey, _serviceInfo.ServiceFullName, false );
+            return _engine.AddYodiiCommand( command );
         }
 
         internal void UpdateInfo( ServiceData s )

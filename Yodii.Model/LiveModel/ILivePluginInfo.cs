@@ -27,16 +27,16 @@ namespace Yodii.Model
         /// <summary>
         /// Attempts to start this plugin.
         /// </summary>
-        /// <param name="caller">Caller of this method.</param>
+        /// <param name="callerKey">Caller identifier of this method.</param>
         /// <param name="impact">Range of the plugins to start.</param>
         /// <returns>True of the plugin was started, false otherwise.</returns>
-        bool Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None );
+        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.None );
 
         /// <summary>
         /// Stops this plugin.
         /// </summary>
-        /// <param name="caller">Caller of this method.</param>
-        void Stop( object caller );
+        /// <param name="callerKey">Caller identifier of this method.</param>
+        IYodiiEngineResult Stop( string callerKey );
 
         /// <summary>
         /// Runtime plugin exception.

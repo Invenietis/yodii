@@ -68,6 +68,7 @@
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicFailureResult.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicSolvedConfiguration.cs" />
+    <Compile Include="ConfigurationSolver\Dynamic\DynamicSolverResult.cs" />
     <Compile Include="ConfigurationSolver\Live\LiveInfo.cs" />
     <Compile Include="ConfigurationSolver\Live\LivePluginInfo.cs" />
     <Compile Include="ConfigurationSolver\Live\LiveServiceInfo.cs" />

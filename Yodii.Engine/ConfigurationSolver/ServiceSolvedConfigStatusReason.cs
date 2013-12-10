@@ -19,7 +19,7 @@ namespace Yodii.Engine
         FromMustExistReference,
 
         /// <summary>
-        /// Sets by ServiceData.GetMustExistService method.
+        /// Sets by ServiceData.GetRunningService method.
         /// </summary>
         FromGeneralization,
 

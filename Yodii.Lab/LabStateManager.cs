@@ -52,8 +52,11 @@ namespace Yodii.Lab
         {
             YodiiEngine engine = new YodiiEngine( this );
             _engine = engine;
-            engine.PropertyChanged += _engine_PropertyChanged;
             engine.SetDiscoveredInfo( this );
+
+            Debug.Assert( _engine.LiveInfo != null );
+            _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
+            _engine.LiveInfo.Services.CollectionChanged += Services_CollectionChanged;
 
             Debug.Assert( _engine.IsRunning == false );
 
@@ -67,29 +70,6 @@ namespace Yodii.Lab
         #endregion
 
         #region Event handlers
-        void _engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
-        {
-            Debug.Assert( sender == _engine );
-
-            switch( e.PropertyName )
-            {
-                case "LiveInfo":
-                    if( _engine.LiveInfo != null )
-                    {
-                        // New LiveInfo
-                        LoadLiveInfoFromEngine();
-                        _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
-                        _engine.LiveInfo.Services.CollectionChanged += Services_CollectionChanged;
-                    }
-                    else
-                    {
-                        // No more LiveInfo
-                        ClearLiveInfos();
-                    }
-                    break;
-            }
-        }
-
         void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
         {
             switch( e.Action )
@@ -113,7 +93,8 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     throw new NotImplementedException();
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    throw new NotImplementedException();
+                    ClearLivePluginInfos();
+                    break;
             }
         }
 
@@ -140,7 +121,8 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     throw new NotImplementedException();
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    throw new NotImplementedException();
+                    ClearLiveServiceInfos();
+                    break;
             }
         }
 
@@ -597,11 +579,20 @@ namespace Yodii.Lab
         /// </summary>
         private void ClearLiveInfos()
         {
+            ClearLiveServiceInfos();
+            ClearLivePluginInfos();
+        }
+
+        private void ClearLiveServiceInfos()
+        {
             foreach( LabServiceInfo labService in _labServiceInfos )
             {
                 labService.LiveServiceInfo = null;
             }
+        }
 
+        private void ClearLivePluginInfos()
+        {
             foreach( LabPluginInfo labPlugin in _labPluginInfos )
             {
                 labPlugin.LivePluginInfo = null;

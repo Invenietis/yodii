@@ -35,14 +35,14 @@ namespace Yodii.Engine
 
         public ILiveServiceInfo FindService( string fullName )
         {
-            ILiveServiceInfo service = _services.FirstOrDefault(s => s.ServiceInfo.ServiceFullName == fullName);
-            return service;
+            if( fullName == null ) throw new ArgumentNullException( "fullName" );
+            return _services.GetByKey( fullName );
         }
 
         public ILivePluginInfo FindPlugin( Guid pluginId )
         {
-            ILivePluginInfo plugin = _plugins.FirstOrDefault(p => p.PluginInfo.PluginId == pluginId);
-            return plugin;
+            if( pluginId == null ) throw new ArgumentNullException( "pluginId" );
+            return _plugins.GetByKey( pluginId );
         }
 
         internal void UpdateInfo( ServiceData serviceData )
@@ -87,7 +87,7 @@ namespace Yodii.Engine
             _plugins.Add( new LivePluginInfo( pluginData, _engine ) );
         }
 
-        internal void UpdateError( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
         {
             foreach( var e in errors )
             {
@@ -98,28 +98,21 @@ namespace Yodii.Engine
                 }
                 else
                 {
-                    Debug.Fail( "The plugin cannot be not found in UpdateError function" );
+                    Debug.Fail( "The plugin cannot be not found in UpdateRuntimeErrors function" );
                 }
             }
         }
 
-        internal void CreateGraphOfDependencies()
+        /// <summary>
+        /// Called by YodiiEngine.Stop().
+        /// </summary>
+        internal void Clear()
         {
-            foreach( var p in _plugins )
-            {
-                if( p.PluginInfo.Service != null ) p.Service = _services.GetByKey( p.PluginInfo.Service.ServiceFullName );
-            }
-            foreach( var s in _services )
-            {
-                if( s.ServiceInfo.Generalization != null ) s.Generalization = _services.GetByKey( s.ServiceInfo.Generalization.ServiceFullName );
-            }
         }
 
-        public void RevokeCaller( object caller )
+        public IYodiiEngineResult RevokeCaller( string callerKey )
         {
-            throw new NotImplementedException();
+            return _engine.RevokeYodiiCommandCaller( callerKey );
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

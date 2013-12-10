@@ -38,7 +38,7 @@ namespace Yodii.Model
         /// <summary>
         /// Initialized by PluginData constructor.
         /// </summary>
-        ServiceSpecializationMustExist,
+        ServiceSpecializationMustRun,
 
         /// <summary>
         /// Sets by PluginData constructor or later by ServiceData.SetDisabled.

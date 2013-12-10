@@ -13,8 +13,7 @@ namespace Yodii.Engine
         ServiceDisabledReason _configDisabledReason;
         SolvedConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
-        ServiceData _configMustExistSpecialization;
-        ServiceData _configDirectMustExistSpecialization;
+        ServiceData _configRunningSpecialization;
 
         class BackReference
         {
@@ -102,7 +101,7 @@ namespace Yodii.Engine
 
         public ServiceData MustExistSpecialization
         {
-            get { return _configMustExistSpecialization; }
+            get { return _configRunningSpecialization; }
         }
 
         private bool IsStrictGeneralizationOf( ServiceData d )
@@ -131,9 +130,9 @@ namespace Yodii.Engine
             Debug.Assert( r != ServiceDisabledReason.None );
             Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
             Debug.Assert( !GeneralizationRoot.Disabled ||
-                (GeneralizationRoot.DisabledReason == ServiceDisabledReason.MultipleSpecializationsMustExistByConfig
+                (GeneralizationRoot.DisabledReason == ServiceDisabledReason.MultipleSpecializationsRunningByConfig
                 || GeneralizationRoot.DisabledReason == ServiceDisabledReason.GeneralizationIsDisabled)
-                && r == ServiceDisabledReason.GeneralizationIsDisabled, "A root is necessarily not disabled if one of its specialization is not disabled except if we are propagating a MultipleSpecializationsMustExistByConfig to the specialized Services." );
+                && r == ServiceDisabledReason.GeneralizationIsDisabled, "A root is necessarily not disabled if one of its specialization is not disabled except if we are propagating a MultipleSpecializationsRunningByConfig to the specialized Services." );
             _configDisabledReason = r;
             ServiceData spec = FirstSpecialization;
             while( spec != null )
@@ -156,23 +155,21 @@ namespace Yodii.Engine
                 if( !br.PluginData.Disabled ) br.PluginData.SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
                 br = br.Next;
             }
-            _configDirectMustExistSpecialization = null;
-            _configMustExistSpecialization = null;
+            _configRunningSpecialization = null;
         }
-
 
         /// <summary>
         /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
         /// </summary>
         public SolvedConfigurationStatus ConfigSolvedStatus
         {
-            get { return _configMustExistSpecialization != null ? _configMustExistSpecialization._configSolvedStatus : _configSolvedStatus; }
+            get { return _configRunningSpecialization != null ? _configRunningSpecialization._configSolvedStatus : _configSolvedStatus; }
         }
 
         /// <summary>
         /// Gets the minimal running requirement for this service (not the one of MustExistSpecialization if it exists).
         /// </summary>
-        public SolvedConfigurationStatus ThisMinimalRunningRequirement
+        public SolvedConfigurationStatus ThisConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -180,7 +177,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the strongest reason that explains this service ThisMinimalRunningRequirement. 
         /// </summary>
-        public ServiceSolvedConfigStatusReason ThisRunningRequirementReason 
+        public ServiceSolvedConfigStatusReason ThisConfigSolvedStatusReason 
         {
             get { return _configSolvedStatusReason; }
         }
@@ -193,9 +190,10 @@ namespace Yodii.Engine
         /// <returns>True if the requirement can be satisfied at this level. False otherwise.</returns>
         internal bool SetSolvedConfigurationStatus( SolvedConfigurationStatus s, ServiceSolvedConfigStatusReason reason )
         {
-            if( _configMustExistSpecialization != null && _configMustExistSpecialization != this )
+            if( _configRunningSpecialization != null && _configRunningSpecialization != this )
             {
-                return _configMustExistSpecialization.SetSolvedConfigurationStatus( s, reason );
+                Debug.Assert( _configRunningSpecialization._configSolvedStatus == SolvedConfigurationStatus.Running );
+                return _configRunningSpecialization.SetSolvedConfigurationStatus( s, reason );
             }
             if( s <= _configSolvedStatus )
             {
@@ -205,7 +203,7 @@ namespace Yodii.Engine
             // New requirement is stronger than the previous one.
             // We now try to honor the requirement at the service level.
             // If we fail, this service will be disabled, but we set the requirement to prevent reentrancy.
-            // Reentrancy can nevertheless be caused by subsequent requirements MustExistTryStart or MustExistAndRun:
+            // Reentrancy can nevertheless be caused by subsequent requirements RunnableTryStart or Running:
             // we allow this (there will be at most 3 reentrant calls to this method). 
             // Note that we capture the reason only on the first call, not on each failing call: the reason is not necessarily 
             // associated to the running requirement.
@@ -215,23 +213,23 @@ namespace Yodii.Engine
             if( s < SolvedConfigurationStatus.Runnable )
             {
                 _configSolvedStatusReason = reason;
-                // Propagate TryStart.
+                // Propagate OptionalTryStart.
                 PropagateRunningRequirementToOnlyPluginOrCommonReferences();
                 return true;
             }
-            // The new requirement is at least MustExist.
-            // If this is already disabled, there is nothing to do.
+            // The new requirement is at least Runnable.
+            // If this service is already disabled, there is nothing to do.
             if( Disabled ) return false;
 
             _configSolvedStatusReason = reason;
 
-            // Call SetAsRunnableService only if this Service becomes Runnable or Running.
-            if( current < SolvedConfigurationStatus.Runnable )
+            // Call SetAsRunningService only if this Service becomes Running.
+            if( _configSolvedStatus == SolvedConfigurationStatus.Running && current < SolvedConfigurationStatus.Running )
             {
-                if( !SetAsRunnableService() ) return false;
+                if( !SetAsRunningService() ) return false;
             }
             Debug.Assert( !Disabled );
-            // Now, if the OnlyPlugin exists, propagate the MustExist (or more) requirement to it.
+            // Now, if the OnlyPlugin exists, propagate the Runnable, Runnable or Running requirement to it.
             // MustExist requirement triggers MustExist on MustExist plugins to services requirements.
             // (This can be easily propagated if there is one and only one plugin for the service.)
             //
@@ -244,73 +242,68 @@ namespace Yodii.Engine
         }
 
         /// <summary>
-        /// Called by SetRunningRequirement whenever the Requirement becomes Runnable, or by ServiceRootData.OnAllPluginsAdded
-        /// if a RunnablePluginByConfig exists for the root.
+        /// Called by SetSolvedConfigurationStatus whenever the Requirement becomes Running, or by ServiceRootData.OnAllPluginsAdded
+        /// if a RunningPluginByConfig exists for the root.
         /// </summary>
         /// <returns></returns>
-        internal bool SetAsRunnableService( bool fromRunnablePlugin = false )
+        internal bool SetAsRunningService( bool fromRunningPlugin = false )
         {
-            if( fromRunnablePlugin )
+            if( fromRunningPlugin )
             {
-                _configSolvedStatus = GeneralizationRoot.RunnablePluginByConfig.ConfigSolvedStatus;
+                Debug.Assert( GeneralizationRoot.RunningPluginByConfig.ConfigSolvedStatus == SolvedConfigurationStatus.Running );
+                _configSolvedStatus = SolvedConfigurationStatus.Running;
             }
-            Debug.Assert( _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
-            // From a non running requirement to a running requirement.
-            var currentMustExist = GeneralizationRoot.MustExistService;
-            //
-            // Only 3 possible cases here:
-            //
-            // - There is no current Runnable Service for our Generalization.
-            // - we are the current one... We are necessarily already be Runnable.
-            // - We specialize the current one.
-            //
-            Debug.Assert( currentMustExist == null || currentMustExist == this || currentMustExist.IsStrictGeneralizationOf( this ) );
-            // Note: The other cases would be:
-            //    - We are a Generalization of the current one. This is not possible since SetRunningRequirement is routed to the _mustExistSpecialization if it exists.
-            //    - a specialization exists and we are not a specialization nor a generalization of it: this is not possible since we would have been disabled.
-            //
-            // When a Runnable appears below a current one, the requirement of the current one (the generalization) may be stronger than
-            // the new one: the new one must be updated to honor the generalization's requirement.
-            //
-            // Once a Runnable is set, the _runnableSpecialization is used to reroute the call to SetRunningRequirement and the MinimalRunningRequirement property:
-            // it is useless to propagate Requirement up to the Runnable branch.
-            //
-            if( currentMustExist != null && currentMustExist._configSolvedStatus > _configSolvedStatus )
+            Debug.Assert( _configSolvedStatus == SolvedConfigurationStatus.Running );
+
+            Debug.Assert( _configRunningSpecialization != this, "SetSolvedConfigurationStatus filters this thanks to the _configSolvedStatus." );
+
+            var currentRunning = GeneralizationRoot._configRunningSpecialization;
+            if( currentRunning != null )
             {
-                _configSolvedStatus = currentMustExist._configSolvedStatus;
-                _configSolvedStatusReason = currentMustExist._configSolvedStatusReason;
+                // If there is already a current specialized service, we ONLY accept a more specialized 
+                // running service than the current one: if this service is not a specialization, we reject the change.
+                if( !currentRunning.IsStrictGeneralizationOf( this ) ) return false;
+            }
+            DoSetAsRunningService( currentRunning );
+            return !Disabled;
+        }
+
+        /// <summary>
+        /// Called by SetSolvedConfigurationStatus whenever the Requirement becomes Running, or by ServiceRootData.OnAllPluginsAdded
+        /// if a RunningPluginByConfig exists for the root.
+        /// </summary>
+        /// <returns></returns>
+        internal void DoSetAsRunningService( ServiceData prevCurrentRunning )
+        {
+            // We first set the new specialization from this service up to the root.
+            var g = this;
+            while( g != null )
+            {
+                g._configRunningSpecialization = this;
+                g = g.Generalization;
             }
 
-            // We must disable all sibling services (and plugins) from this up to Runnable (when Runnable is null, up to the root).
-            _configMustExistSpecialization = this;
-            var g = Generalization;
-            if( g != null )
+            // We must now disable all sibling services (and plugins) from this up to the currently running one and 
+            // when the current one is null, up to the root.
+            g = Generalization;
+            var specThatMustExist = this;
+            while( g != prevCurrentRunning )
             {
-                var specThatMustExist = this;
-                do
+                var spec = g.FirstSpecialization;
+                while( spec != null )
                 {
-                    g._configMustExistSpecialization = this;
-                    g._configDirectMustExistSpecialization = specThatMustExist;
-                    var spec = g.FirstSpecialization;
-                    while( spec != null )
-                    {
-                        if( spec != specThatMustExist && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustExist );
-                        spec = spec.NextSpecialization;
-                    }
-                    PluginData p = g.FirstPlugin;
-                    while( p != null )
-                    {
-                        if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.ServiceSpecializationMustExist );
-                        p = p.NextPluginForService;
-                    }
-                    specThatMustExist = g;
-                    g = g.Generalization;
+                    if( spec != specThatMustExist && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustRun );
+                    spec = spec.NextSpecialization;
                 }
-                while( g != null ); //changed condition g != currentMustExist with g != null 
+                PluginData p = g.FirstPlugin;
+                while( p != null )
+                {
+                    if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.ServiceSpecializationMustRun );
+                    p = p.NextPluginForService;
+                }
+                specThatMustExist = g;
+                g = g.Generalization;
             }
-            if( Disabled ) return false;
-            GeneralizationRoot.MustExistServiceChanged( this );
-            return true;
         }
 
         /// <summary>
@@ -373,42 +366,42 @@ namespace Yodii.Engine
         /// <summary>
         /// First step after object construction.
         /// </summary>
-        /// <returns>The deepest specialization that must exist or null if none must exist or a conflict exists.</returns>
-        protected ServiceData GetMustExistService()
+        /// <returns>The deepest specialization that must run or null if no running service or a conflict exists.</returns>
+        protected ServiceData GetRunningService()
         {
             Debug.Assert( !Disabled, "Must NOT be called on already disabled service." );
             // Handles direct specializations that MustExist.
-            ServiceData directSpecThatHasMustExist = null;
-            ServiceData specMustExist = null;
+            ServiceData directSpecThatMustRun = null;
+            ServiceData specRunning = null;
             ServiceData spec = FirstSpecialization;
             while( spec != null )
             {
                 if( !spec.Disabled )
                 {
-                    var mustExist = spec.GetMustExistService();
+                    var running = spec.GetRunningService();
                     // We may stop as soon as a conflict is detected, but we continue the loop to let any branches detect other potential conflicts.
                     if( !Disabled )
                     {
-                        if( spec.DisabledReason == ServiceDisabledReason.MultipleSpecializationsMustExistByConfig )
+                        if( spec.DisabledReason == ServiceDisabledReason.MultipleSpecializationsRunningByConfig )
                         {
-                            Debug.Assert( mustExist == null, "Since a conflict has been detected below, returned mustExist is null." );
-                            SetDisabled( ServiceDisabledReason.MultipleSpecializationsMustExistByConfig );
-                            directSpecThatHasMustExist = specMustExist = null;
+                            Debug.Assert( running == null, "Since a conflict has been detected below, returned mustExist is null." );
+                            SetDisabled( ServiceDisabledReason.MultipleSpecializationsRunningByConfig );
+                            directSpecThatMustRun = specRunning = null;
                         }
                         else
                         {
-                            Debug.Assert( spec.Disabled == false, "Since it was not disabled before calling GetMustExistService, it could only be ServiceDisabledReason.MultipleSpecializationsMustExist." );
-                            if( mustExist != null )
+                            Debug.Assert( spec.Disabled == false, "Since it was not disabled before calling GetRunningService, it could only be ServiceDisabledReason.MultipleSpecializationsMustExist." );
+                            if( running != null )
                             {
-                                if( specMustExist != null )
+                                if( specRunning != null )
                                 {
-                                    SetDisabled( ServiceDisabledReason.MultipleSpecializationsMustExistByConfig );
-                                    directSpecThatHasMustExist = specMustExist = null;
+                                    SetDisabled( ServiceDisabledReason.MultipleSpecializationsRunningByConfig );
+                                    directSpecThatMustRun = specRunning = null;
                                 }
                                 else
                                 {
-                                    specMustExist = mustExist;
-                                    directSpecThatHasMustExist = spec;
+                                    specRunning = running;
+                                    directSpecThatMustRun = spec;
                                 }
                             }
                         }
@@ -416,15 +409,15 @@ namespace Yodii.Engine
                 }
                 spec = spec.NextSpecialization;
             }
-            Debug.Assert( !Disabled || specMustExist == null, "(Conflict below <==> Disabled) => specMustExist has been set to null." );
-            Debug.Assert( (specMustExist != null) == (directSpecThatHasMustExist != null) );
+            Debug.Assert( !Disabled || specRunning == null, "(Conflict below <==> Disabled) => specMustExist has been set to null." );
+            Debug.Assert( (specRunning != null) == (directSpecThatMustRun != null) );
             if( !Disabled )
             {
                 // No specialization is required to exist, is it our case?
-                if( specMustExist == null )
+                if( specRunning == null )
                 {
                     Debug.Assert( ConfigOriginalStatus != ConfigurationStatus.Disabled, "Caution: Disabled is greater than MustExist." );
-                    if ( ConfigOriginalStatus >= ConfigurationStatus.Runnable ) specMustExist = _configMustExistSpecialization = this;
+                    if( ConfigOriginalStatus == ConfigurationStatus.Running ) specRunning = _configRunningSpecialization = this;
                 }
                 else
                 {
@@ -432,25 +425,17 @@ namespace Yodii.Engine
                     spec = FirstSpecialization;
                     while( spec != null )
                     {
-                        if( spec != directSpecThatHasMustExist && !spec.Disabled )
+                        if( spec != directSpecThatMustRun && !spec.Disabled )
                         {
                             spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustExistByConfig );
                         }
                         spec = spec.NextSpecialization;
                     }
-                    _configMustExistSpecialization = specMustExist;
-                    _configDirectMustExistSpecialization = directSpecThatHasMustExist;
-                    // Since there is a MustExist specialization, it concentrates the running requirements
-                    // of all its generalization (here from their configurations).
-                    if( _configSolvedStatus > specMustExist._configSolvedStatus )
-                    {
-                        specMustExist._configSolvedStatus = _configSolvedStatus;
-                        specMustExist._configSolvedStatusReason = ServiceSolvedConfigStatusReason.FromGeneralization;
-                    }
+                    _configRunningSpecialization = specRunning;
                 }
                 Debug.Assert( !Disabled, "The fact that this service (or a specialization) must exist, can not disable this service." );
             }
-            return specMustExist;
+            return specRunning;
         }
 
 
@@ -474,15 +459,15 @@ namespace Yodii.Engine
 
         internal void AddPlugin( PluginData p )
         {
-            // Consider its RunningRequirements to detect trivial case: the fact that another plugin 
-            // must exist for the same Generalization service.
-            // The less trivially case when this must exist plugin conflicts with some MustExist at the services level
-            // is already handled in PluginData constructor thanks to service.MustExistSpecialization beeing not null that 
+            // Consider its ConfigSolvedStatus to detect a trivial case: the fact that another plugin 
+            // must run for the same Generalization service.
+            // The less trivially case when this running plugin conflicts with some other Running at the services level
+            // is already handled in PluginData constructor thanks to service.MustExistSpecialization being not null that 
             // immediately disables the plugin.
-            if( p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
+            if( p.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
             {
                 Debug.Assert( !p.Disabled );
-                GeneralizationRoot.SetMustExistPluginByConfig( p );
+                GeneralizationRoot.SetRunningPluginByConfig( p );
             }
             // Adds the plugin, taking its disabled state into account.
             p.NextPluginForService = FirstPlugin;

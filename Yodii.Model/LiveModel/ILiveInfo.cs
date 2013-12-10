@@ -14,7 +14,7 @@ namespace Yodii.Model
     /// <remarks>
     /// Gives information about which services and plugins were successfully resolved and started.
     /// </remarks>
-    public interface ILiveInfo : INotifyPropertyChanged
+    public interface ILiveInfo
     {
         /// <summary>
         /// List of plugins which were successfully resolved and started.
@@ -41,14 +41,12 @@ namespace Yodii.Model
         ILivePluginInfo FindPlugin( Guid pluginId );
 
         /// <summary>
-        /// Removes all Yodii commands created by the given caller.
+        /// Cancels any start or stop made by this caller.
         /// </summary>
-        /// <param name="caller">Calling object.</param>
-        /// <remarks>
-        /// <seealso cref="ILivePluginInfo.Start(object, StartDependencyImpact)"/>
-        /// <seealso cref="ILiveServiceInfo.Start(object)"/>
-        /// </remarks>
-        void RevokeCaller( object caller );
+        /// <param name="callerKey">The caller key, used to identify the caller. Must not be null.</param>
+        /// <returns>Since canceling commands may trigger a runtime error, this method must return a result.</returns>
+        IYodiiEngineResult RevokeCaller( string callerKey );
+
     }
 
 }

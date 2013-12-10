@@ -126,14 +126,22 @@ namespace Yodii.Engine
             }
         }
 
-        public bool Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None )
+        public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.None )
         {
-            throw new NotImplementedException();
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
+
+            YodiiCommand command = new YodiiCommand( callerKey, _pluginInfo.PluginId, true, impact );
+            return _engine.AddYodiiCommand( command );
         }
 
-        public void Stop( object caller )
+        public IYodiiEngineResult Stop( string callerKey )
         {
-            throw new NotImplementedException();
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
+
+            YodiiCommand command = new YodiiCommand( callerKey, _pluginInfo.PluginId, false, StartDependencyImpact.None );
+            return _engine.AddYodiiCommand( command );
         }
 
         internal void UpdateInfo( PluginData p )
@@ -145,6 +153,7 @@ namespace Yodii.Engine
 
             if( _service != null && p.DynamicStatus >= RunningStatus.Running ) _service.RunningPlugin = this;
         }
+
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
