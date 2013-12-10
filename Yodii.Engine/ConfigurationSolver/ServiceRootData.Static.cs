@@ -9,8 +9,6 @@ namespace Yodii.Engine
 {
     partial class ServiceRootData : ServiceData
     {
-        PluginData _runningPluginByConfig;
-
         internal ServiceRootData( Dictionary<string, ServiceData> allServices, IServiceInfo s, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
             : base( allServices, s, null, serviceStatus, isExternalServiceAvailable )
         {
@@ -23,31 +21,31 @@ namespace Yodii.Engine
 
         public PluginData RunningPluginByConfig
         {
-            get { return _runningPluginByConfig; }
+            get { return _theOnlyPlugin != null && _theOnlyPlugin.ConfigOriginalStatus == ConfigurationStatus.Running ? _theOnlyPlugin : null; }
         }
 
         internal void InitializeRunningService()
         {
             Debug.Assert( !Disabled );
             var s = GetRunningService();
-            Debug.Assert( ConfigOriginalStatus != ConfigurationStatus.Running  || (s != null || s.Disabled), "ConfigOriginalStatus == ConfigurationStatus.Running  ==>  s != null || s.Disabled" );
+            Debug.Assert( s == null || !s.Disabled, "s != null => !s.Disabled" );
+            Debug.Assert( ConfigOriginalStatus != ConfigurationStatus.Running || s != null || Disabled, "ConfigOriginalStatus == ConfigurationStatus.Running && s == null ==> this.Disabled" );
+
+            if( !Disabled )
+            {
+                if( s != null ) s.BuildDirectExcludedServices();
+                else BuildDirectExcludedServices();
+            }
         }
 
         internal override void OnAllPluginsAdded()
         {
             Debug.Assert( !Disabled );
             base.OnAllPluginsAdded();
-            if( !Disabled && _runningPluginByConfig != null )
+            if( !Disabled && _theOnlyPlugin != null )
             {
-                _runningPluginByConfig.Service.DoSetAsRunningService( null );
-                _theOnlyPlugin = _runningPluginByConfig;
+                _theOnlyPlugin.Service.DoSetAsRunningService( null );
             }
-        }
-
-        internal override void SetDisabled( ServiceDisabledReason r )
-        {
-            base.SetDisabled( r );
-            _runningPluginByConfig = null;
         }
 
         /// <summary>
@@ -60,9 +58,9 @@ namespace Yodii.Engine
             Debug.Assert( !Disabled );
             Debug.Assert( p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable );
             Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData constructor, Service is not yet set." );
-            if( _runningPluginByConfig == null )
+            if( _theOnlyPlugin == null )
             {
-                _runningPluginByConfig = p;
+                _theOnlyPlugin = p;
             }
             else
             {

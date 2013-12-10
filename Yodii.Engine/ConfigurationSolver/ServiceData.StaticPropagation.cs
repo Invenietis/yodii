@@ -6,13 +6,14 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using Yodii.Model;
 using Yodii.Engine;
+using CK.Core;
 
 namespace Yodii.Engine
 {
     partial class ServiceData
     {
-        // This is internal for ServiceRootData to expose it.
-        internal PluginData _theOnlyPlugin;
+        // This is protected for ServiceRootData to expose it.
+        protected PluginData _theOnlyPlugin;
         CommonServiceReferences _commonReferences;
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Yodii.Engine
                         if( spec._theOnlyPlugin != null ) Add( s._allServices, spec._theOnlyPlugin );
                         else if( spec._commonReferences != null ) Add( spec._commonReferences );
                         else Add( spec );
-                        if( IsEmpty ) break;
+                        if( IsEmpty ) return false;
                     }
                     spec = spec.NextSpecialization;
                 }
@@ -77,11 +78,12 @@ namespace Yodii.Engine
                     if( !p.Disabled )
                     {
                         Add( s._allServices, p );
-                        if( IsEmpty ) break;
+                        if( IsEmpty ) return false;
                     }
                     p = p.NextPluginForService;
                 }
-                return _firstRef != null;
+                Debug.Assert( _firstRef != null );
+                return true;
             }
 
             public bool SetSolvedConfigurationStatus( SolvedConfigurationStatus solvedStatus, ServiceSolvedConfigStatusReason reason )
@@ -102,7 +104,7 @@ namespace Yodii.Engine
             void Add( CommonServiceReferences csr )
             {
                 if( _initialized ) IntersectWith( csr );
-                else 
+                else
                 {
                     Initialize( csr );
                     _initialized = true;
@@ -112,7 +114,7 @@ namespace Yodii.Engine
             void Add( Dictionary<string, ServiceData> allServices, PluginData p )
             {
                 if( _initialized ) IntersectWith( p );
-                else 
+                else
                 {
                     Initialize( allServices, p );
                     _initialized = true;
@@ -184,7 +186,80 @@ namespace Yodii.Engine
                 return null;
             }
             #endregion
-        
+
+        }
+
+        /// <summary>
+        /// Captures excluded service references of all plugins.
+        /// </summary>
+        class ExcludedServiceReferences
+        {
+            HashSet<ServiceData> _services;
+
+            public ExcludedServiceReferences()
+            {
+            }
+
+            public IEnumerable<ServiceData> Services
+            {
+                get { return _services; }
+            }
+
+            public void Reset()
+            {
+                _services = null;
+            }
+
+            public bool IsEmpty
+            {
+                get { return _services != null && _services.Count == 0; }
+            }
+
+            /// <summary>
+            /// Returns true if there is at least one Service referenced by ALL of our implementations. 
+            /// </summary>
+            /// <param name="s"></param>
+            /// <returns></returns>
+            public bool Add( ServiceData s )
+            {
+                ServiceData spec = s.FirstSpecialization;
+                while( spec != null )
+                {
+                    if( !spec.Disabled )
+                    {
+                        if( spec._theOnlyPlugin != null ) Add( spec._theOnlyPlugin.ExcludedServices );
+                        else Add( spec );
+                        if( IsEmpty ) return false;
+                    }
+                    spec = spec.NextSpecialization;
+                }
+                PluginData p = s.FirstPlugin;
+                while( p != null )
+                {
+                    if( !p.Disabled )
+                    {
+                        Add( p.ExcludedServices );
+                        if( IsEmpty ) return false;
+                    }
+                    p = p.NextPluginForService;
+                }
+                Debug.Assert( !IsEmpty );
+                return true;
+            }
+
+            private void Add( IEnumerable<ServiceData> services )
+            {
+                if( _services == null ) _services = new HashSet<ServiceData>( services );
+                else _services.IntersectWith( services );
+            }
+
+            public void SetDisableStatusOnExcluded()
+            {
+                foreach( var s in _services )
+                {
+                    if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.ExcludingServiceIsBlocking );
+                }
+            }
         }
 
         /// <summary>
@@ -194,7 +269,7 @@ namespace Yodii.Engine
         void InitializePropagation( int nbAvailable, bool fromConfig )
         {
             Debug.Assert( nbAvailable == TotalAvailablePluginCount );
-            if ( nbAvailable == 1 )
+            if( nbAvailable == 1 )
             {
                 if( _theOnlyPlugin == null ) RetrieveTheOnlyPlugin( fromConfig );
             }
@@ -208,7 +283,7 @@ namespace Yodii.Engine
         {
             if( _theOnlyPlugin != null ) 
             {
-                if( !_theOnlyPlugin.SetSolvedConfigurationStatus( _configSolvedStatus, PluginRunningRequirementReason.FromServiceToSinglePlugin ) 
+                if( !_theOnlyPlugin.SetSolvedConfigurationStatus( ConfigSolvedStatus, PluginRunningRequirementReason.FromServiceToSinglePlugin ) 
                     && !Disabled )
                 {
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToSinglePluginFailed );
@@ -216,10 +291,18 @@ namespace Yodii.Engine
             }
             else if( _commonReferences != null )
             {
-                if( !_commonReferences.SetSolvedConfigurationStatus( _configSolvedStatus, ServiceSolvedConfigStatusReason.FromServiceToCommonPluginReferences ) 
+                if( !_commonReferences.SetSolvedConfigurationStatus( ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromServiceToCommonPluginReferences ) 
                     && !Disabled )
                 {
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToCommonPluginReferencesFailed );
+                }
+            }
+            if( ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+            {
+                var excludedServices = new ExcludedServiceReferences();
+                if( excludedServices.Add( this ) )
+                {
+                    excludedServices.SetDisableStatusOnExcluded();
                 }
             }
         }
@@ -227,7 +310,7 @@ namespace Yodii.Engine
         void RetrieveTheOnlyPlugin( bool fromConfig )
         {
             Debug.Assert( _theOnlyPlugin == null && TotalAvailablePluginCount == 1 );
-            if ( AvailablePluginCount == 0 )
+            if( AvailablePluginCount == 0 )
             {
                 ServiceData spec = FirstSpecialization;
                 while( spec != null )
@@ -245,12 +328,23 @@ namespace Yodii.Engine
                 _theOnlyPlugin = FirstPlugin;
                 while( _theOnlyPlugin.Disabled ) _theOnlyPlugin = _theOnlyPlugin.NextPluginForService;
             }
-            Debug.Assert( _theOnlyPlugin != null );
             // Forget our common service references.
             _commonReferences = null;
-            // As soon as the only plugin appears, propagate our requirement to it.
-            var reason = fromConfig ? PluginRunningRequirementReason.FromServiceConfigToSinglePlugin : PluginRunningRequirementReason.FromServiceToSinglePlugin;
-            _theOnlyPlugin.SetSolvedConfigurationStatus( ConfigSolvedStatus, reason );
+            
+            // TheOnlyPlugin can be null when a service has been disabled:
+            // - The disabled service disables its plugin one after the other.
+            // - When a service is disabled, its OnPluginDisabled method do not call InitializePropagation: its TheOnlyPlugin is not set.
+            // - The generalization.TotalAvailablePluginCount may fall to 1 that triggers this retrieval.
+            // ==> There is no TheOnlyPlugin below.
+            // This happens only when disabling a service and is only a temporary situation during when TotalAvailablePluginCount == 1 ==> TheOnlyPlugin != null
+            // is not true.
+
+            if( _theOnlyPlugin != null )
+            {
+                // As soon as the only plugin appears, propagate our requirement to it.
+                var reason = fromConfig ? PluginRunningRequirementReason.FromServiceConfigToSinglePlugin : PluginRunningRequirementReason.FromServiceToSinglePlugin;
+                _theOnlyPlugin.SetSolvedConfigurationStatus( ConfigSolvedStatus, reason );
+            }
         }
         
         void RetrieveOrUpdateTheCommonServiceReferences( bool fromConfig )
@@ -266,36 +360,15 @@ namespace Yodii.Engine
                     if( !Disabled ) SetDisabled( ServiceDisabledReason.RequirementPropagationToSinglePluginFailed );
                 }
             }
-        }
-
-        public bool DisableSiblingServices()
-        {        
-            List<ServiceData> _mustBeDisabledServices = new List<ServiceData>();
-            Debug.Assert( !Disabled && ConfigSolvedStatus == SolvedConfigurationStatus.Running );
-            ServiceData root = GeneralizationRoot;
-            ServiceData parent = Generalization;
-            ServiceData s = this;
-
-            while ( s != root )
+            if( ConfigSolvedStatus == SolvedConfigurationStatus.Running )
             {
-                ServiceData sibling = parent.FirstSpecialization;
-                while ( sibling != null && sibling != s)
+                var excludedServices = new ExcludedServiceReferences();
+                if( excludedServices.Add( this ) )
                 {
-                    if ( sibling.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
-                    {
-                        if ( !sibling.Disabled )
-                        {
-                            sibling.SetDisabled( ServiceDisabledReason.SiblingIsRunning );
-                            _mustBeDisabledServices.Add( sibling );
-                        }
-                    }
-                    sibling = parent.NextSpecialization;
+                    excludedServices.SetDisableStatusOnExcluded();
                 }
-                s = parent;
-                parent = parent.Generalization;   
             }
-            return true;
-       }
+        }
         
     }
 }

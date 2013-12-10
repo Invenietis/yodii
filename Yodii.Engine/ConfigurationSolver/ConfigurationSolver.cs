@@ -35,7 +35,7 @@ namespace Yodii.Engine
                 RegisterService( finalConfig, sI );
             }
             // Service trees have been built and we have the roots.
-            // We can now handle MustRun services: there must be at most one such service by service 
+            // We can now handle Running services: there must be at most one such service by service 
             // root otherwise it is a configuration error.
             foreach( var root in _serviceRoots )
             {
@@ -53,7 +53,7 @@ namespace Yodii.Engine
             {
                 if( !root.Disabled ) root.OnAllPluginsAdded();
             }
-            // Now, we apply ServiceReference MustExist constraints from every plugins to their referenced services.
+            // Now, we apply ServiceReference Running constraints from every plugins to their referenced services.
             foreach( PluginData p in _plugins.Values )
             {
                 // When a plugin is disabled because of a disabled required service reference and it implements a service, the service
@@ -63,7 +63,6 @@ namespace Yodii.Engine
                 if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
-                    p.CheckServicesWhenMustBeDisabled();
                 }
             }
             // Time to conclude about configuration and to initialize dynamic resolution.
