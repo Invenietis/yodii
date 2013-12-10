@@ -1,17 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Timers;
-using System.Threading;
-using Yodii.Model;
-using System.Diagnostics;
-using Yodii.Lab.Mocks;
-using Yodii.Lab.Utils;
-using Yodii.Lab.ConfigurationEditor;
 using GraphX;
 
 namespace Yodii.Lab
@@ -23,10 +11,14 @@ namespace Yodii.Lab
     {
         readonly MainWindowViewModel _vm;
 
+        /// <summary>
+        /// Creates the main window.
+        /// </summary>
         public MainWindow()
         {
-            _vm = new MainWindowViewModel();
+            _vm = new MainWindowViewModel(false);
             this.DataContext = _vm;
+            _vm.NewNotification += _vm_NewNotification;
             InitializeComponent();
 
             GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
@@ -51,6 +43,14 @@ namespace Yodii.Lab
             GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
 
             this.Loaded += MainWindow_Loaded;
+        }
+
+        void _vm_NewNotification( object sender, NotificationEventArgs e )
+        {
+            if( this.NotificationControl != null )
+            {
+                this.NotificationControl.AddNotification( e.Notification );
+            }
         }
 
         void MainWindow_Loaded( object sender, RoutedEventArgs e )

@@ -9,7 +9,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
-    public class MockAssemblyInfo : IAssemblyInfo
+    internal class MockAssemblyInfo : IAssemblyInfo
     {
         readonly string _assemblyFileName;
         readonly List<IPluginInfo> _plugins;

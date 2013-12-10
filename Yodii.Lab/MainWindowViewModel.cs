@@ -1,36 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using CK.Core;
-using Yodii.Lab.Mocks;
-using Yodii.Model;
-using System.Windows.Input;
-using System.Collections.Specialized;
-using Yodii.Lab.Utils;
-using System.Xml;
 using System.IO;
-using Yodii.Engine;
-using Yodii.Lab.ConfigurationEditor;
+using System.Linq;
 using System.Windows;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
-using GraphX.GraphSharp.Algorithms.Layout;
+using System.Windows.Input;
+using System.Xml;
+using CK.Core;
 using GraphX;
+using GraphX.GraphSharp.Algorithms.Layout;
+using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
 using GraphX.GraphSharp.Algorithms.Layout.Simple.Tree;
+using Yodii.Lab.ConfigurationEditor;
+using Yodii.Lab.Mocks;
+using Yodii.Lab.Utils;
+using Yodii.Model;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// View model for the main window.
+    /// </summary>
     public class MainWindowViewModel : ViewModelBase
     {
+        /// <summary>
+        /// Fired when a new notification is requested, to display data the user should see.
+        /// </summary>
+        internal event EventHandler<NotificationEventArgs> NewNotification;
+
         #region Fields
 
         readonly YodiiGraph _graph;
-        readonly ServiceInfoManager _serviceInfoManager;
+        readonly LabStateManager _labStateManager;
 
         readonly ICommand _removeSelectedVertexCommand;
-        readonly ICommand _runStaticSolverCommand;
+        readonly ICommand _startEngineCommand;
+        readonly ICommand _stopEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
         readonly ICommand _reorderGraphLayoutCommand;
@@ -38,9 +43,11 @@ namespace Yodii.Lab
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
 
-        YodiiEngine _engine; // Can be swapped through XML loading.
+        readonly ActivityMonitor _activityMonitor;
+
+        readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
-        bool _isLive;
+
         LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
         ILayoutParameters _graphLayoutParameters;
 
@@ -50,33 +57,130 @@ namespace Yodii.Lab
 
         #region Constructor
 
-        public MainWindowViewModel()
+        /// <summary>
+        /// Creates a new instance of this ViewModel.
+        /// </summary>
+        /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
+        public MainWindowViewModel(bool loadDefaultState = false)
         {
-            _serviceInfoManager = new ServiceInfoManager();
-            _engine = new YodiiEngine( _serviceInfoManager );
+            // Lab objects, live objects and static infos are managed in the LabStateManager.
+            _labStateManager = new LabStateManager();
+            _engine = _labStateManager.Engine;
 
-            // Live objects and static infos are managed in the ServiceInfoManager.
+            _labStateManager.Engine.PropertyChanged += Engine_PropertyChanged;
+            _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
+            _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
 
-            _graph = new YodiiGraph( _engine.ConfigurationManager, _serviceInfoManager );
+            _activityMonitor = new ActivityMonitor();
 
-            _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, HasSelectedVertex );
-            _runStaticSolverCommand = new RelayCommand( RunStaticSolverExecute );
+            _activityMonitor.OpenTrace().Send( "Hello world" );
+
+            _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
+
+            _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, CanEditSelectedVertex );
+            _startEngineCommand = new RelayCommand( StartEngineExecute, CanStartEngine );
+            _stopEngineCommand = new RelayCommand( StopEngineExecute, CanStopEngine );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
-            _createPluginCommand = new RelayCommand( CreatePluginExecute );
-            _createServiceCommand = new RelayCommand( CreateServiceExecute );
+            _createPluginCommand = new RelayCommand( CreatePluginExecute, CanEditItems );
+            _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.Tree;
+            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.KK;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-            LoadDefaultState();
+            if( loadDefaultState ) LoadDefaultState();
+        }
+
+        void Engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            switch( e.PropertyName )
+            {
+                case "IsRunning":
+                    if( _engine.IsRunning )
+                    {
+                        RaiseNewNotification( "Entering simulation mode", "Yodii engine is now running." );
+                    }
+                    else
+                    {
+                        RaiseNewNotification( "Entering build mode", "Yodii engine has been stopped." );
+                    }
+                    break;
+            }
+        }
+
+        void PluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        // Reset selection if deleted vertex was selected.
+                        if( SelectedVertex != null && SelectedVertex.IsService && SelectedVertex.LabServiceInfo.ServiceInfo == i )
+                        {
+                            SelectedVertex = null;
+                        }
+
+                        IPluginInfo newPlugin = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin added",
+                            String.Format( "Added new plugin: '{0}' ({1})", newPlugin.PluginFullName, newPlugin.PluginId )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        // Reset selection if deleted vertex was selected.
+                        if( SelectedVertex != null && SelectedVertex.IsPlugin && SelectedVertex.LabPluginInfo.PluginInfo == i)
+                        {
+                            SelectedVertex = null;
+                        }
+
+                        IPluginInfo oldPlugin = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin removed",
+                            String.Format( "Removed plugin: '{0}' ({1})", oldPlugin.PluginFullName, oldPlugin.PluginId )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    RaiseNewNotification( "Plugins reset", "Removed all plugins." );
+                    break;
+            }
+        }
+
+        void ServiceInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IServiceInfo newService = (IServiceInfo)i;
+                        RaiseNewNotification( "Service added",
+                            String.Format( "Added new service: '{0}'", newService.ServiceFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IServiceInfo oldService = (IServiceInfo)i;
+                        RaiseNewNotification( "Service removed",
+                            String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    RaiseNewNotification( "Services reset", "Removed all services." );
+                    break;
+            }
         }
 
         private void LoadDefaultState()
         {
-            _serviceInfoManager.ClearState();
+            _labStateManager.ClearState();
             XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
 
             LoadStateFromXmlReader( r );
@@ -88,14 +192,14 @@ namespace Yodii.Lab
 
         private void OpenConfigurationEditorExecute( object param )
         {
-            Debug.Assert( param == null || param is Window);
+            Debug.Assert( param == null || param is Window );
             if( _activeConfEditorWindow != null )
             {
                 _activeConfEditorWindow.Activate();
             }
             else
             {
-                _activeConfEditorWindow = new ConfigurationEditorWindow( ConfigurationManager, ServiceInfoManager );
+                _activeConfEditorWindow = new ConfigurationEditorWindow( ConfigurationManager, LabState );
                 _activeConfEditorWindow.Owner = (Window)param;
                 _activeConfEditorWindow.Closing += ( s, e2 ) => { _activeConfEditorWindow = null; };
 
@@ -105,6 +209,7 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
+            RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
             if( param == null )
             {
                 // Refresh layout.
@@ -114,7 +219,7 @@ namespace Yodii.Lab
             {
                 // Re-create graph with new layout and parameters.
                 GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
-                GraphLayoutParameters = GetDefaultLayoutParameters(GraphLayoutAlgorithmType);
+                GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
                 Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
             }
@@ -122,6 +227,12 @@ namespace Yodii.Lab
 
         private void CreateServiceExecute( object param )
         {
+            if( _engine.IsRunning )
+            {
+                RaiseNewNotification( "Engine is running", "Cannot create Services while engine is running." );
+                return;
+            }
+
             Debug.Assert( param == null || param is Window );
             IServiceInfo selectedService = null;
 
@@ -129,11 +240,11 @@ namespace Yodii.Lab
             {
                 if( SelectedVertex.IsService )
                 {
-                    selectedService = SelectedVertex.LiveServiceInfo.ServiceInfo;
+                    selectedService = SelectedVertex.LabServiceInfo.ServiceInfo;
                 }
                 else if( SelectedVertex.IsPlugin )
                 {
-                    selectedService = SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                    selectedService = SelectedVertex.LabPluginInfo.PluginInfo.Service;
                 }
             }
 
@@ -143,6 +254,7 @@ namespace Yodii.Lab
             {
                 if( ServiceInfos.Any( si => si.ServiceFullName == nse.ServiceName ) )
                 {
+                    RaiseNewNotification( new Notification() { Title = String.Format( "Service {0} already exists", nse.ServiceName ) } );
                     nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
                 }
                 else
@@ -159,6 +271,12 @@ namespace Yodii.Lab
 
         private void CreatePluginExecute( object param )
         {
+            if( _engine.IsRunning )
+            {
+                RaiseNewNotification( "Engine is running", "Cannot create Plugins while engine is running." );
+                return;
+            }
+
             Debug.Assert( param != null || param is Window );
             IServiceInfo selectedService = null;
 
@@ -166,11 +284,11 @@ namespace Yodii.Lab
             {
                 if( SelectedVertex.IsService )
                 {
-                    selectedService = SelectedVertex.LiveServiceInfo.ServiceInfo;
+                    selectedService = SelectedVertex.LabServiceInfo.ServiceInfo;
                 }
                 else if( SelectedVertex.IsPlugin )
                 {
-                    selectedService = SelectedVertex.LivePluginInfo.PluginInfo.Service;
+                    selectedService = SelectedVertex.LabPluginInfo.PluginInfo.Service;
                 }
             }
 
@@ -180,7 +298,13 @@ namespace Yodii.Lab
             {
                 if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
                 {
+                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
                     npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
+                }
+                else if( String.IsNullOrWhiteSpace( npe.PluginName ) )
+                {
+                    RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
+                    npe.CancelReason = "Please enter a name for this plugin.";
                 }
                 else
                 {
@@ -200,65 +324,77 @@ namespace Yodii.Lab
 
         private void OpenFileExecute( object param )
         {
-            MessageBox.Show( "Loading is temporarily disabled." );
-            return;
-            // TODO
-            //Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
 
-            //dlg.DefaultExt = ".xml";
-            //dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            //dlg.CheckFileExists = true;
-            //dlg.CheckPathExists = true;
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckFileExists = true;
+            dlg.CheckPathExists = true;
 
-            //Nullable<bool> result = dlg.ShowDialog();
+            Nullable<bool> result = dlg.ShowDialog();
 
-            //if( result == true )
-            //{
-            //    string filePath = dlg.FileName;
-            //    var r = LoadState( filePath );
-            //    if( !r )
-            //    {
-            //        MessageBox.Show( r.Reason, "Couldn't open file" );
-            //    }
-            //}
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = LoadState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                }
+            }
         }
 
         private void SaveAsFileExecute( object param )
         {
-            MessageBox.Show( "Saving is temporarily disabled." );
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
 
-            // TODO
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckPathExists = true;
+            dlg.OverwritePrompt = true;
+            dlg.AddExtension = true;
 
-            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            Nullable<bool> result = dlg.ShowDialog();
 
-            //dlg.DefaultExt = ".xml";
-            //dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            //dlg.CheckPathExists = true;
-            //dlg.OverwritePrompt = true;
-            //dlg.AddExtension = true;
-
-            //Nullable<bool> result = dlg.ShowDialog();
-
-            //if( result == true )
-            //{
-            //    string filePath = dlg.FileName;
-            //    var r = SaveState( filePath );
-            //    if( !r )
-            //    {
-            //        MessageBox.Show( r.Reason, "Couldn't save file" );
-            //    }
-            //}
+            if( result == true )
+            {
+                string filePath = dlg.FileName;
+                var r = SaveState( filePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+            }
         }
 
-        private void RunStaticSolverExecute( object obj )
+        private void StartEngineExecute( object obj )
         {
-            // TODO
-            MessageBox.Show( "Static resolution is not implemented yet." );
+            RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
+            var startResult = _engine.Start();
+
+            if( startResult == null )
+            {
+                RaiseNewNotification( "Error", "YodiiEngine.Start() returned null!" );
+                return;
+            }
+
+            if( !startResult.Success )
+            {
+                RaiseNewNotification( "Startup failed", "Couldn't start engine." );
+                return;
+            }
+
+            RaiseNewNotification( "Engine startup detail", startResult.Describe() );
         }
 
-        private bool HasSelectedVertex( object obj )
+        private bool CanEditSelectedVertex( object obj )
         {
-            return SelectedVertex != null;
+            return SelectedVertex != null && CanEditItems(null);
+        }
+
+        private bool CanEditItems( object obj )
+        {
+            return !_engine.IsRunning;
         }
 
         private void RemoveSelectedVertexExecute( object obj )
@@ -267,37 +403,45 @@ namespace Yodii.Lab
 
             if( SelectedVertex.IsPlugin )
             {
-                this.RemovePlugin( SelectedVertex.LivePluginInfo.PluginInfo );
+                var name = SelectedVertex.LabPluginInfo.PluginInfo.Description;
+                this.RemovePlugin( SelectedVertex.LabPluginInfo.PluginInfo );
             }
             else if( SelectedVertex.IsService )
             {
-                this.RemoveService( SelectedVertex.LiveServiceInfo.ServiceInfo );
+                var name = SelectedVertex.LabServiceInfo.ServiceInfo.ServiceFullName;
+                this.RemoveService( SelectedVertex.LabServiceInfo.ServiceInfo );
             }
 
             SelectedVertex = null;
         }
 
+        private bool CanStopEngine( object obj )
+        {
+            return LabState.Engine.IsRunning;
+        }
+
+        private bool CanStartEngine( object obj )
+        {
+            return !LabState.Engine.IsRunning;
+        }
+
+        private void StopEngineExecute( object obj )
+        {
+            if( !LabState.Engine.IsRunning ) return;
+
+            LabState.Engine.Stop();
+        }
+
         #endregion Command handlers
 
         #region Properties
-        /// <summary>
-        /// Returns true if the Lab is live and running (plugins can be started, stopped, and monitored).
-        /// Returns false if the Lab is not running (plugins can be changed).
-        /// </summary>
-        public bool IsLive
-        {
-            get
-            {
-                return _isLive;
-            }
-        }
 
         /// <summary>
         /// Services created in this Lab.
         /// </summary>
         public ICKObservableReadOnlyCollection<IServiceInfo> ServiceInfos
         {
-            get { return _serviceInfoManager.ServiceInfos; }
+            get { return _labStateManager.ServiceInfos; }
         }
 
         /// <summary>
@@ -305,23 +449,7 @@ namespace Yodii.Lab
         /// </summary>
         public ICKObservableReadOnlyCollection<IPluginInfo> PluginInfos
         {
-            get { return _serviceInfoManager.PluginInfos; }
-        }
-
-        /// <summary>
-        /// Services created in this Lab (live).
-        /// </summary>
-        public ICKObservableReadOnlyCollection<ILiveServiceInfo> LiveServiceInfos
-        {
-            get { return _serviceInfoManager.LiveServiceInfos; }
-        }
-
-        /// <summary>
-        /// Plugins created in this Lab (live).
-        /// </summary>
-        public ICKObservableReadOnlyCollection<ILivePluginInfo> LivePluginInfos
-        {
-            get { return _serviceInfoManager.LivePluginInfos; }
+            get { return _labStateManager.PluginInfos; }
         }
 
         /// <summary>
@@ -427,18 +555,49 @@ namespace Yodii.Lab
             get { return SelectedVertex != null; }
         }
 
-        public ServiceInfoManager ServiceInfoManager
+        /// <summary>
+        /// State manager for this lab.
+        /// </summary>
+        public LabStateManager LabState
         {
-            get { return _serviceInfoManager; }
+            get { return _labStateManager; }
         }
 
+        /// <summary>
+        /// Command to remove a vertex that was selected beforehand.
+        /// </summary>
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
+        /// <summary>
+        /// Command to open the ConfigurationManager editor.
+        /// </summary>
         public ICommand OpenConfigurationEditorCommand { get { return _openConfigurationEditorCommand; } }
-        public ICommand RunStaticSolverCommand { get { return _runStaticSolverCommand; } }
+        /// <summary>
+        /// Command to start the engine.
+        /// </summary>
+        public ICommand StartEngineCommand { get { return _startEngineCommand; } }
+        /// <summary>
+        /// Command to stop the engine.
+        /// </summary>
+        public ICommand StopEngineCommand { get { return _stopEngineCommand; } }
+        /// <summary>
+        /// Command to open a state file and load it.
+        /// </summary>
         public ICommand OpenFileCommand { get { return _openFileCommand; } }
+        /// <summary>
+        /// Command to select a state file to save to, then save.
+        /// </summary>
         public ICommand SaveAsFileCommand { get { return _saveAsFileCommand; } }
+        /// <summary>
+        /// Command to reorder the graph, or to change the graph's layout.
+        /// </summary>
         public ICommand ReorderGraphLayoutCommand { get { return _reorderGraphLayoutCommand; } }
+        /// <summary>
+        /// Command to open a window allowing creation of a new plugin.
+        /// </summary>
         public ICommand CreatePluginCommand { get { return _createPluginCommand; } }
+        /// <summary>
+        /// Command to open a window allowing creation of a new service.
+        /// </summary>
         public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
         #endregion Properties
 
@@ -464,7 +623,7 @@ namespace Yodii.Lab
         {
             if( serviceName == null ) throw new ArgumentNullException( "serviceName" );
 
-            ServiceInfo newService = _serviceInfoManager.CreateNewService( serviceName, (ServiceInfo)generalization );
+            ServiceInfo newService = _labStateManager.CreateNewService( serviceName, (ServiceInfo)generalization );
 
 
             return newService;
@@ -495,7 +654,7 @@ namespace Yodii.Lab
 
             if( service != null && !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
-            PluginInfo newPlugin = _serviceInfoManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
+            PluginInfo newPlugin = _labStateManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
 
             return newPlugin;
         }
@@ -514,37 +673,65 @@ namespace Yodii.Lab
             if( !ServiceInfos.Contains( (ServiceInfo)service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
             if( !PluginInfos.Contains( (PluginInfo)plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
 
-            _serviceInfoManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
+            _labStateManager.SetPluginDependency( (PluginInfo)plugin, (ServiceInfo)service, runningRequirement );
         }
 
+        /// <summary>
+        /// Removes and deletes a plugin.
+        /// </summary>
+        /// <param name="pluginInfo">Plugin to remove</param>
         public void RemovePlugin( IPluginInfo pluginInfo )
         {
-            _serviceInfoManager.RemovePlugin( (PluginInfo)pluginInfo );
+            _labStateManager.RemovePlugin( (PluginInfo)pluginInfo );
         }
 
+        /// <summary>
+        /// Removes and deletes a service.
+        /// </summary>
+        /// <param name="serviceInfo">Service to remove</param>
         public void RemoveService( IServiceInfo serviceInfo )
         {
-            _serviceInfoManager.RemoveService( (ServiceInfo)serviceInfo );
+            _labStateManager.RemoveService( (ServiceInfo)serviceInfo );
         }
 
+        /// <summary>
+        /// Gets a service from the state manager with its name.
+        /// </summary>
+        /// <param name="name">Service name</param>
+        /// <returns>Service</returns>
         public ServiceInfo GetServiceInfoByName( string name )
         {
-            return _serviceInfoManager.ServiceInfos.Where( x => x.ServiceFullName == name ).First();
+            return _labStateManager.ServiceInfos.Where( x => x.ServiceFullName == name ).First();
         }
 
+        /// <summary>
+        /// Get plugins with names matching this one.
+        /// </summary>
+        /// <param name="name">Plugin name.</param>
+        /// <returns>Plugins matching name.</returns>
         public IEnumerable<PluginInfo> GetPluginInfosByName( string name )
         {
-            return _serviceInfoManager.PluginInfos.Where( x => x.PluginFullName == name );
+            return _labStateManager.PluginInfos.Where( x => x.PluginFullName == name );
         }
 
+        /// <summary>
+        /// Get plugin associated to this GUID.
+        /// </summary>
+        /// <param name="guid">Plugin GUID.</param>
+        /// <returns>Plugin.</returns>
         public PluginInfo GetPluginInfoById( Guid guid )
         {
-            return _serviceInfoManager.PluginInfos.Where( x => x.PluginId == guid ).First();
+            return _labStateManager.PluginInfos.Where( x => x.PluginId == guid ).First();
         }
 
+        /// <summary>
+        /// Load the lab state from a XML file.
+        /// </summary>
+        /// <param name="filePath">XML file to load</param>
+        /// <returns>Operation result</returns>
         public DetailedOperationResult LoadState( string filePath )
         {
-            _serviceInfoManager.ClearState();
+            _labStateManager.ClearState();
 
             XmlReaderSettings rs = new XmlReaderSettings();
 
@@ -554,81 +741,102 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LoadStateFromXmlReader(xr);
+                        LoadStateFromXmlReader( xr );
                     }
                 }
             }
-            catch( Exception e ) // TODO: Detailed exception handling and undo
+            catch( Exception e ) // TODO: Detailed exception handling and _serviceInfoManager undo
             {
                 return new DetailedOperationResult( false, e.Message );
             }
 
+            RaiseNewNotification( new Notification() { Title = "Loaded state", Message = filePath } );
             return new DetailedOperationResult( true );
         }
 
-        public DetailedOperationResult SaveState( string tempFilePath )
+        /// <summary>
+        /// Saves the lab state to a file.
+        /// </summary>
+        /// <param name="filePath">XML file to use</param>
+        /// <returns>Operation result</returns>
+        public DetailedOperationResult SaveState( string filePath )
         {
-            // TODO
+            XmlWriterSettings ws = new XmlWriterSettings();
+            ws.NewLineHandling = NewLineHandling.None;
+            ws.Indent = true;
 
-            //XmlWriterSettings ws = new XmlWriterSettings();
-            //ws.NewLineHandling = NewLineHandling.None;
-            //ws.Indent = true;
+            try
+            {
+                using( FileStream fs = File.Open( filePath, FileMode.Create ) )
+                {
+                    using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
+                    {
+                        xw.WriteStartDocument( true );
+                        xw.WriteStartElement( "YodiiLabState" );
 
-            //try
-            //{
-            //    using( FileStream fs = File.Open( tempFilePath, FileMode.Create ) )
-            //    {
-            //        using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
-            //        {
-            //            xw.WriteStartDocument( true );
-            //            xw.WriteStartElement( "YodiiLabState" );
+                        xw.WriteStartElement( "ServicePluginInfos" );
 
-            //            xw.WriteStartElement( "ServicePluginInfos" );
+                        MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
 
-            //            MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
+                        xw.WriteEndElement();
 
-            //            xw.WriteEndElement();
+                        xw.WriteStartElement( "ConfigurationManager" );
 
-            //            xw.WriteStartElement( "ConfigurationManager" );
+                        //TODO: ConfigurationManager XML serializer
+                        RaiseNewNotification( new Notification() { Title = "Could not save ConfigurationManager", Message = "Saving of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
+                        //ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
 
-            //            ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
+                        xw.WriteEndElement();
 
-            //            xw.WriteEndElement();
+                        xw.WriteEndElement();
+                        xw.WriteEndDocument();
+                    }
+                }
+            }
+            catch( Exception e ) // TODO: Detailed exception handling
+            {
+                return new DetailedOperationResult( false, e.Message );
+            }
 
-            //            xw.WriteEndElement();
-            //            xw.WriteEndDocument();
-            //        }
-            //    }
-            //}
-            //catch( Exception e ) // TODO: Detailed exception handling
-            //{
-            //    return new DetailedOperationResult( false, e.Message );
-            //}
-
+            RaiseNewNotification( new Notification() { Title = "Saved state", Message = filePath } );
             return new DetailedOperationResult( true );
         }
 
+        /// <summary>
+        /// Sets service as selected.
+        /// </summary>
+        /// <param name="serviceInfo">Service to select</param>
         public void SelectService( IServiceInfo serviceInfo )
         {
-            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LiveServiceInfo.ServiceInfo == serviceInfo ).First();
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsService && x.LabServiceInfo.ServiceInfo == serviceInfo ).First();
             SelectedVertex = vertexToSelect;
         }
 
+        /// <summary>
+        /// Sets plugin as selected.
+        /// </summary>
+        /// <param name="pluginInfo">Plugin to select</param>
         public void SelectPlugin( IPluginInfo pluginInfo )
         {
-            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LivePluginInfo.PluginInfo == pluginInfo ).First();
+            YodiiGraphVertex vertexToSelect = Graph.Vertices.Where( x => x.IsPlugin && x.LabPluginInfo.PluginInfo == pluginInfo ).First();
             SelectedVertex = vertexToSelect;
         }
 
-        public DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
+        /// <summary>
+        /// Attempts to rename a service.
+        /// </summary>
+        /// <param name="serviceInfo">Service to rename</param>
+        /// <param name="newName">New service name</param>
+        /// <returns>Operation result</returns>
+        internal DetailedOperationResult RenameService( ServiceInfo serviceInfo, string newName )
         {
-            return _serviceInfoManager.RenameService( serviceInfo, newName );
+            return _labStateManager.RenameService( serviceInfo, newName );
         }
         #endregion Public methods
 
         #region Private methods
 
-        private static ILayoutParameters GetDefaultLayoutParameters(LayoutAlgorithmTypeEnum layoutType)
+        private static ILayoutParameters GetDefaultLayoutParameters( LayoutAlgorithmTypeEnum layoutType )
         {
             switch( layoutType )
             {
@@ -652,24 +860,44 @@ namespace Yodii.Lab
             }
         }
 
-        private void LoadStateFromXmlReader(XmlReader xr)
+        private void LoadStateFromXmlReader( XmlReader xr )
         {
-            // TODO
+            while( xr.Read() )
+            {
+                if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
+                {
+                    _labStateManager.LoadFromXmlReader( xr.ReadSubtree() );
+                }
+                else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
+                {
+                    //TODO: Adapt ConfigurationManagerXmlSerializer with new Engine.ConfigurationManager
+                    //var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
+                    //ConfigurationManager = manager;
+                    RaiseNewNotification( new Notification() { Title = "Could not load ConfigurationManager", Message = "Loading of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
+                }
+            }
+        }
 
-            //while( xr.Read() )
-            //{
-            //    if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
-            //    {
-            //        _serviceInfoManager.LoadFromXmlReader( xr.ReadSubtree() );
-            //    }
-            //    else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
-            //    {
-            //        var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-            //        ConfigurationManager = manager;
-            //    }
-            //}
+        private void RaiseNewNotification( Notification n )
+        {
+            if( NewNotification != null )
+            {
+                NewNotification( this, new NotificationEventArgs( n ) );
+            }
+        }
+
+        private void RaiseNewNotification( string title = "Notification", string message = "" )
+        {
+            Notification n = new Notification()
+            {
+                Title = title,
+                Message = message
+            };
+
+            RaiseNewNotification( n );
         }
 
         #endregion Private methods
     }
+
 }

@@ -1,5 +1,6 @@
 ﻿<UserControl
     x:Class="Yodii.Lab.YodiiVertexControl"
+    x:ClassModifier="internal"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,6 +15,10 @@
     <UserControl.Resources>
         <local:EnumToBooleanConverter
             x:Key="EnumToBooleanConv" />
+        <BooleanToVisibilityConverter
+            x:Key="BoolToVisibilityConv" />
+        
+        
         
         <ObjectDataProvider
             MethodName="GetValues"
@@ -82,6 +87,13 @@
                             </Style>
                         </Image.Style>
                     </Image>
+                    <!--<Image
+                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConv}, Path=IsLive}"
+                        Height="12pt"
+                        Width="12pt"
+                        VerticalAlignment="Stretch"
+                        Margin="0,0,3pt,0">
+                    </Image>-->
                     <TextBlock
                         VerticalAlignment="Center"
                         x:Name="VertexTitle"

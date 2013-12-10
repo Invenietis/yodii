@@ -10,7 +10,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
-    public static class MockInfoXmlSerializer
+    internal static class MockInfoXmlSerializer
     {
         public static void SerializeLabStateToXmlWriter( MainWindowViewModel vm, XmlWriter w )
         {

@@ -7,12 +7,15 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// Vertex from a Yodii graph. Represents either a lab service or a lab plugin.
+    /// </summary>
     public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
         readonly bool _isPlugin;
-        readonly LiveServiceInfo _liveService;
-        readonly LivePluginInfo _livePlugin;
+        readonly LabServiceInfo _liveService;
+        readonly LabPluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
 
         bool _isSelected = false;
@@ -21,6 +24,9 @@ namespace Yodii.Lab
         #endregion
 
         #region Constructors
+        /// <summary>
+        /// Creates a new, empty vertex. Used by GraphX serialization, not implemented yet.
+        /// </summary>
         public YodiiGraphVertex()
         {
 
@@ -30,7 +36,7 @@ namespace Yodii.Lab
         /// </summary>
         /// <param name="parentGraph"></param>
         /// <param name="plugin"></param>
-        internal YodiiGraphVertex( YodiiGraph parentGraph, LivePluginInfo plugin )
+        internal YodiiGraphVertex( YodiiGraph parentGraph, LabPluginInfo plugin )
         {
             Debug.Assert( parentGraph != null );
             Debug.Assert( plugin != null );
@@ -47,7 +53,7 @@ namespace Yodii.Lab
         /// </summary>
         /// <param name="parentGraph"></param>
         /// <param name="service"></param>
-        internal YodiiGraphVertex( YodiiGraph parentGraph, LiveServiceInfo service )
+        internal YodiiGraphVertex( YodiiGraph parentGraph, LabServiceInfo service )
         {
             Debug.Assert( parentGraph != null );
             Debug.Assert( service != null );
@@ -61,9 +67,26 @@ namespace Yodii.Lab
         #endregion Constructors
 
         #region Properties
+
+        /// <summary>
+        /// True if the element represented by this vertex is a plugin.
+        /// </summary>
+        /// <remarks>
+        /// LabPluginInfo contains something in this case.
+        /// </remarks>
         public bool IsPlugin { get { return _isPlugin; } }
+
+        /// <summary>
+        /// True if the element represented by this vertex is a service.
+        /// </summary>
+        /// <remarks>
+        /// LabServiceInfo contains something in this case.
+        /// </remarks>
         public bool IsService { get { return !_isPlugin; } }
 
+        /// <summary>
+        /// Whether this vertex is currently selected by the user.
+        /// </summary>
         public bool IsSelected
         {
             get { return _isSelected; }
@@ -77,6 +100,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// Whether the Configuration contains a configuration for this element.
+        /// </summary>
         public bool HasConfiguration
         {
             get { return _hasConfiguration; }
@@ -90,6 +116,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// The configuration status for this element, from the ConfigurationManager.
+        /// </summary>
         public ConfigurationStatus ConfigurationStatus
         {
             get { return _configStatus; }
@@ -103,19 +132,29 @@ namespace Yodii.Lab
             }
         }
 
-        // Global view properties
+        /// <summary>
+        /// Title of this vertex.
+        /// </summary>
         public string Title
         {
             get
             {
                 if( IsService )
-                    return LiveServiceInfo.ServiceInfo.ServiceFullName;
+                    return LabServiceInfo.ServiceInfo.ServiceFullName;
                 else
-                    return LivePluginInfo.PluginInfo.Description;
+                    return LabPluginInfo.PluginInfo.Description;
             }
         }
-        public LiveServiceInfo LiveServiceInfo { get { return _liveService; } }
-        public LivePluginInfo LivePluginInfo { get { return _livePlugin; } }
+
+        /// <summary>
+        /// LabServiceInfo attached to this vertex, if it's representing a service.
+        /// </summary>
+        public LabServiceInfo LabServiceInfo { get { return _liveService; } }
+
+        /// <summary>
+        /// LabPluginInfo attached to this vertex, if it's representing a plugin.
+        /// </summary>
+        public LabPluginInfo LabPluginInfo { get { return _livePlugin; } }
 
         #endregion Properties
 
@@ -129,10 +168,10 @@ namespace Yodii.Lab
         {
             if( IsService )
             {
-                _parentGraph.RemoveService( LiveServiceInfo.ServiceInfo );
+                _parentGraph.RemoveService( LabServiceInfo.ServiceInfo );
             } else if (IsPlugin)
             {
-                _parentGraph.RemovePlugin( LivePluginInfo.PluginInfo );
+                _parentGraph.RemovePlugin( LabPluginInfo.PluginInfo );
             }
         }
 

@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Extensions for discoverable items.
+    /// </summary>
     public static class DiscoveredInfoExtension 
     {
-
         /// <summary>
         /// Gets all the services that are supported by this plugin (its <see cref="IPluginInfo.Service"/> and all its <see cref="IServiceInfo.Generalization"/>.
         /// </summary>

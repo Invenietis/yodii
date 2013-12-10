@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using CK.Core;
-using Yodii.Lab.Mocks;
 using Yodii.Model;
 
 namespace Yodii.Lab
@@ -21,7 +10,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Window used to add and create a service.
     /// </summary>
-    public partial class AddServiceWindow : Window, INotifyPropertyChanged
+    internal partial class AddServiceWindow : Window, INotifyPropertyChanged
     {
         public event EventHandler<NewServiceEventArgs> NewServiceCreated;
 
@@ -154,7 +143,7 @@ namespace Yodii.Lab
 
     }
 
-    public class NewServiceEventArgs : EventArgs
+    internal class NewServiceEventArgs : EventArgs
     {
         public string ServiceName { get; internal set; }
         public IServiceInfo Generalization { get; internal set; }

@@ -1,0 +1,27 @@
+﻿<Notifications
+    xmlns="clr-namespace:Yodii.Lab">
+    <Notification
+        Id="5"
+        Title="Notification #5" />
+    <Notification
+        Id="1"
+        Title="Notification #1"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+    <Notification
+        Id="2"
+        Title="Notification #2"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+    <Notification
+        Id="3"
+        Title="Notification #3"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+    <Notification
+        Id="4"
+        Title="Notification #4"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+
+</Notifications>

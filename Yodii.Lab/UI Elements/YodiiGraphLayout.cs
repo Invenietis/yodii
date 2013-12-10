@@ -6,6 +6,6 @@ using GraphX;
 
 namespace Yodii.Lab
 {
-    public class YodiiGraphArea : GraphArea<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph> {
+    internal class YodiiGraphArea : GraphArea<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph> {
     }
 }

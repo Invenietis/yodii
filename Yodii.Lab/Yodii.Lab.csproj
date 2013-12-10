@@ -26,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Yodii.Lab.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +36,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Yodii.Lab.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -92,24 +94,6 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="Xceed.Wpf.AvalonDock">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.DataGrid">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
-    </Reference>
-    <Reference Include="Xceed.Wpf.Toolkit">
-      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
-    </Reference>
     <Reference Include="YAXLib">
       <HintPath>..\packages\YAXLib.2.12\lib\YAXLib.dll</HintPath>
     </Reference>
@@ -136,6 +120,7 @@
     <Compile Include="ConfigurationEditor\CreateConfigurationLayerWindow.xaml.cs">
       <DependentUpon>CreateConfigurationLayerWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DebugExtensions\DebugExtensions.cs" />
     <Compile Include="Graph elements\GraphUpdateRequestEventArgs.cs" />
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
@@ -144,6 +129,12 @@
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Mock model\AssemblyInfoHelper.cs" />
     <Compile Include="Mock model\MockAssemblyInfo.cs" />
+    <Compile Include="NotificationEventArgs.cs" />
+    <Compile Include="NotificationsHolder\INotificationManager.cs" />
+    <Compile Include="NotificationsHolder\Notification.cs" />
+    <Compile Include="NotificationsHolder\NotificationsContainerUserControl.xaml.cs">
+      <DependentUpon>NotificationsContainerUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI Elements\PluginPropertyPanel.xaml.cs">
       <DependentUpon>PluginPropertyPanel.xaml</DependentUpon>
     </Compile>
@@ -162,9 +153,9 @@
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
     <Compile Include="Mock model\ServiceInfo.cs" />
-    <Compile Include="Mock model\LivePluginInfo.cs" />
-    <Compile Include="Mock model\LiveServiceInfo.cs" />
-    <Compile Include="ServiceInfoManager.cs" />
+    <Compile Include="Mock model\LabPluginInfo.cs" />
+    <Compile Include="Mock model\LabServiceInfo.cs" />
+    <Compile Include="LabStateManager.cs" />
     <Compile Include="UI Elements\YodiiGraphLayout.cs" />
     <Compile Include="Utils\DetailedOperationResult.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
@@ -194,6 +185,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="NotificationsHolder\DesignTimeNotificationData.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -206,6 +201,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="NotificationsHolder\NotificationsContainerUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI Elements\PluginPropertyPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

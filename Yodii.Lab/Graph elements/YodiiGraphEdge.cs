@@ -7,6 +7,9 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// Edge between two vertices in the Yoddi.Lab graph.
+    /// </summary>
     public class YodiiGraphEdge : GraphX.EdgeBase<YodiiGraphVertex>, INotifyPropertyChanged
     {
         readonly YodiiGraphEdgeType _type;
@@ -18,6 +21,9 @@ namespace Yodii.Lab
             _type = type;
         }
 
+        /// <summary>
+        /// Used for GraphX serialization. Not implemented.
+        /// </summary>
         public YodiiGraphEdge()
             : base(null, null, 1)
         {
@@ -35,10 +41,13 @@ namespace Yodii.Lab
             if( e.PropertyName == "Requirement" ) ReferenceRequirement = (sender as MockServiceReferenceInfo).Requirement;
         }
 
+        /// <summary>
+        /// Requirement type of this edge, if it's a service reference.
+        /// </summary>
         public DependencyRequirement ReferenceRequirement
         {
             get { return _referenceRequirement; }
-            set
+            internal set
             {
                 if( value != _referenceRequirement )
                 {
@@ -48,12 +57,30 @@ namespace Yodii.Lab
                 }
             }
         }
+
+        /// <summary>
+        /// Type of edge.
+        /// </summary>
         public YodiiGraphEdgeType Type { get { return _type; } }
 
+        /// <summary>
+        /// True if edge is a specialization (Service specializes service).
+        /// </summary>
         public bool IsSpecialization { get { return Type == YodiiGraphEdgeType.Specialization; } }
+        
+        /// <summary>
+        /// True if edge is an implementation (Plugin implements Service).
+        /// </summary>
         public bool IsImplementation { get { return Type == YodiiGraphEdgeType.Implementation; } }
+        
+        /// <summary>
+        /// True if edge is a service reference (Plugin refers to Service).
+        /// </summary>
         public bool IsServiceReference { get { return Type == YodiiGraphEdgeType.ServiceReference; } }
 
+        /// <summary>
+        /// Description of this edge.
+        /// </summary>
         public string Description
         {
             get
@@ -61,21 +88,21 @@ namespace Yodii.Lab
                 if( IsSpecialization )
                 {
                     return String.Format( "Specialization:\n\nService {0} specializes service {1}.",
-                        Source.LiveServiceInfo.ServiceInfo.ServiceFullName,
-                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName );
+                        Source.LabServiceInfo.ServiceInfo.ServiceFullName,
+                        Target.LabServiceInfo.ServiceInfo.ServiceFullName );
                 }
                 else if( IsImplementation )
                 {
                     return String.Format( "Implementation:\n\nPlugin {0} implements service {1}.",
-                        Source.LivePluginInfo.PluginInfo.Description,
-                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName );
+                        Source.LabPluginInfo.PluginInfo.Description,
+                        Target.LabServiceInfo.ServiceInfo.ServiceFullName );
                 }
                 else
                 {
                     return String.Format( "Service reference ({0}):\n\nPlugin {1} references service {2} with requirement: {0}.",
                         ReferenceRequirement.ToString(),
-                        Source.LivePluginInfo.PluginInfo.Description,
-                        Target.LiveServiceInfo.ServiceInfo.ServiceFullName);
+                        Source.LabPluginInfo.PluginInfo.Description,
+                        Target.LabServiceInfo.ServiceInfo.ServiceFullName);
                 }
             }
         }

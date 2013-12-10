@@ -28,6 +28,9 @@ using System.Text;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Discovered item.
+    /// </summary>
     public interface IDiscoveredItem
     {
         /// <summary>
