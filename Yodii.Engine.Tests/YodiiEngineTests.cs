@@ -75,7 +75,6 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.EqualTo( ServiceDisabledReason.None ) );
 
             engine.Stop();
-            Assert
 
             //il se passe quoi si on fait cela ?
             //discoveredInfo = MockInfoFactory.CreateGraph005();
