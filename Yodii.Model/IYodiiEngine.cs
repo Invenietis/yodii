@@ -51,5 +51,8 @@ namespace Yodii.Model
         /// Stops the engine, and halts all configuration monitoring.
         /// </summary>
         void Stop();
+        
+        IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
+
     }
 }

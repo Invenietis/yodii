@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yodii.Model;
+using Yodii.Engine.Tests.Mocks;
 
 namespace Yodii.Engine.Tests
 {
@@ -21,6 +22,64 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.Host, Is.Not.Null );
             Assert.That( engine.IsRunning, Is.False );
             Assert.That( engine.ConfigurationManager, Is.Not.Null );
+        }
+
+        [Test]
+        public void EngineUseTest()
+        {
+            IYodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+
+            Assert.Throws<ArgumentNullException>( () => engine.SetDiscoveredInfo( null ) );
+
+            DiscoveredInfo discoveredInfo = MockInfoFactory.CreateGraph003();
+
+            IYodiiEngineResult result = engine.SetDiscoveredInfo( discoveredInfo );
+            Assert.That( result.Success, Is.True );
+            Assert.That( engine.DiscoveredInfo == discoveredInfo );
+
+            PluginInfo pluginA1 = discoveredInfo.FindPlugin( "PluginA-1" );
+            PluginInfo pluginA2 = discoveredInfo.FindPlugin( "PluginA-2" );
+            ServiceInfo serviceA = discoveredInfo.FindService( "ServiceA" );
+
+
+
+            result = engine.Start();
+            Assert.That( result.Success, Is.True );
+            Assert.That( engine.LiveInfo, Is.Not.Null );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).PluginInfo, Is.EqualTo( pluginA1 ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).PluginInfo, Is.EqualTo( pluginA2 ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ServiceInfo, Is.EqualTo( serviceA ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).IsRunning, Is.False );
+
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).Generalization, Is.Null );
+
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).ConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Optional ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).CurrentError, Is.Null );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).CurrentError, Is.Null );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.EqualTo( ServiceDisabledReason.None ) );
+
+            engine.Stop();
+            Assert
+
+            //il se passe quoi si on fait cela ?
+            //discoveredInfo = MockInfoFactory.CreateGraph005();
+
         }
     }
 }

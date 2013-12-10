@@ -169,7 +169,8 @@ namespace Yodii.Engine
                         || reason == ServiceRunningStatusReason.StoppedByOptionalReference
                         || reason == ServiceRunningStatusReason.StoppedByOptionalTryStartReference
                         || reason == ServiceRunningStatusReason.StoppedByRunnableReference
-                        || reason == ServiceRunningStatusReason.StoppedByRunnableTryStartReference );
+                        || reason == ServiceRunningStatusReason.StoppedByRunnableTryStartReference
+                        || reason == ServiceRunningStatusReason.StoppedByFinalDecision );
 
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = reason;
