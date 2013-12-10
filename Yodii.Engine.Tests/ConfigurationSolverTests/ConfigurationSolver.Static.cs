@@ -39,6 +39,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
           
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
@@ -49,8 +50,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( info.FindPlugin("PluginA-2").PluginId.ToString(), ConfigurationStatus.Runnable );
             cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
         }
@@ -479,14 +479,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Optional );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -513,14 +512,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -547,14 +546,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -581,12 +580,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );

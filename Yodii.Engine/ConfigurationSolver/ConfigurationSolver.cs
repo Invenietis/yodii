@@ -233,14 +233,46 @@ namespace Yodii.Engine
         internal void UpdateNewResultInLiveInfo( LiveInfo liveInfo )
         {
             Debug.Assert( liveInfo != null );
+            foreach( var s in liveInfo.Services )
+            {
+                ServiceData serviceData;
+                if( _services.TryGetValue( s.ServiceInfo.ServiceFullName, out serviceData ) )
+                {
+                    liveInfo.UpdateInfo( serviceData );
+                }
+                else
+                {
+                    liveInfo.Remove( s );
+                }
+            }
             foreach( var s in _services.Values )
             {
-                liveInfo.UpdateInfo( s );
+                if( !liveInfo.Contains( s.ServiceInfo.ServiceFullName ) )
+                {
+                    liveInfo.AddInfo( s );
+                }
+            }
+            foreach( var p in liveInfo.Plugins )
+            {
+                PluginData pluginData;
+                if( _plugins.TryGetValue( p.PluginInfo.PluginId, out pluginData ) )
+                {
+                    liveInfo.UpdateInfo( pluginData );
+                }
+                else
+                {
+                    liveInfo.Remove( p );
+                }
             }
             foreach( var p in _plugins.Values )
             {
-                liveInfo.UpdateInfo( p );
+                if( !liveInfo.Contains( p.PluginInfo.PluginId ) )
+                {
+                    liveInfo.AddInfo( p );
+                }
             }
+
+            liveInfo.CreateGraphOfDependencies();
         }
 
     }

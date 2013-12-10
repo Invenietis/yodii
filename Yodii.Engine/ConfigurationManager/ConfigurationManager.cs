@@ -134,6 +134,18 @@ namespace Yodii.Engine
         private IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration,ConfigurationChangingEventArgs> createChangingEvent )
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
+
+            if( !_engine.IsRunning )
+            {
+                _currentEventArgs = createChangingEvent( finalConfiguration );
+                RaiseConfigurationChanging( _currentEventArgs );
+                if( _currentEventArgs.IsCanceled )
+                {
+                    return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                }
+                return SuccessYodiiEngineResult.Default;
+            }
+
             Tuple<IYodiiEngineResult,ConfigurationSolver> t = _engine.StaticResolution( finalConfiguration );
             var result = t.Item1;
             var solver = t.Item2;
