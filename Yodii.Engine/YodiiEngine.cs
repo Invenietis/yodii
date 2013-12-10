@@ -30,6 +30,22 @@ namespace Yodii.Engine
 
             public void Merge( IReadOnlyList<YodiiCommand> newCommands )
             {
+                if( newCommands.Count == 0 )
+                {
+                    this.Clear();
+                    return;
+                }
+                if( this.Count == 0 )
+                {
+                    this.AddRange( newCommands );
+                    return;
+                }
+
+                if( this[0] != newCommands[0] ) this.InsertItem( 0, newCommands[0] );
+                for( int i = 1; i < newCommands.Count; i++ )
+                {
+                    if( newCommands[i] != this[i] ) this.RemoveAt( i-- );
+                }
             }
         }
 

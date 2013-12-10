@@ -34,7 +34,7 @@ namespace Yodii.Engine
                         _dynamicReason = ServiceRunningStatusReason.StartedByConfig;
                         _dynamicStatus = RunningStatus.RunningLocked;
                         // This can be null if we have more than one available plugins.
-                        _runningPlugin = Generalization._theOnlyPlugin;
+                        _runningPlugin = GeneralizationRoot._theOnlyPlugin;
                         break;
                     }
                 default:
