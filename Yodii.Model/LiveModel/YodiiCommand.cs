@@ -26,7 +26,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// If acting on a plugin's status: plugin ID.
-        /// <seealso cref="YodiiCommand.FullName"/>
+        /// <seealso cref="YodiiCommand.ServiceFullName"/>
         /// </summary>
         public readonly Guid PluginId;
 

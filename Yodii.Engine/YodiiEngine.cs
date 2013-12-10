@@ -173,7 +173,6 @@ namespace Yodii.Engine
             get { return _liveInfo; }
         }
 
-            get { return _liveInfo; }
         public IYodiiEngineHost Host
         {
             get { return _host; }

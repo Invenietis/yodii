@@ -36,14 +36,14 @@ namespace Yodii.Model
         /// <summary>
         /// Attempts to start the service.
         /// </summary>
-        /// <param name="caller">Caller object.</param>
+        /// <param name="callerKey">Caller identifier.</param>
         /// <returns>True if the service was successfully started, false otherwise.</returns>
         IYodiiEngineResult Start( string callerKey );
 
         /// <summary>
         /// Stops the service.
         /// </summary>
-        /// <param name="caller">Caller object.</param>
+        /// <param name="callerKey">Caller identifier.</param>
          IYodiiEngineResult Stop( string callerKey );
 
     }

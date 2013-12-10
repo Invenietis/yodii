@@ -75,6 +75,10 @@ namespace Yodii.Model
         /// found in the Service provider. 
         /// </summary>
         ExternalServiceUnavailable,
+
+        /// <summary>
+        /// A running sibling service caused this one to be disabled.
+        /// </summary>
         SiblingIsRunning
     }
 
