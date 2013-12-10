@@ -126,34 +126,22 @@ namespace Yodii.Engine
             }
         }
 
-        public IYodiiEngineResult Start( object caller, StartDependencyImpact impact = StartDependencyImpact.None )
+        public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.None )
         {
-            if( caller == null ) throw new ArgumentNullException( "caller" );
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
 
-            YodiiCommand command = new YodiiCommand( caller, true, impact, _pluginInfo.PluginId );
-            _engine.YodiiCommands.Insert( 0, command );
-
-            if( RunningStatus >= RunningStatus.Running ) return new SuccessYodiiEngineResult();
-
-            IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
-            if( !result.Success ) _engine.YodiiCommands.RemoveAt( 0 );
-            return result;
+            YodiiCommand command = new YodiiCommand( callerKey, _pluginInfo.PluginId, true, impact );
+            return _engine.AddYodiiCommand( command );
         }
 
-        public IYodiiEngineResult Stop( object caller )
+        public IYodiiEngineResult Stop( string callerKey )
         {
-            if( caller == null ) throw new ArgumentNullException( "caller" );
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
 
-            YodiiCommand command = new YodiiCommand( caller, false, StartDependencyImpact.None, _pluginInfo.PluginId );
-            _engine.YodiiCommands.Insert( 0, command );
-
-            if( RunningStatus <= RunningStatus.Stopped ) return new SuccessYodiiEngineResult();
-
-            IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
-            if( !result.Success ) _engine.YodiiCommands.RemoveAt( 0 );
-            return result;
+            YodiiCommand command = new YodiiCommand( callerKey, _pluginInfo.PluginId, false, StartDependencyImpact.None );
+            return _engine.AddYodiiCommand( command );
         }
 
         internal void UpdateInfo( PluginData p )

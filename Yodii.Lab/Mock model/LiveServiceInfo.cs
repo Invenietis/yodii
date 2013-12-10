@@ -86,12 +86,12 @@ namespace Yodii.Lab.Mocks
         #endregion Properties
 
         #region Public methods
-        public bool Start( Object o )
+        public bool Start( string callerKey )
         {
             throw new NotImplementedException();
         }
 
-        public void Stop( Object o )
+        public void Stop( string callerKey )
         {
             throw new NotImplementedException();
         }

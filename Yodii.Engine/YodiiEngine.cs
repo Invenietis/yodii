@@ -16,14 +16,14 @@ namespace Yodii.Engine
         readonly ConfigurationManager _manager;
         readonly IYodiiEngineHost _host;
         readonly LiveInfo _liveInfo;
-        readonly YodiiCommands _yodiiCommands;
+        readonly YodiiCommandList _yodiiCommands;
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _currentSolver;
 
-        class YodiiCommands : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
+        class YodiiCommandList : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
         {
-            public YodiiCommands( IEnumerable<YodiiCommand> persistedCommands )
+            public YodiiCommandList( IEnumerable<YodiiCommand> persistedCommands )
             {
                 if( persistedCommands != null ) this.AddRange( persistedCommands );
             }
@@ -41,7 +41,7 @@ namespace Yodii.Engine
             _host = host;
             _discoveredInfo = EmptyDiscoveredInfo.Empty;
             _manager = new ConfigurationManager( this );
-            _yodiiCommands = new YodiiCommands( persistedCommands );
+            _yodiiCommands = new YodiiCommandList( persistedCommands );
             _liveInfo = new LiveInfo( this );
         }
 
@@ -55,13 +55,9 @@ namespace Yodii.Engine
             return Tuple.Create( result, temporarySolver );
         }
 
-        IYodiiEngineResult DoDynamicResolution( ConfigurationSolver temporarySolver, YodiiCommand cmd, Action onPreSuccess = null )
+        IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
         {
-            Debug.Assert( temporarySolver == null || cmd == null );
-
-            var solver = temporarySolver ?? _currentSolver;
-
-            var dynResult = solver.DynamicResolution( _yodiiCommands, cmd );
+            var dynResult = solver.DynamicResolution( existingCommandFilter != null ? _yodiiCommands.Where( existingCommandFilter ) : _yodiiCommands, cmd );
             var errors = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running );
             if( errors != null && errors.Any() )
             {
@@ -71,36 +67,12 @@ namespace Yodii.Engine
             }
             // Success:
             if( onPreSuccess != null ) onPreSuccess();
-            bool wasRunning = _currentSolver != null;
+            bool wasStopped = _currentSolver == null;
             if( _currentSolver != solver ) _currentSolver = solver;
-            if( cmd != null ) _yodiiCommands.Merge( dynResult.Commands );
             _currentSolver.UpdateNewResultInLiveInfo( _liveInfo );
-            if( !wasRunning ) RaisePropertyChanged( "IsRunning" );
-            return new SuccessYodiiEngineResult();
-        }
-
-        internal IYodiiEngineResult OnConfigurationChanging( ConfigurationSolver temporarySolver )
-        {
-            Debug.Assert( IsRunning, "Cannot call this function when the engine is not running" );
-            return DoDynamicResolution( temporarySolver, null );
-        }
-
-        internal IYodiiEngineResult AddYodiiCommand( YodiiCommand cmd )
-        {
-            Debug.Assert( IsRunning, "Cannot call this function when the engine is not running" );
-            return DoDynamicResolution( null, cmd );
-        }
-
-        public IYodiiEngineResult Start()
-        {
-            if( !IsRunning )
-            {
-                ConfigurationSolver solver = new ConfigurationSolver();
-                IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, _discoveredInfo );
-                if( !result.Success ) return result;
-                return DoDynamicResolution( solver, null );
-            }
-            return new SuccessYodiiEngineResult();
+            _yodiiCommands.Merge( dynResult.Commands );
+            if( wasStopped ) RaisePropertyChanged( "IsRunning" );
+            return SuccessYodiiEngineResult.Default;
         }
 
         public IDiscoveredInfo DiscoveredInfo
@@ -136,10 +108,42 @@ namespace Yodii.Engine
             }
         }
 
+
+        internal IYodiiEngineResult OnConfigurationChanging( ConfigurationSolver temporarySolver )
+        {
+            Debug.Assert( IsRunning, "Cannot call this function when the engine is not running" );
+            return DoDynamicResolution( temporarySolver, null, null );
+        }
+
+        internal IYodiiEngineResult AddYodiiCommand( YodiiCommand cmd )
+        {
+            Debug.Assert( IsRunning, "Cannot call this function when the engine is not running" );
+            return DoDynamicResolution( _currentSolver, null, cmd );
+        }
+
+        internal IYodiiEngineResult RevokeYodiiCommandCaller( string callerKey )
+        {
+            Debug.Assert( callerKey != null );
+            Debug.Assert( IsRunning, "Cannot call this function when the engine is not running"  );
+            return DoDynamicResolution( _currentSolver, cmd => cmd.CallerKey != callerKey, null );
+        }
+
+        public IYodiiEngineResult Start()
+        {
+            if( !IsRunning )
+            {
+                ConfigurationSolver solver = new ConfigurationSolver();
+                IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, _discoveredInfo );
+                if( !result.Success ) return result;
+                return DoDynamicResolution( solver, null, null );
+            }
+            return SuccessYodiiEngineResult.Default;
+        }
+
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
         {
             if( info == null ) throw new ArgumentNullException( "info" );
-            if( info == _discoveredInfo ) return new SuccessYodiiEngineResult();
+            if( info == _discoveredInfo ) return SuccessYodiiEngineResult.Default;
 
             if( IsRunning )
             {
@@ -147,10 +151,10 @@ namespace Yodii.Engine
                 IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, info );
                 if( !result.Success ) return result;
 
-                return DoDynamicResolution( solver, null, () => DiscoveredInfo = info );
+                return DoDynamicResolution( solver, null, null, () => DiscoveredInfo = info );
             }
             else DiscoveredInfo = info;
-            return new SuccessYodiiEngineResult();
+            return SuccessYodiiEngineResult.Default;
         }
 
         public IObservableReadOnlyList<YodiiCommand> YodiiCommands

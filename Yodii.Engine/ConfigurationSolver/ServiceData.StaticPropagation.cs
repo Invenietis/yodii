@@ -5,7 +5,7 @@ using System.Text;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using Yodii.Model;
-using Yodii.Engine.ConfigurationSolver;
+using Yodii.Engine;
 
 namespace Yodii.Engine
 {

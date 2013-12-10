@@ -98,7 +98,7 @@ namespace Yodii.Engine
             {
                 return new YodiiEngineResult(_services, _plugins, blockingPlugins, blockingServices );
             }
-            return new SuccessYodiiEngineResult();
+            return SuccessYodiiEngineResult.Default;
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Yodii.Engine
 
             foreach( var previous in pastCommands )
             {
-                if( newOne == null || newOne.Caller != previous.Caller || newOne.FullName != previous.FullName || newOne.PluginId != previous.PluginId )
+                if( newOne == null || newOne.CallerKey != previous.CallerKey || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginId != previous.PluginId )
                 {
                     if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
                     {
@@ -164,9 +164,9 @@ namespace Yodii.Engine
         
         private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
-            if ( cmd.FullName != null )
+            if ( cmd.ServiceFullName != null )
             {
-                ServiceData s = _services[cmd.FullName];
+                ServiceData s = _services[cmd.ServiceFullName];
                 if ( s != null )
                 {
                     if ( cmd.Start ) return s.StartByCommand();
@@ -241,20 +241,6 @@ namespace Yodii.Engine
             {
                 liveInfo.UpdateInfo( p );
             }
-        }
-
-        internal void FillNewLiveInfo( LiveInfo liveInfo )
-        {
-            foreach( var s in _services.Values )
-            {
-                liveInfo.AddInfo( s );
-            }
-            foreach( var p in _plugins.Values )
-            {
-                liveInfo.AddInfo( p );
-            }
-
-            liveInfo.CreateGraphOfDependencies();
         }
 
     }

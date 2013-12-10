@@ -18,7 +18,12 @@ namespace Yodii.Model
         
         ILivePluginInfo FindPlugin( Guid pluginId );
 
-        void RevokeCaller( object caller );
+        /// <summary>
+        /// Cancels any start or stop made by this caller.
+        /// </summary>
+        /// <param name="caller">The caller key. Must not be null.</param>
+        /// <returns>Since canceling commands may trigger a runtime error, this method must return a result.</returns>
+        IYodiiEngineResult RevokeCaller( string callerKey );
     }
 
 }
