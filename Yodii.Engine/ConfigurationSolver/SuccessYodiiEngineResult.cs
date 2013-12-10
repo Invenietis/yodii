@@ -8,32 +8,38 @@ namespace Yodii.Engine
 {
     class SuccessYodiiEngineResult : IYodiiEngineResult
     {
-        public bool Success
+        public static readonly IYodiiEngineResult Default = new SuccessYodiiEngineResult();
+
+        SuccessYodiiEngineResult()
+        {
+        }
+
+        bool IYodiiEngineResult.Success
         {
             get { return true; }
         }
 
-        public IConfigurationFailureResult ConfigurationFailureResult
+        IConfigurationFailureResult IYodiiEngineResult.ConfigurationFailureResult
         {
             get { return null; }
         }
 
-        public IStaticFailureResult StaticFailureResult
+        IStaticFailureResult IYodiiEngineResult.StaticFailureResult
         {
             get { return null; }
         }
 
-        public IDynamicFailureResult HostFailureResult
+        IDynamicFailureResult IYodiiEngineResult.HostFailureResult
         {
             get { return null; }
         }
 
-        public IReadOnlyList<IPluginInfo> PluginCulprits
+        IReadOnlyList<IPluginInfo> IYodiiEngineResult.PluginCulprits
         {
             get { return null; }
         }
 
-        public IReadOnlyList<IServiceInfo> ServiceCulprits
+        IReadOnlyList<IServiceInfo> IYodiiEngineResult.ServiceCulprits
         {
             get { return null; }
         }

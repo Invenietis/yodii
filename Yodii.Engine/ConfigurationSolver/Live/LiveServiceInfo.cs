@@ -178,44 +178,22 @@ namespace Yodii.Engine
 
         #endregion
 
-        public IYodiiEngineResult Start( object caller )
+        public IYodiiEngineResult Start( string callerKey )
         {
-            if( caller == null ) throw new ArgumentNullException( "caller" );
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
-            
-            YodiiCommand command = new YodiiCommand( caller, true, _serviceInfo.ServiceFullName );
-            _engine.YodiiCommands.Insert( 0, command );
 
-            if( RunningStatus >= RunningStatus.Running ) return new SuccessYodiiEngineResult();
-
-            IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
-            if( result.Success )
-            {
-                _engine.CleanYodiiCommands( command );
-                return result;
-            }
-            _engine.YodiiCommands.RemoveAt( 0 );
-            return result;
+            YodiiCommand command = new YodiiCommand( callerKey, _serviceInfo.ServiceFullName, true );
+            return _engine.AddYodiiCommand( command );
         }
 
-        public IYodiiEngineResult Stop( object caller )
+        public IYodiiEngineResult Stop( string callerKey )
         {
-            if( caller == null ) throw new ArgumentNullException( "caller" );
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
 
-            YodiiCommand command = new YodiiCommand( caller, false, _serviceInfo.ServiceFullName );
-            _engine.YodiiCommands.Insert( 0, command );
-
-            if( RunningStatus <= RunningStatus.Stopped ) return new SuccessYodiiEngineResult();
-
-            IYodiiEngineResult result = _engine.DynamicResolutionByLiveInfo();
-            if( result.Success )
-            {
-                _engine.CleanYodiiCommands( command );
-                return result;
-            }
-            _engine.YodiiCommands.RemoveAt( 0 );
-            return result;
+            YodiiCommand command = new YodiiCommand( callerKey, _serviceInfo.ServiceFullName, false );
+            return _engine.AddYodiiCommand( command );
         }
 
         internal void UpdateInfo( ServiceData s )

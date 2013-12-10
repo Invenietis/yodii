@@ -10,31 +10,32 @@ namespace Yodii.Model
 {
     public class YodiiCommand
     {
-        public readonly object Caller;
-        public readonly bool Start;
+        public readonly string CallerKey;
         public readonly Guid PluginId;
+        public readonly string ServiceFullName;
+        public readonly bool Start;
         public readonly StartDependencyImpact Impact;
-        public readonly string FullName;
 
-        private YodiiCommand( object caller, bool start )
+        YodiiCommand( string callerKey, bool start, StartDependencyImpact impact )
         {
-            Caller = caller;
+            if( callerKey != null ) throw new ArgumentNullException( "callerKey" );
+            if( !start && impact != StartDependencyImpact.None ) throw new ArgumentException( "Impact must be None when stopping a plugin or a service.", "impact" );
+            CallerKey = callerKey;
             Start = start;
-        }
-
-        public YodiiCommand( object caller, bool start, StartDependencyImpact impact, Guid pluginId )
-            : this( caller, start )
-        {
-            Debug.Assert( pluginId != null );
-            PluginId = pluginId;
             Impact = impact;
         }
 
-        public YodiiCommand( object caller, bool start, string fullName )
-            : this( caller, start )
+        public YodiiCommand( string callerKey, Guid pluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.None )
+            : this( callerKey, start, impact )
         {
-            Debug.Assert( string.IsNullOrEmpty( fullName ) != true );
-            FullName = fullName;
+            PluginId = pluginId;
+        }
+
+        public YodiiCommand( string callerKey, string serviceFullName, bool start, StartDependencyImpact impact = StartDependencyImpact.None )
+            : this( callerKey, start, impact )
+        {
+            if( !string.IsNullOrWhiteSpace( serviceFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceFullName" );
+            ServiceFullName = serviceFullName;
         }
     }
 }

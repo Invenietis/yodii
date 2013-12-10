@@ -103,21 +103,16 @@ namespace Yodii.Engine
             }
         }
 
-        internal void CreateGraphOfDependencies()
+        /// <summary>
+        /// Called by YodiiEngine.Stop().
+        /// </summary>
+        internal void Clear()
         {
-            foreach( var p in _plugins )
-            {
-                if( p.PluginInfo.Service != null ) p.Service = _services.GetByKey( p.PluginInfo.Service.ServiceFullName );
-            }
-            foreach( var s in _services )
-            {
-                if( s.ServiceInfo.Generalization != null ) s.Generalization = _services.GetByKey( s.ServiceInfo.Generalization.ServiceFullName );
-            }
         }
 
-        public void RevokeCaller( object caller )
+        public IYodiiEngineResult RevokeCaller( string callerKey )
         {
-            throw new NotImplementedException();
+            return _engine.RevokeYodiiCommandCaller( callerKey );
         }
     }
 }
