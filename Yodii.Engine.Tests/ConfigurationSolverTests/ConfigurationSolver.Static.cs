@@ -39,6 +39,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
           
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
@@ -49,10 +50,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( info.FindPlugin("PluginA-2").PluginId.ToString(), ConfigurationStatus.Runnable );
             cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
+            Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -81,8 +86,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
@@ -91,11 +96,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -124,15 +132,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create(); 
             cl.Items.Add( "ServiceB", ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -165,20 +172,23 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              *  +----------+
              */
             #endregion
+
+            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create(); 
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
 
-            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-
-
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -210,14 +220,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Optional );
 
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
             cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -225,7 +235,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             info = MockInfoFactory.CreateGraph001();
             info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.OptionalTryStart );
 
-            res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            res = engine.SetDiscoveredInfo( info );
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -233,7 +243,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             info = MockInfoFactory.CreateGraph001();
             info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Runnable );
 
-            res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            res = engine.SetDiscoveredInfo( info );
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -241,7 +251,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             info = MockInfoFactory.CreateGraph001();
             info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.RunnableTryStart );
 
-            res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            res = engine.SetDiscoveredInfo( info );
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -249,7 +259,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             info = MockInfoFactory.CreateGraph001();
             info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Running );
 
-            res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            res = engine.SetDiscoveredInfo( info );
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -281,20 +291,18 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
             cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
-            //Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ), Is.Null );
             Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 1 ) );
             Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
             Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
@@ -325,6 +333,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             info.PluginInfos.Remove( info.FindPlugin( "PluginAx-1" ) );
 
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
@@ -334,8 +343,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( info.FindPlugin("PluginA-2").PluginId.ToString(), ConfigurationStatus.Runnable );
             cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -386,6 +394,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph002();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
@@ -398,10 +407,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( info.FindPlugin( "PluginAxx-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
             cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
+            Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -445,6 +458,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             DiscoveredInfo info = MockInfoFactory.CreateGraph002();
 
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Running );
@@ -452,11 +466,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Running );
             cl.Items.Add( info.FindPlugin( "PluginAxx-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -479,14 +496,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Optional );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -513,14 +529,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -547,14 +563,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
@@ -581,15 +597,20 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
 
             ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -614,13 +635,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin("PluginA-1").PluginId.ToString(), ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -651,17 +672,21 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
             cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Runnable);
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Runnable );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
+            Assert.That( res.HostFailureResult, Is.Null );
+            Assert.That( res.ConfigurationFailureResult, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Null );
+            Assert.That( res.ServiceCulprits, Is.Null );
         }
 
         [Test]
@@ -688,13 +713,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             info.PluginInfos.Remove( info.FindPlugin( "PluginA-2" ) );
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -732,13 +757,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph004();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -839,13 +864,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph005();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
-
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );

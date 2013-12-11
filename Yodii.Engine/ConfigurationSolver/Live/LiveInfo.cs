@@ -45,32 +45,47 @@ namespace Yodii.Engine
             return _plugins.GetByKey( pluginId );
         }
 
+        public bool Contains( string serviceFullName )
+        {
+            return _services.Contains( serviceFullName );
+        }
+
+        public bool Contains( Guid pluginId )
+        {
+            return _plugins.Contains( pluginId );
+        }
+
         internal void UpdateInfo( ServiceData serviceData )
         {
             Debug.Assert( serviceData != null );
             LiveServiceInfo serviceInfo = _services.GetByKey( serviceData.ServiceInfo.ServiceFullName );
-            if( serviceInfo != null )
-            {
-                serviceInfo.UpdateInfo( serviceData );
-            }
-            else
-            {
-                Debug.Fail( "serviceData cannot be not found in UpdateInfo function" );
-            }
+
+            Debug.Assert( serviceInfo != null );
+            serviceInfo.UpdateInfo( serviceData );
         }
 
         internal void UpdateInfo( PluginData pluginData )
         {
             Debug.Assert( pluginData != null );
             LivePluginInfo pluginInfo = _plugins.GetByKey( pluginData.PluginInfo.PluginId );
-            if( pluginInfo != null )
-            {
-                pluginInfo.UpdateInfo( pluginData );
-            }
-            else
-            {
-                Debug.Fail( "pluginData cannot be not found in UpdateInfo function" );
-            }
+            Debug.Assert( pluginInfo != null );
+            pluginInfo.UpdateInfo( pluginData );    
+        }
+
+        internal void Remove( ILiveServiceInfo liveServiceInfo )
+        {
+            Debug.Assert( liveServiceInfo != null );
+            Debug.Assert( _services.Contains( liveServiceInfo ) );
+
+            _services.Remove( liveServiceInfo.ServiceInfo.ServiceFullName );
+        }
+
+        internal void Remove( ILivePluginInfo livePluginInfo )
+        {
+            Debug.Assert( livePluginInfo != null );
+            Debug.Assert( _services.Contains( livePluginInfo ) );
+
+            _plugins.Remove( livePluginInfo.PluginInfo.PluginId );
         }
 
         internal void AddInfo( ServiceData serviceData )
@@ -108,6 +123,22 @@ namespace Yodii.Engine
         /// </summary>
         internal void Clear()
         {
+            _plugins.Clear();
+            _services.Clear();
+        }
+
+        internal void CreateGraphOfDependencies()
+        {
+            foreach( var p in _plugins )
+            {
+                if( p.PluginInfo.Service != null ) p.Service = _services.GetByKey( p.PluginInfo.Service.ServiceFullName );
+                else p.Service = null;
+            }
+            foreach( var s in _services )
+            {
+                if( s.ServiceInfo.Generalization != null ) s.Generalization = _services.GetByKey( s.ServiceInfo.Generalization.ServiceFullName );
+                else s.Generalization = null;
+            }
         }
 
         public IYodiiEngineResult RevokeCaller( string callerKey )
