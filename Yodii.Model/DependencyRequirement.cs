@@ -8,35 +8,36 @@ using Yodii.Model;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Describes how a service or a plugin is required. 
+    /// Describes how a plugin requires a service. 
     /// A requirement is a gradation between <see cref="Optional"/> and <see cref="Running"/>.
     /// </summary>
     [Flags]
     public enum DependencyRequirement
     {
         /// <summary>
-        /// The service or plugin is optional: it can be unavailable.
+        /// The service is optional: it can be unavailable.
         /// </summary>
         Optional = 0,
 
         /// <summary>
-        /// If it is available the service or plugin should be started.
+        /// If the service is available, it is better if it is started (it is a "recommended" service).
         /// </summary>
         OptionalTryStart = 1,
 
         /// <summary>
-        /// The service or plugin must be available (ready to run but it can be stopped if nothing else want to start it).
+        /// The service must be available (ready to run but it can be stopped if nothing else want to start it).
         /// It is guaranteed to be runnable.
         /// </summary>
         Runnable = 4,
 
         /// <summary>
-        /// The service or plugin must be available and intially started. It can be stopped later.
+        /// The service must be available and it is better if it is started (it is a "recommended" service). 
+        /// It can always be stopped at any time.
         /// </summary>
         RunnableTryStart = 5,
 
         /// <summary>
-        /// The service or plugin must be available and must be running.
+        /// The service must be running.
         /// </summary>
         Running = 2 + 4
     }

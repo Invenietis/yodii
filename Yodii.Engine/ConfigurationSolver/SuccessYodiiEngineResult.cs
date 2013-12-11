@@ -36,12 +36,12 @@ namespace Yodii.Engine
 
         IReadOnlyList<IPluginInfo> IYodiiEngineResult.PluginCulprits
         {
-            get { return null; }
+            get { return CK.Core.CKReadOnlyListEmpty<IPluginInfo>.Empty; }
         }
 
         IReadOnlyList<IServiceInfo> IYodiiEngineResult.ServiceCulprits
         {
-            get { return null; }
+            get { return CK.Core.CKReadOnlyListEmpty<IServiceInfo>.Empty; ; }
         }
 
     }

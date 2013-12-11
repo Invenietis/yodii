@@ -18,7 +18,7 @@ namespace Yodii.Model
         /// <summary>
         /// Reason behind this plugin's disabled status.
         /// </summary>
-        PluginDisabledReason DisabledReason { get; }
+        string DisabledReason { get; }
 
         /// <summary>
         /// Status as set by initial configuration.
@@ -28,7 +28,7 @@ namespace Yodii.Model
         /// <summary>
         /// Desired configuration status.
         /// </summary>
-        SolvedConfigurationStatus WantedConfigSolvedStatus { get; }
+        ConfigurationStatus WantedConfigSolvedStatus { get; }
 
         /// <summary>
         /// Whether this plugin blocks static resolution.

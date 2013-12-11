@@ -26,7 +26,7 @@ namespace Yodii.Model
         IConfigurationManager ConfigurationManager { get; }
         
         /// <summary>
-        /// Active YodiiCommands on the engine.
+        /// Currently active <see cref="YodiiCommand"/> on the engine.
         /// </summary>
         IObservableReadOnlyList<YodiiCommand> YodiiCommands { get; }
 
@@ -44,7 +44,7 @@ namespace Yodii.Model
         /// Starts the engine, performs all possible resolutions,
         /// and begins monitoring configuration for changes.
         /// </summary>
-        /// <returns>Engine start result. <see cref="IYodiiEngineResult"/></returns>
+        /// <returns>Engine start result.</returns>
         IYodiiEngineResult Start();
 
         /// <summary>
@@ -52,6 +52,11 @@ namespace Yodii.Model
         /// </summary>
         void Stop();
         
+        /// <summary>
+        /// Change the current set of <see cref="IPluginInfo"/> and <see cref="IServiceInfo"/>.
+        /// </summary>
+        /// <param name="dicoveredInfo">Discovered information to work with.</param>
+        /// <returns>Engine start result.</returns>
         IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
 
     }

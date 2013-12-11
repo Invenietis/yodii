@@ -13,11 +13,11 @@ namespace Yodii.Engine
         readonly IReadOnlyList<IStaticSolvedPlugin> _plugins;
         readonly IReadOnlyList<IStaticSolvedService> _services;
 
-        public StaticSolvedConfiguration(List<IStaticSolvedPlugin> plugins, List<IStaticSolvedService> services)
+        public StaticSolvedConfiguration( IReadOnlyList<IStaticSolvedPlugin> plugins, IReadOnlyList<IStaticSolvedService> services )
         {
             Debug.Assert( plugins != null && services != null );
-            _plugins = plugins.AsReadOnlyList();
-            _services = services.AsReadOnlyList();
+            _plugins = plugins;
+            _services = services;
         }
 
         public IReadOnlyList<IStaticSolvedPlugin> Plugins
@@ -32,16 +32,12 @@ namespace Yodii.Engine
 
         public IStaticSolvedService FindService( string fullName )
         {
-            IStaticSolvedService service = _services.FirstOrDefault( s => s.ServiceInfo.ServiceFullName == fullName );
-            if ( service != null ) return service;
-            return null;
+            return _services.FirstOrDefault( s => s.ServiceInfo.ServiceFullName == fullName );
         }
 
         public IStaticSolvedPlugin FindPlugin( Guid pluginId )
         {
-            IStaticSolvedPlugin plugin = _plugins.FirstOrDefault( p => p.PluginInfo.PluginId == pluginId );
-            if ( plugin != null ) return plugin;
-            return null;
-        }
+            return _plugins.FirstOrDefault( p => p.PluginInfo.PluginId == pluginId );
+       }
     }
 }

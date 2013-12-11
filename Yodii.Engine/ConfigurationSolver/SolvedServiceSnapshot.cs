@@ -11,7 +11,7 @@ namespace Yodii.Engine
     internal class SolvedServiceSnapshot : IStaticSolvedService, IDynamicSolvedService
     {
         readonly ServiceDisabledReason _serviceDisabledReason;
-        readonly SolvedConfigurationStatus _configSolvedStatus;
+        readonly ConfigurationStatus _configSolvedStatus;
         readonly IServiceInfo _serviceInfo;
         readonly ConfigurationStatus _configurationStatus;
         readonly RunningStatus? _runningStatus;
@@ -27,16 +27,16 @@ namespace Yodii.Engine
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 
-        public ServiceDisabledReason DisabledReason { get { return _serviceDisabledReason; } }
+        public string DisabledReason { get { return _serviceDisabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
-        SolvedConfigurationStatus IStaticSolvedService.WantedConfigSolvedStatus
+        ConfigurationStatus IStaticSolvedService.WantedConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
 
-        SolvedConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
+        ConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -44,7 +44,7 @@ namespace Yodii.Engine
 
         bool IStaticSolvedService.IsBlocking 
         { 
-            get {  return _configSolvedStatus >= SolvedConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
+            get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
         }
         
         RunningStatus IDynamicSolvedService.RunningStatus

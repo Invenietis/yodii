@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
     /// <summary>
     /// Description of the reason behind a running/stopped plugin.
     /// </summary>
-    public enum PluginRunningStatusReason
+    enum PluginRunningStatusReason
     {
         /// <summary>
-        /// No reason. Just because!
+        /// No reason.
         /// </summary>
         None = 0,
 

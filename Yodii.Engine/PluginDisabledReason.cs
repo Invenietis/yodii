@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
     /// <summary>
     /// Reasons for which a plugin was disabled.
     /// </summary>
-    public enum PluginDisabledReason
+    enum PluginDisabledReason
     {
         /// <summary>
         /// The plugin is not disabled.
@@ -33,7 +33,7 @@ namespace Yodii.Model
         /// <summary>
         /// Initialized by PluginData constructor.
         /// </summary>
-        MustExistReferenceServiceIsOnError,
+        RunnableReferenceServiceIsOnError,
 
         /// <summary>
         /// Initialized by PluginData constructor.

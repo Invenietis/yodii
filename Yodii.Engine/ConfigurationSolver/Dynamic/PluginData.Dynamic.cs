@@ -21,22 +21,22 @@ namespace Yodii.Engine
         {
             switch ( ConfigSolvedStatus )
             {
-                case SolvedConfigurationStatus.Disabled: 
+                case ConfigurationStatus.Disabled: 
                     {
                         _dynamicReason = PluginRunningStatusReason.StoppedByConfig;
                         _dynamicStatus = RunningStatus.Disabled; 
                         break;
                     }
-                case SolvedConfigurationStatus.Running: 
+                case ConfigurationStatus.Running: 
                     {
-                        Debug.Assert( Service.ConfigSolvedStatus == SolvedConfigurationStatus.Running );
+                        Debug.Assert( Service.ConfigSolvedStatus == ConfigurationStatus.Running );
                         _dynamicReason = PluginRunningStatusReason.StartedByConfig;
                         _dynamicStatus = RunningStatus.RunningLocked; 
                         break;
                     }
                 default:
                     {
-                        Debug.Assert( Service == null || Service.ConfigSolvedStatus != SolvedConfigurationStatus.Disabled );
+                        Debug.Assert( Service == null || Service.ConfigSolvedStatus != ConfigurationStatus.Disabled );
                         if( Service != null ) Service.OnPluginAvailable();
                         _dynamicReason = PluginRunningStatusReason.None;
                         _dynamicStatus = null;

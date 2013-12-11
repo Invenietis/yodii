@@ -56,7 +56,7 @@ namespace Yodii.Engine
         internal void SetRunningPluginByConfig( PluginData p )
         {
             Debug.Assert( !Disabled );
-            Debug.Assert( p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable );
+            Debug.Assert( p.ConfigSolvedStatus >= ConfigurationStatus.Runnable );
             Debug.Assert( p.Service == null || p.Service.GeneralizationRoot == this, "When called from PluginData constructor, Service is not yet set." );
             if( _theOnlyPlugin == null )
             {

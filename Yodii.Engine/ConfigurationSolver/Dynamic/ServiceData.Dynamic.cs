@@ -23,13 +23,13 @@ namespace Yodii.Engine
         {
             switch( ConfigSolvedStatus )
             {
-                case SolvedConfigurationStatus.Disabled:
+                case ConfigurationStatus.Disabled:
                     {
                         _dynamicReason = ServiceRunningStatusReason.StoppedByConfig;
                         _dynamicStatus = RunningStatus.Disabled;
                         break;
                     }
-                case SolvedConfigurationStatus.Running:
+                case ConfigurationStatus.Running:
                     {
                         _dynamicReason = ServiceRunningStatusReason.StartedByConfig;
                         _dynamicStatus = RunningStatus.RunningLocked;
@@ -63,13 +63,13 @@ namespace Yodii.Engine
             Debug.Assert( (_nbAllAvailablePlugins > 0) == (_dynamicStatus == null || _dynamicStatus == RunningStatus.RunningLocked) );
             switch( ConfigSolvedStatus )
             {
-                case SolvedConfigurationStatus.Disabled:
+                case ConfigurationStatus.Disabled:
                     {
                         Debug.Assert( _nbAllAvailablePlugins == 0 );
                         Debug.Assert( _dynamicStatus == RunningStatus.Disabled );
                         break;
                     }
-                case SolvedConfigurationStatus.Running:
+                case ConfigurationStatus.Running:
                     {
                         Debug.Assert( _nbAllAvailablePlugins > 0
                                         || (GeneralizationRoot.TheOnlyPlugin != null

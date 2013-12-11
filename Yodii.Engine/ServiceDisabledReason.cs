@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
     /// <summary>
     /// Reasons for which a service was disabled.
     /// </summary>
-    public enum ServiceDisabledReason
+    enum ServiceDisabledReason
     {
         /// <summary>
         /// The service is not disabled.

@@ -60,9 +60,9 @@ namespace Yodii.Engine
                 // becomes disabled (if it has no more available implementations) and that triggers disabling of plugins that require
                 // the service. This works because disable flag on each participant is carefully set before propagating the
                 // information to others to avoid loops and because such plugins reference themselves at the required service (AddRunnableReferencer).
-                if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
+                if( !p.Disabled && p.ConfigSolvedStatus >= ConfigurationStatus.Runnable )
                 {
-                    p.CheckReferencesWhenMustExist();
+                    p.PropagateSolvedConfigurationWhenRunnable();
                 }
             }
             // Time to conclude about configuration and to initialize dynamic resolution.
@@ -95,7 +95,7 @@ namespace Yodii.Engine
             }
             if ( blockingPlugins != null || blockingServices != null )
             {
-                return new YodiiEngineResult(_services, _plugins, blockingPlugins, blockingServices );
+                return new YodiiEngineResult( _services, _plugins, blockingPlugins, blockingServices );
             }
             return SuccessYodiiEngineResult.Default;
         }

@@ -14,9 +14,9 @@ namespace Yodii.Engine
         Config,
 
         /// <summary>
-        /// Sets by PluginData.CheckReferencesWhenMustExist method.
+        /// Sets by PluginData.PropagateSolvedConfigurationWhenRunnable method.
         /// </summary>
-        FromMustExistReference,
+        FromRunnableReference,
 
         /// <summary>
         /// Sets by ServiceData.GetRunningService method.

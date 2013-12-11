@@ -13,11 +13,10 @@ namespace Yodii.Engine
     {
         YodiiEngine _engine;
 
-        //set with cosntrutor
         readonly IServiceInfo _serviceInfo;
-        ServiceDisabledReason _disabledReason;
+        string _disabledReason;
         ConfigurationStatus _configOriginalStatus;
-        SolvedConfigurationStatus _configSolvedStatus;
+        ConfigurationStatus _configSolvedStatus;
         RunningStatus _runningStatus;
 
         //set with function
@@ -33,7 +32,7 @@ namespace Yodii.Engine
             _engine = engine;
 
             _serviceInfo = serviceData.ServiceInfo;
-            _disabledReason = serviceData.DisabledReason;
+            _disabledReason = serviceData.DisabledReason.ToString();
             _configOriginalStatus = serviceData.ConfigOriginalStatus;
             _configSolvedStatus = serviceData.ConfigSolvedStatus;
 
@@ -119,7 +118,7 @@ namespace Yodii.Engine
 
         #region IDynamicSolvedService Members
 
-        public ServiceDisabledReason DisabledReason
+        public string DisabledReason
         {
             get { return _disabledReason; }
             set
@@ -150,7 +149,7 @@ namespace Yodii.Engine
             }
         }
 
-        public SolvedConfigurationStatus ConfigSolvedStatus
+        public ConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
             set
@@ -198,7 +197,7 @@ namespace Yodii.Engine
 
         internal void UpdateInfo( ServiceData s )
         {
-            DisabledReason = s.DisabledReason;
+            DisabledReason = s.DisabledReason.ToString();
             ConfigOriginalStatus = s.ConfigOriginalStatus;
             ConfigSolvedStatus = s.ConfigSolvedStatus;
             RunningStatus = s.DynamicStatus.Value;

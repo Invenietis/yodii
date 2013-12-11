@@ -86,13 +86,13 @@ namespace Yodii.Engine
                 return true;
             }
 
-            public bool SetSolvedConfigurationStatus( SolvedConfigurationStatus solvedStatus, ServiceSolvedConfigStatusReason reason )
+            public bool SetSolvedConfigurationStatus( ConfigurationStatus solvedStatus, ServiceSolvedConfigStatusReason reason )
             {
-                Debug.Assert( solvedStatus >= SolvedConfigurationStatus.Runnable );
+                Debug.Assert( solvedStatus >= ConfigurationStatus.Runnable );
                 Ref r = _firstRef;
                 while( r != null )
                 {
-                    SolvedConfigurationStatus propagate = (SolvedConfigurationStatus)r.Requirement;
+                    ConfigurationStatus propagate = (ConfigurationStatus)r.Requirement;
                     if( propagate > solvedStatus ) propagate = solvedStatus;
                     if( !r.Service.SetSolvedConfigurationStatus( propagate, reason ) ) return false;
                     r = r.NextRef;
@@ -273,7 +273,7 @@ namespace Yodii.Engine
             {
                 if( _theOnlyPlugin == null ) RetrieveTheOnlyPlugin( fromConfig );
             }
-            else if( ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
+            else if( ConfigSolvedStatus >= ConfigurationStatus.Runnable )
             {
                 RetrieveOrUpdateTheCommonServiceReferences( fromConfig );
             }
@@ -297,7 +297,7 @@ namespace Yodii.Engine
                     SetDisabled( ServiceDisabledReason.RequirementPropagationToCommonPluginReferencesFailed );
                 }
             }
-            if( ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+            if( ConfigSolvedStatus == ConfigurationStatus.Running )
             {
                 var excludedServices = new ExcludedServiceReferences();
                 if( excludedServices.Add( this ) )
@@ -349,7 +349,7 @@ namespace Yodii.Engine
         
         void RetrieveOrUpdateTheCommonServiceReferences( bool fromConfig )
         {
-            Debug.Assert( !Disabled && ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable && TotalAvailablePluginCount > 1 );
+            Debug.Assert( !Disabled && ConfigSolvedStatus >= ConfigurationStatus.Runnable && TotalAvailablePluginCount > 1 );
             if( _commonReferences == null ) _commonReferences = new CommonServiceReferences();
             _commonReferences.Reset();
             if( _commonReferences.Add( this ) )
@@ -360,7 +360,7 @@ namespace Yodii.Engine
                     if( !Disabled ) SetDisabled( ServiceDisabledReason.RequirementPropagationToSinglePluginFailed );
                 }
             }
-            if( ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+            if( ConfigSolvedStatus == ConfigurationStatus.Running )
             {
                 var excludedServices = new ExcludedServiceReferences();
                 if( excludedServices.Add( this ) )

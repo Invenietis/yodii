@@ -19,7 +19,7 @@ namespace Yodii.Model
         /// <summary>
         /// Reason behind this plugin's disabled status.
         /// </summary>
-        PluginDisabledReason DisabledReason { get; }
+        string DisabledReason { get; }
 
         /// <summary>
         /// Status as set in the initial configuration.
@@ -29,7 +29,7 @@ namespace Yodii.Model
         /// <summary>
         /// Status as solved during the resolution.
         /// </summary>
-        SolvedConfigurationStatus ConfigSolvedStatus { get; }
+        ConfigurationStatus ConfigSolvedStatus { get; }
         
         /// <summary>
         /// Running status.

@@ -16,9 +16,9 @@ namespace Yodii.Engine
         YodiiEngine _engine;
 
         RunningStatus _runningStatus;
-        PluginDisabledReason _disabledReason;
+        string _disabledReason;
         ConfigurationStatus _configOriginalStatus;
-        SolvedConfigurationStatus _configSolvedStatus;
+        ConfigurationStatus _configSolvedStatus;
 
         LiveServiceInfo _service;
         Exception _currentError;
@@ -32,6 +32,7 @@ namespace Yodii.Engine
             _pluginInfo = p.PluginInfo;
 
             Debug.Assert( p.DynamicStatus != null );
+            _disabledReason = p.DisabledReason.ToString();
             _runningStatus = p.DynamicStatus.Value;
             _configOriginalStatus = p.ConfigOriginalStatus;
             _configSolvedStatus = p.ConfigSolvedStatus;
@@ -74,7 +75,7 @@ namespace Yodii.Engine
             }
         }
 
-        public PluginDisabledReason DisabledReason
+        public string DisabledReason
         {
             get { return _disabledReason; }
             internal set
@@ -100,7 +101,7 @@ namespace Yodii.Engine
             }
         }
 
-        public SolvedConfigurationStatus ConfigSolvedStatus
+        public ConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
             internal set
@@ -147,6 +148,7 @@ namespace Yodii.Engine
         internal void UpdateInfo( PluginData p )
         {
             Debug.Assert( p.DynamicStatus != null );
+            _disabledReason = p.DisabledReason.ToString();
             _runningStatus = p.DynamicStatus.Value;
             _configOriginalStatus = p.ConfigOriginalStatus;
             _configSolvedStatus = p.ConfigSolvedStatus;

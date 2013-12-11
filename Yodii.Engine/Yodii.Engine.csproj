@@ -75,6 +75,10 @@
     <Compile Include="ConfigurationSolver\Live\LiveServiceInfo.cs" />
     <Compile Include="ConfigurationSolver\Static\StaticSolvedConfiguration.cs" />
     <Compile Include="ConfigurationSolver\SuccessYodiiEngineResult.cs" />
+    <Compile Include="PluginDisabledReason.cs" />
+    <Compile Include="PluginRunningStatusReason.cs" />
+    <Compile Include="ServiceDisabledReason.cs" />
+    <Compile Include="ServiceRunningStatusReason.cs" />
     <Compile Include="YodiiEngineResult.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Static.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\PluginData.Dynamic.cs" />

@@ -13,7 +13,7 @@ namespace Yodii.Engine
         readonly Dictionary<string,ServiceData> _allServices;
         ServiceData[] _directExcludedServices;
         ServiceDisabledReason _configDisabledReason;
-        SolvedConfigurationStatus _configSolvedStatus;
+        ConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
         ServiceData _configRunningSpecialization;
 
@@ -86,11 +86,7 @@ namespace Yodii.Engine
             _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
             if ( !Disabled )
             {
-                Debug.Assert( (int)SolvedConfigurationStatus.Disabled == (int)ConfigurationStatus.Disabled );
-                Debug.Assert( (int)SolvedConfigurationStatus.Optional == (int)ConfigurationStatus.Optional );
-                Debug.Assert( (int)SolvedConfigurationStatus.Runnable == (int)ConfigurationStatus.Runnable );
-                Debug.Assert( (int)SolvedConfigurationStatus.Running == (int)ConfigurationStatus.Running );
-                _configSolvedStatus = (SolvedConfigurationStatus)serviceStatus;
+                _configSolvedStatus = serviceStatus;
             }
         }
 
@@ -164,7 +160,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
         /// </summary>
-        public SolvedConfigurationStatus ConfigSolvedStatus
+        public ConfigurationStatus ConfigSolvedStatus
         {
             get { return _configRunningSpecialization != null ? _configRunningSpecialization._configSolvedStatus : _configSolvedStatus; }
         }
@@ -172,7 +168,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the minimal running requirement for this service (not the one of MustExistSpecialization if it exists).
         /// </summary>
-        public SolvedConfigurationStatus ThisConfigSolvedStatus
+        public ConfigurationStatus ThisConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -191,16 +187,16 @@ namespace Yodii.Engine
         /// <param name="s"></param>
         /// <param name="reason"></param>
         /// <returns>True if the requirement can be satisfied at this level. False otherwise.</returns>
-        internal bool SetSolvedConfigurationStatus( SolvedConfigurationStatus s, ServiceSolvedConfigStatusReason reason )
+        internal bool SetSolvedConfigurationStatus( ConfigurationStatus s, ServiceSolvedConfigStatusReason reason )
         {
             if( _configRunningSpecialization != null && _configRunningSpecialization != this )
             {
-                Debug.Assert( _configRunningSpecialization._configSolvedStatus == SolvedConfigurationStatus.Running );
+                Debug.Assert( _configRunningSpecialization._configSolvedStatus == ConfigurationStatus.Running );
                 return _configRunningSpecialization.SetSolvedConfigurationStatus( s, reason );
             }
             if( s <= _configSolvedStatus )
             {
-                if( s >= SolvedConfigurationStatus.Runnable ) return !Disabled;
+                if( s >= ConfigurationStatus.Runnable ) return !Disabled;
                 return true;
             }
             // New requirement is stronger than the previous one.
@@ -213,11 +209,9 @@ namespace Yodii.Engine
             var current = _configSolvedStatus;
             _configSolvedStatus = s;
             // Is it compliant with a Disabled service? If yes, it is always satisfied.
-            if( s < SolvedConfigurationStatus.Runnable )
+            if( s < ConfigurationStatus.Runnable )
             {
                 _configSolvedStatusReason = reason;
-                // Propagate OptionalTryStart.
-                PropagateRunningRequirementToOnlyPluginOrCommonReferences();
                 return true;
             }
             // The new requirement is at least Runnable.
@@ -227,7 +221,7 @@ namespace Yodii.Engine
             _configSolvedStatusReason = reason;
 
             // Call SetAsRunningService only if this Service becomes Running.
-            if( _configSolvedStatus == SolvedConfigurationStatus.Running && current < SolvedConfigurationStatus.Running )
+            if( _configSolvedStatus == ConfigurationStatus.Running && current < ConfigurationStatus.Running )
             {
                 if( !SetAsRunningService() ) return false;
             }
@@ -253,10 +247,10 @@ namespace Yodii.Engine
         {
             if( fromRunningPlugin )
             {
-                Debug.Assert( GeneralizationRoot.RunningPluginByConfig.ConfigSolvedStatus == SolvedConfigurationStatus.Running );
-                _configSolvedStatus = SolvedConfigurationStatus.Running;
+                Debug.Assert( GeneralizationRoot.RunningPluginByConfig.ConfigSolvedStatus == ConfigurationStatus.Running );
+                _configSolvedStatus = ConfigurationStatus.Running;
             }
-            Debug.Assert( _configSolvedStatus == SolvedConfigurationStatus.Running );
+            Debug.Assert( _configSolvedStatus == ConfigurationStatus.Running );
 
             Debug.Assert( _configRunningSpecialization != this, "SetSolvedConfigurationStatus filters this thanks to the _configSolvedStatus." );
 
@@ -505,7 +499,7 @@ namespace Yodii.Engine
             // The less trivially case when this running plugin conflicts with some other Running at the services level
             // is already handled in PluginData constructor thanks to service.MustExistSpecialization being not null that 
             // immediately disables the plugin.
-            if( p.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+            if( p.ConfigSolvedStatus == ConfigurationStatus.Running )
             {
                 Debug.Assert( !p.Disabled );
                 GeneralizationRoot.SetRunningPluginByConfig( p );

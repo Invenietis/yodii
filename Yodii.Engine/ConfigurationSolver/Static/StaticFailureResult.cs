@@ -10,13 +10,13 @@ namespace Yodii.Engine
 {
     public class StaticFailureResult : IStaticFailureResult
     {
-        readonly List<IStaticSolvedPlugin> _blockingPlugins;
-        readonly List<IStaticSolvedService> _blockingServices;
+        readonly IReadOnlyList<IStaticSolvedPlugin> _blockingPlugins;
+        readonly IReadOnlyList<IStaticSolvedService> _blockingServices;
         readonly IStaticSolvedConfiguration _solvedConfiguration;
 
-        internal StaticFailureResult( IStaticSolvedConfiguration solvedConfiguration, List<IStaticSolvedPlugin> blockedPlugins, List<IStaticSolvedService> blockedServices )
+        internal StaticFailureResult( IStaticSolvedConfiguration solvedConfiguration, IReadOnlyList<IStaticSolvedPlugin> blockedPlugins, IReadOnlyList<IStaticSolvedService> blockedServices )
         {
-            Debug.Assert( blockedPlugins != null && blockedServices != null );
+            Debug.Assert( solvedConfiguration != null && blockedPlugins != null && blockedServices != null );
             _blockingPlugins = blockedPlugins;
             _blockingServices = blockedServices;
             _solvedConfiguration = solvedConfiguration;
@@ -26,13 +26,15 @@ namespace Yodii.Engine
         {
             get { return _solvedConfiguration; }
         }
+        
         public IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins
         {
-            get { return _blockingPlugins.AsReadOnlyList(); }
+            get { return _blockingPlugins; }
         }
+
         public IReadOnlyList<IStaticSolvedService> BlockingServices
         {
-            get { return _blockingServices.AsReadOnlyList(); }
+            get { return _blockingServices; }
         }
     }
 }

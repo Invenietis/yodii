@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
     /// <summary>
     /// Description of the reason behind a running/stopped service.
     /// </summary>
-    public enum ServiceRunningStatusReason
+    enum ServiceRunningStatusReason
     {
         /// <summary>
-        /// No reason. Parce que je le vaux bien.
+        /// No reason.
         /// </summary>
         None = 0,
 

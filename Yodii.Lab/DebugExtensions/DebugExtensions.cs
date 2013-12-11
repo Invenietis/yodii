@@ -68,7 +68,7 @@ namespace Yodii.Lab
                 }
             }
 
-            if( result.ServiceCulprits != null && result.ServiceCulprits.Count > 0 )
+            if( result.ServiceCulprits.Count > 0 )
             {
                 sb.AppendLine( "ServiceCulprits:" );
                 foreach( var pc in result.ServiceCulprits )
@@ -79,7 +79,7 @@ namespace Yodii.Lab
                 }
             }
 
-            if( result.PluginCulprits != null && result.PluginCulprits.Count > 0 )
+            if( result.PluginCulprits.Count > 0 )
             {
                 sb.AppendLine( "PluginCulprits:" );
                 foreach( var pc in result.PluginCulprits )
