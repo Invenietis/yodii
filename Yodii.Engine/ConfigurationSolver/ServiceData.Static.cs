@@ -13,8 +13,10 @@ namespace Yodii.Engine
         readonly Dictionary<string,ServiceData> _allServices;
         ServiceData[] _directExcludedServices;
         ServiceDisabledReason _configDisabledReason;
+        
         ConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
+        
         ServiceData _configRunningSpecialization;
 
         class BackReference
@@ -61,13 +63,13 @@ namespace Yodii.Engine
                 GeneralizationRoot = Generalization.GeneralizationRoot;
                 NextSpecialization = Generalization.FirstSpecialization;
                 Generalization.FirstSpecialization = this;
-                ++Generalization.SpecializationCount;
             }
             else
             {
                 GeneralizationRoot = (ServiceRootData)this;
             }
-            if ( (ConfigOriginalStatus = serviceStatus) == ConfigurationStatus.Disabled )
+            ConfigOriginalStatus = serviceStatus;
+            if ( ConfigOriginalStatus == ConfigurationStatus.Disabled )
             {
                 _configDisabledReason = ServiceDisabledReason.Config;
             }
@@ -79,12 +81,9 @@ namespace Yodii.Engine
             {
                 _configDisabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
             }
-            //else if( !s.IsDynamicService && !isExternalServiceAvailable( s ) )
-            //{
-            //    _disabledReason = ServiceDisabledReason.ExternalServiceUnavailable;
-            //}            
+
             _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
-            if ( !Disabled )
+            if( !Disabled )
             {
                 _configSolvedStatus = serviceStatus;
             }
@@ -98,12 +97,12 @@ namespace Yodii.Engine
             get { return _configDisabledReason != ServiceDisabledReason.None; }
         }
 
-        public ServiceData MustExistSpecialization
+        public ServiceData RunningSpecialization
         {
             get { return _configRunningSpecialization; }
         }
 
-        private bool IsStrictGeneralizationOf( ServiceData d )
+        internal bool IsStrictGeneralizationOf( ServiceData d )
         {
             var g = d.Generalization;
             if( g == null || d.GeneralizationRoot != GeneralizationRoot ) return false;
@@ -283,13 +282,13 @@ namespace Yodii.Engine
             // We must now disable all sibling services (and plugins) from this up to the currently running one and 
             // when the current one is null, up to the root.
             g = Generalization;
-            var specThatMustExist = this;
+            var specRunning = this;
             while( g != prevCurrentRunning )
             {
                 var spec = g.FirstSpecialization;
                 while( spec != null )
                 {
-                    if( spec != specThatMustExist && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustRun );
+                    if( spec != specRunning && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustRun );
                     spec = spec.NextSpecialization;
                 }
                 PluginData p = g.FirstPlugin;
@@ -298,7 +297,7 @@ namespace Yodii.Engine
                     if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.ServiceSpecializationMustRun );
                     p = p.NextPluginForService;
                 }
-                specThatMustExist = g;
+                specRunning = g;
                 g = g.Generalization;
             }
         }
@@ -312,11 +311,6 @@ namespace Yodii.Engine
         /// Linked list to another ServiceData that specialize Service.
         /// </summary>
         public readonly ServiceData NextSpecialization;
-
-        /// <summary>
-        /// Number of direct specializations.
-        /// </summary>
-        public int SpecializationCount;
 
         /// <summary>
         /// Head of the linked list of PluginData that implement this exact Service (not specialized ones).
@@ -533,7 +527,7 @@ namespace Yodii.Engine
         internal virtual void OnAllPluginsAdded()
         {
             Debug.Assert( !Disabled, "Must NOT be called on already disabled service." );
-            Debug.Assert( (MustExistSpecialization == null || MustExistSpecialization == this) || PluginCount == DisabledPluginCount, "If there is a must exist specialization, all our plugins are disabled." );
+            Debug.Assert( (RunningSpecialization == null || RunningSpecialization == this) || PluginCount == DisabledPluginCount, "If there is a must exist specialization, all our plugins are disabled." );
 
             // Recursive call: the only plugin or the CommonServiceReferences are
             // updated bottom up, so that this Generalization can reuse them.

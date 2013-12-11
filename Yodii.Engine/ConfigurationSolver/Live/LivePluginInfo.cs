@@ -9,18 +9,16 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    class LivePluginInfo : ILivePluginInfo
+    class LivePluginInfo : ILivePluginInfo, INotifyRaisePropertyChanged
     {
-        readonly IPluginInfo _pluginInfo;
+        readonly YodiiEngine _engine;
 
-        YodiiEngine _engine;
-
+        IPluginInfo _pluginInfo;
         RunningStatus _runningStatus;
         string _disabledReason;
         ConfigurationStatus _configOriginalStatus;
         ConfigurationStatus _configSolvedStatus;
-
-        LiveServiceInfo _service;
+        ILiveServiceInfo _service;
         Exception _currentError;
 
         internal LivePluginInfo( PluginData p, YodiiEngine engine )
@@ -28,9 +26,7 @@ namespace Yodii.Engine
             Debug.Assert( p != null && engine != null );
 
             _engine = engine;
-
             _pluginInfo = p.PluginInfo;
-
             Debug.Assert( p.DynamicStatus != null );
             _disabledReason = p.DisabledReason.ToString();
             _runningStatus = p.DynamicStatus.Value;
@@ -38,23 +34,30 @@ namespace Yodii.Engine
             _configSolvedStatus = p.ConfigSolvedStatus;
         }
 
+        internal void UpdateFrom( PluginData p, DelayedPropertyNotification notifier )
+        {
+            Debug.Assert( p.DynamicStatus != null );
+            notifier.Update( this, ref _pluginInfo, p.PluginInfo, () => PluginInfo );
+            notifier.Update( this, ref _disabledReason, p.DisabledReason.ToString(), () => DisabledReason );
+            notifier.Update( this, ref _runningStatus, p.DynamicStatus.Value, () => RunningStatus );
+            notifier.Update( this, ref _configOriginalStatus, p.ConfigOriginalStatus, () => ConfigOriginalStatus );
+            notifier.Update( this, ref _configSolvedStatus, p.ConfigSolvedStatus, () => ConfigSolvedStatus );
+        }
+
+        internal void Bind( PluginData p, Func<string, LiveServiceInfo> serviceFinder, DelayedPropertyNotification notifier )
+        {
+            var newService = p.Service != null ? serviceFinder( p.Service.ServiceInfo.ServiceFullName ) : null;
+            notifier.Update( this, ref _service, newService, () => Service ); 
+        }
+
         public bool IsRunning
         {
             get { return _runningStatus >= RunningStatus.Running; }
         }
 
-        ILiveServiceInfo ILivePluginInfo.Service
+        public ILiveServiceInfo Service
         {
             get { return _service; }
-        }
-
-        internal LiveServiceInfo Service
-        {
-            set 
-            {
-                Debug.Assert( _service != value );
-                _service = value;
-            }
         }
 
         public IPluginInfo PluginInfo
@@ -70,7 +73,7 @@ namespace Yodii.Engine
                 if( _currentError != value )
                 {
                     _currentError = value;
-                    NotifyPropertyChanged();
+                    RaisePropertyChanged();
                 }
             }
         }
@@ -78,53 +81,21 @@ namespace Yodii.Engine
         public string DisabledReason
         {
             get { return _disabledReason; }
-            internal set
-            {
-                if( _disabledReason != value )
-                {
-                    _disabledReason = value;
-                    NotifyPropertyChanged();
-                }
-            }
         }
 
         public ConfigurationStatus ConfigOriginalStatus
         {
             get { return _configOriginalStatus; }
-            internal set
-            {
-                if( _configOriginalStatus != value )
-                {
-                    _configOriginalStatus = value;
-                    NotifyPropertyChanged();
-                }
-            }
         }
 
         public ConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
-            internal set
-            {
-                if( _configSolvedStatus != value )
-                {
-                    _configSolvedStatus = value;
-                    NotifyPropertyChanged();
-                }
-            }
         }
 
         public RunningStatus RunningStatus
         {
             get { return _runningStatus; }
-            internal set
-            {
-                if( _runningStatus != value )
-                {
-                    _runningStatus = value;
-                    NotifyPropertyChanged();
-                }
-            }
         }
 
         public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.None )
@@ -145,22 +116,11 @@ namespace Yodii.Engine
             return _engine.AddYodiiCommand( command );
         }
 
-        internal void UpdateInfo( PluginData p )
-        {
-            Debug.Assert( p.DynamicStatus != null );
-            _disabledReason = p.DisabledReason.ToString();
-            _runningStatus = p.DynamicStatus.Value;
-            _configOriginalStatus = p.ConfigOriginalStatus;
-            _configSolvedStatus = p.ConfigSolvedStatus;
-
-            if( _service != null && p.DynamicStatus >= RunningStatus.Running ) _service.RunningPlugin = this;
-        }
-
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void NotifyPropertyChanged( [CallerMemberName]string propertyName = "" )
+        public void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {
             var h = PropertyChanged;
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );

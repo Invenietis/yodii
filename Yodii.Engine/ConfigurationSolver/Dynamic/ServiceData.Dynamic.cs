@@ -200,7 +200,7 @@ namespace Yodii.Engine
                 if( br.Requirement == DependencyRequirement.Running )
                 {
                     Debug.Assert( br.PluginData.DynamicStatus == null || br.PluginData.DynamicStatus < RunningStatus.Running ); 
-                    br.PluginData.StopByStoppedReference();
+                    if( br.PluginData.DynamicStatus == null ) br.PluginData.StopByStoppedReference();
                 }
                 br = br.Next;
             }
@@ -267,8 +267,8 @@ namespace Yodii.Engine
                 if( p != runningPlugin )
                 {
                     if( p.DynamicStatus == null ) p.StopByService( PluginRunningStatusReason.StoppedByRunningSibling );
-                    p = p.NextPluginForService;
                 }
+                p = p.NextPluginForService;
             }
 
             ServiceData s = FirstSpecialization;

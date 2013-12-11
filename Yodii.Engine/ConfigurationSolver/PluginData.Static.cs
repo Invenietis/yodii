@@ -62,7 +62,7 @@ namespace Yodii.Engine
                 {
                     _configDisabledReason = PluginDisabledReason.ServiceIsDisabled;
                 }
-                else if( service.MustExistSpecialization != null && service.MustExistSpecialization != service )
+                else if( service.RunningSpecialization != null && service.RunningSpecialization != service )
                 {
                     _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustRun;
                 }
@@ -101,7 +101,7 @@ namespace Yodii.Engine
             }
             // Updates SolvedConfigurationStatus so that AddPlugin can take Runnable into account.
             _configSolvedStatusReason = PluginRunningRequirementReason.Config;
-            if ( !Disabled )
+            if( !Disabled )
             {
                 _configSolvedStatus = pluginStatus;
             }
@@ -110,7 +110,7 @@ namespace Yodii.Engine
             {
                 service.AddPlugin( this );
                 // Sets Service after AddPlugin call to avoid calling Service.OnPluginDisabled 
-                // if the AddPlugin or references checks above disables it.
+                // if the AddPlugin or references checks above disabled it.
                 Service = service;
             }
         }

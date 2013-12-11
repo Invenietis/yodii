@@ -64,11 +64,7 @@ namespace Yodii.Engine
         internal Tuple<IYodiiEngineResult,ConfigurationSolver> StaticResolution( FinalConfiguration finalConfiguration )
         {
             Debug.Assert( IsRunning );
-
-            ConfigurationSolver temporarySolver = new ConfigurationSolver();
-            IYodiiEngineResult result =  temporarySolver.StaticResolution( finalConfiguration, _discoveredInfo );
-            if( !result.Success ) temporarySolver = null;
-            return Tuple.Create( result, temporarySolver );
+            return ConfigurationSolver.CreateAndApplyStaticResolution( finalConfiguration, _discoveredInfo );
         }
 
         IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
@@ -85,7 +81,9 @@ namespace Yodii.Engine
             if( onPreSuccess != null ) onPreSuccess();
             bool wasStopped = _currentSolver == null;
             if( _currentSolver != solver ) _currentSolver = solver;
-            _currentSolver.UpdateNewResultInLiveInfo( _liveInfo );
+
+            _liveInfo.UpdateFrom( _currentSolver.AllServices, _currentSolver.AllPlugins );
+                        
             _yodiiCommands.Merge( dynResult.Commands );
             if( wasStopped ) RaisePropertyChanged( "IsRunning" );
             return SuccessYodiiEngineResult.Default;
@@ -140,18 +138,24 @@ namespace Yodii.Engine
         internal IYodiiEngineResult RevokeYodiiCommandCaller( string callerKey )
         {
             Debug.Assert( callerKey != null );
-            Debug.Assert( IsRunning, "Cannot call this function when the engine is not running"  );
-            return DoDynamicResolution( _currentSolver, cmd => cmd.CallerKey != callerKey, null );
+            if( IsRunning )
+            {
+                return DoDynamicResolution( _currentSolver, cmd => cmd.CallerKey != callerKey, null );
+            }
+            else
+            {
+                _yodiiCommands.RemoveWhereAndReturnsRemoved( cmd => cmd.CallerKey == callerKey ).Count();
+                return SuccessYodiiEngineResult.Default;
+            }
         }
 
         public IYodiiEngineResult Start()
         {
             if( !IsRunning )
             {
-                ConfigurationSolver solver = new ConfigurationSolver();
-                IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, _discoveredInfo );
-                if( !result.Success ) return result;
-                return DoDynamicResolution( solver, null, null );
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( _manager.FinalConfiguration, _discoveredInfo );
+                if( !r.Item1.Success ) return r.Item1;
+                return DoDynamicResolution( r.Item2, null, null );
             }
             return SuccessYodiiEngineResult.Default;
         }
@@ -163,11 +167,9 @@ namespace Yodii.Engine
 
             if( IsRunning )
             {
-                ConfigurationSolver solver = new ConfigurationSolver();
-                IYodiiEngineResult result = solver.StaticResolution( _manager.FinalConfiguration, info );
-                if( !result.Success ) return result;
-
-                return DoDynamicResolution( solver, null, null, () => DiscoveredInfo = info );
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( _manager.FinalConfiguration, info );
+                if( !r.Item1.Success ) return r.Item1;
+                return DoDynamicResolution( r.Item2, null, null, () => DiscoveredInfo = info );
             }
             else DiscoveredInfo = info;
             return SuccessYodiiEngineResult.Default;

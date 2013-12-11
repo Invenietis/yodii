@@ -11,23 +11,28 @@ namespace Yodii.Engine
 {
     class ConfigurationSolver
     {
-        Dictionary<string,ServiceData> _services;
-        List<ServiceRootData> _serviceRoots;
-        Dictionary<Guid,PluginData> _plugins;
+        readonly Dictionary<string,ServiceData> _services;
+        readonly List<ServiceRootData> _serviceRoots;
+        readonly Dictionary<Guid,PluginData> _plugins;
 
-        internal ConfigurationSolver()
+        internal static Tuple<IYodiiEngineResult, ConfigurationSolver> CreateAndApplyStaticResolution( FinalConfiguration finalConfiguration, IDiscoveredInfo discoveredInfo )
+        {
+            ConfigurationSolver temporarySolver = new ConfigurationSolver();
+            IYodiiEngineResult result =  temporarySolver.StaticResolution( finalConfiguration, discoveredInfo );
+            if( !result.Success ) temporarySolver = null;
+            return Tuple.Create( result, temporarySolver );
+        }
+
+        ConfigurationSolver()
         {
             _services = new Dictionary<string, ServiceData>();
             _serviceRoots = new List<ServiceRootData>();
             _plugins = new Dictionary<Guid, PluginData>();
         }
 
-        internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
+        IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
         {
             // Registering all Services.
-            _services.Clear();
-            _serviceRoots.Clear();
-
             foreach( IServiceInfo sI in info.ServiceInfos )
             {
                 // This creates services and applies solved configuration to them: directly disabled services
@@ -42,7 +47,6 @@ namespace Yodii.Engine
                 if( !root.Disabled ) root.InitializeRunningService();
             }
             // We can now instantiate plugin data. 
-            _plugins.Clear();
             foreach( IPluginInfo p in info.PluginInfos )
             {
                 RegisterPlugin( finalConfig, p );
@@ -99,6 +103,10 @@ namespace Yodii.Engine
             }
             return SuccessYodiiEngineResult.Default;
         }
+
+        internal Dictionary<string, ServiceData> AllServices { get { return _services; } }
+        
+        internal Dictionary<Guid, PluginData> AllPlugins { get { return _plugins; } }
 
         /// <summary>
         /// Solves undetermined status based on commands.
@@ -227,51 +235,6 @@ namespace Yodii.Engine
         internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
         {
             return new YodiiEngineResult( _services, _plugins, errors );
-        }
-
-        internal void UpdateNewResultInLiveInfo( LiveInfo liveInfo )
-        {
-            Debug.Assert( liveInfo != null );
-            for( int i = 0; i < liveInfo.Services.Count; i++ )
-            {
-                ServiceData serviceData;
-                if( _services.TryGetValue( liveInfo.Services[i].ServiceInfo.ServiceFullName, out serviceData ) )
-                {
-                    liveInfo.UpdateInfo( serviceData );
-                }
-                else
-                {
-                    liveInfo.Remove( liveInfo.Services[i--] );
-                }
-            }
-            foreach( var s in _services.Values )
-            {
-                if( !liveInfo.Contains( s.ServiceInfo.ServiceFullName ) )
-                {
-                    liveInfo.AddInfo( s );
-                }
-            }
-            for( int i = 0; i < liveInfo.Plugins.Count; i++ )
-            {
-                PluginData pluginData;
-                if( _plugins.TryGetValue( liveInfo.Plugins[i].PluginInfo.PluginId, out pluginData ) )
-                {
-                    liveInfo.UpdateInfo( pluginData );
-                }
-                else
-                {
-                    liveInfo.Remove( liveInfo.Plugins[i--] );
-                }
-            }
-            foreach( var p in _plugins.Values )
-            {
-                if( !liveInfo.Contains( p.PluginInfo.PluginId ) )
-                {
-                    liveInfo.AddInfo( p );
-                }
-            }
-
-            liveInfo.CreateGraphOfDependencies();
         }
 
     }

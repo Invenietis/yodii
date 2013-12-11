@@ -79,7 +79,8 @@ namespace Yodii.Engine
         /// <summary>
         /// 
         /// </summary>
-        ExcludingServiceIsBlocking
+        ExcludingServiceIsBlocking,
+        AnotherServiceIsRunningByConfig
     }
 
 }

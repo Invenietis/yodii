@@ -37,6 +37,7 @@ namespace Yodii.Engine
         /// 
         /// </summary>
         FromMustExistSpecialization,
-        FromMustExistGeneralization
+        FromMustExistGeneralization,
+        FromRunningSpecialization
     }
 }

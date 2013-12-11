@@ -41,7 +41,6 @@ namespace Yodii.Engine
 
         public ILivePluginInfo FindPlugin( Guid pluginId )
         {
-            if( pluginId == null ) throw new ArgumentNullException( "pluginId" );
             return _plugins.GetByKey( pluginId );
         }
 
@@ -55,51 +54,48 @@ namespace Yodii.Engine
             return _plugins.Contains( pluginId );
         }
 
-        internal void UpdateInfo( ServiceData serviceData )
+        internal void UpdateFrom( Dictionary<string,ServiceData> services, Dictionary<Guid,PluginData> plugins )
         {
-            Debug.Assert( serviceData != null );
-            LiveServiceInfo serviceInfo = _services.GetByKey( serviceData.ServiceInfo.ServiceFullName );
+            _services.RemoveWhereAndReturnsRemoved( s => !services.ContainsKey( s.ServiceInfo.ServiceFullName ) ).Count();
+            _plugins.RemoveWhereAndReturnsRemoved( p => !plugins.ContainsKey( p.PluginInfo.PluginId ) ).Count();
 
-            Debug.Assert( serviceInfo != null );
-            serviceInfo.UpdateInfo( serviceData );
-        }
+            DelayedPropertyNotification notifier = new DelayedPropertyNotification();
 
-        internal void UpdateInfo( PluginData pluginData )
-        {
-            Debug.Assert( pluginData != null );
-            LivePluginInfo pluginInfo = _plugins.GetByKey( pluginData.PluginInfo.PluginId );
-            Debug.Assert( pluginInfo != null );
-            pluginInfo.UpdateInfo( pluginData );    
-        }
+            List<LiveServiceInfo> servicesToAdd = new List<LiveServiceInfo>();
+            foreach( var s in services.Values )
+            {
+                LiveServiceInfo ls = _services.GetByKey( s.ServiceInfo.ServiceFullName );
+                if( ls == null ) servicesToAdd.Add( new LiveServiceInfo( s, _engine ) );
+                else ls.UpdateFrom( s, notifier );
+            }
 
-        internal void Remove( ILiveServiceInfo liveServiceInfo )
-        {
-            Debug.Assert( liveServiceInfo != null );
-            Debug.Assert( _services.Contains( liveServiceInfo ) );
+            List<LivePluginInfo> pluginsToAdd = new List<LivePluginInfo>();
+            foreach( var s in plugins.Values )
+            {
+                LivePluginInfo lp = _plugins.GetByKey( s.PluginInfo.PluginId );
+                if( lp == null ) pluginsToAdd.Add( new LivePluginInfo( s, _engine ) );
+                else lp.UpdateFrom( s, notifier );
+            }
 
-            _services.Remove( liveServiceInfo.ServiceInfo.ServiceFullName );
-        }
+            Func<string,LiveServiceInfo> serviceFinder = name => _services.GetByKey( name ) ?? servicesToAdd.First( ls => ls.ServiceInfo.ServiceFullName == name );
+            Func<Guid,LivePluginInfo> pluginFinder = id => _plugins.GetByKey( id ) ?? pluginsToAdd.First( lp => lp.PluginInfo.PluginId == id );
 
-        internal void Remove( ILivePluginInfo livePluginInfo )
-        {
-            Debug.Assert( livePluginInfo != null );
-            Debug.Assert( _services.Contains( livePluginInfo ) );
+            using( notifier.SilentMode() )
+            {
+                foreach( var ls in servicesToAdd ) ls.Bind( services[ls.ServiceInfo.ServiceFullName], serviceFinder, pluginFinder, notifier );
+            }
+            foreach( var ls in _services ) ls.Bind( services[ls.ServiceInfo.ServiceFullName], serviceFinder, pluginFinder, notifier );
 
-            _plugins.Remove( livePluginInfo.PluginInfo.PluginId );
-        }
+            using( notifier.SilentMode() )
+            {
+                foreach( var lp in pluginsToAdd ) lp.Bind( plugins[lp.PluginInfo.PluginId], serviceFinder, notifier );
+            }
+            foreach( var lp in _plugins ) lp.Bind( plugins[lp.PluginInfo.PluginId], serviceFinder, notifier );
 
-        internal void AddInfo( ServiceData serviceData )
-        {
-            Debug.Assert( serviceData != null );
-            Debug.Assert( !_services.Contains( serviceData.ServiceInfo.ServiceFullName ) );
-            _services.Add( new LiveServiceInfo( serviceData, _engine ) );
-        }
+            foreach( var ls in servicesToAdd ) _services.Add( ls );
+            foreach( var lp in pluginsToAdd ) _plugins.Add( lp );
 
-        internal void AddInfo( PluginData pluginData )
-        {
-            Debug.Assert( pluginData != null );
-            Debug.Assert( !_plugins.Contains( pluginData.PluginInfo.PluginId ) );
-            _plugins.Add( new LivePluginInfo( pluginData, _engine ) );
+            notifier.RaiseEvents();
         }
 
         internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
@@ -107,14 +103,8 @@ namespace Yodii.Engine
             foreach( var e in errors )
             {
                 LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginId );
-                if( pluginInfo != null )
-                {
-                    pluginInfo.CurrentError = e.Item2;
-                }
-                else
-                {
-                    Debug.Fail( "The plugin cannot be not found in UpdateRuntimeErrors function" );
-                }
+                Debug.Assert( pluginInfo != null, "The plugin cannot be not found in UpdateRuntimeErrors function" );
+                pluginInfo.CurrentError = e.Item2;
             }
         }
 
@@ -125,20 +115,6 @@ namespace Yodii.Engine
         {
             _plugins.Clear();
             _services.Clear();
-        }
-
-        internal void CreateGraphOfDependencies()
-        {
-            foreach( var p in _plugins )
-            {
-                if( p.PluginInfo.Service != null ) p.Service = _services.GetByKey( p.PluginInfo.Service.ServiceFullName );
-                else p.Service = null;
-            }
-            foreach( var s in _services )
-            {
-                if( s.ServiceInfo.Generalization != null ) s.Generalization = _services.GetByKey( s.ServiceInfo.Generalization.ServiceFullName );
-                else s.Generalization = null;
-            }
         }
 
         public IYodiiEngineResult RevokeCaller( string callerKey )
