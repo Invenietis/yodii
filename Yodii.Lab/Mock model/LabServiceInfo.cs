@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Windows;
+using System.Windows.Input;
 using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
@@ -24,11 +26,54 @@ namespace Yodii.Lab.Mocks
             Debug.Assert( serviceInfo != null );
 
             _serviceInfo = serviceInfo;
-            //_generalization = generalization;
+
+            StartServiceCommand = new RelayCommand( ExecuteStartService, CanExecuteStartService );
+            StopServiceCommand = new RelayCommand( ExecuteStopService, CanExecuteStopService );
+        }
+
+        private bool CanExecuteStopService( object obj )
+        {
+            return LiveServiceInfo != null && LiveServiceInfo.RunningStatus == RunningStatus.Running;
+        }
+
+        private void ExecuteStopService( object obj )
+        {
+            if( !CanExecuteStopService( null ) ) return;
+            var result = LiveServiceInfo.Stop( "LabServiceInfo" );
+            if( !result.Success )
+            {
+                MessageBox.Show( result.Describe() );
+            }
+        }
+
+        private bool CanExecuteStartService( object obj )
+        {
+            return LiveServiceInfo != null && LiveServiceInfo.RunningStatus == RunningStatus.Stopped;
+        }
+
+        private void ExecuteStartService( object obj )
+        {
+            if( !CanExecuteStartService( null ) ) return;
+            var result = LiveServiceInfo.Start( "LabServiceInfo" );
+            if( !result.Success )
+            {
+                MessageBox.Show( result.Describe() );
+            }
         }
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Command to start the service.
+        /// </summary>
+        public ICommand StartServiceCommand { get; private set; }
+
+        /// <summary>
+        /// Command to stop the service.
+        /// </summary>
+        public ICommand StopServiceCommand { get; private set; }
+
         /// <summary>
         /// Attached service info. Read-only.
         /// </summary>
@@ -49,9 +94,9 @@ namespace Yodii.Lab.Mocks
                 if( value != null )
                 {
                     Debug.Assert( value.ServiceInfo == ServiceInfo );
-
-                    _liveServiceInfo = value;
                 }
+
+                _liveServiceInfo = value;
 
                 RaisePropertyChanged();
                 RaisePropertyChanged("IsLive");
@@ -69,6 +114,7 @@ namespace Yodii.Lab.Mocks
                 return LiveServiceInfo != null;
             }
         }
+
         #endregion Properties
     }
 }

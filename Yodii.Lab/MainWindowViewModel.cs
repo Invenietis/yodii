@@ -70,6 +70,7 @@ namespace Yodii.Lab
             _labStateManager.Engine.PropertyChanged += Engine_PropertyChanged;
             _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
             _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
+            _labStateManager.RunningPlugins.CollectionChanged += RunningPlugins_CollectionChanged;
 
             _activityMonitor = new ActivityMonitor();
 
@@ -91,6 +92,45 @@ namespace Yodii.Lab
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             if( loadDefaultState ) LoadDefaultState();
+        }
+
+        private void LoadDefaultState()
+        {
+            _labStateManager.ClearState();
+            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
+
+            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+        }
+
+        #endregion Constructor
+
+        #region Event handlers
+        void RunningPlugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IPluginInfo p = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin running",
+                            String.Format( "Plugin '{0}' is now running.", p.PluginFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IPluginInfo p = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin stopped",
+                            String.Format( "Plugin '{0}' has been stopped.", p.PluginFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    RaiseNewNotification( "Plugins stopped", "Stopped all plugins" );
+                    break;
+            }
         }
 
         void Engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -177,16 +217,7 @@ namespace Yodii.Lab
                     break;
             }
         }
-
-        private void LoadDefaultState()
-        {
-            _labStateManager.ClearState();
-            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
-
-            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
-        }
-
-        #endregion Constructor
+        #endregion
 
         #region Command handlers
 

@@ -126,6 +126,7 @@
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphEdgeType.cs" />
     <Compile Include="Graph elements\YodiiGraphVertex.cs" />
+    <Compile Include="LiveDataTemplateSelector.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Mock model\AssemblyInfoHelper.cs" />
     <Compile Include="Mock model\MockAssemblyInfo.cs" />

@@ -45,7 +45,8 @@ namespace Yodii.Lab
             _livePlugin = plugin;
             _parentGraph = parentGraph;
 
-            _livePlugin.PluginInfo.PropertyChanged += Info_PropertyChanged;
+            _livePlugin.PluginInfo.PropertyChanged += StaticInfo_PropertyChanged;
+            _livePlugin.PropertyChanged += _labPlugin_PropertyChanged;
         }
 
         /// <summary>
@@ -62,9 +63,38 @@ namespace Yodii.Lab
             _liveService = service;
             _parentGraph = parentGraph;
 
-            _liveService.ServiceInfo.PropertyChanged += Info_PropertyChanged;
+            _liveService.ServiceInfo.PropertyChanged += StaticInfo_PropertyChanged;
+            _liveService.PropertyChanged += _labService_PropertyChanged;
         }
+
         #endregion Constructors
+
+        void _labPlugin_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            switch( e.PropertyName )
+            {
+                case "LivePluginInfo":
+                    RaisePropertyChanged( "IsLive" );
+                    break;
+
+            }
+        }
+
+        void _labService_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            switch( e.PropertyName )
+            {
+                case "LiveServiceInfo":
+                    RaisePropertyChanged( "IsLive" );
+                    break;
+
+            }
+        }
+
+        void StaticInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            RaisePropertyChanged( "Title" );
+        }
 
         #region Properties
 
@@ -147,6 +177,46 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Whether this vertex's object has a live configuration.
+        /// </summary>
+        public bool IsLive
+        {
+            get
+            {
+                if( IsService )
+                {
+                    return LabServiceInfo.IsLive;
+                }
+                else
+                {
+                    return LabPluginInfo.IsLive;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Whether this vertex's object has a live configuration.
+        /// </summary>
+        public RunningStatus LiveStatus
+        {
+            get
+            {
+                if( IsService && LabServiceInfo.IsLive )
+                {
+                    return LabServiceInfo.LiveServiceInfo.RunningStatus;
+                }
+                else if( IsPlugin && LabPluginInfo.IsLive )
+                {
+                    return LabPluginInfo.LivePluginInfo.RunningStatus;
+                }
+                else
+                {
+                    return RunningStatus.Disabled;
+                }
+            }
+        }
+
+        /// <summary>
         /// LabServiceInfo attached to this vertex, if it's representing a service.
         /// </summary>
         public LabServiceInfo LabServiceInfo { get { return _liveService; } }
@@ -173,11 +243,6 @@ namespace Yodii.Lab
             {
                 _parentGraph.RemovePlugin( LabPluginInfo.PluginInfo );
             }
-        }
-
-        void Info_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
-        {
-            RaisePropertyChanged( "Title" );
         }
 
         #region INotifyPropertyChanged utilities

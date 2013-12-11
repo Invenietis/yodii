@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Windows;
+using System.Windows.Input;
 using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
@@ -17,9 +19,52 @@ namespace Yodii.Lab.Mocks
             Debug.Assert( pluginInfo != null );
 
             _pluginInfo = pluginInfo;
+
+            StartPluginCommand = new RelayCommand( ExecuteStartPlugin, CanExecuteStartPlugin );
+            StopPluginCommand = new RelayCommand( ExecuteStopPlugin, CanExecuteStopPlugin );
+        }
+
+        private bool CanExecuteStopPlugin( object obj )
+        {
+            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Running;
+        }
+
+        private void ExecuteStopPlugin( object obj )
+        {
+            if( !CanExecuteStopPlugin( null ) ) return;
+            var result = LivePluginInfo.Stop( "LabPluginInfo" );
+            if( !result.Success )
+            {
+                MessageBox.Show( result.Describe() );
+            }
+        }
+
+        private bool CanExecuteStartPlugin( object obj )
+        {
+            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Stopped;
+        }
+
+        private void ExecuteStartPlugin( object obj )
+        {
+            if( !CanExecuteStartPlugin( null ) ) return;
+            var result = LivePluginInfo.Start( "LabPluginInfo" );
+            if( !result.Success )
+            {
+                MessageBox.Show( result.Describe() );
+            }
         }
 
         #region Properties
+
+        /// <summary>
+        /// Command to start this plugin.
+        /// </summary>
+        public ICommand StartPluginCommand { get; private set; }
+
+        /// <summary>
+        /// Command to stop this plugin.
+        /// </summary>
+        public ICommand StopPluginCommand { get; private set; }
 
         /// <summary>
         /// Attached PluginInfo. Read-only.
@@ -41,9 +86,9 @@ namespace Yodii.Lab.Mocks
                 if( value != null )
                 {
                     Debug.Assert( value.PluginInfo == PluginInfo );
-
-                    _livePluginInfo = value;
                 }
+
+                _livePluginInfo = value;
 
                 RaisePropertyChanged();
                 RaisePropertyChanged( "IsLive" );

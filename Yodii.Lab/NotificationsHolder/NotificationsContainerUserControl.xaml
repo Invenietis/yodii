@@ -119,7 +119,7 @@
                             Foreground="White"
                             FontFamily="Arial"
                             VerticalAlignment="Top"
-                            Margin="2,2,4,4"
+                            Margin="1pt,2pt,3pt,2pt"
                             TextWrapping="WrapWithOverflow"
                             Visibility="{Binding Path=MessageVisibility}"
                             TextTrimming="CharacterEllipsis" />

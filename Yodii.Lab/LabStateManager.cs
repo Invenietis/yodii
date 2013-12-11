@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
@@ -39,6 +40,11 @@ namespace Yodii.Lab
         readonly CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo> _labPluginInfos;
 
         /// <summary>
+        /// Collection of plugins running in this fake host.
+        /// </summary>
+        readonly ObservableCollection<IPluginInfo> _runningPlugins;
+
+        /// <summary>
         /// Yodii engine to use. Created in constructor
         /// </summary>
         readonly IYodiiEngine _engine;
@@ -55,6 +61,7 @@ namespace Yodii.Lab
             engine.SetDiscoveredInfo( this );
 
             Debug.Assert( _engine.LiveInfo != null );
+            _engine.PropertyChanged += _engine_PropertyChanged;
             _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
             _engine.LiveInfo.Services.CollectionChanged += Services_CollectionChanged;
 
@@ -65,6 +72,8 @@ namespace Yodii.Lab
 
             _labServiceInfos = new CKObservableSortedArrayKeyList<LabServiceInfo, ServiceInfo>( s => s.ServiceInfo, ( x, y ) => String.CompareOrdinal( x.ServiceFullName, y.ServiceFullName ), false );
             _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginId.ToString(), y.PluginId.ToString() ), false );
+
+            _runningPlugins = new ObservableCollection<IPluginInfo>();
         }
 
         #endregion
@@ -126,6 +135,14 @@ namespace Yodii.Lab
             }
         }
 
+        void _engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "IsRunning" && !_engine.IsRunning )
+            {
+                _runningPlugins.Clear();
+            }
+        }
+
         #endregion
 
         #region Properties
@@ -167,6 +184,15 @@ namespace Yodii.Lab
         public ICKObservableReadOnlyCollection<LabPluginInfo> LabPluginInfos
         {
             get { return _labPluginInfos; }
+        }
+
+        public ObservableCollection<IPluginInfo> RunningPlugins
+        {
+            // TODO: Make it read-only
+            get
+            {
+                return _runningPlugins;
+            }
         }
 
         #region IDiscoveredInfo implementation
@@ -269,18 +295,30 @@ namespace Yodii.Lab
             foreach( var plugin in toDisable )
             {
                 Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                if( _runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Remove( plugin );
+                }
             }
 
             Console.WriteLine( "Stopping:" );
             foreach( var plugin in toStop )
             {
                 Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                if( _runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Remove( plugin );
+                }
             }
 
             Console.WriteLine( "Starting:" );
             foreach( var plugin in toStart )
             {
                 Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                if( !_runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Add( plugin );
+                }
             }
 
             return exceptionList;
@@ -550,15 +588,6 @@ namespace Yodii.Lab
             }
 
             CreateLabPlugin( pluginInfo );
-        }
-
-        /// <summary>
-        /// Removes all live data from our services/plugins.
-        /// </summary>
-        private void ClearLiveInfos()
-        {
-            ClearLiveServiceInfos();
-            ClearLivePluginInfos();
         }
 
         private void ClearLiveServiceInfos()
