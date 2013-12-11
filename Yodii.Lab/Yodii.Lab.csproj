@@ -149,7 +149,6 @@
     <Compile Include="Utils\ServiceOrPluginIdToDescriptionConverter.cs" />
     <Compile Include="Utils\EnumToBooleanConverter.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
-    <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
     <Compile Include="Mock model\ServiceInfo.cs" />
@@ -161,6 +160,7 @@
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ViewModelBase.cs" />
     <Compile Include="VertexPropertiesTemplateSelector.cs" />
+    <Compile Include="XmlSerializingUtils\LabXmlSerialization.cs" />
     <Page Include="AddPluginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

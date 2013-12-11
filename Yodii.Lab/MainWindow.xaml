@@ -44,7 +44,7 @@
             DataType="local:YodiiGraphVertex">
             <local:PluginPropertyPanel
                 LivePluginInfo="{Binding Path=LabPluginInfo, Mode=OneWay}"
-                ServiceInfos="{Binding Path=DataContext.LabState, ElementName=MainWindowRoot, Mode=OneWay}" />
+                ServiceInfos="{Binding Path=DataContext.LabState.ServiceInfos, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
         <local:VertexPropertiesTemplateSelector

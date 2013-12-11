@@ -225,19 +225,21 @@ namespace Yodii.Lab.Tests
 
                 TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
             }
+
+            TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.ConfigurationManager, _vm2.LabState.Engine.ConfigurationManager );
         }
 
         internal static MainWindowViewModel CreateViewModelWithGraph001()
         {
             /** Imagine a graph like this:
-             *                 +--------+                              +--------+
+             *                 +RUNNING-+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
              *     |           +---+----+       |   | Need Running     +---+----+
              *     |               |            |   |                      |
              *     |               |            |   |                      |
              *     |               |            |   |                      |
              *     |               |            |   |                      |
-             * +---+-----+     +---+-----+  +---+---*-+                +---+-----+
+             * +---+-----+     +---+-----+  +RUNNING*-+                +---+-----+
              * |ServiceAx|     |PluginA-1|  |PluginA-2|                |PluginB-1|
              * +----+----+     +---------+  +---------+                +---------+
              *      |
@@ -303,6 +305,15 @@ namespace Yodii.Lab.Tests
             Assert.That( serviceB.Implementations.Count == 1 );
             Assert.That( serviceAx.Implementations.Count == 1 );
 
+            // Set configuration
+            var cLayer1 = vm.LabState.Engine.ConfigurationManager.Layers.Create( "Test layer" );
+            var result = cLayer1.Items.Add( serviceA.ServiceFullName, ConfigurationStatus.Running, "Test reason" );
+            Assert.That( result.Success );
+
+            var cLayer2 = vm.LabState.Engine.ConfigurationManager.Layers.Create( "Test layer 2" );
+            result = cLayer2.Items.Add( pluginA2.PluginId.ToString(), ConfigurationStatus.Running, "Test reason 2" );
+            Assert.That( result.Success );
+
             // Testing tests
             foreach(var si in vm.ServiceInfos )
             {
@@ -312,6 +323,8 @@ namespace Yodii.Lab.Tests
             {
                 TestExtensions.AssertPluginEquivalence( pi, pi, true );
             }
+
+            TestExtensions.AssertManagerEquivalence( vm.LabState.Engine.ConfigurationManager, vm.LabState.Engine.ConfigurationManager );
 
             return vm;
         }

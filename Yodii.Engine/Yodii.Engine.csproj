@@ -64,7 +64,6 @@
     <Compile Include="ConfigurationManager\ConfigurationLayer.cs" />
     <Compile Include="ConfigurationManager\ConfigurationManager.cs" />
     <Compile Include="ConfigurationManager\ConfigurationFailureResult.cs" />
-    <Compile Include="ConfigurationManager\ConfigurationManagerXmlSerializer.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicFailureResult.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicSolvedConfiguration.cs" />

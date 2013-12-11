@@ -61,7 +61,7 @@ namespace Yodii.Lab
         /// Creates a new instance of this ViewModel.
         /// </summary>
         /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
-        public MainWindowViewModel(bool loadDefaultState = false)
+        public MainWindowViewModel( bool loadDefaultState = false )
         {
             // Lab objects, live objects and static infos are managed in the LabStateManager.
             _labStateManager = new LabStateManager();
@@ -133,7 +133,7 @@ namespace Yodii.Lab
                     foreach( var i in e.OldItems )
                     {
                         // Reset selection if deleted vertex was selected.
-                        if( SelectedVertex != null && SelectedVertex.IsPlugin && SelectedVertex.LabPluginInfo.PluginInfo == i)
+                        if( SelectedVertex != null && SelectedVertex.IsPlugin && SelectedVertex.LabPluginInfo.PluginInfo == i )
                         {
                             SelectedVertex = null;
                         }
@@ -183,7 +183,7 @@ namespace Yodii.Lab
             _labStateManager.ClearState();
             XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
 
-            LoadStateFromXmlReader( r );
+            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
         }
 
         #endregion Constructor
@@ -389,7 +389,7 @@ namespace Yodii.Lab
 
         private bool CanEditSelectedVertex( object obj )
         {
-            return SelectedVertex != null && CanEditItems(null);
+            return SelectedVertex != null && CanEditItems( null );
         }
 
         private bool CanEditItems( object obj )
@@ -731,23 +731,14 @@ namespace Yodii.Lab
         /// <returns>Operation result</returns>
         public DetailedOperationResult LoadState( string filePath )
         {
-            _labStateManager.ClearState();
-
             XmlReaderSettings rs = new XmlReaderSettings();
 
-            try
+            using( FileStream fs = File.Open( filePath, FileMode.Open ) )
             {
-                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
+                using( XmlReader xr = XmlReader.Create( fs, rs ) )
                 {
-                    using( XmlReader xr = XmlReader.Create( fs, rs ) )
-                    {
-                        LoadStateFromXmlReader( xr );
-                    }
+                    LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
                 }
-            }
-            catch( Exception e ) // TODO: Detailed exception handling and _serviceInfoManager undo
-            {
-                return new DetailedOperationResult( false, e.Message );
             }
 
             RaiseNewNotification( new Notification() { Title = "Loaded state", Message = filePath } );
@@ -772,23 +763,7 @@ namespace Yodii.Lab
                     using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
                     {
                         xw.WriteStartDocument( true );
-                        xw.WriteStartElement( "YodiiLabState" );
-
-                        xw.WriteStartElement( "ServicePluginInfos" );
-
-                        MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
-
-                        xw.WriteEndElement();
-
-                        xw.WriteStartElement( "ConfigurationManager" );
-
-                        //TODO: ConfigurationManager XML serializer
-                        RaiseNewNotification( new Notification() { Title = "Could not save ConfigurationManager", Message = "Saving of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
-                        //ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
-
-                        xw.WriteEndElement();
-
-                        xw.WriteEndElement();
+                        LabXmlSerialization.SerializeToXml( LabState, xw );
                         xw.WriteEndDocument();
                     }
                 }
@@ -857,24 +832,6 @@ namespace Yodii.Lab
                     return treeParams;
                 default:
                     return null;
-            }
-        }
-
-        private void LoadStateFromXmlReader( XmlReader xr )
-        {
-            while( xr.Read() )
-            {
-                if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
-                {
-                    _labStateManager.LoadFromXmlReader( xr.ReadSubtree() );
-                }
-                else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
-                {
-                    //TODO: Adapt ConfigurationManagerXmlSerializer with new Engine.ConfigurationManager
-                    //var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-                    //ConfigurationManager = manager;
-                    RaiseNewNotification( new Notification() { Title = "Could not load ConfigurationManager", Message = "Loading of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
-                }
             }
         }
 

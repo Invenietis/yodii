@@ -222,73 +222,7 @@ namespace Yodii.Engine.Tests
             //Assert.That( engine.ConfigurationManager.Layers[0].Items.Remove( "schmurtz1" ).Success, Is.False);
             //Assert.That( engine.ConfigurationManager.Layers.Remove( layer2 ).Success, Is.False);
 
-
-
-            //// XML serialization test
-
-            //XmlWriterSettings ws = new XmlWriterSettings();
-            //ws.NewLineHandling = NewLineHandling.None;
-
-            //XmlReaderSettings rs = new XmlReaderSettings();
-
-            //ConfigurationManager deserializedManager;
-
-            //using( MemoryStream ms = new MemoryStream() )
-            //{
-            //    using( XmlWriter xw = XmlWriter.Create( ms, ws ) )
-            //    {
-            //        ConfigurationManagerXmlSerializer.SerializeConfigurationManager( manager, xw );
-            //    }
-
-            //    ms.Seek( 0, System.IO.SeekOrigin.Begin );
-
-            //    // Debug string
-            //    //using( StreamReader sr = new StreamReader( ms ) )
-            //    //{
-            //    //    string s = sr.ReadToEnd();
-            //    //}
-
-            //    using( XmlReader r = XmlReader.Create( ms, rs ) )
-            //    {
-            //        deserializedManager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( r );
-            //    }
-            //}
-
-            //AssertManagerEquivalence( manager, deserializedManager );
-
         }
-
-        private void AssertManagerEquivalence( ConfigurationManager a, ConfigurationManager b )
-        {
-            if( a == null && b == null ) return;
-
-            Assert.That( a != null && b != null );
-
-            Assert.That( a.Layers.Count == b.Layers.Count );
-
-            for( int i = 0; i < a.Layers.Count; i++ )
-            {
-                // Consider equivalent if they're in the exact same order?
-                var layerA = a.Layers[i];
-                var layerB = b.Layers[i];
-
-                foreach( var item in layerA.Items )
-                {
-                    Assert.That( layerB.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
-                }
-            }
-
-            if( a.FinalConfiguration != null )
-            {
-                Assert.That( b.FinalConfiguration != null );
-                Assert.That( a.FinalConfiguration.Items.Count == b.FinalConfiguration.Items.Count );
-                foreach( var item in a.FinalConfiguration.Items )
-                {
-                    Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
-                }
-            }
-        }
-
 
     }
 }

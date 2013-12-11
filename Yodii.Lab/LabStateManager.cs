@@ -468,28 +468,6 @@ namespace Yodii.Lab
             return new Utils.DetailedOperationResult( true );
         }
 
-        /// <summary>
-        /// Clears our state, then attempts to load it from a XmlReader.
-        /// </summary>
-        /// <param name="r">XmlReader to use</param>
-        internal void LoadFromXmlReader( XmlReader r )
-        {
-            // May throw
-            var state = MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( r );
-
-            ClearState();
-
-            foreach( var serviceInfo in state.ServiceInfos )
-            {
-                LoadServiceInfo( serviceInfo );
-            }
-
-            foreach( var pluginInfo in state.PluginInfos )
-            {
-                LoadPluginInfo( pluginInfo );
-            }
-        }
-
         #endregion Internal methods
 
         #region Private methods
@@ -535,10 +513,10 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Loads a foreign mock service info into our collections.
+        /// Loads a foreign mock service info and all it depends on into our collections.
         /// </summary>
         /// <param name="serviceInfo">Foreign mock service info</param>
-        private void LoadServiceInfo( ServiceInfo serviceInfo )
+        internal void LoadServiceInfo( ServiceInfo serviceInfo )
         {
             if( _serviceInfos.Contains( serviceInfo ) ) return; // Already loaded
             _serviceInfos.Add( serviceInfo );
@@ -552,10 +530,10 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Loads a foreign mock plugin info into our collections.
+        /// Loads a foreign mock plugin info and al it depends on into our collections.
         /// </summary>
         /// <param name="pluginInfo">Foreign mock plugin info</param>
-        private void LoadPluginInfo( PluginInfo pluginInfo )
+        internal void LoadPluginInfo( PluginInfo pluginInfo )
         {
             if( _pluginInfos.Contains( pluginInfo ) ) return; // Already loaded
             _pluginInfos.Add( pluginInfo );
