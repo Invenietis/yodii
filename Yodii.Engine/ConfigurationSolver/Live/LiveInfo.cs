@@ -59,28 +59,17 @@ namespace Yodii.Engine
         {
             Debug.Assert( serviceData != null );
             LiveServiceInfo serviceInfo = _services.GetByKey( serviceData.ServiceInfo.ServiceFullName );
-            if( serviceInfo != null )
-            {
-                serviceInfo.UpdateInfo( serviceData );
-            }
-            else
-            {
-                Debug.Fail( "serviceData cannot be not found in UpdateInfo function" );
-            }
+
+            Debug.Assert( serviceInfo != null );
+            serviceInfo.UpdateInfo( serviceData );
         }
 
         internal void UpdateInfo( PluginData pluginData )
         {
             Debug.Assert( pluginData != null );
             LivePluginInfo pluginInfo = _plugins.GetByKey( pluginData.PluginInfo.PluginId );
-            if( pluginInfo != null )
-            {
-                pluginInfo.UpdateInfo( pluginData );
-            }
-            else
-            {
-                Debug.Fail( "pluginData cannot be not found in UpdateInfo function" );
-            }
+            Debug.Assert( pluginInfo != null );
+            pluginInfo.UpdateInfo( pluginData );    
         }
 
         internal void Remove( ILiveServiceInfo liveServiceInfo )
