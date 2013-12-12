@@ -8,10 +8,9 @@
     WindowStartupLocation="CenterOwner"
     Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
     Title="Add new configuration layer"
-    Height="200"
-    Width="250">
+    Width="200pt">
     <StackPanel Margin="5pt">
-        <TextBlock Margin="0,5pt">Layer name (optional) :</TextBlock>
+        <TextBlock Margin="0,5pt">Enter a layer name (optional) :</TextBlock>
         <TextBox
             Margin="0,5pt"
             x:Name="NewLayerName" />

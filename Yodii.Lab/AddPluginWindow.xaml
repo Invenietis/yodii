@@ -1,35 +1,79 @@
-﻿<Window x:Class="Yodii.Lab.AddPluginWindow"
-        x:ClassModifier="internal"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Create plugin" Height="180" Width="300">
-    <DockPanel Margin="5">
-        <Border DockPanel.Dock="Bottom" Padding="5">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Padding="4,2" Margin="3" IsDefault="True" Click="CreateButton_Click">Create</Button>
-                <Button Padding="4,2" Margin="3" IsCancel="True" Click="CancelButton_Click">Cancel</Button>
+﻿<Window
+    x:Class="Yodii.Lab.AddPluginWindow"
+    x:ClassModifier="internal"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Yodii.Lab"
+    Title="Create plugin"
+    ResizeMode="CanResize"
+    SizeToContent="Height"
+    Height="130pt"
+    Width="250pt"
+    MinHeight="130pt"
+    MinWidth="200pt"
+    MaxHeight="130pt">
+    <Window.Resources>
+        <local:IntegerToBoolConverter
+            x:Key="IntToBoolConverter" />
+    </Window.Resources>
+    <DockPanel
+        Margin="5">
+        <Border
+            DockPanel.Dock="Bottom"
+            Padding="5">
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Right">
+                <Button
+                    Padding="4,2"
+                    Margin="3"
+                    IsDefault="True"
+                    Click="CreateButton_Click">Create</Button>
+                <Button
+                    Padding="4,2"
+                    Margin="3"
+                    IsCancel="True"
+                    Click="CancelButton_Click">Cancel</Button>
             </StackPanel>
         </Border>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition
+                    Height="Auto" />
+                <RowDefinition
+                    Height="Auto" />
+                <RowDefinition
+                    Height="Auto" />
+                <RowDefinition
+                    Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition
+                    Width="Auto" />
+                <ColumnDefinition
+                    Width="1*" />
             </Grid.ColumnDefinitions>
-            <TextBlock VerticalAlignment="Center">Plugin GUID</TextBlock>
-            <TextBlock VerticalAlignment="Center" Grid.Row="1">Plugin name</TextBlock>
+            <TextBlock
+                VerticalAlignment="Center">Plugin GUID</TextBlock>
+            <TextBlock
+                VerticalAlignment="Center"
+                Grid.Row="1">Plugin name</TextBlock>
             <TextBlock
                 VerticalAlignment="Center"
                 Grid.Row="2">Implements service</TextBlock>
 
-            <TextBox Margin="3" Grid.Column="1" Text="{Binding Path=NewPluginGuidText, UpdateSourceTrigger=PropertyChanged}" x:Name="NewPluginIdTextBox" />
+            <TextBox
+                Margin="3"
+                Grid.Column="1"
+                Text="{Binding Path=NewPluginGuidText, UpdateSourceTrigger=PropertyChanged}"
+                x:Name="NewPluginIdTextBox" />
 
-            <TextBox Margin="3" Grid.Column="1" Grid.Row="1" Text="{Binding Path=NewPluginName, UpdateSourceTrigger=PropertyChanged}" x:Name="NewPluginNameTextBox" />
+            <TextBox
+                Margin="3"
+                Grid.Column="1"
+                Grid.Row="1"
+                Text="{Binding Path=NewPluginName, UpdateSourceTrigger=PropertyChanged}"
+                x:Name="NewPluginNameTextBox" />
 
             <DockPanel
                 Grid.Column="1"
@@ -41,10 +85,15 @@
                     Margin="0,0,5,0"
                     IsEnabled="{Binding Path=HasService}"
                     Click="ClearServiceButton_Click">r</Button>
-                <ComboBox Margin="3" ItemsSource="{Binding Path=AvailableServices}" SelectedItem="{Binding Path=SelectedService}">
+                <ComboBox
+                    IsEnabled="{Binding Path=AvailableServices.Count, Converter={StaticResource IntToBoolConverter}}"
+                    Margin="3"
+                    ItemsSource="{Binding Path=AvailableServices}"
+                    SelectedItem="{Binding Path=SelectedService}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Path=ServiceFullName}" />
+                            <TextBlock
+                                Text="{Binding Path=ServiceFullName}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

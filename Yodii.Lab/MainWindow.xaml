@@ -166,19 +166,16 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition
-                    Height="4*" />
-                <!--<RowDefinition
-                    Height="3pt" />
-                <RowDefinition
-                    Height="1*" />-->
+                    Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition
-                    Width="3*" />
+                    Width="*" />
                 <ColumnDefinition
                     Width="3pt" />
                 <ColumnDefinition
-                    Width="1*" />
+                    Width="200pt"
+                    MinWidth="200pt"/>
             </Grid.ColumnDefinitions>
 
             <Grid.Resources>
