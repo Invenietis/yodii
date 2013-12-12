@@ -23,7 +23,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Yodii.Engine.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -82,7 +83,6 @@
     <Compile Include="ConfigurationSolver\Dynamic\ServiceData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.StaticPropagation.cs" />
     <Compile Include="ConfigurationSolver\ServiceRootData.Static.cs" />
-    <Compile Include="ConfigurationSolver\Dynamic\ServiceRootData.Dynamic.cs" />
     <Compile Include="ConfigurationSolver\ServiceSolvedConfigStatusReason.cs" />
     <Compile Include="ConfigurationSolver\SolvedServiceSnapshot.cs" />
     <Compile Include="ConfigurationSolver\Static\StaticFailureResult.cs" />

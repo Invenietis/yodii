@@ -822,6 +822,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         public void ConfigurationSolverCommonReferencesWork()
         {
             #region graph
+<<<<<<< HEAD
+=======
                 /*
                 *                  +--------+                            +--------+
                 *      +-----------|Service1+                            |Service2|---------------+
@@ -864,13 +866,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph005();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
-            
-            IYodiiEngineResult res = engine.Start();
+
+            ConfigurationSolver cs = new ConfigurationSolver();
+            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -882,6 +884,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         public void ConfigurationSolverCommonReferencesWork2()
         {
             #region graph
+>>>>>>> origin/f-yodii-commands
             /*
             *                  +--------+                            +--------+
             *      +-----------|Service1+                            |Service2|---------------+
@@ -924,13 +927,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph005b();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
-
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );

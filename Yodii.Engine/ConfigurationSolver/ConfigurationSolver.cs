@@ -15,14 +15,14 @@ namespace Yodii.Engine
         List<ServiceRootData> _serviceRoots;
         Dictionary<Guid,PluginData> _plugins;
 
-        public ConfigurationSolver()
+        internal ConfigurationSolver()
         {
             _services = new Dictionary<string, ServiceData>();
             _serviceRoots = new List<ServiceRootData>();
             _plugins = new Dictionary<Guid, PluginData>();
         }
 
-        public IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
+        internal IYodiiEngineResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info )
         {
             // Registering all Services.
             _services.Clear();
@@ -35,7 +35,7 @@ namespace Yodii.Engine
                 RegisterService( finalConfig, sI );
             }
             // Service trees have been built and we have the roots.
-            // We can now handle MustRun services: there must be at most one such service by service 
+            // We can now handle Running services: there must be at most one such service by service 
             // root otherwise it is a configuration error.
             foreach( var root in _serviceRoots )
             {
@@ -53,7 +53,7 @@ namespace Yodii.Engine
             {
                 if( !root.Disabled ) root.OnAllPluginsAdded();
             }
-            // Now, we apply ServiceReference MustExist constraints from every plugins to their referenced services.
+            // Now, we apply ServiceReference Running constraints from every plugins to their referenced services.
             foreach( PluginData p in _plugins.Values )
             {
                 // When a plugin is disabled because of a disabled required service reference and it implements a service, the service
@@ -63,7 +63,6 @@ namespace Yodii.Engine
                 if( !p.Disabled && p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
                 {
                     p.CheckReferencesWhenMustExist();
-                    p.CheckServicesWhenMustBeDisabled();
                 }
             }
             // Time to conclude about configuration and to initialize dynamic resolution.
@@ -107,7 +106,7 @@ namespace Yodii.Engine
         /// <param name="commands"></param>
         /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
-        public DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
+        internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
         {
             foreach( var s in _services.Values ) s.ResetDynamicState();
             foreach( var p in _plugins.Values ) p.ResetDynamicState();
@@ -162,7 +161,7 @@ namespace Yodii.Engine
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
         
-        private bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
+        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
             if ( cmd.ServiceFullName != null )
             {
@@ -233,16 +232,16 @@ namespace Yodii.Engine
         internal void UpdateNewResultInLiveInfo( LiveInfo liveInfo )
         {
             Debug.Assert( liveInfo != null );
-            foreach( var s in liveInfo.Services )
+            for( int i = 0; i < liveInfo.Services.Count; i++ )
             {
                 ServiceData serviceData;
-                if( _services.TryGetValue( s.ServiceInfo.ServiceFullName, out serviceData ) )
+                if( _services.TryGetValue( liveInfo.Services[i].ServiceInfo.ServiceFullName, out serviceData ) )
                 {
                     liveInfo.UpdateInfo( serviceData );
                 }
                 else
                 {
-                    liveInfo.Remove( s );
+                    liveInfo.Remove( liveInfo.Services[i--] );
                 }
             }
             foreach( var s in _services.Values )
@@ -252,16 +251,16 @@ namespace Yodii.Engine
                     liveInfo.AddInfo( s );
                 }
             }
-            foreach( var p in liveInfo.Plugins )
+            for( int i = 0; i < liveInfo.Plugins.Count; i++ )
             {
                 PluginData pluginData;
-                if( _plugins.TryGetValue( p.PluginInfo.PluginId, out pluginData ) )
+                if( _plugins.TryGetValue( liveInfo.Plugins[i].PluginInfo.PluginId, out pluginData ) )
                 {
                     liveInfo.UpdateInfo( pluginData );
                 }
                 else
                 {
-                    liveInfo.Remove( p );
+                    liveInfo.Remove( liveInfo.Plugins[i--] );
                 }
             }
             foreach( var p in _plugins.Values )

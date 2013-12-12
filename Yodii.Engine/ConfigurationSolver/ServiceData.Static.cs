@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Engine
 {   
     internal partial class ServiceData
     {
         readonly Dictionary<string,ServiceData> _allServices;
+        ServiceData[] _directExcludedServices;
         ServiceDisabledReason _configDisabledReason;
         SolvedConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
@@ -52,6 +54,7 @@ namespace Yodii.Engine
         internal ServiceData( Dictionary<string, ServiceData> allServices, IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
         {
             _allServices = allServices;
+            _directExcludedServices = Util.EmptyArray<ServiceData>.Empty;
             ServiceInfo = s;
             if( (Generalization = generalization) != null )
             {
@@ -125,7 +128,7 @@ namespace Yodii.Engine
             get { return _configDisabledReason; }
         }
 
-        internal virtual void SetDisabled( ServiceDisabledReason r )
+        internal void SetDisabled( ServiceDisabledReason r )
         {
             Debug.Assert( r != ServiceDisabledReason.None );
             Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
@@ -146,8 +149,7 @@ namespace Yodii.Engine
                 if( !plugin.Disabled ) plugin.SetDisabled( PluginDisabledReason.ServiceIsDisabled );
                 plugin = plugin.NextPluginForService;
             }
-            Debug.Assert( _theOnlyPlugin == null && _commonReferences == null, "Disabling all plugins must have set them to null." );
-            // The _mustExistReferencer list contains plugins that has at least a MustExist reference to this service
+            // The _mustExistReferencer list contains plugins that has at least a Runnable reference to this service
             // and have been initialized when this Service was not yet disabled.
             BackReference br = _firstBackRunnableReference;
             while( br != null )
@@ -156,6 +158,7 @@ namespace Yodii.Engine
                 br = br.Next;
             }
             _configRunningSpecialization = null;
+            _theOnlyPlugin = null;
         }
 
         /// <summary>
@@ -364,7 +367,16 @@ namespace Yodii.Engine
         }
 
         /// <summary>
-        /// First step after object construction.
+        /// Never null.
+        /// Should be a IReadOnlyList in .Net 4.5.
+        /// </summary>
+        internal ServiceData[] DirectExcludedServices 
+        { 
+            get { return _directExcludedServices; } 
+        }
+
+        /// <summary>
+        /// First step after object construction: called by ServiceRootData.InitializeRunningService.
         /// </summary>
         /// <returns>The deepest specialization that must run or null if no running service or a conflict exists.</returns>
         protected ServiceData GetRunningService()
@@ -384,7 +396,7 @@ namespace Yodii.Engine
                     {
                         if( spec.DisabledReason == ServiceDisabledReason.MultipleSpecializationsRunningByConfig )
                         {
-                            Debug.Assert( running == null, "Since a conflict has been detected below, returned mustExist is null." );
+                            Debug.Assert( running == null, "Since a conflict has been detected below, returned running is null." );
                             SetDisabled( ServiceDisabledReason.MultipleSpecializationsRunningByConfig );
                             directSpecThatMustRun = specRunning = null;
                         }
@@ -409,19 +421,18 @@ namespace Yodii.Engine
                 }
                 spec = spec.NextSpecialization;
             }
-            Debug.Assert( !Disabled || specRunning == null, "(Conflict below <==> Disabled) => specMustExist has been set to null." );
+            Debug.Assert( !Disabled || specRunning == null, "(Conflict below <==> Disabled) => specRunning has been set to null." );
             Debug.Assert( (specRunning != null) == (directSpecThatMustRun != null) );
             if( !Disabled )
             {
                 // No specialization is required to exist, is it our case?
                 if( specRunning == null )
                 {
-                    Debug.Assert( ConfigOriginalStatus != ConfigurationStatus.Disabled, "Caution: Disabled is greater than MustExist." );
                     if( ConfigOriginalStatus == ConfigurationStatus.Running ) specRunning = _configRunningSpecialization = this;
                 }
                 else
                 {
-                    // A specialization must exist: it must be the only one, others are disabled.
+                    // A specialization must be running: it must be the only one, others are disabled.
                     spec = FirstSpecialization;
                     while( spec != null )
                     {
@@ -438,6 +449,36 @@ namespace Yodii.Engine
             return specRunning;
         }
 
+        /// <summary>
+        /// Called by ServiceRootData.InitializeRunningService after GetRunningService
+        /// to build the direct excluded services (for non already disabled services).
+        /// </summary>
+        internal void BuildDirectExcludedServices()
+        {
+            Debug.Assert( !Disabled );
+            if( Generalization != null )
+            {
+                List<ServiceData> excl = null;
+                if( Generalization._directExcludedServices.Length > 0 ) excl = new List<ServiceData>( Generalization._directExcludedServices );
+                ServiceData sibling = Generalization.FirstSpecialization;
+                while( sibling != null )
+                {
+                    if( sibling != this && !sibling.Disabled )
+                    {
+                        if( excl == null ) excl = new List<ServiceData>();
+                        excl.Add( sibling );
+                    }
+                    sibling = sibling.NextSpecialization;
+                }
+                if( excl != null ) _directExcludedServices = excl.ToArray();
+            }
+            ServiceData child = FirstSpecialization;
+            while( child != null )
+            {
+                if( !child.Disabled ) child.BuildDirectExcludedServices();
+                child = child.NextSpecialization;
+            }
+        }
 
         PluginData FindFirstPluginData( Func<PluginData, bool> filter )
         {
@@ -533,7 +574,7 @@ namespace Yodii.Engine
             Debug.Assert( (p.Service == this || IsStrictGeneralizationOf( p.Service )) && p.Disabled );
             if( p.Service == this ) ++DisabledPluginCount;
             ++TotalDisabledPluginCount;
-            if ( !Disabled )
+            if( !Disabled )
             {
                 int nbAvailable = TotalAvailablePluginCount;
                 if ( nbAvailable == 0 )

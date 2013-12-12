@@ -131,36 +131,31 @@ namespace Yodii.Engine
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.LayerRemoved, layer ) );
         }
 
-        private IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration,ConfigurationChangingEventArgs> createChangingEvent )
+        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration,ConfigurationChangingEventArgs> createChangingEvent )
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
-
-            if( !_engine.IsRunning )
+            if( _engine.IsRunning )
             {
-                _currentEventArgs = createChangingEvent( finalConfiguration );
-                RaiseConfigurationChanging( _currentEventArgs );
-                if( _currentEventArgs.IsCanceled )
-                {
-                    return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
-                }
-                return SuccessYodiiEngineResult.Default;
+                Tuple<IYodiiEngineResult,ConfigurationSolver> t = _engine.StaticResolution( finalConfiguration );
+                var result = t.Item1;
+                var solver = t.Item2;
+                if( !result.Success ) return result;
+                return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? _engine.OnConfigurationChanging( solver );
             }
-
-            Tuple<IYodiiEngineResult,ConfigurationSolver> t = _engine.StaticResolution( finalConfiguration );
-            var result = t.Item1;
-            var solver = t.Item2;
-            if( result.Success )
-            {
-                _currentEventArgs = createChangingEvent( finalConfiguration );
-                RaiseConfigurationChanging( _currentEventArgs );
-                if( _currentEventArgs.IsCanceled )
-                {
-                    return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
-                }
-                return _engine.OnConfigurationChanging( solver );
-            }
-            return SuccessYodiiEngineResult.Default;
+            return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? SuccessYodiiEngineResult.Default;
         }
+
+        IYodiiEngineResult OnConfigurationChangingForExternalWorld( ConfigurationChangingEventArgs eventChanging )
+        {
+            _currentEventArgs = eventChanging;
+            RaiseConfigurationChanging( _currentEventArgs );
+            if( _currentEventArgs.IsCanceled )
+            {
+                return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
+            }
+            return null;
+        }
+
 
         internal void OnConfigurationChanged()
         {

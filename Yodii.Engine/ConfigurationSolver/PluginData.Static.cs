@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Engine
 {
     partial class PluginData
     {
         readonly Dictionary<string,ServiceData> _allServices;
+        ServiceData[] _excludedServices;
         PluginDisabledReason _configDisabledReason;
         SolvedConfigurationStatus _configSolvedStatus;
         PluginRunningRequirementReason _configSolvedStatusReason;
@@ -31,12 +33,19 @@ namespace Yodii.Engine
         /// </summary>
         public readonly ConfigurationStatus ConfigOriginalStatus;
 
-
-        internal static readonly PluginData[] EmptyArray = new PluginData[0];
+        /// <summary>
+        /// Never null.
+        /// Should be a IReadOnlyList in .Net 4.5.
+        /// </summary>
+        internal ServiceData[] ExcludedServices
+        {
+            get { return _excludedServices; }
+        }
 
         internal PluginData( Dictionary<string,ServiceData> allServices, IPluginInfo p, ServiceData service, ConfigurationStatus pluginStatus )
         {
             _allServices = allServices;
+            _excludedServices = Util.EmptyArray<ServiceData>.Empty;
             PluginInfo = p;
             // Updates disabled state first so that AddPlugin can take disabled state into account.
             if( (ConfigOriginalStatus = pluginStatus) == ConfigurationStatus.Disabled )
@@ -60,6 +69,7 @@ namespace Yodii.Engine
             }
             if( !Disabled )
             {
+                HashSet<ServiceData> excludedServices = null;
                 // Register MustExist references to Services from this plugin.
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
@@ -80,8 +90,14 @@ namespace Yodii.Engine
                             break;
                         }
                         sr.AddRunnableReferencer( this, sRef.Requirement );
+                        if( sr.DirectExcludedServices.Length > 0 )
+                        {
+                            if( excludedServices == null ) excludedServices = new HashSet<ServiceData>( sr.DirectExcludedServices );
+                            else excludedServices.UnionWith( sr.DirectExcludedServices );
+                        }
                     }
                 }
+                if( excludedServices != null ) _excludedServices = excludedServices.ToArray();
             }
             // Updates SolvedConfigurationStatus so that AddPlugin can take Runnable into account.
             _configSolvedStatusReason = PluginRunningRequirementReason.Config;
@@ -211,27 +227,10 @@ namespace Yodii.Engine
             }
             return !Disabled;
         }
-
-        internal bool CheckServicesWhenMustBeDisabled()
-        {
-            Debug.Assert( !Disabled && _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
-
-            if ( Service.DisableSiblingServices() )
-            {
-                foreach(IServiceReferenceInfo sRef in PluginInfo.ServiceReferences)
-                {
-                    ServiceData sr = _allServices[sRef.Reference.ServiceFullName];
-                    sr.DisableSiblingServices();
-                }
-                return true;
-            }
-            return false;
-        }
-
                   
         public override string ToString()
-        //_status is obtained through the PluginData.Dynamic partial class
         {
+            //_status is obtained through the PluginData.Dynamic partial class
             return String.Format( "{0} - {1} - {2} => (Dynamic: {3})", PluginInfo.PluginFullName, Disabled ? DisabledReason.ToString() : "!Disabled", ConfigSolvedStatus, _dynamicStatus );
         }
     }

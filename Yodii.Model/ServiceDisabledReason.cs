@@ -77,9 +77,9 @@ namespace Yodii.Model
         ExternalServiceUnavailable,
 
         /// <summary>
-        /// A running sibling service caused this one to be disabled.
+        /// 
         /// </summary>
-        SiblingIsRunning
+        ExcludingServiceIsBlocking
     }
 
 }
