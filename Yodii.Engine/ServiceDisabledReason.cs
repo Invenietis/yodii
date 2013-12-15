@@ -80,7 +80,15 @@ namespace Yodii.Engine
         /// 
         /// </summary>
         ExcludingServiceIsBlocking,
-        AnotherServiceIsRunningByConfig
+        AnotherServiceIsRunningByConfig,
+        PluginRunningAbove,
+        SiblingSpecializationRunning,
+        PluginRunningElsewhere,
+        StopppedByPropagation,
+        AnotherServiceRunningInFamily,
+        PropagationFailed,
+        PropagationToSinglePluginFailed,
+        PropagationToCommonPluginReferencesFailed
     }
 
 }

@@ -54,15 +54,15 @@ namespace Yodii.Engine
             return _plugins.Contains( pluginId );
         }
 
-        internal void UpdateFrom( Dictionary<string,ServiceData> services, Dictionary<Guid,PluginData> plugins )
+        internal void UpdateFrom( IConfigurationSolver solver )
         {
-            _services.RemoveWhereAndReturnsRemoved( s => !services.ContainsKey( s.ServiceInfo.ServiceFullName ) ).Count();
-            _plugins.RemoveWhereAndReturnsRemoved( p => !plugins.ContainsKey( p.PluginInfo.PluginId ) ).Count();
+            _services.RemoveWhereAndReturnsRemoved( s => solver.FindService( s.ServiceInfo.ServiceFullName ) == null ).Count();
+            _plugins.RemoveWhereAndReturnsRemoved( p => solver.FindPlugin( p.PluginInfo.PluginId ) == null ).Count();
 
             DelayedPropertyNotification notifier = new DelayedPropertyNotification();
 
             List<LiveServiceInfo> servicesToAdd = new List<LiveServiceInfo>();
-            foreach( var s in services.Values )
+            foreach( var s in solver.AllServices )
             {
                 LiveServiceInfo ls = _services.GetByKey( s.ServiceInfo.ServiceFullName );
                 if( ls == null ) servicesToAdd.Add( new LiveServiceInfo( s, _engine ) );
@@ -70,7 +70,7 @@ namespace Yodii.Engine
             }
 
             List<LivePluginInfo> pluginsToAdd = new List<LivePluginInfo>();
-            foreach( var s in plugins.Values )
+            foreach( var s in solver.AllPlugins )
             {
                 LivePluginInfo lp = _plugins.GetByKey( s.PluginInfo.PluginId );
                 if( lp == null ) pluginsToAdd.Add( new LivePluginInfo( s, _engine ) );
@@ -82,15 +82,15 @@ namespace Yodii.Engine
 
             using( notifier.SilentMode() )
             {
-                foreach( var ls in servicesToAdd ) ls.Bind( services[ls.ServiceInfo.ServiceFullName], serviceFinder, pluginFinder, notifier );
+                foreach( var ls in servicesToAdd ) ls.Bind( solver.FindExistingService( ls.ServiceInfo.ServiceFullName ), serviceFinder, pluginFinder, notifier );
             }
-            foreach( var ls in _services ) ls.Bind( services[ls.ServiceInfo.ServiceFullName], serviceFinder, pluginFinder, notifier );
+            foreach( var ls in _services ) ls.Bind( solver.FindExistingService( ls.ServiceInfo.ServiceFullName ), serviceFinder, pluginFinder, notifier );
 
             using( notifier.SilentMode() )
             {
-                foreach( var lp in pluginsToAdd ) lp.Bind( plugins[lp.PluginInfo.PluginId], serviceFinder, notifier );
+                foreach( var lp in pluginsToAdd ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginId ), serviceFinder, notifier );
             }
-            foreach( var lp in _plugins ) lp.Bind( plugins[lp.PluginInfo.PluginId], serviceFinder, notifier );
+            foreach( var lp in _plugins ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginId ), serviceFinder, notifier );
 
             foreach( var ls in servicesToAdd ) _services.Add( ls );
             foreach( var lp in pluginsToAdd ) _plugins.Add( lp );

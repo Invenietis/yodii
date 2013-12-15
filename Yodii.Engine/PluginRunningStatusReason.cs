@@ -58,6 +58,12 @@ namespace Yodii.Engine
         /// <summary>
         /// Plugin stopped during the end of resolution.
         /// </summary>
-        StoppedByFinalDecision
+        StoppedByFinalDecision,
+        StartedByFinalDecision,
+        StoppedByRunningReference,
+        StoppedByRunnableTryStartReference,
+        StoppedByRunnableReference,
+        StoppedByOptionalTryStartReference,
+        StoppedByOptionalReference
     }
 }

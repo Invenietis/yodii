@@ -102,5 +102,8 @@ namespace Yodii.Engine
         /// Service stopped when reaching end of resolution.
         /// </summary>
         StoppedByFinalDecision,
+        StoppedByPropagation,
+        StartedByPropagation,
+        StoppedByRunningReference,
     }
 }

@@ -44,7 +44,7 @@ namespace Yodii.Model
         YodiiCommand( string callerKey, bool start, StartDependencyImpact impact )
         {
             if( callerKey != null ) throw new ArgumentNullException( "callerKey" );
-            if( !start && impact != StartDependencyImpact.None ) throw new ArgumentException( "Impact must be None when stopping a plugin or a service.", "impact" );
+            if( !start && impact != StartDependencyImpact.Unknown ) throw new ArgumentException( "Impact must be None when stopping a plugin or a service.", "impact" );
             CallerKey = callerKey;
             Start = start;
             Impact = impact;
@@ -57,7 +57,7 @@ namespace Yodii.Model
         /// <param name="start">True to start the plugin, false to stop the plugin.</param>
         /// <param name="impact">Range of impact on the plugin's dependencies.</param>
         /// <param name="pluginId">Plugin ID to act on.</param>
-        public YodiiCommand( string callerKey, Guid pluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.None )
+        public YodiiCommand( string callerKey, Guid pluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown )
             : this( callerKey, start, impact )
 
         {
@@ -72,7 +72,7 @@ namespace Yodii.Model
         /// <param name="serviceFullName">Service full name to act on.</param>        
         /// <param name="impact">Range of impact on plugin dependencies.</param>
 
-        public YodiiCommand( string callerKey, string serviceFullName, bool start, StartDependencyImpact impact = StartDependencyImpact.None )
+        public YodiiCommand( string callerKey, string serviceFullName, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown )
             : this( callerKey, start, impact )
 
         {

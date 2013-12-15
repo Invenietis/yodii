@@ -15,176 +15,137 @@ namespace Yodii.Engine
         public RunningStatus? DynamicStatus { get { return _dynamicStatus; } }
 
         /// <summary>
-        /// Called after Service ResetDynamicState.
+        /// Called after Service DynamicResetState.
         /// </summary>
-        public void ResetDynamicState()
+        public void DynamicResetState()
         {
-            switch ( ConfigSolvedStatus )
+            switch( FinalConfigSolvedStatus )
             {
                 case ConfigurationStatus.Disabled: 
                     {
                         _dynamicReason = PluginRunningStatusReason.StoppedByConfig;
-                        _dynamicStatus = RunningStatus.Disabled; 
+                        _dynamicStatus = RunningStatus.Disabled;
                         break;
                     }
                 case ConfigurationStatus.Running: 
                     {
-                        Debug.Assert( Service.ConfigSolvedStatus == ConfigurationStatus.Running );
+                        Debug.Assert( Service == null || (Service.Family.RunningPlugin == this) );
                         _dynamicReason = PluginRunningStatusReason.StartedByConfig;
-                        _dynamicStatus = RunningStatus.RunningLocked; 
+                        _dynamicStatus = RunningStatus.RunningLocked;
                         break;
                     }
                 default:
                     {
-                        Debug.Assert( Service == null || Service.ConfigSolvedStatus != ConfigurationStatus.Disabled );
-                        if( Service != null ) Service.OnPluginAvailable();
+                        Debug.Assert( Service == null || !Service.Disabled );
                         _dynamicReason = PluginRunningStatusReason.None;
                         _dynamicStatus = null;
+                        if( Service != null ) Service.OnPluginAvailable();
                         break;
                     }
             }
         }
 
-        public bool StopByCommand()
-        {
-            if( _dynamicStatus != null ) return _dynamicStatus.Value < RunningStatus.Running;
-            _dynamicStatus = RunningStatus.Stopped;
-            _dynamicReason = PluginRunningStatusReason.StoppedByCommand;
-            if( Service != null ) Service.OnPluginStopped();
-            return true;
-        }
-
-        public bool StartByCommand( StartDependencyImpact impact )
+        internal bool DynamicCanStart( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-            if( CanStart() )
-            {
-                DoStartByCommand( impact );
-                Debug.Assert( _dynamicStatus.Value == RunningStatus.Running );
-                return true;
-            }
-            return false;
+            return TestCanStart( impact );
         }
 
-        internal void StopByService( PluginRunningStatusReason reason )
-        {
-            Debug.Assert( _dynamicStatus == null );
-            Debug.Assert( reason == PluginRunningStatusReason.StoppedByStoppedService
-                            || reason == PluginRunningStatusReason.StoppedByRunningSibling );
-            _dynamicStatus = RunningStatus.Stopped;
-            _dynamicReason = reason;
-        }
-
-        internal void StopByFinalDecision()
-        {
-            Debug.Assert( _dynamicStatus == null );
-            Debug.Assert( Service == null );
-            _dynamicStatus = RunningStatus.Stopped;
-            _dynamicReason = PluginRunningStatusReason.StoppedByFinalDecision;
-        }
-
-        internal void StopByStoppedReference()
-        {
-            Debug.Assert( _dynamicStatus == null );
-            _dynamicStatus = RunningStatus.Stopped;
-            _dynamicReason = PluginRunningStatusReason.StoppedByStoppedReference;
-            if( Service != null ) Service.OnPluginStopped();
-        }
-
-        internal bool CanStart()
+        public bool DynamicStartByCommand( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-            Debug.Assert( PluginInfo.ServiceReferences.Where( s => s.Requirement == DependencyRequirement.Running ).All( s => _allServices[s.Reference.ServiceFullName].CanStart() ) );
-            return true;
-        }
-
-        internal void StartBy( PluginRunningStatusReason reason )
-        {
-            Debug.Assert( _dynamicStatus == null );
+            if( !TestCanStart( impact ) ) return false;
             _dynamicStatus = RunningStatus.Running;
-            _dynamicReason = reason;
+            _dynamicReason = PluginRunningStatusReason.StartedByCommand;
+            DynamicStartBy( impact, PluginRunningStatusReason.StartedByCommand );
+            return true;
+        }
 
-            if( Service != null ) Service.OnPluginStarted( this );
+        bool TestCanStart( StartDependencyImpact impact )
+        {
+            foreach( var s in GetExcludedServices( impact ) )
+            {
+                if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
+            }
+            foreach( var s in GetIncludedServices( impact ) )
+            {
+                if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
+            }
+            return true;
+        } 
+
+
+        public PluginRunningStatusReason GetStoppedReasonForStoppedReference( DependencyRequirement requirement )
+        {
+            StartDependencyImpact impact = _configSolvedImpact;
+            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
+
+            switch( requirement )
+            {
+                case DependencyRequirement.Running: return PluginRunningStatusReason.StoppedByRunningReference;
+                case DependencyRequirement.RunnableTryStart:
+                    if( impact == StartDependencyImpact.FullStart || impact == StartDependencyImpact.StartRecommended )
+                    {
+                        return PluginRunningStatusReason.StoppedByRunnableTryStartReference;
+                    }
+                    break;
+                case DependencyRequirement.Runnable:
+                    if( impact == StartDependencyImpact.FullStart )
+                    {
+                        return PluginRunningStatusReason.StoppedByRunnableReference;
+                    }
+                    break;
+                case DependencyRequirement.OptionalTryStart:
+                    if( impact == StartDependencyImpact.FullStart || impact == StartDependencyImpact.StartRecommended )
+                    {
+                        return PluginRunningStatusReason.StoppedByOptionalTryStartReference;
+                    }
+                    break;
+                case DependencyRequirement.Optional:
+                    if( impact == StartDependencyImpact.FullStart )
+                    {
+                        return PluginRunningStatusReason.StoppedByOptionalReference;
+                    }
+                    break;
+            }
+            return PluginRunningStatusReason.None;
+        }
+
+        public bool DynamicStopByCommand()
+        {
+            if( _dynamicStatus != null ) return _dynamicStatus.Value <= RunningStatus.Stopped;
+            DynamicStopBy( PluginRunningStatusReason.StoppedByCommand );
+            return true;
+        }
+
+        internal void DynamicStopBy( PluginRunningStatusReason reason )
+        {
+            Debug.Assert( _dynamicStatus == null );
+            Debug.Assert( reason != PluginRunningStatusReason.None );
+            _dynamicStatus = RunningStatus.Stopped;
+            _dynamicReason = reason;
+            if( Service != null && reason != PluginRunningStatusReason.StoppedByStoppedService && reason == PluginRunningStatusReason.StoppedByRunningSibling )
+            {
+                Service.OnPluginStopped();
+            }
+        }
+
+        internal void DynamicStartBy( StartDependencyImpact impact, PluginRunningStatusReason reason )
+        {
+            Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value >= RunningStatus.Running );
+            if( _dynamicStatus == null )
+            {
+                _dynamicStatus = RunningStatus.Running;
+                _dynamicReason = reason;
+            }
+            if( Service != null ) Service.OnDirectPluginStarted( this );
 
             foreach( var sRef in PluginInfo.ServiceReferences )
             {
-                ServiceData s = _allServices[sRef.Reference.ServiceFullName];
-                if( sRef.Requirement == DependencyRequirement.Running )
-                {
-                    Debug.Assert( s.CanStart() );
-                    s.StartBy( ServiceRunningStatusReason.StartedByRunningReference );
-                }
+                ServiceData s = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                s.DynamicStartByDependency( impact, sRef.Requirement );
             }
         }       
 
-        void DoStartByCommand( StartDependencyImpact impact )
-        {
-            Debug.Assert( _dynamicStatus == null );
-            Debug.Assert( Service == null || Service.CanStart() );
-            _dynamicStatus = RunningStatus.Running;
-            _dynamicReason = PluginRunningStatusReason.StartedByCommand;
-
-            foreach( var sRef in PluginInfo.ServiceReferences )
-            {
-                ServiceData s = _allServices[sRef.Reference.ServiceFullName];
-                switch( sRef.Requirement )
-                {
-                    case DependencyRequirement.Running:
-                        {
-                            Debug.Assert( s.CanStart() );
-                            s.StartBy( ServiceRunningStatusReason.StartedByRunningReference );
-                            break;
-                        }
-                    case DependencyRequirement.RunnableTryStart:
-                        {
-                            if( impact >= StartDependencyImpact.StartRecommended )
-                            {
-                                if( s.CanStart() ) s.StartBy( ServiceRunningStatusReason.StartedByRunnableTryStartReference );
-                            }
-                            else if( impact == StartDependencyImpact.FullStop )
-                            {
-                                if( s.DynamicStatus == null ) s.StopBy( ServiceRunningStatusReason.StoppedByRunnableTryStartReference );
-                            }
-                            break;
-                        }
-                    case DependencyRequirement.Runnable:
-                        {
-                            if( impact == StartDependencyImpact.FullStart )
-                            {
-                                if( s.CanStart() ) s.StartBy( ServiceRunningStatusReason.StartedByRunnableReference );
-                            }
-                            else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
-                            {
-                                if( s.DynamicStatus == null ) s.StopBy( ServiceRunningStatusReason.StoppedByRunnableReference );
-                            }
-                            break;
-                        }
-                    case DependencyRequirement.OptionalTryStart:
-                        {
-                            if( impact >= StartDependencyImpact.StartRecommended )
-                            {
-                                if( s.CanStart() ) s.StartBy( ServiceRunningStatusReason.StartedByOptionalTryStartReference );
-                            }
-                            else if( impact == StartDependencyImpact.FullStop )
-                            {
-                                if( s.DynamicStatus == null ) s.StopBy( ServiceRunningStatusReason.StoppedByOptionalTryStartReference );
-                            }
-                            break;
-                        }
-                    case DependencyRequirement.Optional:
-                        {
-                            if( impact == StartDependencyImpact.FullStart )
-                            {
-                                if( s.CanStart() ) s.StartBy( ServiceRunningStatusReason.StartedByOptionalReference );
-                            }
-                            else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
-                            {
-                                if( s.DynamicStatus == null ) s.StopBy( ServiceRunningStatusReason.StoppedByOptionalReference );
-                            }
-                            break;
-                        }
-                }
-            }
-        }
     }
 }

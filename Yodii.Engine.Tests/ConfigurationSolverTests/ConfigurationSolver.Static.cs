@@ -301,12 +301,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IYodiiEngineResult res = engine.Start();
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 1 ) );
-            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
-            Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
-            Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingServices.Single( s => s.ServiceInfo.ServiceFullName == "ServiceB" ) );
+            res.BlockingPluginsAre( "PluginA-2" );
+            res.BlockingServicesAre( "ServiceB" );
+
         }
 
         [Test]
@@ -642,7 +639,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ), Is.Null );
+            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.Single( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ).PluginInfo.PluginFullName, Is.EqualTo( "PluginA-1" ) );
             Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
             Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
         }
@@ -762,11 +759,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IYodiiEngineResult res = engine.Start();
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 2 ) );
-            CollectionAssert.AreEquivalent( new[] { "ServiceAx1", "ServiceAx2" }, res.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
+            res.BlockingServicesAre( "ServiceAx1|ServiceAx2" );
         }
 
         [Test]
@@ -806,12 +799,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
 
             IYodiiEngineResult res = engine.Start();
-
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 3 ) );
-            CollectionAssert.AreEquivalent( new[] { "ServiceA", "ServiceAx1", "ServiceAx2" }, res.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
+            res.BlockingServicesAre( "ServiceAx1|ServiceAx2" );
         }
 
         [Test]

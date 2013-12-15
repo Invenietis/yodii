@@ -57,10 +57,14 @@ namespace Yodii.Engine
         {
             var newGeneralization = s.Generalization != null ? serviceFinder( s.Generalization.ServiceInfo.ServiceFullName ) : null;
             notifier.Update( this, ref _generalization, newGeneralization, () => Generalization );
+
+            var familyRunning = s.Family.DynRunningPlugin;
+            Debug.Assert( IsRunning == (familyRunning != null && s.IsGeneralizationOf( familyRunning.Service )) );
+
             ILivePluginInfo newRunningPlugin = null;
-            if( IsRunning && s.GeneralizationRoot.TheOnlyPlugin != null )
+            if( IsRunning )
             {
-                newRunningPlugin = pluginFinder( s.GeneralizationRoot.TheOnlyPlugin.PluginInfo.PluginId );
+                newRunningPlugin = pluginFinder( familyRunning.PluginInfo.PluginId );
             }
             if( _runningPlugin != null )
             {

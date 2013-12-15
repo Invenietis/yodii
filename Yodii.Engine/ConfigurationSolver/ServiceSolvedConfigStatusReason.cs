@@ -14,7 +14,7 @@ namespace Yodii.Engine
         Config,
 
         /// <summary>
-        /// Sets by PluginData.PropagateSolvedConfigurationWhenRunnable method.
+        /// Sets by PluginData.PropagateToRunnableServiceReferences method.
         /// </summary>
         FromRunnableReference,
 
@@ -38,6 +38,10 @@ namespace Yodii.Engine
         /// </summary>
         FromMustExistSpecialization,
         FromMustExistGeneralization,
-        FromRunningSpecialization
+        FromRunningSpecialization,
+        FromRunningPlugin,
+        FromSpecialization,
+        FromServiceToMultipleServices,
+        FromPropagation
     }
 }

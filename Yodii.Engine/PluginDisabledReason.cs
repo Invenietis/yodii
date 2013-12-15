@@ -43,7 +43,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Sets by PluginData constructor or later by ServiceData.SetDisabled.
         /// </summary>
-        MustExistReferenceIsDisabled,
+        RunnableReferenceIsDisabled,
 
         /// <summary>
         /// Set by ServiceRootData.SetMustExistPluginByConfig.
@@ -54,5 +54,19 @@ namespace Yodii.Engine
         /// Sets by PluginData.SetRunningRequirement.
         /// </summary>
         RequirementPropagationToReferenceFailed,
+        AnotherRunningPluginExistsInFamily,
+        ServiceCanNotBeRunning,
+        SiblingRunningPlugin,
+        PropagationFailed,
+        AnotherRunningPluginExistsInFamilyByConfig,
+        ServiceSpecializationRunning,
+        RunningReferenceIsDisabled,
+        RecommendedReferenceIsDisabled,
+        OptionalReferenceIsDisabled,
+        ByRunningReference,
+        ByRunnableReference,
+        ByRunnableTryStartReference,
+        ByOptionalTryStartReference,
+        ByOptionalReference,
     }
 }

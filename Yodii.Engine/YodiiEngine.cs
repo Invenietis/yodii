@@ -82,7 +82,7 @@ namespace Yodii.Engine
             bool wasStopped = _currentSolver == null;
             if( _currentSolver != solver ) _currentSolver = solver;
 
-            _liveInfo.UpdateFrom( _currentSolver.AllServices, _currentSolver.AllPlugins );
+            _liveInfo.UpdateFrom( _currentSolver );
                         
             _yodiiCommands.Merge( dynResult.Commands );
             if( wasStopped ) RaisePropertyChanged( "IsRunning" );
