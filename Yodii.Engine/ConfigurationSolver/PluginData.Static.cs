@@ -11,6 +11,8 @@ namespace Yodii.Engine
     partial class PluginData : IServiceDependentObject
     {
         readonly IConfigurationSolver _solver;
+        IReadOnlyList<ServiceData> _runningIncludedServices;
+        IReadOnlyList<ServiceData> _runnableIncludedServices;
         IReadOnlyList<ServiceData>[] _exclServices;
         IReadOnlyList<ServiceData>[] _inclServices;
         PluginDisabledReason _configDisabledReason;
@@ -196,7 +198,7 @@ namespace Yodii.Engine
 
             if( !Disabled )
             {
-                foreach( var s in GetIncludedServices( impact ) )
+                foreach( var s in GetIncludedServices( impact, ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                 {
                     if( !s.SetSolvedStatus( _configSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
                     {
@@ -250,35 +252,54 @@ namespace Yodii.Engine
             return PluginDisabledReason.None;
         }
 
-        public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact )
+        public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
         {
-            if( _inclServices == null ) _inclServices = new IReadOnlyList<ServiceData>[5];
-            IReadOnlyList<ServiceData> i = _inclServices[(int)impact-1];
-            if( i == null )
+            if( _runningIncludedServices == null )
             {
-                var incl = new HashSet<ServiceData>();
-
+                var running = new HashSet<ServiceData>();
                 var g = Service;
                 while( g != null )
                 {
-                    incl.Add( g );
+                    running.Add( g );
                     g = g.Generalization;
                 }
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    if( sRef.Requirement == DependencyRequirement.Running ) running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                }
+                _runningIncludedServices = running.ToReadOnlyList();
+                bool newRunnableAdded = false;
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    if( sRef.Requirement == DependencyRequirement.Runnable ) newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                }
+                _runnableIncludedServices = newRunnableAdded ? running.ToReadOnlyList() : _runningIncludedServices;
+            }
+
+            if( impact == StartDependencyImpact.Minimal ) return forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
+
+            if( _inclServices == null ) _inclServices = new IReadOnlyList<ServiceData>[8];
+            int iImpact = (int)impact;
+            if( impact > StartDependencyImpact.Minimal ) --impact;
+            if( forRunnableStatus ) iImpact *= 2;
+            --iImpact;
+
+            IReadOnlyList < ServiceData > i = _inclServices[iImpact];
+            if( i == null )
+            {
+                var baseSet = forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
+                var incl = new HashSet<ServiceData>( baseSet );
+                bool newAdded = false;
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
                     ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
                     switch( sRef.Requirement )
                     {
-                        case DependencyRequirement.Running:
-                            {
-                                incl.Add( sr );
-                                break;
-                            }
                         case DependencyRequirement.RunnableTryStart:
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
                                 {
-                                    incl.Add( sr );
+                                    newAdded |= incl.Add( sr );
                                 }
                                 break;
                             }
@@ -286,7 +307,7 @@ namespace Yodii.Engine
                             {
                                 if( impact == StartDependencyImpact.FullStart )
                                 {
-                                    incl.Add( sr );
+                                    newAdded |= incl.Add( sr );
                                 }
                                 break;
                             }
@@ -294,7 +315,7 @@ namespace Yodii.Engine
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
                                 {
-                                    incl.Add( sr );
+                                    newAdded |= incl.Add( sr );
                                 }
                                 break;
                             }
@@ -302,13 +323,13 @@ namespace Yodii.Engine
                             {
                                 if( impact == StartDependencyImpact.FullStart )
                                 {
-                                    incl.Add( sr );
+                                    newAdded |= incl.Add( sr );
                                 }
                                 break;
                             }
                     }
                 }
-                i = _inclServices[(int)impact-1] = incl.ToReadOnlyList();
+                i = _inclServices[iImpact] = newAdded ? incl.ToReadOnlyList() : baseSet;
             }
             return i;
         }

@@ -57,7 +57,7 @@ namespace Yodii.Engine
                     }
                     if( !Service.Disabled )
                     {
-                        foreach( var s in GetIncludedServices( impact ) )
+                        foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                         {
                             if( !s.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
                             {

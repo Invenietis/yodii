@@ -15,6 +15,8 @@ namespace Yodii.Engine
         readonly ConfigurationStatus _configurationStatus;
         readonly RunningStatus? _runningStatus;
         readonly ConfigurationStatus _configSolvedStatus;
+        readonly StartDependencyImpact _configOriginalImpact;
+        readonly StartDependencyImpact _configSolvedImpact;
 
         public SolvedPluginSnapshot( PluginData plugin )
         {
@@ -23,6 +25,8 @@ namespace Yodii.Engine
             _runningStatus = plugin.DynamicStatus;
             _configurationStatus = plugin.ConfigOriginalStatus;
             _configSolvedStatus = plugin.ConfigSolvedStatus;
+            _configOriginalImpact = plugin.ConfigOriginalImpact;
+            _configSolvedImpact = plugin.ConfigSolvedImpact;
         }
 
         public IPluginInfo PluginInfo { get { return _pluginInfo; } }
@@ -40,6 +44,10 @@ namespace Yodii.Engine
         { 
             get { return _configSolvedStatus; } 
         }
+
+        public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
+
+        public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
         bool IStaticSolvedPlugin.IsBlocking 
         { 

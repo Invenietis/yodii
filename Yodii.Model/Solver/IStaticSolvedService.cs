@@ -26,7 +26,18 @@ namespace Yodii.Model
         ConfigurationStatus ConfigOriginalStatus { get; }
 
         /// <summary>
-        /// Requested service status.
+        /// Dependency impact as set by initial configuration.
+        /// </summary>
+        StartDependencyImpact ConfigOriginalImpact { get; }
+
+        /// <summary>
+        /// Final dependency impact (the Generalization's one if this service specializes another one and 
+        /// this <see cref="ConfigOriginalImpact"/> is <see cref="StartDependencyImpact.Unknown"/>).
+        /// </summary>
+        StartDependencyImpact ConfigSolvedImpact { get; }
+
+        /// <summary>
+        /// Final configuration status based on requirements from other participants.
         /// </summary>
         ConfigurationStatus WantedConfigSolvedStatus { get; }
 

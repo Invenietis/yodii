@@ -17,6 +17,8 @@ namespace Yodii.Engine
         string _disabledReason;
         ConfigurationStatus _configOriginalStatus;
         ConfigurationStatus _configSolvedStatus;
+        StartDependencyImpact _configOriginalImpact;
+        StartDependencyImpact _configSolvedImpact;
         RunningStatus _runningStatus;
 
         ILiveServiceInfo _generalization;
@@ -33,6 +35,8 @@ namespace Yodii.Engine
             _disabledReason = serviceData.DisabledReason.ToString();
             _configOriginalStatus = serviceData.ConfigOriginalStatus;
             _configSolvedStatus = serviceData.ConfigSolvedStatus;
+            _configOriginalImpact = serviceData.ConfigOriginalImpact;
+            _configSolvedImpact = serviceData.ConfigSolvedImpact;
 
             Debug.Assert( serviceData.DynamicStatus != null );
             _runningStatus = serviceData.DynamicStatus.Value;
@@ -46,6 +50,8 @@ namespace Yodii.Engine
             notifier.Update( this, ref _configOriginalStatus, s.ConfigOriginalStatus, () => ConfigOriginalStatus );
             notifier.Update( this, ref _configSolvedStatus, s.ConfigSolvedStatus, () => ConfigSolvedStatus );
             notifier.Update( this, ref _runningStatus, s.DynamicStatus.Value, () => RunningStatus );
+            notifier.Update( this, ref _configOriginalImpact, s.ConfigOriginalImpact, () => ConfigOriginalImpact );
+            notifier.Update( this, ref _configSolvedImpact, s.ConfigSolvedImpact, () => ConfigSolvedImpact );
 
             if( wasRunning != _runningStatus >= RunningStatus.Running )
             {
@@ -73,63 +79,29 @@ namespace Yodii.Engine
             notifier.Update( this, ref _runningPlugin, newRunningPlugin, () => RunningPlugin );
         }
 
-        public YodiiEngine Engine
-        {
-            get { return _engine; }
-        }
+        public YodiiEngine Engine { get { return _engine; } }
 
-        #region ILiveServiceInfo Members
+        public bool IsRunning { get { return _runningStatus >= RunningStatus.Running; } }
 
-        public bool IsRunning
-        {
-            get { return _runningStatus >= RunningStatus.Running; }
-        }
+        public ILiveServiceInfo Generalization { get { return _generalization; } }
 
-        public ILiveServiceInfo Generalization
-        {
-            get { return _generalization; }
-        }
+        public ILivePluginInfo RunningPlugin { get { return _runningPlugin; } }
 
-        public ILivePluginInfo RunningPlugin
-        {
-            get { return _runningPlugin; }
-        }
+        public ILivePluginInfo LastRunningPlugin { get { return _lastRunningPlugin; } }
 
-        public ILivePluginInfo LastRunningPlugin
-        {
-            get { return _lastRunningPlugin; }
-        }
+        public string DisabledReason { get { return _disabledReason; } }
 
-        #endregion
+        public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 
-        #region IDynamicSolvedService Members
+        public ConfigurationStatus ConfigOriginalStatus { get { return _configOriginalStatus; } }
 
-        public string DisabledReason
-        {
-            get { return _disabledReason; }
-        }
+        public ConfigurationStatus ConfigSolvedStatus { get { return _configSolvedStatus; } }
 
-        public IServiceInfo ServiceInfo
-        {
-            get { return _serviceInfo; }
-        }
+        public RunningStatus RunningStatus { get { return _runningStatus; } }
 
-        public ConfigurationStatus ConfigOriginalStatus
-        {
-            get { return _configOriginalStatus; }
-        }
+        public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
 
-        public ConfigurationStatus ConfigSolvedStatus
-        {
-            get { return _configSolvedStatus; }
-        }
-
-        public RunningStatus RunningStatus
-        {
-            get { return _runningStatus; }
-        }
-
-        #endregion
+        public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
         public IYodiiEngineResult Start( string callerKey )
         {

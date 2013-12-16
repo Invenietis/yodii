@@ -52,7 +52,7 @@ namespace Yodii.Engine
                     {
                         if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
                     }
-                    foreach( var s in GetIncludedServices( impact ) )
+                    foreach( var s in GetIncludedServices( impact, false ) )
                     {
                         if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
                     }
@@ -79,7 +79,7 @@ namespace Yodii.Engine
                         Debug.Assert( s.DynamicStatus == null || s.DynamicStatus.Value <= RunningStatus.Stopped );
                         if( s.DynamicStatus == null ) s.DynamicStopBy( ServiceRunningStatusReason.StoppedByPropagation );
                     }
-                    foreach( var s in GetIncludedServices( impact ) )
+                    foreach( var s in GetIncludedServices( impact, false ) )
                     {
                         Debug.Assert( s.DynamicStatus == null || s.DynamicStatus.Value >= RunningStatus.Running );
                         if( s.DynamicStatus == null ) s.DynamicStartBy( ServiceRunningStatusReason.StartedByPropagation );

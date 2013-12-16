@@ -48,32 +48,31 @@ namespace Yodii.Engine
         internal bool DynamicCanStart( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-            return TestCanStart( impact );
+            return DynTestCanStart( impact );
         }
 
         public bool DynamicStartByCommand( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-            if( !TestCanStart( impact ) ) return false;
+            if( !DynTestCanStart( impact ) ) return false;
             _dynamicStatus = RunningStatus.Running;
             _dynamicReason = PluginRunningStatusReason.StartedByCommand;
             DynamicStartBy( impact, PluginRunningStatusReason.StartedByCommand );
             return true;
         }
 
-        bool TestCanStart( StartDependencyImpact impact )
+        bool DynTestCanStart( StartDependencyImpact impact )
         {
             foreach( var s in GetExcludedServices( impact ) )
             {
                 if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
             }
-            foreach( var s in GetIncludedServices( impact ) )
+            foreach( var s in GetIncludedServices( impact, false ) )
             {
                 if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
             }
             return true;
         } 
-
 
         public PluginRunningStatusReason GetStoppedReasonForStoppedReference( DependencyRequirement requirement )
         {
@@ -84,7 +83,7 @@ namespace Yodii.Engine
             {
                 case DependencyRequirement.Running: return PluginRunningStatusReason.StoppedByRunningReference;
                 case DependencyRequirement.RunnableTryStart:
-                    if( impact == StartDependencyImpact.FullStart || impact == StartDependencyImpact.StartRecommended )
+                    if( impact >= StartDependencyImpact.StartRecommended )
                     {
                         return PluginRunningStatusReason.StoppedByRunnableTryStartReference;
                     }
@@ -96,7 +95,7 @@ namespace Yodii.Engine
                     }
                     break;
                 case DependencyRequirement.OptionalTryStart:
-                    if( impact == StartDependencyImpact.FullStart || impact == StartDependencyImpact.StartRecommended )
+                    if( impact >= StartDependencyImpact.StartRecommended )
                     {
                         return PluginRunningStatusReason.StoppedByOptionalTryStartReference;
                     }

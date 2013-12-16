@@ -30,6 +30,17 @@ namespace Yodii.Model
         /// Status as solved during the resolution.
         /// </summary>
         ConfigurationStatus ConfigSolvedStatus { get; }
+
+        /// <summary>
+        /// Dependency impact as set by initial configuration.
+        /// </summary>
+        StartDependencyImpact ConfigOriginalImpact { get; }
+
+        /// <summary>
+        /// Final dependency impact (the Service's one if this plugin implements a Service and 
+        /// this <see cref="ConfigOriginalImpact"/> is <see cref="StartDependencyImpact.Unknown"/>).
+        /// </summary>
+        StartDependencyImpact ConfigSolvedImpact { get; }
         
         /// <summary>
         /// Running status.
