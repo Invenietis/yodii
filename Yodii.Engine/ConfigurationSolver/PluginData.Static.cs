@@ -213,6 +213,13 @@ namespace Yodii.Engine
                         }
                     }
                 }
+                if( !Disabled )
+                {
+                    foreach( var s in GetExcludedServices( impact ) )
+                    {
+                        if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation ); 
+                    }
+                }
             }
             return !Disabled;
         }
