@@ -27,7 +27,7 @@ namespace Yodii.Lab
 
             NewPluginGuidText = Guid.NewGuid().ToString();
 
-            if( selectedService != null )
+            if( selectedService != null && availableServices.Count > 0 )
             {
                 SelectedService = selectedService;
             }

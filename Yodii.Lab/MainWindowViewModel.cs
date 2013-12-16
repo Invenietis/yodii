@@ -88,7 +88,7 @@ namespace Yodii.Lab
             _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.KK;
+            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             if( loadDefaultState ) LoadDefaultState();
@@ -210,10 +210,16 @@ namespace Yodii.Lab
                         RaiseNewNotification( "Service removed",
                             String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
                             );
+
+                        if( SelectedVertex.IsService && SelectedVertex.LabServiceInfo.ServiceInfo == oldService )
+                        {
+                            SelectedVertex = null;
+                        }
                     }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     RaiseNewNotification( "Services reset", "Removed all services." );
+                    SelectedVertex = null;
                     break;
             }
         }
