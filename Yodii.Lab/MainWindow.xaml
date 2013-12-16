@@ -44,7 +44,7 @@
             DataType="local:YodiiGraphVertex">
             <local:PluginPropertyPanel
                 LivePluginInfo="{Binding Path=LabPluginInfo, Mode=OneWay}"
-                ServiceInfos="{Binding Path=DataContext.LabState, ElementName=MainWindowRoot, Mode=OneWay}" />
+                ServiceInfos="{Binding Path=DataContext.LabState.ServiceInfos, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
         <local:VertexPropertiesTemplateSelector
@@ -65,6 +65,10 @@
                 Header="Home">
                 <Fluent:RibbonGroupBox
                     Header="File">
+                    <Fluent:Button
+                        Header="New"
+                        Command="{Binding Path=ClearAllCommand}">
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Open"
                         Command="{Binding Path=OpenFileCommand}">
@@ -152,12 +156,8 @@
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
-                        Header="Start engine"
-                        Command="{Binding Path=StartEngineCommand}">
-                    </Fluent:Button>
-                    <Fluent:Button
-                        Header="Stop engine"
-                        Command="{Binding Path=StopEngineCommand}">
+                        Header="{Binding Path=ToggleEngineText}"
+                        Command="{Binding Path=ToggleEngineCommand}">
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
@@ -166,19 +166,16 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition
-                    Height="4*" />
-                <!--<RowDefinition
-                    Height="3pt" />
-                <RowDefinition
-                    Height="1*" />-->
+                    Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition
-                    Width="3*" />
+                    Width="*" />
                 <ColumnDefinition
                     Width="3pt" />
                 <ColumnDefinition
-                    Width="1*" />
+                    Width="200pt"
+                    MinWidth="200pt"/>
             </Grid.ColumnDefinitions>
 
             <Grid.Resources>

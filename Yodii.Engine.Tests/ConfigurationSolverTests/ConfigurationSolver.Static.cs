@@ -982,6 +982,65 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
         }
+        [Test]
+        public void ConfigurationSolverCommonReferencesWork4()
+        {
+            #region graph
+            /*
+            *                  +--------+                            
+            *      +-----------|Service1+                            
+            *      |           |Running |                            
+            *      |           +---+----+                            
+            *      |               |                                 
+            *      |               |                                 
+            *      |               |                                 
+            *  +---+-----+         |                                 
+            *  |Plugin1  |     +---+-----+                           
+            *  |Optional |     |Plugin2  |                           
+            *  +----+----+     |Optional |-----------------------+ 
+            *       |          +---------+                       |
+            *       |                                            |
+            *       |                                            |
+            *       |                                            |
+            *       |                                            |
+            *       |Runnable                                    |
+             *      |                                            |
+            *       |                                            |
+             *      |                                            |
+            *       |                              +---------+   |          
+            *       |                              |Service2 |<--+         
+            *       |       +----------------------|Optional |             
+            *       |       |                       +---+----+               
+            *       |       |                          |                       
+            *       |       |                          |                   
+            *       |   +---+-------+             +----+------+            
+            *       |   |Service2.1 |             |Service2.2 |        
+            *       +-->|Optional   |             |Optional   |        
+            *           +-----------+             +-----+-----+            
+            *               |                           |            
+            *               |                           |            
+            *               |                         +--+-----+
+            *               |                         |Plugin4 |
+            *            +--+-----+                   |Optional|
+            *            |Plugin3 |                   +--------+
+            *            |Optional|          
+            *            +--------+          
+            *                           
+            *                           
+            *                                                        
+            */
+            #endregion
 
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005d() );
+
+            IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
+            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+
+            IYodiiEngineResult res = engine.Start();
+
+            Assert.That( res.Success, Is.True );
+            Assert.That( res.StaticFailureResult, Is.Null );
+        }
     }
 }

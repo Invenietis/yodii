@@ -34,14 +34,14 @@ namespace Yodii.Lab
         readonly LabStateManager _labStateManager;
 
         readonly ICommand _removeSelectedVertexCommand;
-        readonly ICommand _startEngineCommand;
-        readonly ICommand _stopEngineCommand;
+        readonly ICommand _toggleEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
         readonly ICommand _reorderGraphLayoutCommand;
         readonly ICommand _createServiceCommand;
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
+        readonly ICommand _clearAllCommand;
 
         readonly ActivityMonitor _activityMonitor;
 
@@ -52,6 +52,7 @@ namespace Yodii.Lab
         ILayoutParameters _graphLayoutParameters;
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
+        bool _hideNotifications = false;
 
         #endregion
 
@@ -61,7 +62,7 @@ namespace Yodii.Lab
         /// Creates a new instance of this ViewModel.
         /// </summary>
         /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
-        public MainWindowViewModel(bool loadDefaultState = false)
+        public MainWindowViewModel( bool loadDefaultState = false )
         {
             // Lab objects, live objects and static infos are managed in the LabStateManager.
             _labStateManager = new LabStateManager();
@@ -70,6 +71,7 @@ namespace Yodii.Lab
             _labStateManager.Engine.PropertyChanged += Engine_PropertyChanged;
             _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
             _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
+            _labStateManager.RunningPlugins.CollectionChanged += RunningPlugins_CollectionChanged;
 
             _activityMonitor = new ActivityMonitor();
 
@@ -78,19 +80,58 @@ namespace Yodii.Lab
             _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, CanEditSelectedVertex );
-            _startEngineCommand = new RelayCommand( StartEngineExecute, CanStartEngine );
-            _stopEngineCommand = new RelayCommand( StopEngineExecute, CanStopEngine );
+            _toggleEngineCommand = new RelayCommand( ToggleEngineExecute );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
             _createPluginCommand = new RelayCommand( CreatePluginExecute, CanEditItems );
             _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
+            _clearAllCommand = new RelayCommand( ClearAllExecute );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.KK;
+            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             if( loadDefaultState ) LoadDefaultState();
+        }
+
+        private void LoadDefaultState()
+        {
+            _labStateManager.ClearState();
+            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
+
+            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+        }
+
+        #endregion Constructor
+
+        #region Event handlers
+        void RunningPlugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IPluginInfo p = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin running",
+                            String.Format( "Plugin '{0}' is now running.", p.PluginFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IPluginInfo p = (IPluginInfo)i;
+                        RaiseNewNotification( "Plugin stopped",
+                            String.Format( "Plugin '{0}' has been stopped.", p.PluginFullName )
+                            );
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    RaiseNewNotification( "Plugins stopped", "Stopped all plugins" );
+                    break;
+            }
         }
 
         void Engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -98,6 +139,7 @@ namespace Yodii.Lab
             switch( e.PropertyName )
             {
                 case "IsRunning":
+                    RaisePropertyChanged( "ToggleEngineText" );
                     if( _engine.IsRunning )
                     {
                         RaiseNewNotification( "Entering simulation mode", "Yodii engine is now running." );
@@ -133,7 +175,7 @@ namespace Yodii.Lab
                     foreach( var i in e.OldItems )
                     {
                         // Reset selection if deleted vertex was selected.
-                        if( SelectedVertex != null && SelectedVertex.IsPlugin && SelectedVertex.LabPluginInfo.PluginInfo == i)
+                        if( SelectedVertex != null && SelectedVertex.IsPlugin && SelectedVertex.LabPluginInfo.PluginInfo == i )
                         {
                             SelectedVertex = null;
                         }
@@ -170,23 +212,20 @@ namespace Yodii.Lab
                         RaiseNewNotification( "Service removed",
                             String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
                             );
+
+                        if( SelectedVertex != null && SelectedVertex.IsService && SelectedVertex.LabServiceInfo.ServiceInfo == oldService )
+                        {
+                            SelectedVertex = null;
+                        }
                     }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     RaiseNewNotification( "Services reset", "Removed all services." );
+                    SelectedVertex = null;
                     break;
             }
         }
-
-        private void LoadDefaultState()
-        {
-            _labStateManager.ClearState();
-            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
-
-            LoadStateFromXmlReader( r );
-        }
-
-        #endregion Constructor
+        #endregion
 
         #region Command handlers
 
@@ -298,13 +337,20 @@ namespace Yodii.Lab
             {
                 if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
                 {
-                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
-                    npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
+                    string reason = String.Format( "A plugin with the same GUID ({0}) already exists.\nPick another GUID.", npe.PluginId.ToString() );
+                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = reason } );
+                    npe.CancelReason = reason;
                 }
                 else if( String.IsNullOrWhiteSpace( npe.PluginName ) )
                 {
                     RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
                     npe.CancelReason = "Please enter a name for this plugin.";
+                }
+                else if( LabState.PluginInfos.Any( x => x.PluginFullName == npe.PluginName ) )
+                {
+                    string reason = String.Format( "A plugin with the name '{0}' name already exists.", npe.PluginName );
+                    RaiseNewNotification( "Can't add plugin", reason );
+                    npe.CancelReason = reason;
                 }
                 else
                 {
@@ -367,29 +413,34 @@ namespace Yodii.Lab
             }
         }
 
-        private void StartEngineExecute( object obj )
+        private void ToggleEngineExecute( object obj )
         {
-            RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
-            var startResult = _engine.Start();
-
-            if( startResult == null )
+            if( _labStateManager.Engine.IsRunning )
             {
-                RaiseNewNotification( "Error", "YodiiEngine.Start() returned null!" );
-                return;
+                LabState.Engine.Stop();
             }
-
-            if( !startResult.Success )
+            else
             {
-                RaiseNewNotification( "Startup failed", "Couldn't start engine." );
-                return;
-            }
+                RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
+                var startResult = _engine.Start();
 
-            RaiseNewNotification( "Engine startup detail", startResult.Describe() );
+                if( startResult == null )
+                {
+                    RaiseNewNotification( "Error", "YodiiEngine.Start() returned null!" );
+                    return;
+                }
+
+                if( !startResult.Success )
+                {
+                    RaiseNewNotification( "Engine startup failed", "Couldn't start engine." );
+                    MessageBox.Show( startResult.Describe(), "Engine start error details", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
+                }
+            }
         }
 
         private bool CanEditSelectedVertex( object obj )
         {
-            return SelectedVertex != null && CanEditItems(null);
+            return SelectedVertex != null && CanEditItems( null );
         }
 
         private bool CanEditItems( object obj )
@@ -415,21 +466,9 @@ namespace Yodii.Lab
             SelectedVertex = null;
         }
 
-        private bool CanStopEngine( object obj )
+        private void ClearAllExecute( object obj )
         {
-            return LabState.Engine.IsRunning;
-        }
-
-        private bool CanStartEngine( object obj )
-        {
-            return !LabState.Engine.IsRunning;
-        }
-
-        private void StopEngineExecute( object obj )
-        {
-            if( !LabState.Engine.IsRunning ) return;
-
-            LabState.Engine.Stop();
+            LabState.ClearState();
         }
 
         #endregion Command handlers
@@ -564,6 +603,24 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Text on the toggle engine button.
+        /// </summary>
+        public string ToggleEngineText
+        {
+            get
+            {
+                if( _labStateManager.Engine.IsRunning )
+                {
+                    return "Stop engine";
+                }
+                else
+                {
+                    return "Start engine";
+                }
+            }
+        }
+
+        /// <summary>
         /// Command to remove a vertex that was selected beforehand.
         /// </summary>
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
@@ -572,13 +629,9 @@ namespace Yodii.Lab
         /// </summary>
         public ICommand OpenConfigurationEditorCommand { get { return _openConfigurationEditorCommand; } }
         /// <summary>
-        /// Command to start the engine.
-        /// </summary>
-        public ICommand StartEngineCommand { get { return _startEngineCommand; } }
-        /// <summary>
         /// Command to stop the engine.
         /// </summary>
-        public ICommand StopEngineCommand { get { return _stopEngineCommand; } }
+        public ICommand ToggleEngineCommand { get { return _toggleEngineCommand; } }
         /// <summary>
         /// Command to open a state file and load it.
         /// </summary>
@@ -599,6 +652,10 @@ namespace Yodii.Lab
         /// Command to open a window allowing creation of a new service.
         /// </summary>
         public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
+        /// <summary>
+        /// Command to open a window allowing creation of a new service.
+        /// </summary>
+        public ICommand ClearAllCommand { get { return _clearAllCommand; } }
         #endregion Properties
 
         #region Public methods
@@ -731,7 +788,7 @@ namespace Yodii.Lab
         /// <returns>Operation result</returns>
         public DetailedOperationResult LoadState( string filePath )
         {
-            _labStateManager.ClearState();
+            _hideNotifications = true;
 
             XmlReaderSettings rs = new XmlReaderSettings();
 
@@ -741,17 +798,28 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LoadStateFromXmlReader( xr );
+                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
                     }
                 }
+                _hideNotifications = false;
+
+                RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
+                return new DetailedOperationResult( true );
             }
-            catch( Exception e ) // TODO: Detailed exception handling and _serviceInfoManager undo
+            catch( Exception ex )
             {
-                return new DetailedOperationResult( false, e.Message );
+                // TODO: Detailed exceptions
+
+                string reason = ex.Message;
+
+                RaiseNewNotification( new Notification() { Title = "Failed to load file", Message = reason } );
+            }
+            finally
+            {
+                _hideNotifications = false;
             }
 
-            RaiseNewNotification( new Notification() { Title = "Loaded state", Message = filePath } );
-            return new DetailedOperationResult( true );
+            return new DetailedOperationResult( false );
         }
 
         /// <summary>
@@ -772,23 +840,7 @@ namespace Yodii.Lab
                     using( XmlWriter xw = XmlWriter.Create( fs, ws ) )
                     {
                         xw.WriteStartDocument( true );
-                        xw.WriteStartElement( "YodiiLabState" );
-
-                        xw.WriteStartElement( "ServicePluginInfos" );
-
-                        MockInfoXmlSerializer.SerializeLabStateToXmlWriter( this, xw );
-
-                        xw.WriteEndElement();
-
-                        xw.WriteStartElement( "ConfigurationManager" );
-
-                        //TODO: ConfigurationManager XML serializer
-                        RaiseNewNotification( new Notification() { Title = "Could not save ConfigurationManager", Message = "Saving of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
-                        //ConfigurationManagerXmlSerializer.SerializeConfigurationManager( _configurationManager, xw );
-
-                        xw.WriteEndElement();
-
-                        xw.WriteEndElement();
+                        LabXmlSerialization.SerializeToXml( LabState, xw );
                         xw.WriteEndDocument();
                     }
                 }
@@ -860,26 +912,10 @@ namespace Yodii.Lab
             }
         }
 
-        private void LoadStateFromXmlReader( XmlReader xr )
-        {
-            while( xr.Read() )
-            {
-                if( xr.IsStartElement() && xr.Name == "ServicePluginInfos" )
-                {
-                    _labStateManager.LoadFromXmlReader( xr.ReadSubtree() );
-                }
-                else if( xr.IsStartElement() && xr.Name == "ConfigurationManager" )
-                {
-                    //TODO: Adapt ConfigurationManagerXmlSerializer with new Engine.ConfigurationManager
-                    //var manager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( xr.ReadSubtree() );
-                    //ConfigurationManager = manager;
-                    RaiseNewNotification( new Notification() { Title = "Could not load ConfigurationManager", Message = "Loading of ConfigurationManager is disabled while ConfigurationManagerXmlSerializer is being adapted." } );
-                }
-            }
-        }
-
         private void RaiseNewNotification( Notification n )
         {
+            if( _hideNotifications ) return;
+
             if( NewNotification != null )
             {
                 NewNotification( this, new NotificationEventArgs( n ) );

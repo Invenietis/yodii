@@ -43,7 +43,7 @@ namespace Yodii.Model
 
         YodiiCommand( string callerKey, bool start, StartDependencyImpact impact )
         {
-            if( callerKey != null ) throw new ArgumentNullException( "callerKey" );
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( !start && impact != StartDependencyImpact.Unknown ) throw new ArgumentException( "Impact must be None when stopping a plugin or a service.", "impact" );
             CallerKey = callerKey;
             Start = start;
@@ -76,7 +76,7 @@ namespace Yodii.Model
             : this( callerKey, start, impact )
 
         {
-            if( !string.IsNullOrWhiteSpace( serviceFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceFullName" );
+            if( string.IsNullOrWhiteSpace( serviceFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceFullName" );
             ServiceFullName = serviceFullName;
         }
     }

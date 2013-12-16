@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
@@ -39,6 +40,11 @@ namespace Yodii.Lab
         readonly CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo> _labPluginInfos;
 
         /// <summary>
+        /// Collection of plugins running in this fake host.
+        /// </summary>
+        readonly ObservableCollection<IPluginInfo> _runningPlugins;
+
+        /// <summary>
         /// Yodii engine to use. Created in constructor
         /// </summary>
         readonly IYodiiEngine _engine;
@@ -55,6 +61,7 @@ namespace Yodii.Lab
             engine.SetDiscoveredInfo( this );
 
             Debug.Assert( _engine.LiveInfo != null );
+            _engine.PropertyChanged += _engine_PropertyChanged;
             _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
             _engine.LiveInfo.Services.CollectionChanged += Services_CollectionChanged;
 
@@ -65,6 +72,8 @@ namespace Yodii.Lab
 
             _labServiceInfos = new CKObservableSortedArrayKeyList<LabServiceInfo, ServiceInfo>( s => s.ServiceInfo, ( x, y ) => String.CompareOrdinal( x.ServiceFullName, y.ServiceFullName ), false );
             _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginId.ToString(), y.PluginId.ToString() ), false );
+
+            _runningPlugins = new ObservableCollection<IPluginInfo>();
         }
 
         #endregion
@@ -126,6 +135,14 @@ namespace Yodii.Lab
             }
         }
 
+        void _engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "IsRunning" && !_engine.IsRunning )
+            {
+                _runningPlugins.Clear();
+            }
+        }
+
         #endregion
 
         #region Properties
@@ -167,6 +184,15 @@ namespace Yodii.Lab
         public ICKObservableReadOnlyCollection<LabPluginInfo> LabPluginInfos
         {
             get { return _labPluginInfos; }
+        }
+
+        public ObservableCollection<IPluginInfo> RunningPlugins
+        {
+            // TODO: Make it read-only
+            get
+            {
+                return _runningPlugins;
+            }
         }
 
         #region IDiscoveredInfo implementation
@@ -269,18 +295,30 @@ namespace Yodii.Lab
             foreach( var plugin in toDisable )
             {
                 Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                if( _runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Remove( plugin );
+                }
             }
 
             Console.WriteLine( "Stopping:" );
             foreach( var plugin in toStop )
             {
                 Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                if( _runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Remove( plugin );
+                }
             }
 
             Console.WriteLine( "Starting:" );
             foreach( var plugin in toStart )
             {
                 Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                if( !_runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Add( plugin );
+                }
             }
 
             return exceptionList;
@@ -292,7 +330,7 @@ namespace Yodii.Lab
 
         #region Internal methods
         /// <summary>
-        /// Stops and clears everything in this lab.
+        /// Stops and clears everything in this lab, including configuration manager entries.
         /// </summary>
         internal void ClearState()
         {
@@ -305,6 +343,13 @@ namespace Yodii.Lab
             _labServiceInfos.Clear();
             _pluginInfos.Clear();
             _serviceInfos.Clear();
+
+            // Clear configuration manager
+            foreach( var l in Engine.ConfigurationManager.Layers.ToList() )
+            {
+                var result = Engine.ConfigurationManager.Layers.Remove( l );
+                Debug.Assert( result.Success );
+            }
         }
 
 
@@ -468,28 +513,6 @@ namespace Yodii.Lab
             return new Utils.DetailedOperationResult( true );
         }
 
-        /// <summary>
-        /// Clears our state, then attempts to load it from a XmlReader.
-        /// </summary>
-        /// <param name="r">XmlReader to use</param>
-        internal void LoadFromXmlReader( XmlReader r )
-        {
-            // May throw
-            var state = MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( r );
-
-            ClearState();
-
-            foreach( var serviceInfo in state.ServiceInfos )
-            {
-                LoadServiceInfo( serviceInfo );
-            }
-
-            foreach( var pluginInfo in state.PluginInfos )
-            {
-                LoadPluginInfo( pluginInfo );
-            }
-        }
-
         #endregion Internal methods
 
         #region Private methods
@@ -535,10 +558,10 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Loads a foreign mock service info into our collections.
+        /// Loads a foreign mock service info and all it depends on into our collections.
         /// </summary>
         /// <param name="serviceInfo">Foreign mock service info</param>
-        private void LoadServiceInfo( ServiceInfo serviceInfo )
+        internal void LoadServiceInfo( ServiceInfo serviceInfo )
         {
             if( _serviceInfos.Contains( serviceInfo ) ) return; // Already loaded
             _serviceInfos.Add( serviceInfo );
@@ -552,10 +575,10 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Loads a foreign mock plugin info into our collections.
+        /// Loads a foreign mock plugin info and al it depends on into our collections.
         /// </summary>
         /// <param name="pluginInfo">Foreign mock plugin info</param>
-        private void LoadPluginInfo( PluginInfo pluginInfo )
+        internal void LoadPluginInfo( PluginInfo pluginInfo )
         {
             if( _pluginInfos.Contains( pluginInfo ) ) return; // Already loaded
             _pluginInfos.Add( pluginInfo );
@@ -572,15 +595,6 @@ namespace Yodii.Lab
             }
 
             CreateLabPlugin( pluginInfo );
-        }
-
-        /// <summary>
-        /// Removes all live data from our services/plugins.
-        /// </summary>
-        private void ClearLiveInfos()
-        {
-            ClearLiveServiceInfos();
-            ClearLivePluginInfos();
         }
 
         private void ClearLiveServiceInfos()

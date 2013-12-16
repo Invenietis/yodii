@@ -10,16 +10,14 @@
     xmlns:local="clr-namespace:Yodii.Lab"
     mc:Ignorable="d"
     x:Name="VertexControlRoot"
-    d:DesignHeight="60"
+    d:DesignHeight="2000"
     d:DesignWidth="200">
     <UserControl.Resources>
         <local:EnumToBooleanConverter
             x:Key="EnumToBooleanConv" />
         <BooleanToVisibilityConverter
             x:Key="BoolToVisibilityConv" />
-        
-        
-        
+
         <ObjectDataProvider
             MethodName="GetValues"
             ObjectType="{x:Type sys:Enum}"
@@ -29,6 +27,51 @@
                     TypeName="ym:ConfigurationStatus" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+
+        <DataTemplate
+            x:Key="serviceVertexPropertiesTemplate"
+            DataType="local:YodiiGraphVertex">
+            <StackPanel
+                DataContext="{Binding Path=LabServiceInfo, Mode=OneWay}"
+                Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Button
+                        Command="{Binding Path=StartServiceCommand}"
+                        FontFamily="Webdings">4</Button>
+                    <Button
+                        Command="{Binding Path=StopServiceCommand}"
+                        FontFamily="Webdings">&lt;</Button>
+                    <TextBlock
+                        Text="{Binding Path=LiveServiceInfo.RunningStatus}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate
+            x:Key="pluginVertexPropertiesTemplate"
+            DataType="local:YodiiGraphVertex">
+            <StackPanel
+                DataContext="{Binding Path=LabPluginInfo, Mode=OneWay}"
+                Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
+                <StackPanel
+                    Orientation="Horizontal">
+                    <Button
+                        Command="{Binding Path=StartPluginCommand}"
+                        FontFamily="Webdings">4</Button>
+                    <Button
+                        Command="{Binding Path=StopPluginCommand}"
+                        FontFamily="Webdings">&lt;</Button>
+                    <TextBlock
+                        Text="{Binding Path=LivePluginInfo.RunningStatus}" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <local:LiveDataTemplateSelector
+            LivePluginDataTemplate="{StaticResource pluginVertexPropertiesTemplate}"
+            LiveServiceDataTemplate="{StaticResource serviceVertexPropertiesTemplate}"
+            x:Key="liveDataTemplateSelector" />
     </UserControl.Resources>
     <Border
         Background="Black"
@@ -46,6 +89,7 @@
                 <Separator />
                 <MenuItem
                     Header="Delete"
+                    IsEnabled="{Binding Path=IsEditable}"
                     Click="DeleteMenuItem_Click" />
             </ContextMenu>
         </Border.ContextMenu>
@@ -148,6 +192,9 @@
                         x:Name="IsStartedText"
                         Text="Stopped" />
                 </StackPanel>-->
+                <ContentControl
+                    ContentTemplateSelector="{StaticResource ResourceKey=liveDataTemplateSelector}"
+                    Content="{Binding}" />
             </StackPanel>
         </ContentControl>
 

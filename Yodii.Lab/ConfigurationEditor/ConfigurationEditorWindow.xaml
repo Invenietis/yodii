@@ -15,8 +15,10 @@
     Title="Configuration editor"
     x:Name="ConfigurationEditorWindowRoot"
     WindowStartupLocation="CenterOwner"
-    Height="250"
-    Width="400">
+    MinHeight="150pt"
+    Height="250pt"
+    MinWidth="220pt"
+    Width="300pt">
     <Window.Resources>
         <local:IntegerToVisibilityConverter
             x:Key="integerToVisibilityConverter" />
