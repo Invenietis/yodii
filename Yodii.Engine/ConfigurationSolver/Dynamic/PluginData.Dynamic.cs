@@ -48,12 +48,16 @@ namespace Yodii.Engine
         internal bool DynamicCanStart( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
+            if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
+            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
             return DynTestCanStart( impact );
         }
 
         public bool DynamicStartByCommand( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
+            if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
+            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
             if( !DynTestCanStart( impact ) ) return false;
             _dynamicStatus = RunningStatus.Running;
             _dynamicReason = PluginRunningStatusReason.StartedByCommand;

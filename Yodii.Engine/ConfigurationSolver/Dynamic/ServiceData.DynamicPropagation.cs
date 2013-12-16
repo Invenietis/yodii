@@ -34,13 +34,10 @@ namespace Yodii.Engine
                 return s.DynGetUsefulPropagationInfo();
             }
 
-            internal bool TestCanStart()
+            internal bool TestCanStart( StartDependencyImpact impact )
             {
                 Debug.Assert( Service.DynamicStatus == null && (Service.FinalConfigSolvedStatus == ConfigurationStatus.Runnable || Service.FinalConfigSolvedStatus == ConfigurationStatus.Optional ) );
-
-                StartDependencyImpact impact = Service._dynFirstImpact;
-                if( impact == StartDependencyImpact.Unknown ) impact = Service.ConfigSolvedImpact;
-                if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
+                Debug.Assert( impact != StartDependencyImpact.Unknown );
 
                 if( TheOnlyPlugin != null )
                 {

@@ -13,7 +13,7 @@ namespace Yodii.Model
     public interface IYodiiEngineResult
     {
         /// <summary>
-        /// Whether the operation is a success: <see cref="ConfigurationFailureResult"/>, <see cref="StaticFailureResult"/> and <see cref="HostFailureResult"/> are null.
+        /// Gets whether the operation is a success: <see cref="ConfigurationFailureResult"/>, <see cref="StaticFailureResult"/> and <see cref="HostFailureResult"/> are null.
         /// </summary>
         bool Success { get; }
 

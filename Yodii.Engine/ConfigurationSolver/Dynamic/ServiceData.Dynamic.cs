@@ -101,8 +101,6 @@ namespace Yodii.Engine
             }
             #endif
         }
-
-
     
         internal void DynamicStartBy( ServiceRunningStatusReason reason )
         {
@@ -117,23 +115,30 @@ namespace Yodii.Engine
             if( _dynamicStatus == null ) Family.DynamicSetRunningService( this, reason );
         }
 
-        internal bool DynamicCanStart()
+        internal bool DynamicCanStart( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
             Debug.Assert( _nbAllAvailablePlugins != 0 );
-            DynamicPropagation p = DynGetUsefulPropagationInfo();
-            Debug.Assert( p != null );
-            return p.TestCanStart();
+            if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
+            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
+            return DynTestCanStart( impact );
         } 
         
         public bool DynamicStartByCommand( StartDependencyImpact impact )
         {
-            if( DynamicCanStart() )
-            {
-                if( _dynamicStatus == null ) DynamicStartBy( ServiceRunningStatusReason.StartedByCommand );
-                return true;
-            }
-            return false;
+            if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
+            if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
+            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
+            if( !DynTestCanStart( impact ) ) return false;
+            DynamicStartBy( ServiceRunningStatusReason.StartedByCommand );
+            return true;
+        }
+
+        bool DynTestCanStart( StartDependencyImpact impact )
+        {
+            DynamicPropagation p = DynGetUsefulPropagationInfo();
+            Debug.Assert( p != null );
+            return p.TestCanStart( impact );
         }
 
         public bool DynamicStopByCommand()
@@ -149,7 +154,7 @@ namespace Yodii.Engine
             {
                 case DependencyRequirement.Running:
                     {
-                        Debug.Assert( DynamicCanStart() );
+                        Debug.Assert( DynamicCanStart( ConfigSolvedImpact ) );
                         DynamicStartBy( ServiceRunningStatusReason.StartedByRunningReference );
                         break;
                     }
@@ -157,11 +162,13 @@ namespace Yodii.Engine
                     {
                         if( impact >= StartDependencyImpact.StartRecommended )
                         {
-                            if( DynamicCanStart() ) DynamicStartBy( ServiceRunningStatusReason.StartedByRunnableTryStartReference );
+                            Debug.Assert( DynamicCanStart( ConfigSolvedImpact ) );
+                            DynamicStartBy( ServiceRunningStatusReason.StartedByRunnableTryStartReference );
                         }
                         else if( impact == StartDependencyImpact.FullStop )
                         {
-                            if( DynamicStatus == null ) DynamicStopBy( ServiceRunningStatusReason.StoppedByRunnableTryStartReference );
+                            Debug.Assert( DynamicStatus == null || DynamicStatus.Value <= RunningStatus.Stopped ); 
+                            DynamicStopBy( ServiceRunningStatusReason.StoppedByRunnableTryStartReference );
                         }
                         break;
                     }
@@ -169,11 +176,13 @@ namespace Yodii.Engine
                     {
                         if( impact == StartDependencyImpact.FullStart )
                         {
-                            if( DynamicCanStart() ) DynamicStartBy( ServiceRunningStatusReason.StartedByRunnableReference );
+                            Debug.Assert( DynamicCanStart( ConfigSolvedImpact ) );
+                            DynamicStartBy( ServiceRunningStatusReason.StartedByRunnableReference );
                         }
                         else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
                         {
-                            if( DynamicStatus == null ) DynamicStopBy( ServiceRunningStatusReason.StoppedByRunnableReference );
+                            Debug.Assert( DynamicStatus == null || DynamicStatus.Value <= RunningStatus.Stopped ); 
+                            DynamicStopBy( ServiceRunningStatusReason.StoppedByRunnableReference );
                         }
                         break;
                     }
@@ -181,11 +190,13 @@ namespace Yodii.Engine
                     {
                         if( impact >= StartDependencyImpact.StartRecommended )
                         {
-                            if( DynamicCanStart() ) DynamicStartBy( ServiceRunningStatusReason.StartedByOptionalTryStartReference );
+                            Debug.Assert( DynamicCanStart( ConfigSolvedImpact ) );
+                            DynamicStartBy( ServiceRunningStatusReason.StartedByOptionalTryStartReference );
                         }
                         else if( impact == StartDependencyImpact.FullStop )
                         {
-                            if( DynamicStatus == null ) DynamicStopBy( ServiceRunningStatusReason.StoppedByOptionalTryStartReference );
+                            Debug.Assert( DynamicStatus == null || DynamicStatus.Value <= RunningStatus.Stopped );
+                            DynamicStopBy( ServiceRunningStatusReason.StoppedByOptionalTryStartReference );
                         }
                         break;
                     }
@@ -193,11 +204,13 @@ namespace Yodii.Engine
                     {
                         if( impact == StartDependencyImpact.FullStart )
                         {
-                            if( DynamicCanStart() ) DynamicStartBy( ServiceRunningStatusReason.StartedByOptionalReference );
+                            Debug.Assert( DynamicCanStart( ConfigSolvedImpact ) );
+                            DynamicStartBy( ServiceRunningStatusReason.StartedByOptionalReference );
                         }
                         else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
                         {
-                            if( DynamicStatus == null ) DynamicStopBy( ServiceRunningStatusReason.StoppedByOptionalReference );
+                            Debug.Assert( DynamicStatus == null || DynamicStatus.Value <= RunningStatus.Stopped );
+                            DynamicStopBy( ServiceRunningStatusReason.StoppedByOptionalReference );
                         }
                         break;
                     }

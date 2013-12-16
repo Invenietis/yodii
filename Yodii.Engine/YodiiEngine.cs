@@ -151,9 +151,14 @@ namespace Yodii.Engine
 
         public IYodiiEngineResult Start()
         {
+            return Start( false, false );
+        }
+
+        public IYodiiEngineResult Start( bool revertServices, bool revertPlugins )
+        {
             if( !IsRunning )
             {
-                var r = ConfigurationSolver.CreateAndApplyStaticResolution( _manager.FinalConfiguration, _discoveredInfo );
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
                 if( !r.Item1.Success ) return r.Item1;
                 return DoDynamicResolution( r.Item2, null, null );
             }
