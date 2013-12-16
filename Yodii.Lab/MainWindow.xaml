@@ -156,12 +156,8 @@
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
-                        Header="Start engine"
-                        Command="{Binding Path=StartEngineCommand}">
-                    </Fluent:Button>
-                    <Fluent:Button
-                        Header="Stop engine"
-                        Command="{Binding Path=StopEngineCommand}">
+                        Header="{Binding Path=ToggleEngineText}"
+                        Command="{Binding Path=ToggleEngineCommand}">
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>

@@ -18,6 +18,8 @@ namespace Yodii.Engine
         string _disabledReason;
         ConfigurationStatus _configOriginalStatus;
         ConfigurationStatus _configSolvedStatus;
+        StartDependencyImpact _configOriginalImpact;
+        StartDependencyImpact _configSolvedImpact;
         ILiveServiceInfo _service;
         Exception _currentError;
 
@@ -32,6 +34,8 @@ namespace Yodii.Engine
             _runningStatus = p.DynamicStatus.Value;
             _configOriginalStatus = p.ConfigOriginalStatus;
             _configSolvedStatus = p.ConfigSolvedStatus;
+            _configOriginalImpact = p.ConfigOriginalImpact;
+            _configSolvedImpact = p.ConfigSolvedImpact;
         }
 
         internal void UpdateFrom( PluginData p, DelayedPropertyNotification notifier )
@@ -42,6 +46,8 @@ namespace Yodii.Engine
             notifier.Update( this, ref _runningStatus, p.DynamicStatus.Value, () => RunningStatus );
             notifier.Update( this, ref _configOriginalStatus, p.ConfigOriginalStatus, () => ConfigOriginalStatus );
             notifier.Update( this, ref _configSolvedStatus, p.ConfigSolvedStatus, () => ConfigSolvedStatus );
+            notifier.Update( this, ref _configOriginalImpact, p.ConfigOriginalImpact, () => ConfigOriginalImpact );
+            notifier.Update( this, ref _configSolvedImpact, p.ConfigSolvedImpact, () => ConfigSolvedImpact );
         }
 
         internal void Bind( PluginData p, Func<string, LiveServiceInfo> serviceFinder, DelayedPropertyNotification notifier )
@@ -78,25 +84,17 @@ namespace Yodii.Engine
             }
         }
 
-        public string DisabledReason
-        {
-            get { return _disabledReason; }
-        }
+        public string DisabledReason { get { return _disabledReason; } }
 
-        public ConfigurationStatus ConfigOriginalStatus
-        {
-            get { return _configOriginalStatus; }
-        }
+        public ConfigurationStatus ConfigOriginalStatus { get { return _configOriginalStatus; } }
 
-        public ConfigurationStatus ConfigSolvedStatus
-        {
-            get { return _configSolvedStatus; }
-        }
+        public ConfigurationStatus ConfigSolvedStatus { get { return _configSolvedStatus; } }
 
-        public RunningStatus RunningStatus
-        {
-            get { return _runningStatus; }
-        }
+        public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
+
+        public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
+
+        public RunningStatus RunningStatus { get { return _runningStatus; } }
 
         public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {

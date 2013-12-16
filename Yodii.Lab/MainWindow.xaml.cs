@@ -98,10 +98,10 @@ namespace Yodii.Lab
 
             if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
             {
-                this.GraphArea.GenerateGraph( _vm.Graph );
+                this.GraphArea.RelayoutGraph();
             } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
             {
-                this.GraphArea.RelayoutGraph();
+                this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
             }
 
         }

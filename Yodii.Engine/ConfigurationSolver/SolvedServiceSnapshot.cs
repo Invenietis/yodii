@@ -15,6 +15,8 @@ namespace Yodii.Engine
         readonly IServiceInfo _serviceInfo;
         readonly ConfigurationStatus _configurationStatus;
         readonly RunningStatus? _runningStatus;
+        readonly StartDependencyImpact _configOriginalImpact;
+        readonly StartDependencyImpact _configSolvedImpact;
 
         public SolvedServiceSnapshot( ServiceData s )
         {
@@ -23,6 +25,8 @@ namespace Yodii.Engine
             _configSolvedStatus = s.ConfigSolvedStatus;
             _configurationStatus = s.ConfigOriginalStatus;
             _runningStatus = s.DynamicStatus;
+            _configOriginalImpact = s.ConfigOriginalImpact;
+            _configSolvedImpact = s.ConfigSolvedImpact;
         }
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
@@ -30,6 +34,10 @@ namespace Yodii.Engine
         public string DisabledReason { get { return _serviceDisabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
+
+        public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
+
+        public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
         ConfigurationStatus IStaticSolvedService.WantedConfigSolvedStatus
         {

@@ -22,7 +22,7 @@ namespace Yodii.Engine
             protected BasePropagation( ServiceData s )
             {
                 Service = s;
-                _inclServices = new HashSet<ServiceData>[5];
+                _inclServices = new HashSet<ServiceData>[10];
                 _exclServices = new HashSet<ServiceData>[5];
             }
 
@@ -53,8 +53,8 @@ namespace Yodii.Engine
                 _nbAvailablePlugins = nbAvalaiblePlugins;
                 Debug.Assert( _nbAvailablePlugins >= 1 );
                 _theOnlyPlugin = null;
-                if( _inclServices != null ) Array.Clear( _inclServices, 0, 5 );
-                if( _exclServices != null ) Array.Clear( _exclServices, 0, 5 );
+                Array.Clear( _inclServices, 0, 10 );
+                Array.Clear( _exclServices, 0, 5 );
                 // Retrieves the potential only plugin.
                 if( _nbAvailablePlugins == 1 )
                 {
@@ -128,10 +128,15 @@ namespace Yodii.Engine
                 return excl;
             }
 
-            public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact )
+            public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
             {
-                if( _theOnlyPlugin != null ) return _theOnlyPlugin.GetIncludedServices( impact );
-                HashSet<ServiceData> incl = _inclServices[(int)impact - 1];
+                if( _theOnlyPlugin != null ) return _theOnlyPlugin.GetIncludedServices( impact, forRunnableStatus );
+                
+                int iImpact = (int)impact;
+                if( forRunnableStatus ) iImpact *= 2;
+                --iImpact;
+                
+                HashSet<ServiceData> incl = _inclServices[iImpact];
                 if( incl == null )
                 {
                     ServiceData spec = Service.FirstSpecialization;
@@ -140,8 +145,8 @@ namespace Yodii.Engine
                         BasePropagation prop = GetUsefulPropagationInfo( spec );
                         if( prop != null )
                         {
-                            if( incl == null ) incl = new HashSet<ServiceData>( prop.GetIncludedServices( impact ) );
-                            else incl.IntersectWith( prop.GetIncludedServices( impact ) );
+                            if( incl == null ) incl = new HashSet<ServiceData>( prop.GetIncludedServices( impact, forRunnableStatus ) );
+                            else incl.IntersectWith( prop.GetIncludedServices( impact, forRunnableStatus ) );
                         }
                         spec = spec.NextSpecialization;
                     }
@@ -150,12 +155,12 @@ namespace Yodii.Engine
                     {
                         if( !p.Disabled )
                         {
-                            if( incl == null ) incl = new HashSet<ServiceData>( p.GetIncludedServices( impact ) );
-                            else incl.IntersectWith( p.GetIncludedServices( impact ) );
+                            if( incl == null ) incl = new HashSet<ServiceData>( p.GetIncludedServices( impact, forRunnableStatus ) );
+                            else incl.IntersectWith( p.GetIncludedServices( impact, forRunnableStatus ) );
                         }
                         p = p.NextPluginForService;
                     }
-                    _exclServices[(int)impact - 1] = incl;
+                    _inclServices[iImpact] = incl;
                 }
                 return incl;
             }
