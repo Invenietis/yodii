@@ -34,8 +34,7 @@ namespace Yodii.Lab
         readonly LabStateManager _labStateManager;
 
         readonly ICommand _removeSelectedVertexCommand;
-        readonly ICommand _startEngineCommand;
-        readonly ICommand _stopEngineCommand;
+        readonly ICommand _toggleEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
         readonly ICommand _reorderGraphLayoutCommand;
@@ -81,8 +80,7 @@ namespace Yodii.Lab
             _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, CanEditSelectedVertex );
-            _startEngineCommand = new RelayCommand( StartEngineExecute, CanStartEngine );
-            _stopEngineCommand = new RelayCommand( StopEngineExecute, CanStopEngine );
+            _toggleEngineCommand = new RelayCommand( ToggleEngineExecute );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
@@ -141,6 +139,7 @@ namespace Yodii.Lab
             switch( e.PropertyName )
             {
                 case "IsRunning":
+                    RaisePropertyChanged( "ToggleEngineText" );
                     if( _engine.IsRunning )
                     {
                         RaiseNewNotification( "Entering simulation mode", "Yodii engine is now running." );
@@ -347,7 +346,7 @@ namespace Yodii.Lab
                     RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
                     npe.CancelReason = "Please enter a name for this plugin.";
                 }
-                else if( LabState.PluginInfos.Any(x => x.PluginFullName == npe.PluginName ) )
+                else if( LabState.PluginInfos.Any( x => x.PluginFullName == npe.PluginName ) )
                 {
                     string reason = String.Format( "A plugin with the name '{0}' name already exists.", npe.PluginName );
                     RaiseNewNotification( "Can't add plugin", reason );
@@ -414,24 +413,29 @@ namespace Yodii.Lab
             }
         }
 
-        private void StartEngineExecute( object obj )
+        private void ToggleEngineExecute( object obj )
         {
-            RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
-            var startResult = _engine.Start();
-
-            if( startResult == null )
+            if( _labStateManager.Engine.IsRunning )
             {
-                RaiseNewNotification( "Error", "YodiiEngine.Start() returned null!" );
-                return;
+                LabState.Engine.Stop();
             }
-
-            if( !startResult.Success )
+            else
             {
-                RaiseNewNotification( "Startup failed", "Couldn't start engine." );
-                MessageBox.Show( startResult.Describe(), "Start engine failure details", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
-            }
+                RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
+                var startResult = _engine.Start();
 
-            RaiseNewNotification( "Engine startup detail", startResult.Describe() );
+                if( startResult == null )
+                {
+                    RaiseNewNotification( "Error", "YodiiEngine.Start() returned null!" );
+                    return;
+                }
+
+                if( !startResult.Success )
+                {
+                    RaiseNewNotification( "Engine startup failed", "Couldn't start engine." );
+                    MessageBox.Show( startResult.Describe(), "Engine start error details", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
+                }
+            }
         }
 
         private bool CanEditSelectedVertex( object obj )
@@ -460,23 +464,6 @@ namespace Yodii.Lab
             }
 
             SelectedVertex = null;
-        }
-
-        private bool CanStopEngine( object obj )
-        {
-            return LabState.Engine.IsRunning;
-        }
-
-        private bool CanStartEngine( object obj )
-        {
-            return !LabState.Engine.IsRunning;
-        }
-
-        private void StopEngineExecute( object obj )
-        {
-            if( !LabState.Engine.IsRunning ) return;
-
-            LabState.Engine.Stop();
         }
 
         private void ClearAllExecute( object obj )
@@ -616,6 +603,24 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Text on the toggle engine button.
+        /// </summary>
+        public string ToggleEngineText
+        {
+            get
+            {
+                if( _labStateManager.Engine.IsRunning )
+                {
+                    return "Stop engine";
+                }
+                else
+                {
+                    return "Start engine";
+                }
+            }
+        }
+
+        /// <summary>
         /// Command to remove a vertex that was selected beforehand.
         /// </summary>
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
@@ -624,13 +629,9 @@ namespace Yodii.Lab
         /// </summary>
         public ICommand OpenConfigurationEditorCommand { get { return _openConfigurationEditorCommand; } }
         /// <summary>
-        /// Command to start the engine.
-        /// </summary>
-        public ICommand StartEngineCommand { get { return _startEngineCommand; } }
-        /// <summary>
         /// Command to stop the engine.
         /// </summary>
-        public ICommand StopEngineCommand { get { return _stopEngineCommand; } }
+        public ICommand ToggleEngineCommand { get { return _toggleEngineCommand; } }
         /// <summary>
         /// Command to open a state file and load it.
         /// </summary>
@@ -804,7 +805,8 @@ namespace Yodii.Lab
 
                 RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
                 return new DetailedOperationResult( true );
-            } catch( Exception ex )
+            }
+            catch( Exception ex )
             {
                 // TODO: Detailed exceptions
 
@@ -817,7 +819,7 @@ namespace Yodii.Lab
                 _hideNotifications = false;
             }
 
-            return new DetailedOperationResult(false);
+            return new DetailedOperationResult( false );
         }
 
         /// <summary>
