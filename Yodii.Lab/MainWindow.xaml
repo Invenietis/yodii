@@ -66,6 +66,10 @@
                 <Fluent:RibbonGroupBox
                     Header="File">
                     <Fluent:Button
+                        Header="New"
+                        Command="{Binding Path=ClearAllCommand}">
+                    </Fluent:Button>
+                    <Fluent:Button
                         Header="Open"
                         Command="{Binding Path=OpenFileCommand}">
                         <Fluent:Button.LargeIcon>

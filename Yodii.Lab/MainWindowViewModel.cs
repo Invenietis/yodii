@@ -42,6 +42,7 @@ namespace Yodii.Lab
         readonly ICommand _createServiceCommand;
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
+        readonly ICommand _clearAllCommand;
 
         readonly ActivityMonitor _activityMonitor;
 
@@ -52,6 +53,7 @@ namespace Yodii.Lab
         ILayoutParameters _graphLayoutParameters;
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
+        bool _hideNotifications = false;
 
         #endregion
 
@@ -87,6 +89,7 @@ namespace Yodii.Lab
             _createPluginCommand = new RelayCommand( CreatePluginExecute, CanEditItems );
             _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
+            _clearAllCommand = new RelayCommand( ClearAllExecute );
 
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
@@ -335,13 +338,20 @@ namespace Yodii.Lab
             {
                 if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
                 {
-                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() ) } );
-                    npe.CancelReason = String.Format( "Plugin with GUID {0} already exists. Pick another GUID.", npe.PluginId.ToString() );
+                    string reason = String.Format( "A plugin with the same GUID ({0}) already exists.\nPick another GUID.", npe.PluginId.ToString() );
+                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = reason } );
+                    npe.CancelReason = reason;
                 }
                 else if( String.IsNullOrWhiteSpace( npe.PluginName ) )
                 {
                     RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
                     npe.CancelReason = "Please enter a name for this plugin.";
+                }
+                else if( LabState.PluginInfos.Any(x => x.PluginFullName == npe.PluginName ) )
+                {
+                    string reason = String.Format( "A plugin with the name '{0}' name already exists.", npe.PluginName );
+                    RaiseNewNotification( "Can't add plugin", reason );
+                    npe.CancelReason = reason;
                 }
                 else
                 {
@@ -467,6 +477,11 @@ namespace Yodii.Lab
             if( !LabState.Engine.IsRunning ) return;
 
             LabState.Engine.Stop();
+        }
+
+        private void ClearAllExecute( object obj )
+        {
+            LabState.ClearState();
         }
 
         #endregion Command handlers
@@ -636,6 +651,10 @@ namespace Yodii.Lab
         /// Command to open a window allowing creation of a new service.
         /// </summary>
         public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
+        /// <summary>
+        /// Command to open a window allowing creation of a new service.
+        /// </summary>
+        public ICommand ClearAllCommand { get { return _clearAllCommand; } }
         #endregion Properties
 
         #region Public methods
@@ -768,18 +787,37 @@ namespace Yodii.Lab
         /// <returns>Operation result</returns>
         public DetailedOperationResult LoadState( string filePath )
         {
+            _hideNotifications = true;
+
             XmlReaderSettings rs = new XmlReaderSettings();
 
-            using( FileStream fs = File.Open( filePath, FileMode.Open ) )
+            try
             {
-                using( XmlReader xr = XmlReader.Create( fs, rs ) )
+                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
                 {
-                    LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
+                    using( XmlReader xr = XmlReader.Create( fs, rs ) )
+                    {
+                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
+                    }
                 }
+                _hideNotifications = false;
+
+                RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
+                return new DetailedOperationResult( true );
+            } catch( Exception ex )
+            {
+                // TODO: Detailed exceptions
+
+                string reason = ex.Message;
+
+                RaiseNewNotification( new Notification() { Title = "Failed to load file", Message = reason } );
+            }
+            finally
+            {
+                _hideNotifications = false;
             }
 
-            RaiseNewNotification( new Notification() { Title = "Loaded state", Message = filePath } );
-            return new DetailedOperationResult( true );
+            return new DetailedOperationResult(false);
         }
 
         /// <summary>
@@ -874,6 +912,8 @@ namespace Yodii.Lab
 
         private void RaiseNewNotification( Notification n )
         {
+            if( _hideNotifications ) return;
+
             if( NewNotification != null )
             {
                 NewNotification( this, new NotificationEventArgs( n ) );

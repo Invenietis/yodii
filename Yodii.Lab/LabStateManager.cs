@@ -330,7 +330,7 @@ namespace Yodii.Lab
 
         #region Internal methods
         /// <summary>
-        /// Stops and clears everything in this lab.
+        /// Stops and clears everything in this lab, including configuration manager entries.
         /// </summary>
         internal void ClearState()
         {
@@ -343,6 +343,13 @@ namespace Yodii.Lab
             _labServiceInfos.Clear();
             _pluginInfos.Clear();
             _serviceInfos.Clear();
+
+            // Clear configuration manager
+            foreach( var l in Engine.ConfigurationManager.Layers.ToList() )
+            {
+                var result = Engine.ConfigurationManager.Layers.Remove( l );
+                Debug.Assert( result.Success );
+            }
         }
 
 
