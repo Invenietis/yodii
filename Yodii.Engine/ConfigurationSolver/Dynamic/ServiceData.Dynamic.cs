@@ -242,7 +242,10 @@ namespace Yodii.Engine
             }
             foreach( var backRef in _backReferences )
             {
-                Debug.Assert( backRef.PluginData.DynamicStatus == null || backRef.PluginData.DynamicStatus.Value <= RunningStatus.Stopped );
+                Debug.Assert( backRef.PluginData.DynamicStatus == null 
+                                || backRef.PluginData.DynamicStatus.Value <= RunningStatus.Stopped
+                                || ((backRef.Requirement == DependencyRequirement.Optional || backRef.Requirement == DependencyRequirement.Runnable) && backRef.PluginData.ConfigSolvedImpact != StartDependencyImpact.FullStart)
+                                || ((backRef.Requirement == DependencyRequirement.OptionalTryStart || backRef.Requirement == DependencyRequirement.RunnableTryStart) && backRef.PluginData.ConfigSolvedImpact < StartDependencyImpact.StartRecommended) );
                 if( backRef.PluginData.DynamicStatus == null )
                 {
                     PluginRunningStatusReason r = backRef.PluginData.GetStoppedReasonForStoppedReference( backRef.Requirement );

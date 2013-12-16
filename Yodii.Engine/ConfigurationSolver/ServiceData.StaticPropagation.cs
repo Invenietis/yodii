@@ -51,20 +51,20 @@ namespace Yodii.Engine
                     StartDependencyImpact impact = Service.ConfigSolvedImpact;
                     if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal; 
 
-                    foreach( var s in GetExcludedServices( impact ) )
+                    foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                     {
-                        if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation );
+                        if( !s.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
+                        {
+                            if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToCommonPluginReferencesFailed );
+                            else Service._configDisabledReason = ServiceDisabledReason.PropagationToCommonPluginReferencesFailed;
+                            return false;
+                        }
                     }
                     if( !Service.Disabled )
                     {
-                        foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
+                        foreach( var s in GetExcludedServices( impact ) )
                         {
-                            if( !s.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
-                            {
-                                if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToCommonPluginReferencesFailed );
-                                else Service._configDisabledReason = ServiceDisabledReason.PropagationToCommonPluginReferencesFailed;
-                                return false;
-                            }
+                            if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation );
                         }
                     }
                 }

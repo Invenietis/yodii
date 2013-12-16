@@ -244,7 +244,7 @@ namespace Yodii.Engine
                 case DependencyRequirement.RunnableTryStart: return PluginDisabledReason.ByRunnableTryStartReference;
                 case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
                 case DependencyRequirement.OptionalTryStart:
-                    if( impact == StartDependencyImpact.FullStart || impact == StartDependencyImpact.StartRecommended )
+                    if( impact >= StartDependencyImpact.StartRecommended )
                     {
                         return PluginDisabledReason.ByOptionalTryStartReference;
                     }
