@@ -418,7 +418,7 @@ namespace Yodii.Lab
             if( !startResult.Success )
             {
                 RaiseNewNotification( "Startup failed", "Couldn't start engine." );
-                return;
+                MessageBox.Show( startResult.Describe(), "Start engine failure details", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
             }
 
             RaiseNewNotification( "Engine startup detail", startResult.Describe() );
