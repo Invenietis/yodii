@@ -89,6 +89,7 @@
                 <Separator />
                 <MenuItem
                     Header="Delete"
+                    IsEnabled="{Binding Path=IsEditable}"
                     Click="DeleteMenuItem_Click" />
             </ContextMenu>
         </Border.ContextMenu>

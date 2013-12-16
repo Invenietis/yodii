@@ -75,6 +75,7 @@ namespace Yodii.Lab
             {
                 case "LivePluginInfo":
                     RaisePropertyChanged( "IsLive" );
+                    RaisePropertyChanged( "IsEditable" );
                     break;
 
             }
@@ -86,6 +87,7 @@ namespace Yodii.Lab
             {
                 case "LiveServiceInfo":
                     RaisePropertyChanged( "IsLive" );
+                    RaisePropertyChanged( "IsEditable" );
                     break;
 
             }
@@ -190,6 +192,24 @@ namespace Yodii.Lab
                 else
                 {
                     return LabPluginInfo.IsLive;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Whether this vertex's object can be edited or deleted.
+        /// </summary>
+        public bool IsEditable
+        {
+            get
+            {
+                if( IsService )
+                {
+                    return !LabServiceInfo.IsLive;
+                }
+                else
+                {
+                    return !LabPluginInfo.IsLive;
                 }
             }
         }
