@@ -507,6 +507,81 @@ namespace Yodii.Engine.Tests.Mocks
             d.FindPlugin( "Plugin4" ).AddServiceReference( d.FindService( "Service4.2" ), DependencyRequirement.Running );
 
             return d;
-        }        
+        }
+
+        internal static IDiscoveredInfo CreateGraph005d()
+        {
+            DiscoveredInfo d = new DiscoveredInfo();
+
+            #region graph
+            /*
+            *                  +--------+                            
+            *      +-----------|Service1+                            
+            *      |           |Running |                            
+            *      |           +---+----+                            
+            *      |               |                                 
+            *      |               |                                 
+            *      |               |                                 
+            *  +---+-----+         |                                 
+            *  |Plugin1  |     +---+-----+                           
+            *  |Optional |     |Plugin2  |                           
+            *  +----+----+     |Optional |-----------------------+ 
+            *       |          +---------+                       |
+            *       |                                            |
+            *       |                                            |
+            *       |                                            |
+            *       |                                            |
+            *       |Runnable                                    |
+             *      |                                            |
+            *       |                                            |
+             *      |                                            |
+            *       |                              +---------+   |          
+            *       |                              |Service2 |<--+         
+            *       |       +----------------------|Optional |             
+            *       |       |                       +---+----+               
+            *       |       |                          |                       
+            *       |       |                          |                   
+            *       |   +---+-------+             +----+------+            
+            *       |   |Service2.1 |             |Service2.2 |        
+            *       +-->|Optional   |             |Optional   |        
+            *           +-----------+             +-----+-----+            
+            *               |                           |            
+            *               |                           |            
+            *               |                         +--+-----+
+            *               |                         |Plugin4 |
+            *            +--+-----+                   |Optional|
+            *            |Plugin3 |                   +--------+
+            *            |Optional|          
+            *            +--------+          
+            *                           
+            *                           
+            *                                                        
+            */
+            #endregion
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service2.1", d.DefaultAssembly ) );
+            d.FindService( "Service2.1" ).Generalization = d.FindService( "Service2" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service2.2", d.DefaultAssembly ) );
+            d.FindService( "Service2.2" ).Generalization = d.FindService( "Service2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2.1" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service1" );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service2.1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin4", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin4" ).Service = d.FindService( "Service2.2" );
+
+            return d;
+        }
     }
 }
