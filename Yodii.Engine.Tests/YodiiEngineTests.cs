@@ -66,13 +66,13 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).ConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
 
             Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).CurrentError, Is.Null );
             Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).CurrentError, Is.Null );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.EqualTo( ServiceDisabledReason.None ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.EqualTo( "None" ) );
 
             engine.Stop();
 

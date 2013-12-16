@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
     /// <summary>
     /// Reasons for which a plugin was disabled.
     /// </summary>
-    public enum PluginDisabledReason
+    enum PluginDisabledReason
     {
         /// <summary>
         /// The plugin is not disabled.
@@ -33,7 +33,7 @@ namespace Yodii.Model
         /// <summary>
         /// Initialized by PluginData constructor.
         /// </summary>
-        MustExistReferenceServiceIsOnError,
+        RunnableReferenceServiceIsOnError,
 
         /// <summary>
         /// Initialized by PluginData constructor.
@@ -43,7 +43,7 @@ namespace Yodii.Model
         /// <summary>
         /// Sets by PluginData constructor or later by ServiceData.SetDisabled.
         /// </summary>
-        MustExistReferenceIsDisabled,
+        RunnableReferenceIsDisabled,
 
         /// <summary>
         /// Set by ServiceRootData.SetMustExistPluginByConfig.
@@ -54,5 +54,19 @@ namespace Yodii.Model
         /// Sets by PluginData.SetRunningRequirement.
         /// </summary>
         RequirementPropagationToReferenceFailed,
+        AnotherRunningPluginExistsInFamily,
+        ServiceCanNotBeRunning,
+        SiblingRunningPlugin,
+        PropagationFailed,
+        AnotherRunningPluginExistsInFamilyByConfig,
+        ServiceSpecializationRunning,
+        RunningReferenceIsDisabled,
+        RecommendedReferenceIsDisabled,
+        OptionalReferenceIsDisabled,
+        ByRunningReference,
+        ByRunnableReference,
+        ByRunnableTryStartReference,
+        ByOptionalTryStartReference,
+        ByOptionalReference,
     }
 }

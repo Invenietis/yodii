@@ -74,6 +74,7 @@
     <Compile Include="Mocks\PluginInfo.cs" />
     <Compile Include="Mocks\ServiceInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestExtensions.cs" />
     <Compile Include="YodiiEngineTests.cs" />
   </ItemGroup>
   <ItemGroup>

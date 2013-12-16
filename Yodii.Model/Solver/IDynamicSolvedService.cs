@@ -19,7 +19,7 @@ namespace Yodii.Model
         /// <summary>
         /// Reason behind this service's disabled status.
         /// </summary>
-        ServiceDisabledReason DisabledReason { get; }
+        string DisabledReason { get; }
 
         /// <summary>
         /// This service's status as set in the initial configuration.
@@ -29,7 +29,7 @@ namespace Yodii.Model
         /// <summary>
         /// Status as set in the resolved configuration.
         /// </summary>
-        SolvedConfigurationStatus ConfigSolvedStatus { get; }
+        ConfigurationStatus ConfigSolvedStatus { get; }
 
         /// <summary>
         /// Running status.

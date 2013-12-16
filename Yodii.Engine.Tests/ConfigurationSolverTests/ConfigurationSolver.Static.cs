@@ -56,8 +56,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -102,8 +102,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -187,8 +187,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -301,12 +301,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IYodiiEngineResult res = engine.Start();
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 1 ) );
-            Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
-            Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-2" ) );
-            Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingServices.Single( s => s.ServiceInfo.ServiceFullName == "ServiceB" ) );
+            res.BlockingPluginsAre( "PluginA-2" );
+            res.BlockingServicesAre( "ServiceB" );
+
         }
 
         [Test]
@@ -348,11 +345,11 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
 
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
+            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ), Is.Null );
             Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 1 ) );
             Assert.That( res.StaticFailureResult.BlockingPlugins, Is.Empty );
 
-            Assert.That( res.StaticFailureResult.BlockingServices.Single().DisabledReason, Is.EqualTo( ServiceDisabledReason.NoPlugin ) );
+            Assert.That( res.StaticFailureResult.BlockingServices.Single().DisabledReason, Is.EqualTo( "NoPlugin" ) );
         }
 
         [Test]
@@ -413,8 +410,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -472,8 +469,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -535,7 +532,6 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
             IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
@@ -569,7 +565,6 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
             IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
@@ -602,15 +597,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
             IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -645,7 +639,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
+            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.Single( plugin => plugin.WantedConfigSolvedStatus == ConfigurationStatus.Running ).PluginInfo.PluginFullName, Is.EqualTo( "PluginA-1" ) );
             Assert.That( res.StaticFailureResult.BlockingPlugins.Count, Is.EqualTo( 1 ) );
             Assert.DoesNotThrow( () => res.StaticFailureResult.BlockingPlugins.Single( p => p.PluginInfo.PluginFullName == "PluginA-1" ) );
         }
@@ -685,8 +679,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             Assert.That( res.StaticFailureResult, Is.Null );
             Assert.That( res.HostFailureResult, Is.Null );
             Assert.That( res.ConfigurationFailureResult, Is.Null );
-            Assert.That( res.PluginCulprits, Is.Null );
-            Assert.That( res.ServiceCulprits, Is.Null );
+            Assert.That( res.PluginCulprits, Is.Empty );
+            Assert.That( res.ServiceCulprits, Is.Empty );
         }
 
         [Test]
@@ -765,11 +759,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IYodiiEngineResult res = engine.Start();
 
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 2 ) );
-            CollectionAssert.AreEquivalent( new[] { "ServiceAx1", "ServiceAx2" }, res.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
+            res.BlockingServicesAre( "ServiceAx1|ServiceAx2" );
         }
 
         [Test]
@@ -800,22 +790,16 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
-            DiscoveredInfo info = MockInfoFactory.CreateGraph004();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph004() );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
-
-            Assert.That( res.Success, Is.False );
-            Assert.That( res.StaticFailureResult, Is.Not.Null );
-            Assert.That( res.StaticFailureResult.StaticSolvedConfiguration.Plugins.FirstOrDefault( plugin => plugin.WantedConfigSolvedStatus == SolvedConfigurationStatus.Running ), Is.Null );
-            Assert.That( res.StaticFailureResult.BlockingServices.Count, Is.EqualTo( 3 ) );
-            CollectionAssert.AreEquivalent( new[] { "ServiceA", "ServiceAx1", "ServiceAx2" }, res.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
+            IYodiiEngineResult res = engine.Start();
+            res.BlockingServicesAre( "ServiceAx1|ServiceAx2" );
         }
 
         [Test]
@@ -922,15 +906,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *  
             */
             #endregion
-            DiscoveredInfo info = MockInfoFactory.CreateGraph005b();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005b() );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.False );
             Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -987,15 +970,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
 
-            DiscoveredInfo info = MockInfoFactory.CreateGraph005c();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005c() );
 
             IConfigurationLayer cl = engine.ConfigurationManager.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
 
-            ConfigurationSolver cs = new ConfigurationSolver();
-            IYodiiEngineResult res = cs.StaticResolution( engine.ConfigurationManager.FinalConfiguration, info );
+            IYodiiEngineResult res = engine.Start();
 
             Assert.That( res.Success, Is.True );
             Assert.That( res.StaticFailureResult, Is.Null );

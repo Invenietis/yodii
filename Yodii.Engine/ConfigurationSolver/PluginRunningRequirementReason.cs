@@ -8,11 +8,13 @@ namespace Yodii.Engine
 {
     enum PluginRunningRequirementReason
     {
+        None = 0,
+
         /// <summary>
         /// Initialized by PluginData constructor.
         /// </summary>
         Config,
-        
+
         /// <summary>
         /// Sets by ServiceData.RetrieveTheOnlyPlugin.
         /// </summary>
@@ -22,6 +24,7 @@ namespace Yodii.Engine
         /// Sets by ServiceData.RetrieveTheOnlyPlugin and ServiceData.SetRunningRequirement.
         /// </summary>
         FromServiceToSinglePlugin,
+        FromServiceToMultiplePlugin,
 
     }
 

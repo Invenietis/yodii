@@ -18,7 +18,7 @@ namespace Yodii.Model
         /// <summary>
         /// Reason behind this service's disabled status.
         /// </summary>
-        ServiceDisabledReason DisabledReason { get; }
+        string DisabledReason { get; }
 
         /// <summary>
         /// Service status as set by the initial configuration.
@@ -28,7 +28,7 @@ namespace Yodii.Model
         /// <summary>
         /// Requested service status.
         /// </summary>
-        SolvedConfigurationStatus WantedConfigSolvedStatus { get; }
+        ConfigurationStatus WantedConfigSolvedStatus { get; }
 
         /// <summary>
         /// Whether this service blocks static resolution.

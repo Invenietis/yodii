@@ -30,7 +30,7 @@ namespace Yodii.Model
         /// <param name="callerKey">Caller identifier of this method.</param>
         /// <param name="impact">Range of the plugins to start.</param>
         /// <returns>True of the plugin was started, false otherwise.</returns>
-        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.None );
+        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.Unknown );
 
         /// <summary>
         /// Stops this plugin.
