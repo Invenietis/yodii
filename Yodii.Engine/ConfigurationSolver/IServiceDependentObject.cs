@@ -12,7 +12,7 @@ namespace Yodii.Engine
 
         StartDependencyImpact ConfigSolvedImpact { get; }
 
-        IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact );
+        IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus );
 
         IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact );
 
