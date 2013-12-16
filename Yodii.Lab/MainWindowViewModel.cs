@@ -213,7 +213,7 @@ namespace Yodii.Lab
                             String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
                             );
 
-                        if( SelectedVertex.IsService && SelectedVertex.LabServiceInfo.ServiceInfo == oldService )
+                        if( SelectedVertex != null && SelectedVertex.IsService && SelectedVertex.LabServiceInfo.ServiceInfo == oldService )
                         {
                             SelectedVertex = null;
                         }
