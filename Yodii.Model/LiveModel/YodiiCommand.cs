@@ -25,10 +25,10 @@ namespace Yodii.Model
         public readonly bool Start;
 
         /// <summary>
-        /// If acting on a plugin's status: plugin ID.
+        /// If acting on a plugin's status: plugin full name.
         /// <seealso cref="YodiiCommand.ServiceFullName"/>
         /// </summary>
-        public readonly Guid PluginId;
+        public readonly string PluginFullName;
 
         /// <summary>
         /// When acting on a plugin, range of impact on the plugin's dependencies.
@@ -37,7 +37,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// If acting on a service: service full name.
-        /// <seealso cref="YodiiCommand.PluginId"/>
+        /// <seealso cref="YodiiCommand.PluginFullName"/>
         /// </summary>
         public readonly string ServiceFullName;
 
@@ -56,28 +56,20 @@ namespace Yodii.Model
         /// <param name="callerKey">Calling object identifier.</param>
         /// <param name="start">True to start the plugin, false to stop the plugin.</param>
         /// <param name="impact">Range of impact on the plugin's dependencies.</param>
-        /// <param name="pluginId">Plugin ID to act on.</param>
-        public YodiiCommand( string callerKey, Guid pluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        /// <param name="serviceOrPluginId">Plugin ID to act on.</param>
+        public YodiiCommand( string callerKey, string serviceOrPluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown, bool isPlugin = false )
             : this( callerKey, start, impact )
-
         {
-            PluginId = pluginId;
+            if( string.IsNullOrWhiteSpace( serviceOrPluginId ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceOrPluginId" );
+            if( isPlugin )
+            {
+                PluginFullName = serviceOrPluginId;
+            }
+            else
+            {
+                ServiceFullName = serviceOrPluginId;
+            }
         }
 
-        /// <summary>
-        /// Creates a new YodiiCommand, to act on a service's status.
-        /// </summary>
-        /// <param name="callerKey">Calling object identifier.</param>
-        /// <param name="start">True to start the service, false to stop the service.</param>
-        /// <param name="serviceFullName">Service full name to act on.</param>        
-        /// <param name="impact">Range of impact on plugin dependencies.</param>
-
-        public YodiiCommand( string callerKey, string serviceFullName, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown )
-            : this( callerKey, start, impact )
-
-        {
-            if( string.IsNullOrWhiteSpace( serviceFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceFullName" );
-            ServiceFullName = serviceFullName;
-        }
     }
 }

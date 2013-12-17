@@ -211,8 +211,8 @@ namespace Yodii.Lab.Tests
             Assert.That( _vm1.PluginInfos.Count == _vm2.PluginInfos.Count );
             foreach( var infoB in _vm2.PluginInfos )
             {
-                Assert.That( _vm1.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).Count() == 1 );
-                IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).First();
+                Assert.That( _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).Count() == 1 );
+                IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).First();
 
                 TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
             }
@@ -311,7 +311,7 @@ namespace Yodii.Lab.Tests
             Assert.That( result.Success );
 
             var cLayer2 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer 2" );
-            result = cLayer2.Items.Add( pluginA2.PluginId.ToString(), ConfigurationStatus.Running, "Test reason 2" );
+            result = cLayer2.Items.Add( pluginA2.PluginFullName, ConfigurationStatus.Running, "Test reason 2" );
             Assert.That( result.Success );
 
             // Testing tests

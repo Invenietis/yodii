@@ -294,7 +294,7 @@ namespace Yodii.Lab
             Console.WriteLine( "Disabling:" );
             foreach( var plugin in toDisable )
             {
-                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName) );
                 if( _runningPlugins.Contains( plugin ) )
                 {
                     _runningPlugins.Remove( plugin );
@@ -304,7 +304,7 @@ namespace Yodii.Lab
             Console.WriteLine( "Stopping:" );
             foreach( var plugin in toStop )
             {
-                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
                 if( _runningPlugins.Contains( plugin ) )
                 {
                     _runningPlugins.Remove( plugin );
@@ -314,7 +314,7 @@ namespace Yodii.Lab
             Console.WriteLine( "Starting:" );
             foreach( var plugin in toStart )
             {
-                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
                 if( !_runningPlugins.Contains( plugin ) )
                 {
                     _runningPlugins.Add( plugin );

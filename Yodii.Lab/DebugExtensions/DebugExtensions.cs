@@ -51,7 +51,7 @@ namespace Yodii.Lab
                     foreach( var p in result.StaticFailureResult.BlockingPlugins )
                     {
                         sb.AppendLine(
-                            String.Format( "- {0}/{1}: {2}", p.PluginInfo.PluginFullName, p.PluginInfo.PluginId.ToString(), p.DisabledReason.ToString() )
+                            String.Format( "- {0}/{1}: {2}", p.PluginInfo.PluginFullName, p.PluginInfo.PluginFullName, p.DisabledReason.ToString() )
                         );
                     }
                 }
@@ -63,7 +63,7 @@ namespace Yodii.Lab
                 foreach( var r in result.HostFailureResult.ErrorPlugins )
                 {
                     sb.AppendLine(
-                        String.Format("- {0}/{1}: {2}", r.Plugin.PluginInfo.PluginFullName, r.Plugin.PluginInfo.PluginId.ToString(), r.Error.Message)
+                        String.Format("- {0}: {1}", r.Plugin.PluginInfo.PluginFullName, r.Error.Message)
                         );
                 }
             }
@@ -85,7 +85,7 @@ namespace Yodii.Lab
                 foreach( var pc in result.PluginCulprits )
                 {
                     sb.AppendLine(
-                        String.Format( "- {0}/{1}: {2}", pc.PluginFullName, pc.PluginId.ToString(), pc.ErrorMessage )
+                        String.Format( "- {0}: {1}", pc.PluginFullName, pc.ErrorMessage )
                         );
                 }
             }

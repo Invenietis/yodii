@@ -366,7 +366,7 @@ namespace Yodii.Lab
                 }
 
             }
-            RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
+            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
         }
 
         void PluginInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -389,7 +389,7 @@ namespace Yodii.Lab
                     AddEdge( newEdge );
                 }
             }
-            RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
+            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
         }
         #endregion Event handlers
     }

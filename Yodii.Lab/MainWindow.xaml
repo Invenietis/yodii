@@ -68,6 +68,11 @@
                     <Fluent:Button
                         Header="New"
                         Command="{Binding Path=ClearAllCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource NewFileIcon}" />
+                        </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                     <Fluent:Button
                         Header="Open"
@@ -158,6 +163,11 @@
                     <Fluent:Button
                         Header="{Binding Path=ToggleEngineText}"
                         Command="{Binding Path=ToggleEngineCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource PowerIcon}" />
+                        </Fluent:Button.LargeIcon>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>

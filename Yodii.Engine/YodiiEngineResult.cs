@@ -20,7 +20,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Static failure resolution constructor.
         /// </summary>
-        public YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<Guid, PluginData> plugins, List<PluginData> blockingPlugins, List<ServiceData> blockingServices, YodiiEngine engine )
+        public YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<string, PluginData> plugins, List<PluginData> blockingPlugins, List<ServiceData> blockingServices, YodiiEngine engine )
         {
             Debug.Assert( blockingPlugins != null || blockingServices != null, "At least one must not be null." );
             Debug.Assert( services != null && plugins != null );
@@ -41,7 +41,7 @@ namespace Yodii.Engine
             _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration( allP.Values.ToReadOnlyList(), allS.Values.ToReadOnlyList() ), blkP, blkS );
         }
 
-        internal YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<Guid, PluginData> plugins, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo, YodiiEngine engine )
+        internal YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<string, PluginData> plugins, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo, YodiiEngine engine )
         {
             Debug.Assert( services != null && plugins != null );
             Debug.Assert( errorInfo != null && errorInfo.Any() );

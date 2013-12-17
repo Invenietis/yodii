@@ -167,7 +167,7 @@ namespace Yodii.Lab
 
                         IPluginInfo newPlugin = (IPluginInfo)i;
                         RaiseNewNotification( "Plugin added",
-                            String.Format( "Added new plugin: '{0}' ({1})", newPlugin.PluginFullName, newPlugin.PluginId )
+                            String.Format( "Added new plugin: '{0}'", newPlugin.PluginFullName )
                             );
                     }
                     break;
@@ -182,7 +182,7 @@ namespace Yodii.Lab
 
                         IPluginInfo oldPlugin = (IPluginInfo)i;
                         RaiseNewNotification( "Plugin removed",
-                            String.Format( "Removed plugin: '{0}' ({1})", oldPlugin.PluginFullName, oldPlugin.PluginId )
+                            String.Format( "Removed plugin: '{0}'", oldPlugin.PluginFullName )
                             );
                     }
                     break;
@@ -248,19 +248,20 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
-            RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
             if( param == null )
             {
+                RaiseNewNotification( new Notification() { Title = "Re-creating graph..." } );
                 // Refresh layout.
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
             }
             else
             {
+                RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
                 // Re-create graph with new layout and parameters.
                 GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
                 GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
             }
         }
 
@@ -335,13 +336,7 @@ namespace Yodii.Lab
 
             window.NewPluginCreated += ( s, npe ) =>
             {
-                if( PluginInfos.Any( si => si.PluginId == npe.PluginId ) )
-                {
-                    string reason = String.Format( "A plugin with the same GUID ({0}) already exists.\nPick another GUID.", npe.PluginId.ToString() );
-                    RaiseNewNotification( new Notification() { Title = "Plugin already exists", Message = reason } );
-                    npe.CancelReason = reason;
-                }
-                else if( String.IsNullOrWhiteSpace( npe.PluginName ) )
+                if( String.IsNullOrWhiteSpace( npe.PluginName ) )
                 {
                     RaiseNewNotification( "Can't add plugin", "Plugin must have a name." );
                     npe.CancelReason = "Please enter a name for this plugin.";
