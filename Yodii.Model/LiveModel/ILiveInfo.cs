@@ -36,9 +36,9 @@ namespace Yodii.Model
         /// <summary>
         /// Find a plugin by its GUID.
         /// </summary>
-        /// <param name="pluginId">Plugin GUID</param>
+        /// <param name="pluginFullName">Plugin full name</param>
         /// <returns>Live plugin</returns>
-        ILivePluginInfo FindPlugin( Guid pluginId );
+        ILivePluginInfo FindPlugin( string pluginFullName );
 
         /// <summary>
         /// Cancels any start or stop made by this caller.

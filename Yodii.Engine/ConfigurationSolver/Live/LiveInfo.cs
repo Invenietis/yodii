@@ -12,14 +12,14 @@ namespace Yodii.Engine
     class LiveInfo : ILiveInfo
     {
         readonly YodiiEngine _engine;
-        readonly CKObservableSortedArrayKeyList<LivePluginInfo,Guid> _plugins;
+        readonly CKObservableSortedArrayKeyList<LivePluginInfo,string> _plugins;
         readonly CKObservableSortedArrayKeyList<LiveServiceInfo,string> _services;
 
         internal LiveInfo(YodiiEngine engine)
         {
             Debug.Assert( engine != null );
             _engine = engine;
-            _plugins = new CKObservableSortedArrayKeyList<LivePluginInfo, Guid>( l => l.PluginInfo.PluginId );
+            _plugins = new CKObservableSortedArrayKeyList<LivePluginInfo, string>( l => l.PluginInfo.PluginFullName );
             _services = new CKObservableSortedArrayKeyList<LiveServiceInfo, string>( l => l.ServiceInfo.ServiceFullName );
         }
 
@@ -39,9 +39,9 @@ namespace Yodii.Engine
             return _services.GetByKey( fullName );
         }
 
-        public ILivePluginInfo FindPlugin( Guid pluginId )
+        public ILivePluginInfo FindPlugin( string pluginFullName )
         {
-            return _plugins.GetByKey( pluginId );
+            return _plugins.GetByKey( pluginFullName );
         }
 
         public bool Contains( string serviceFullName )
@@ -57,7 +57,7 @@ namespace Yodii.Engine
         internal void UpdateFrom( IConfigurationSolver solver )
         {
             _services.RemoveWhereAndReturnsRemoved( s => solver.FindService( s.ServiceInfo.ServiceFullName ) == null ).Count();
-            _plugins.RemoveWhereAndReturnsRemoved( p => solver.FindPlugin( p.PluginInfo.PluginId ) == null ).Count();
+            _plugins.RemoveWhereAndReturnsRemoved( p => solver.FindPlugin( p.PluginInfo.PluginFullName ) == null ).Count();
 
             DelayedPropertyNotification notifier = new DelayedPropertyNotification();
 
@@ -72,13 +72,13 @@ namespace Yodii.Engine
             List<LivePluginInfo> pluginsToAdd = new List<LivePluginInfo>();
             foreach( var s in solver.AllPlugins )
             {
-                LivePluginInfo lp = _plugins.GetByKey( s.PluginInfo.PluginId );
+                LivePluginInfo lp = _plugins.GetByKey( s.PluginInfo.PluginFullName );
                 if( lp == null ) pluginsToAdd.Add( new LivePluginInfo( s, _engine ) );
                 else lp.UpdateFrom( s, notifier );
             }
 
             Func<string,LiveServiceInfo> serviceFinder = name => _services.GetByKey( name ) ?? servicesToAdd.First( ls => ls.ServiceInfo.ServiceFullName == name );
-            Func<Guid,LivePluginInfo> pluginFinder = id => _plugins.GetByKey( id ) ?? pluginsToAdd.First( lp => lp.PluginInfo.PluginId == id );
+            Func<string,LivePluginInfo> pluginFinder = id => _plugins.GetByKey( id ) ?? pluginsToAdd.First( lp => lp.PluginInfo.PluginFullName == id );
 
             using( notifier.SilentMode() )
             {
@@ -88,9 +88,9 @@ namespace Yodii.Engine
 
             using( notifier.SilentMode() )
             {
-                foreach( var lp in pluginsToAdd ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginId ), serviceFinder, notifier );
+                foreach( var lp in pluginsToAdd ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginFullName ), serviceFinder, notifier );
             }
-            foreach( var lp in _plugins ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginId ), serviceFinder, notifier );
+            foreach( var lp in _plugins ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginFullName ), serviceFinder, notifier );
 
             foreach( var ls in servicesToAdd ) _services.Add( ls );
             foreach( var lp in pluginsToAdd ) _plugins.Add( lp );
@@ -102,7 +102,7 @@ namespace Yodii.Engine
         {
             foreach( var e in errors )
             {
-                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginId );
+                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginFullName );
                 Debug.Assert( pluginInfo != null, "The plugin cannot be not found in UpdateRuntimeErrors function" );
                 pluginInfo.CurrentError = e.Item2;
             }

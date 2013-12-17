@@ -14,7 +14,7 @@ namespace Yodii.Engine
         readonly YodiiEngine _engine;
         readonly Dictionary<string,ServiceData> _services;
         readonly List<ServiceData.ServiceFamily> _serviceFamilies;
-        readonly Dictionary<Guid,PluginData> _plugins;
+        readonly Dictionary<string,PluginData> _plugins;
         readonly HashSet<ServiceData> _deferedPropagation;
         readonly bool _revertServicesOrder;
         readonly bool _revertPluginsOrder;
@@ -35,7 +35,7 @@ namespace Yodii.Engine
             _engine = engine;
             _services = new Dictionary<string, ServiceData>();
             _serviceFamilies = new List<ServiceData.ServiceFamily>();
-            _plugins = new Dictionary<Guid, PluginData>();
+            _plugins = new Dictionary<string, PluginData>();
             _deferedPropagation = new HashSet<ServiceData>();
             _revertServicesOrder = revertServices;
             _revertPluginsOrder = revertPlugins;
@@ -48,7 +48,7 @@ namespace Yodii.Engine
             return _services[serviceFullName];
         }
 
-        public PluginData FindExistingPlugin( Guid pluginId )
+        public PluginData FindExistingPlugin( string pluginId )
         {
             return _plugins[pluginId];
         }
@@ -58,7 +58,7 @@ namespace Yodii.Engine
             return _services.GetValueWithDefault( serviceFullName, null );
         }
 
-        public PluginData FindPlugin( Guid pluginId )
+        public PluginData FindPlugin( string pluginId )
         {
             return _plugins.GetValueWithDefault( pluginId, null );
         }
@@ -94,13 +94,13 @@ namespace Yodii.Engine
             Step = Engine.ConfigurationSolverStep.RegisterPlugins;
             {
                 // In order to be deterministic, works on an ordered list of IPluginInfo to build the graph.
-                List<IPluginInfo> orderedPluginsInfo = info.PluginInfos.Where( p => p != null ).OrderBy( p => p.PluginId ).ToList();
+                List<IPluginInfo> orderedPluginsInfo = info.PluginInfos.Where( p => p != null ).OrderBy( p => p.PluginFullName ).ToList();
                 if( _revertPluginsOrder ) orderedPluginsInfo.Reverse();
                 foreach( IPluginInfo p in orderedPluginsInfo )
                 {
                     RegisterPlugin( finalConfig, p );
                 }
-                _orderedPlugins = orderedPluginsInfo.Select( p => _plugins[p.PluginId] ).ToArray();
+                _orderedPlugins = orderedPluginsInfo.Select( p => _plugins[p.PluginFullName] ).ToArray();
             }
             // All possible plugins are registered. Services without any available plugins are de facto disabled.
             // Propagation for each service is deferred.
@@ -208,7 +208,7 @@ namespace Yodii.Engine
 
             foreach( var previous in pastCommands )
             {
-                if( newOne == null || newOne.CallerKey != previous.CallerKey || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginId != previous.PluginId )
+                if( newOne == null || newOne.CallerKey != previous.CallerKey || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
                 {
                     if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
                     {
@@ -259,7 +259,7 @@ namespace Yodii.Engine
             }
             // Starts or stops the plugin.
             // If the plugin does not exist, we keep the command.
-            PluginData p = _plugins[cmd.PluginId];
+            PluginData p = _plugins[cmd.PluginFullName];
             if( p != null )
             {
                 if ( cmd.Start ) return p.DynamicStartByCommand( cmd.Impact );
@@ -298,13 +298,13 @@ namespace Yodii.Engine
         PluginData RegisterPlugin( FinalConfiguration finalConfig, IPluginInfo p )
         {
             PluginData data;
-            if( _plugins.TryGetValue( p.PluginId, out data ) ) return data;
+            if( _plugins.TryGetValue( p.PluginFullName, out data ) ) return data;
 
-            ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginId.ToString() );
+            ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginFullName );
             ServiceData service = p.Service != null ? _services[p.Service.ServiceFullName] : null;
             if( service == null ) ++_independentPluginsCount;
             data = new PluginData( this, p, service, pluginStatus );
-            _plugins.Add( p.PluginId, data );
+            _plugins.Add( p.PluginFullName, data );
             return data;
         }
 

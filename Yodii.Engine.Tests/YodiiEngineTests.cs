@@ -46,32 +46,32 @@ namespace Yodii.Engine.Tests
             result = engine.Start();
             Assert.That( result.Success, Is.True );
             Assert.That( engine.LiveInfo, Is.Not.Null );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).PluginInfo, Is.EqualTo( pluginA1 ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).PluginInfo, Is.EqualTo( pluginA2 ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).PluginInfo, Is.EqualTo( pluginA1 ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).PluginInfo, Is.EqualTo( pluginA2 ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ServiceInfo, Is.EqualTo( serviceA ) );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).IsRunning, Is.False );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).IsRunning, Is.False );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).IsRunning, Is.False );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).Generalization, Is.Null );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginId ).CurrentError, Is.Null );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginId ).CurrentError, Is.Null );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).CurrentError, Is.Null );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).CurrentError, Is.Null );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.EqualTo( "None" ) );
 
             engine.Stop();

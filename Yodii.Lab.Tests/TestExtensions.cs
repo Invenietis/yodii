@@ -21,7 +21,6 @@ namespace Yodii.Lab.Tests
 
             Assert.That( a != null && b != null );
 
-            Assert.That( a.PluginId == b.PluginId );
             Assert.That( a.PluginFullName == b.PluginFullName );
 
             if( a.Service == null )
@@ -34,7 +33,7 @@ namespace Yodii.Lab.Tests
             Assert.That( a.ServiceReferences.Count == b.ServiceReferences.Count );
             foreach(var referenceB in b.ServiceReferences)
             {
-                var referenceA = a.ServiceReferences.Where( x => x.Owner.PluginId == referenceB.Owner.PluginId &&
+                var referenceA = a.ServiceReferences.Where( x => x.Owner.PluginFullName == referenceB.Owner.PluginFullName &&
                     x.Reference.ServiceFullName == referenceB.Reference.ServiceFullName &&
                     x.Requirement == referenceB.Requirement ).FirstOrDefault();
 
@@ -62,8 +61,8 @@ namespace Yodii.Lab.Tests
             {
                 foreach( var pluginB in b.Implementations )
                 {
-                    Assert.That( a.Implementations.Where( x => x.PluginId == pluginB.PluginId ).Count() == 1 );
-                    var pluginA = a.Implementations.Where( x => x.PluginId == pluginB.PluginId ).First();
+                    Assert.That( a.Implementations.Where( x => x.PluginFullName == pluginB.PluginFullName ).Count() == 1 );
+                    var pluginA = a.Implementations.Where( x => x.PluginFullName == pluginB.PluginFullName ).First();
 
                     AssertPluginEquivalence( pluginA, pluginB, false );
                 }

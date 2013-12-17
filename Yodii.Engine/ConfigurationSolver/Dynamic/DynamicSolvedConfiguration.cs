@@ -35,9 +35,9 @@ namespace Yodii.Engine
             return _services.FirstOrDefault( s => s.ServiceInfo.ServiceFullName == fullName);
         }
 
-        public IDynamicSolvedPlugin FindPlugin( Guid pluginId )
+        public IDynamicSolvedPlugin FindPlugin( string pluginFullName )
         {
-            return _plugins.FirstOrDefault( p => p.PluginInfo.PluginId == pluginId );
+            return _plugins.FirstOrDefault( p => p.PluginInfo.PluginFullName == pluginFullName );
         }
     }
 }

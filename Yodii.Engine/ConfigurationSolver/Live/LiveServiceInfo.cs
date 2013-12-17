@@ -59,7 +59,7 @@ namespace Yodii.Engine
             }
         }
 
-        internal void Bind( ServiceData s, Func<string, LiveServiceInfo> serviceFinder, Func<Guid, LivePluginInfo> pluginFinder, DelayedPropertyNotification notifier )
+        internal void Bind( ServiceData s, Func<string, LiveServiceInfo> serviceFinder, Func<string, LivePluginInfo> pluginFinder, DelayedPropertyNotification notifier )
         {
             var newGeneralization = s.Generalization != null ? serviceFinder( s.Generalization.ServiceInfo.ServiceFullName ) : null;
             notifier.Update( this, ref _generalization, newGeneralization, () => Generalization );
@@ -70,7 +70,7 @@ namespace Yodii.Engine
             ILivePluginInfo newRunningPlugin = null;
             if( IsRunning )
             {
-                newRunningPlugin = pluginFinder( familyRunning.PluginInfo.PluginId );
+                newRunningPlugin = pluginFinder( familyRunning.PluginInfo.PluginFullName );
             }
             if( _runningPlugin != null )
             {

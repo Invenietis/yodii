@@ -30,8 +30,8 @@ namespace Yodii.Model
         /// <summary>
         /// Finds a plugin by its GUID.
         /// </summary>
-        /// <param name="pluginId">Plugin ID.</param>
+        /// <param name="pluginFullName">Plugin full name.</param>
         /// <returns>Static solved plugin.</returns>
-        IStaticSolvedPlugin FindPlugin( Guid pluginId );
+        IStaticSolvedPlugin FindPlugin( string pluginFullName );
     }
 }
