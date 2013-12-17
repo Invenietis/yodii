@@ -25,5 +25,6 @@ namespace Yodii.Model
                 s = s.Generalization;
             }
         }
+
     }
 }

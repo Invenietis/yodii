@@ -248,19 +248,20 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
-            RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
             if( param == null )
             {
+                RaiseNewNotification( new Notification() { Title = "Re-creating graph..." } );
                 // Refresh layout.
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
             }
             else
             {
+                RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
                 // Re-create graph with new layout and parameters.
                 GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
                 GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
             }
         }
 
