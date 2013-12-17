@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Yodii.Model;
 
 namespace Yodii.Engine.Tests.ConfigurationSolverTests
 {
@@ -57,7 +58,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
             YodiiEngine e = SuccessfulConfigurationSolverCommonReferencesWork4();
-
+            e.LiveInfo.FindPlugin( "Plugin4" ).Start("toto", StartDependencyImpact.Minimal);
         }
     }
 }
