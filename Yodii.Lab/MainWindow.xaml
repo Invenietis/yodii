@@ -163,11 +163,36 @@
                     <Fluent:Button
                         Header="{Binding Path=ToggleEngineText}"
                         Command="{Binding Path=ToggleEngineCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource PowerIcon}" />
-                        </Fluent:Button.LargeIcon>
+                        <Fluent:Button.Style>
+                            <Style>
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Fluent:Button.LargeIcon">
+                                            <Setter.Value>
+                                                <Viewbox
+                                                    Stretch="UniformToFill"
+                                                    Child="{StaticResource PowerIconRed}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                        Value="false">
+                                        <Setter
+                                            Property="Fluent:Button.LargeIcon">
+                                            <Setter.Value>
+                                                <Viewbox
+                                                    Stretch="UniformToFill"
+                                                    Child="{StaticResource PowerIcon}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Fluent:Button.Style>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
