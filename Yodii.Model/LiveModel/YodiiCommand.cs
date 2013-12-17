@@ -57,6 +57,7 @@ namespace Yodii.Model
         /// <param name="start">True to start the plugin, false to stop the plugin.</param>
         /// <param name="impact">Range of impact on the plugin's dependencies.</param>
         /// <param name="serviceOrPluginId">Plugin ID to act on.</param>
+        /// <param name="isPlugin">Set to true if command is for a plugin. False for a service.</param>
         public YodiiCommand( string callerKey, string serviceOrPluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown, bool isPlugin = false )
             : this( callerKey, start, impact )
         {

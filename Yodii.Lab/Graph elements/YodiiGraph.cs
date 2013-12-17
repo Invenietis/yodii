@@ -103,7 +103,7 @@ namespace Yodii.Lab
                     if( v.IsService )
                         identifier = v.LabServiceInfo.ServiceInfo.ServiceFullName;
                     else
-                        identifier = v.LabPluginInfo.PluginInfo.PluginId.ToString();
+                        identifier = v.LabPluginInfo.PluginInfo.PluginFullName;
 
                     var items = config.Items.Where( x => x.ServiceOrPluginId == identifier );
                     if( items.Count() > 0 )

@@ -124,7 +124,7 @@ namespace Yodii.Lab
         {
             if( Vertex == null ) return;
             // If plugin: PluginInfo.PluginId / else: ServiceInfo.ServiceFullName
-            string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LabPluginInfo.PluginInfo.PluginId.ToString() : Vertex.LabServiceInfo.ServiceInfo.ServiceFullName;
+            string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LabPluginInfo.PluginInfo.PluginFullName : Vertex.LabServiceInfo.ServiceInfo.ServiceFullName;
 
             // TODO: Better handling of config change. Current implementation: remove all matching entries, then add the new one.
             foreach( IConfigurationLayer layer in ConfigurationManager.Layers )

@@ -285,15 +285,15 @@ namespace Yodii.Lab.Tests
             Assert.That( serviceAx.Generalization == serviceA );
 
             // Plugins
-            IPluginInfo pluginWithoutService = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Without.Service" );
+            IPluginInfo pluginWithoutService = vm.CreateNewPlugin( "Plugin.Without.Service" );
 
-            IPluginInfo pluginA1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.A1", serviceA );
+            IPluginInfo pluginA1 = vm.CreateNewPlugin( "Plugin.A1", serviceA );
 
-            IPluginInfo pluginA2 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.A2", serviceA );
+            IPluginInfo pluginA2 = vm.CreateNewPlugin( "Plugin.A2", serviceA );
 
-            IPluginInfo pluginAx1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
+            IPluginInfo pluginAx1 = vm.CreateNewPlugin( "Plugin.Ax1", serviceAx );
 
-            IPluginInfo pluginB1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.B1", serviceB );
+            IPluginInfo pluginB1 = vm.CreateNewPlugin( "Plugin.B1", serviceB );
 
             vm.SetPluginDependency( pluginA2, serviceB, DependencyRequirement.Running );
 
