@@ -885,7 +885,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
             cl.Items.Add( "AnotherBlocking", ConfigurationStatus.Runnable );
-            cl.Items.Add( disabledForBlocking.PluginId.ToString(), ConfigurationStatus.Disabled );
+            cl.Items.Add( disabledForBlocking.PluginFullName, ConfigurationStatus.Disabled );
 
             engine.FullStart( res =>
                {
