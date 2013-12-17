@@ -15,7 +15,7 @@ namespace Yodii.Model
         /// <summary>
         /// Service or plugin identifier this configuration applies to.
         /// </summary>
-        string ServiceOrPluginId { get; }
+        string ServiceOrPluginFullName { get; }
 
         /// <summary>
         /// Attempts to change the required ConfigurationStatus of this item.

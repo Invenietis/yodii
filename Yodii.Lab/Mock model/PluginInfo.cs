@@ -12,10 +12,9 @@ namespace Yodii.Lab.Mocks
     /// <summary>
     /// Mock plugin info, for Yodii.Lab.
     /// </summary>
-    [DebuggerDisplay( "{PluginFullName} = {PluginId}" )]
+    [DebuggerDisplay( "{PluginFullName}" )]
     public class PluginInfo : ViewModelBase, IPluginInfo
     {
-        readonly Guid _guid;
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
 
@@ -25,12 +24,10 @@ namespace Yodii.Lab.Mocks
         ServiceInfo _service;
         string _pluginFullName;
 
-        internal PluginInfo( Guid guid, string pluginFullName, IAssemblyInfo assemblyInfo, ServiceInfo service = null )
+        internal PluginInfo( string pluginFullName, IAssemblyInfo assemblyInfo, ServiceInfo service = null )
         {
-            Debug.Assert( guid != null );
             Debug.Assert( assemblyInfo != null );
 
-            _guid = guid;
             _pluginFullName = pluginFullName;
             _assemblyInfo = assemblyInfo;
 
@@ -55,26 +52,11 @@ namespace Yodii.Lab.Mocks
         {
             get
             {
-                if( String.IsNullOrWhiteSpace( PluginFullName ) )
-                {
-                    return String.Format( "Unnamed plugin ({0})", PluginId.ToString() );
-                }
-                else
-                {
-                    return String.Format( "{0}", PluginFullName );
-                }
+                return PluginFullName;
             }
         }
 
         #region IPluginInfo Members
-
-        /// <summary>
-        /// Plugin GUID
-        /// </summary>
-        public Guid PluginId
-        {
-            get { return _guid; }
-        }
 
         /// <summary>
         /// Plugin display name

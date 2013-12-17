@@ -99,7 +99,7 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 if( SelectedItem == null ) return null;
                 else if( SelectedItem is ServiceInfo ) return ((ServiceInfo)SelectedItem).ServiceFullName;
-                else return ((PluginInfo)SelectedItem).PluginId.ToString();
+                else return ((PluginInfo)SelectedItem).PluginFullName;
             }
         }
         #endregion

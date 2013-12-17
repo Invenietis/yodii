@@ -52,10 +52,10 @@ namespace Yodii.Lab
             List<PendingPluginService> pendingPluginServices = new List<PendingPluginService>();
             List<PendingServiceReference> pendingServiceReferences = new List<PendingServiceReference>();
 
-            CKSortedArrayKeyList<PluginInfo, Guid> loadedPlugins;
+            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins;
             CKSortedArrayKeyList<ServiceInfo, string> loadedServices;
             loadedServices = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
-            loadedPlugins = new CKSortedArrayKeyList<PluginInfo, Guid>( p => p.PluginId, false );
+            loadedPlugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, false );
 
             if( state.Engine.IsRunning )
             {
@@ -157,7 +157,7 @@ namespace Yodii.Lab
                 foreach(IConfigurationItem i in l.Items)
                 {
                     PersistedConfigurationItem persistedItem = new PersistedConfigurationItem();
-                    persistedItem.ServiceOrPluginId = i.ServiceOrPluginId;
+                    persistedItem.ServiceOrPluginId = i.ServiceOrPluginFullName;
                     persistedItem.Status = i.Status;
                     persistedItem.StatusReason = i.StatusReason;
 
@@ -229,10 +229,6 @@ namespace Yodii.Lab
 
         private static void SerializePluginInfoToXmlWriter( PluginInfo pi, XmlWriter w )
         {
-            w.WriteStartAttribute( "Guid" );
-            w.WriteValue( pi.PluginId.ToString() );
-            w.WriteEndAttribute();
-
             w.WriteStartElement( "FullName" );
             if( pi.PluginFullName != null ) w.WriteValue( pi.PluginFullName );
             w.WriteEndElement();
@@ -304,7 +300,7 @@ namespace Yodii.Lab
 
         private static void ReadServices( XmlReader r,
             CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, Guid> loadedPlugins,
+            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
             List<PendingGeneralization> pendingGeneralizations,
             List<PendingPluginService> pendingPluginServices,
             List<PendingServiceReference> pendingServiceReferences
@@ -321,7 +317,7 @@ namespace Yodii.Lab
 
         private static void ReadService( XmlReader r,
             CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, Guid> loadedPlugins,
+            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
             List<PendingGeneralization> pendingGeneralizations,
             List<PendingPluginService> pendingPluginServices,
             List<PendingServiceReference> pendingServiceReferences
@@ -386,7 +382,7 @@ namespace Yodii.Lab
 
         private static void ReadPlugins( XmlReader r,
             CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, Guid> loadedPlugins,
+            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
             List<PendingPluginService> pendingPluginServices,
             List<PendingServiceReference> pendingServiceReferences )
         {
@@ -403,20 +399,14 @@ namespace Yodii.Lab
 
         private static void ReadPlugin( XmlReader r,
             CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, Guid> loadedPlugins,
+            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
             List<PendingPluginService> pendingPluginServices,
             List<PendingServiceReference> pendingServiceReferences
             )
         {
             r.Read();
 
-            string guidString = r.GetAttribute( "Guid" );
-
-            Debug.Assert( !String.IsNullOrEmpty( guidString ), "GUID attribute exists" );
-
-            Guid guid = Guid.Parse( guidString );
-
-            PluginInfo p = new PluginInfo( guid, null, AssemblyInfoHelper.ExecutingAssemblyInfo );
+            PluginInfo p = new PluginInfo( null, AssemblyInfoHelper.ExecutingAssemblyInfo );
             loadedPlugins.Add( p );
 
             while( r.Read() )

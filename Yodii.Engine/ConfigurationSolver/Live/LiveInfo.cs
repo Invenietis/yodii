@@ -49,11 +49,6 @@ namespace Yodii.Engine
             return _services.Contains( serviceFullName );
         }
 
-        public bool Contains( Guid pluginId )
-        {
-            return _plugins.Contains( pluginId );
-        }
-
         internal void UpdateFrom( IConfigurationSolver solver )
         {
             _services.RemoveWhereAndReturnsRemoved( s => solver.FindService( s.ServiceInfo.ServiceFullName ) == null ).Count();

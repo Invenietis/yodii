@@ -297,6 +297,12 @@ namespace Yodii.Lab
                     RaiseNewNotification( new Notification() { Title = String.Format( "Service {0} already exists", nse.ServiceName ) } );
                     nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
                 }
+                else if( _labStateManager.IsPlugin(nse.ServiceName) )
+                {
+                    string reason = String.Format( "A plugin with the name '{0}' name already exists.", nse.ServiceName );
+                    RaiseNewNotification( "Can't add service", reason );
+                    nse.CancelReason = reason;
+                }
                 else
                 {
                     IServiceInfo newService = CreateNewService( nse.ServiceName, nse.Generalization );
@@ -347,9 +353,15 @@ namespace Yodii.Lab
                     RaiseNewNotification( "Can't add plugin", reason );
                     npe.CancelReason = reason;
                 }
+                else if( _labStateManager.IsService(npe.PluginName) )
+                {
+                    string reason = String.Format( "A service with the name '{0}' name already exists.", npe.PluginName );
+                    RaiseNewNotification( "Can't add plugin", reason );
+                    npe.CancelReason = reason;
+                }
                 else
                 {
-                    IPluginInfo newPlugin = CreateNewPlugin( npe.PluginId, npe.PluginName, npe.Service );
+                    IPluginInfo newPlugin = CreateNewPlugin( npe.PluginName, npe.Service );
                     foreach( var kvp in npe.ServiceReferences )
                     {
                         SetPluginDependency( newPlugin, kvp.Key, kvp.Value );
@@ -684,29 +696,26 @@ namespace Yodii.Lab
         /// <summary>
         /// Creates a new named plugin, which does not implement a service.
         /// </summary>
-        /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <returns>New plugin</returns>
-        public IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName )
+        public IPluginInfo CreateNewPlugin( string pluginName )
         {
-            return CreateNewPlugin( pluginGuid, pluginName, null );
+            return CreateNewPlugin(  pluginName, null );
         }
 
         /// <summary>
         /// Creates a new named plugin, which implements an existing service.
         /// </summary>
-        /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        public IPluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName, IServiceInfo service )
+        public IPluginInfo CreateNewPlugin( string pluginName, IServiceInfo service )
         {
-            if( pluginGuid == null ) throw new ArgumentNullException( "pluginGuid" );
-            if( pluginName == null ) throw new ArgumentNullException( "pluginName" );
+            if( String.IsNullOrWhiteSpace(pluginName) ) throw new ArgumentNullException( "pluginName" );
 
             if( service != null && !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
-            PluginInfo newPlugin = _labStateManager.CreateNewPlugin( pluginGuid, pluginName, (ServiceInfo)service );
+            PluginInfo newPlugin = _labStateManager.CreateNewPlugin( pluginName, (ServiceInfo)service );
 
             return newPlugin;
         }
@@ -767,13 +776,13 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Get plugin associated to this GUID.
+        /// Get plugin associated to this plugin full name.
         /// </summary>
-        /// <param name="guid">Plugin GUID.</param>
+        /// <param name="pluginFullName">Plugin full name.</param>
         /// <returns>Plugin.</returns>
-        public PluginInfo GetPluginInfoById( Guid guid )
+        public PluginInfo GetPluginInfoById( string pluginFullName )
         {
-            return _labStateManager.PluginInfos.Where( x => x.PluginId == guid ).First();
+            return _labStateManager.PluginInfos.Where( x => x.PluginFullName == pluginFullName ).First();
         }
 
         /// <summary>

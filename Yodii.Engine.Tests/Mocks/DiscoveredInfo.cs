@@ -37,11 +37,6 @@ namespace Yodii.Engine.Tests.Mocks
             return _plugins.FirstOrDefault( p => p.PluginFullName == pluginFullName );
         }
 
-        public PluginInfo FindPlugin( Guid pluginId )
-        {
-            return _plugins.FirstOrDefault( p => p.PluginId == pluginId );
-        }
-
         public List<PluginInfo> PluginInfos
         {
             get { return _plugins; }
