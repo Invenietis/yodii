@@ -11,6 +11,7 @@ namespace Yodii.Engine
 {
     class ConfigurationSolver : IConfigurationSolver
     {
+        readonly YodiiEngine _engine;
         readonly Dictionary<string,ServiceData> _services;
         readonly List<ServiceData.ServiceFamily> _serviceFamilies;
         readonly Dictionary<Guid,PluginData> _plugins;
@@ -21,16 +22,17 @@ namespace Yodii.Engine
         PluginData[] _orderedPlugins;
         int _independentPluginsCount;
 
-        internal static Tuple<IYodiiEngineResult, ConfigurationSolver> CreateAndApplyStaticResolution( FinalConfiguration finalConfiguration, IDiscoveredInfo discoveredInfo, bool revertServices = false, bool revertPlugins = false )
+        internal static Tuple<IYodiiEngineResult, ConfigurationSolver> CreateAndApplyStaticResolution( YodiiEngine engine, FinalConfiguration finalConfiguration, IDiscoveredInfo discoveredInfo, bool revertServices = false, bool revertPlugins = false )
         {
-            ConfigurationSolver temporarySolver = new ConfigurationSolver( revertServices, revertPlugins );
+            ConfigurationSolver temporarySolver = new ConfigurationSolver(  engine,revertServices, revertPlugins );
             IYodiiEngineResult result =  temporarySolver.StaticResolution( finalConfiguration, discoveredInfo );
             if( !result.Success ) temporarySolver = null;
             return Tuple.Create( result, temporarySolver );
         }
 
-        ConfigurationSolver( bool revertServices = false, bool revertPlugins = false )
+        ConfigurationSolver( YodiiEngine engine, bool revertServices = false, bool revertPlugins = false )
         {
+            _engine = engine;
             _services = new Dictionary<string, ServiceData>();
             _serviceFamilies = new List<ServiceData.ServiceFamily>();
             _plugins = new Dictionary<Guid, PluginData>();
@@ -165,7 +167,7 @@ namespace Yodii.Engine
             if( blockingPlugins != null || blockingServices != null )
             {
                 Step = ConfigurationSolverStep.StaticError;
-                return new YodiiEngineResult( _services, _plugins, blockingPlugins, blockingServices );
+                return new YodiiEngineResult( _services, _plugins, blockingPlugins, blockingServices, _engine );
             }
             Step = ConfigurationSolverStep.WaitingForDynamicResolution;
             return SuccessYodiiEngineResult.Default;
@@ -308,7 +310,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
         {
-            return new YodiiEngineResult( _services, _plugins, errors );
+            return new YodiiEngineResult( _services, _plugins, errors, _engine );
         }
 
         public override string ToString()
