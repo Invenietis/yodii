@@ -303,13 +303,13 @@
                             Value="true">
                             <Setter
                                 Property="Foreground"
-                                Value="Orange" />
+                                Value="#00FF00" />
                             <Setter
                                 Property="StrokeThickness"
                                 Value="2" />
                             <Setter
                                 Property="DashStyle"
-                                Value="Dot" />
+                                Value="Dash" />
                         </DataTrigger>
                     </Style.Triggers>
 
