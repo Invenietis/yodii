@@ -64,7 +64,7 @@ namespace Yodii.Engine
         internal Tuple<IYodiiEngineResult,ConfigurationSolver> StaticResolution( FinalConfiguration finalConfiguration )
         {
             Debug.Assert( IsRunning );
-            return ConfigurationSolver.CreateAndApplyStaticResolution( finalConfiguration, _discoveredInfo );
+            return ConfigurationSolver.CreateAndApplyStaticResolution( this, finalConfiguration, _discoveredInfo );
         }
 
         IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
@@ -158,7 +158,7 @@ namespace Yodii.Engine
         {
             if( !IsRunning )
             {
-                var r = ConfigurationSolver.CreateAndApplyStaticResolution( _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
                 if( !r.Item1.Success ) return r.Item1;
                 return DoDynamicResolution( r.Item2, null, null );
             }
@@ -172,7 +172,7 @@ namespace Yodii.Engine
 
             if( IsRunning )
             {
-                var r = ConfigurationSolver.CreateAndApplyStaticResolution( _manager.FinalConfiguration, info );
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, info );
                 if( !r.Item1.Success ) return r.Item1;
                 return DoDynamicResolution( r.Item2, null, null, () => DiscoveredInfo = info );
             }

@@ -95,7 +95,7 @@ namespace Yodii.Engine
             final.Add( item.ServiceOrPluginId, newStatus );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
-            if( !internalResult.Success ) return new YodiiEngineResult( internalResult );
+            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, _engine);
 
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
         }
@@ -106,7 +106,7 @@ namespace Yodii.Engine
             final.Add( newItem.ServiceOrPluginId, newItem.Status );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
-            if( !internalResult.Success ) return new YodiiEngineResult( internalResult );
+            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, _engine );
 
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ItemAdded, newItem ) );
         }
@@ -151,7 +151,7 @@ namespace Yodii.Engine
             RaiseConfigurationChanging( _currentEventArgs );
             if( _currentEventArgs.IsCanceled )
             {
-                return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ) );
+                return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ), _engine );
             }
             return null;
         }
