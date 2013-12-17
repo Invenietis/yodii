@@ -98,7 +98,7 @@ namespace Yodii.Engine
 
         public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
-            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( callerKey == null ) callerKey = String.Empty;
             if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
 
             YodiiCommand command = new YodiiCommand( callerKey, _pluginInfo.PluginFullName, true, impact, isPlugin: true );
@@ -107,7 +107,7 @@ namespace Yodii.Engine
 
         public IYodiiEngineResult Stop( string callerKey )
         {
-            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( callerKey == null ) callerKey = String.Empty;
             if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
 
             YodiiCommand command = new YodiiCommand( callerKey, _pluginInfo.PluginFullName, false, StartDependencyImpact.Unknown, isPlugin:true );

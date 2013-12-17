@@ -63,11 +63,12 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationManagerTests.cs" />
-    <Compile Include="ConfigurationSolverTests\ConfigurationSolverTests.Dynamic.cs" />
-    <Compile Include="ConfigurationSolverTests\ConfigurationSolverTests.Static.cs">
+    <Compile Include="ConfigurationSolverTests\DynamicConfigurationTests.cs" />
+    <Compile Include="ConfigurationSolverTests\StaticConfigurationTests.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ConfigurationSolverTests\CurrentFailure\CurrentFailureTests.cs" />
+    <Compile Include="DynamicTestExtensions.cs" />
     <Compile Include="Mocks\DiscoveredInfo.cs" />
     <Compile Include="Mocks\AssemblyInfo.cs" />
     <Compile Include="Mocks\MockInfoFactory.cs" />

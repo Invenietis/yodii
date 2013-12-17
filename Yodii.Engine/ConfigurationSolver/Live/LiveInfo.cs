@@ -117,9 +117,14 @@ namespace Yodii.Engine
             _services.Clear();
         }
 
-        public IYodiiEngineResult RevokeCaller( string callerKey )
+        /// <summary>
+        /// Cancels any start or stop made by this caller.
+        /// </summary>
+        /// <param name="callerKey">The caller key that identifies the caller. Null is considered to be the same as <see cref="String.Empty"/>.</param>
+        /// <returns>Since canceling commands may trigger a runtime error, this method must return a result.</returns>
+        public IYodiiEngineResult RevokeCaller( string callerKey = null )
         {
-            return _engine.RevokeYodiiCommandCaller( callerKey );
+            return _engine.RevokeYodiiCommandCaller( callerKey ?? String.Empty );
         }
     }
 }

@@ -20,14 +20,9 @@ namespace Yodii.Engine
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _currentSolver;
-
+        
         class YodiiCommandList : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
         {
-            public YodiiCommandList( IEnumerable<YodiiCommand> persistedCommands )
-            {
-                if( persistedCommands != null ) this.AddRange( persistedCommands );
-            }
-
             public void Merge( IReadOnlyList<YodiiCommand> newCommands )
             {
                 if( newCommands.Count == 0 )
@@ -51,13 +46,13 @@ namespace Yodii.Engine
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public YodiiEngine( IYodiiEngineHost host, IEnumerable<YodiiCommand> persistedCommands = null )
+        public YodiiEngine( IYodiiEngineHost host )
         {
             if( host == null ) throw new ArgumentNullException( "host" );
             _host = host;
             _discoveredInfo = EmptyDiscoveredInfo.Empty;
             _manager = new ConfigurationManager( this );
-            _yodiiCommands = new YodiiCommandList( persistedCommands );
+            _yodiiCommands = new YodiiCommandList();
             _liveInfo = new LiveInfo( this );
         }
 
@@ -149,15 +144,30 @@ namespace Yodii.Engine
             }
         }
 
-        public IYodiiEngineResult Start()
+        public IYodiiEngineResult Start( IEnumerable<YodiiCommand> persistedCommands = null )
         {
             return Start( false, false );
         }
 
-        public IYodiiEngineResult Start( bool revertServices, bool revertPlugins )
+        /// <summary>
+        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
+        /// </summary>
+        /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
+        /// <param name="revertPlugins">True to revert the list of the plugins (based on their <see cref="IPluginInfo.PluginFullName"/>).</param>
+        /// <returns>The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/>.</returns>
+        public IYodiiEngineResult StaticResolutionOnly( bool revertServices, bool revertPlugins )
+        {
+            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
+            return r.Item1;
+        }
+
+        public IYodiiEngineResult Start( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
         {
             if( !IsRunning )
             {
+                _yodiiCommands.Clear();
+                if( persistedCommands != null ) _yodiiCommands.AddRange( persistedCommands );
                 var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
                 if( !r.Item1.Success ) return r.Item1;
                 return DoDynamicResolution( r.Item2, null, null );
@@ -200,5 +210,6 @@ namespace Yodii.Engine
         {
             get { return _host; }
         }
+
     }
 }

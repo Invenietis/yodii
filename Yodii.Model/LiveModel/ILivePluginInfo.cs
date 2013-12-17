@@ -27,16 +27,17 @@ namespace Yodii.Model
         /// <summary>
         /// Attempts to start this plugin.
         /// </summary>
-        /// <param name="callerKey">Caller identifier of this method.</param>
+        /// <param name="callerKey">The caller key that identifies the caller. Null is considered to be the same as <see cref="String.Empty"/>.</param>
         /// <param name="impact">Dependency impact.</param>
-        /// <returns>True of the plugin was started, false otherwise.</returns>
-        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.Unknown );
+        /// <returns>Engine result.</returns>
+        IYodiiEngineResult Start( string callerKey = null, StartDependencyImpact impact = StartDependencyImpact.Unknown );
 
         /// <summary>
         /// Stops this plugin.
         /// </summary>
-        /// <param name="callerKey">Caller identifier of this method.</param>
-        IYodiiEngineResult Stop( string callerKey );
+        /// <param name="callerKey">The caller key that identifies the caller. Null is considered to be the same as <see cref="String.Empty"/>.</param>
+        /// <returns>Engine result.</returns>
+        IYodiiEngineResult Stop( string callerKey = null );
 
         /// <summary>
         /// Runtime plugin exception.

@@ -10,10 +10,10 @@ using Yodii.Engine.Tests.Mocks;
 namespace Yodii.Engine.Tests.ConfigurationSolverTests
 {
     [TestFixture]
-    partial class ConfigurationSolverTest
+    class StaticConfigurationTests
     {
         [Test]
-        public void ConfigurationSolverCreation001a()
+        public void Valid001a()
         {
             #region graph
             /**
@@ -37,27 +37,32 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
-            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( info );
-          
-            IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginA-1").PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginA-2").PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
-
-            engine.FullStart( res =>
+            YodiiEngine engine = CreateValid001a();
+            engine.FullStaticResolutionOnly( res =>
                 {
                     res.CheckSuccess();
                 } );
         }
 
+        internal static YodiiEngine CreateValid001a()
+        {
+            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
+            cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
+            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
+            cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
+            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Runnable );
+            cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
+            return engine;
+        }
+
         [Test]
-        public void ConfigurationSolverCreation001b()
+        public void Valid001b()
         {
             #region graph
             /**
@@ -81,6 +86,15 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
+            YodiiEngine engine = CreateValid001b();
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValid001b()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
@@ -88,18 +102,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Disabled);
-            cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Disabled );
+            cl.Items.Add( "ServiceAx", ConfigurationStatus.Disabled );
+            cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
             cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
-
-            engine.FullStart( res =>
-            {
-                res.CheckSuccess();
-            } );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation001c()
+        public void Invalid001c()
         {
             #region graph
             /**
@@ -129,17 +139,17 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create(); 
             cl.Items.Add( "ServiceB", ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
             {
-                res.CheckBlockingPluginsAre( "PluginA-2" );
+                res.CheckAllBlockingPluginsAre( "PluginA-2" );
                 res.CheckNoBlockingServices();
             } );
         }
 
         [Test]
-        public void ConfigurationSolverCreation001d()
+        public void Valid001d()
         {
             #region graph
             /**
@@ -163,22 +173,28 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
-            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( info );
+            YodiiEngine engine = CreateValid001d();
 
-            IConfigurationLayer cl = engine.Configuration.Layers.Create(); 
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
-
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
             } );
         }
 
+        internal static YodiiEngine CreateValid001d()
+        {
+            DiscoveredInfo info = MockInfoFactory.CreateGraph001();
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( info );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
+            return engine;
+        }
+
         [Test]
-        public void ConfigurationSolverCreation001e()
+        public void SetDiscoverdInfo()
         {
             #region graph
             /**
@@ -211,7 +227,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin("PluginAx-1").PluginId.ToString(), ConfigurationStatus.Running );
+            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Running );
 
             IYodiiEngineResult res = engine.Start();
 
@@ -247,7 +263,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
-        public void ConfigurationSolverCreation001g()
+        public void Invalid001g()
         {
             #region graph
             /**
@@ -277,18 +293,18 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
+            cl.Items.Add( "PluginB-1", ConfigurationStatus.Disabled );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                 {
-                    res.CheckBlockingPluginsAre( "PluginA-2" );
-                    res.CheckBlockingServicesAre( "ServiceB" );
+                    res.CheckAllBlockingPluginsAre( "PluginA-2" );
+                    res.CheckAllBlockingServicesAre( "ServiceB" );
                 } );
         }
 
         [Test]
-        public void ConfigurationSolverCreation001MinusPluginAx()
+        public void Invalid001MinusPluginAx()
         {
             #region graph
             /**
@@ -317,21 +333,21 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
             cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginA-1").PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginA-2").PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                 {
 
-                    res.CheckBlockingServicesAre( "ServiceAx" );
+                    res.CheckAllBlockingServicesAre( "ServiceAx" );
                     res.CheckNoBlockingPlugins();
                     res.CheckWantedConfigSolvedStatusIs( "PluginA-2", ConfigurationStatus.Runnable );
                 } );
         }
 
         [Test]
-        public void ConfigurationSolverCreation002a()
+        public void Valid002a()
         {
             #region graph
             /**
@@ -367,6 +383,15 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
+            YodiiEngine engine = CreateValid002a();
+            engine.FullStaticResolutionOnly( res =>
+                {
+                    res.CheckSuccess();
+                } );
+        }
+
+        internal static YodiiEngine CreateValid002a()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph002();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
@@ -376,20 +401,16 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
             cl.Items.Add( "ServiceAxx", ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginAxx-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin("PluginB-1").PluginId.ToString(), ConfigurationStatus.Runnable );
-
-            engine.FullStart( res =>
-                {
-                    res.CheckSuccess();
-                } );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginAxx-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation002b()
+        public void Valid002b()
         {
             #region graph
             /**
@@ -426,6 +447,16 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
+            YodiiEngine engine = CreateValid002b();
+
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValid002b()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph002();
 
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
@@ -433,18 +464,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Running );
-            cl.Items.Add( info.FindPlugin( "PluginAxx-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
-
-            engine.FullStart( res =>
-            {
-                res.CheckSuccess();
-            } );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Disabled );
+            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Running );
+            cl.Items.Add( "PluginAxx-1", ConfigurationStatus.Disabled );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation003a()
+        public void Valid003a()
         {
             #region graph
             /**
@@ -462,21 +489,27 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              *  +---------+
              */
             #endregion
+            YodiiEngine engine = CreateValid003a();
+
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValid003a()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Optional );
-
-            engine.FullStart( res =>
-            {
-                res.CheckSuccess();
-            } );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation003b()
+        public void Valid003b()
         {
             #region graph
             /**
@@ -495,21 +528,26 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
+            YodiiEngine engine = CreateValid003b();
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValid003b()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
-
-            engine.FullStart( res =>
-            {
-                res.CheckSuccess();
-            } );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation003c()
+        public void Valid003c()
         {
             #region graph
             /**
@@ -528,21 +566,26 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
+            YodiiEngine engine = CreateValid003c();
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValid003c()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-
-            engine.FullStart( res =>
-            {
-                res.CheckSuccess();
-            } );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation003d()
+        public void Valid003d()
         {
             #region graph
             /**
@@ -560,21 +603,27 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              *  +---------+
              */
             #endregion
+            YodiiEngine engine = CreateValid003d();
+
+            engine.FullStaticResolutionOnly( res =>
+                {
+                    res.CheckSuccess();
+                } );
+        }
+
+        internal static YodiiEngine CreateValid003d()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
-
-            engine.FullStart( res =>
-                {
-                    res.CheckSuccess();
-                } );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation003e()
+        public void Invalid003e()
         {
             #region graph
             /**
@@ -599,17 +648,17 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin("PluginA-1").PluginId.ToString(), ConfigurationStatus.Running );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                 {
-                    res.CheckBlockingPluginsAre( "PluginA-1" );
+                    res.CheckAllBlockingPluginsAre( "PluginA-1" );
                     res.CheckWantedConfigSolvedStatusIs( "PluginA-1", ConfigurationStatus.Running );
                 } );
         }
 
         [Test]
-        public void ConfigurationSolverCreation003f()
+        public void Valid003f()
         {
             #region graph
             /**
@@ -628,23 +677,29 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
+            YodiiEngine engine = CreateValid003f();
+
+            engine.FullStaticResolutionOnly( res =>
+               {
+                   res.CheckSuccess();
+               } );
+        }
+
+        internal static YodiiEngine CreateValid003f()
+        {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Runnable);
-            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-
-            engine.FullStart( res =>
-               {
-                   Assert.That( res.Success, Is.True );
-               } );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCreation003MinusPluginA2()
+        public void Invalid003MinusPluginA2()
         {
             #region graph
             /**
@@ -671,16 +726,16 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Running );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckBlockingPluginsAre( "PluginA-1" );
+                   res.CheckAllBlockingPluginsAre( "PluginA-1" );
                } );
         }
 
         [Test]
-        public void ConfigurationSolverCreation004a()
+        public void Invalid004a()
         {
             #region graph
             /**
@@ -715,14 +770,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckBlockingServicesAre( "ServiceAx1|ServiceAx2" );
+                   res.CheckAllBlockingServicesAre( "ServiceAx1|ServiceAx2" );
                } );
         }
 
         [Test]
-        public void ConfigurationSolverCreation004b()
+        public void Invalid004b()
         {
             #region graph
             /**
@@ -757,14 +812,14 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckBlockingServicesAre( "ServiceAx1|ServiceAx2" );
+                   res.CheckAllBlockingServicesAre( "ServiceAx1|ServiceAx2" );
                } );
         }
 
         [Test]
-        public void ConfigurationSolverCommonReferencesWork()
+        public void InvalidCommonReferences1()
         {
             #region graph
                 /*
@@ -815,14 +870,15 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                {
-                   Assert.That( res.StaticFailureResult.BlockingServices.Count == 1 );
+                   res.CheckAllBlockingServicesAre( "Service1 | Service2" );
+                   res.CheckNoBlockingPlugins();
                } );
         }
 
         [Test]
-        public void ConfigurationSolverCommonReferencesWork2()
+        public void InvalidCommonReferences2()
         {
             #region graph
             /*
@@ -878,17 +934,17 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
             cl.Items.Add( "AnotherBlocking", ConfigurationStatus.Runnable );
-            cl.Items.Add( disabledForBlocking.PluginId.ToString(), ConfigurationStatus.Disabled );
+            cl.Items.Add( "DisabledForBlocking", ConfigurationStatus.Disabled );
 
-            engine.FullStart( res =>
+            engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckBlockingServicesAre( "Service1 | Service2, AnotherBlocking" );
+                   res.CheckAllBlockingServicesAre( "Service1 | Service2, AnotherBlocking" );
                    res.CheckNoBlockingPlugins();
                } );
         }
 
         [Test]
-        public void ConfigurationSolverCommonReferencesWork3()
+        public void ValidCommonReferences3()
         {
             #region graph
             /*
@@ -920,39 +976,45 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *       |   +---+-------+   |          +----+------+  |       |       |                            |         |           
             *       |   |Service3.1 |   |          |Service3.2 |  |       |    +--+--------+             +-----+-----+   |       
             *       +-->|Optional   |   |          |Optional   |  +-------|--->|Service4.1 |             |Service4.2 |   |       
-            *           +-----------+   |          +-----+-----+          |    |Optional   |             |Optional   |<--+       
-            *               |           |                |                |    +-----------+             +-----+-----+     
-            *               |           |                |                |        |                           |           
-            *           +---+-------+   +--------->+-----+-----+          |        |                           |
-            *           |Service3.3 |              |Service3.4 |          | +---+-------+              +----+------+  
-            *           |Optional   |              |Optional   |          +>|Service4.3 |              |Service4.4 |  
-            *           +--+--------+              +-----------+            |Optional   |              |Optional   |  
-            *              |                            |                   +--+--------+              +-----------+ 
-            *              |                            |                      |                            |
-            *              |                            |                      |                            |
-            *           +--+-----+                  +---+----+                 |                            |
-            *           |Plugin6 |                  |Plugin7 |              +--+-----+                  +---+----+
-            *           |Optional|                  |Optional|              |Plugin8 |                  |Plugin9 |
-            *           +--------+                  +--------+              |Optional|                  |Optional|
-            *                                                               +--------+                  +--------+
+             *          +-----------+   |          +-----+-----+          |    |Optional   |             |Optional   |<--+       
+             *              |           |                |                |    +-----------+             +-----+-----+     
+             *              |           |                |                |        |                           |           
+             *          +---+-------+   +--------->+-----+-----+          |        |                           |
+             *          |Service3.3 |              |Service3.4 |          | +---+-------+              +----+------+  
+             *          |Optional   |              |Optional   |          +>|Service4.3 |              |Service4.4 |  
+             *          +--+--------+              +-----------+            |Optional   |              |Optional   |  
+             *             |                            |                   +--+--------+              +-----------+ 
+             *             |                            |                      |                            |
+             *             |                            |                      |                            |
+             *          +--+-----+                  +---+----+                 |                            |
+             *          |Plugin5 |                  |Plugin6 |              +--+-----+                  +---+----+
+             *          |Optional|                  |Optional|              |Plugin7 |                  |Plugin8 |
+             *          +--------+                  +--------+              |Optional|                  |Optional|
+             *                                                              +--------+                  +--------+
             */
             #endregion
 
+            YodiiEngine engine = CreateValidCommonReferences3();
+
+            engine.FullStaticResolutionOnly( res =>
+                {
+                    res.CheckSuccess();
+                } );
+        }
+
+        internal static YodiiEngine CreateValidCommonReferences3()
+        {
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005c() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
             cl.Items.Add( "Service2", ConfigurationStatus.Running );
-
-            engine.FullStart( res =>
-                {
-                    res.CheckSuccess();
-                } );
+            return engine;
         }
 
         [Test]
-        public void ConfigurationSolverCommonReferencesWork4()
+        public void ValidCommonReferences4()
         {
             #region graph
             /*
@@ -999,21 +1061,21 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *                                                        
             */
             #endregion
-            SuccessfulConfigurationSolverCommonReferencesWork4();
-        }
+            
+            var e = CreateValidCommonReferences4();
+            e.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+       }
 
-        static YodiiEngine SuccessfulConfigurationSolverCommonReferencesWork4()
+        internal static YodiiEngine CreateValidCommonReferences4()
         {
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005d() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "Service1", ConfigurationStatus.Running );
-
-            engine.FullStart( res =>
-            {
-                res.CheckSuccess();
-            } );
 
             return engine;
         }

@@ -108,7 +108,7 @@ namespace Yodii.Engine
             if( DynPropagationIsUseless ) return null;
             Debug.Assert( _propagation != null );
             if( _dynPropagation == null ) _dynPropagation = new DynamicPropagation( _propagation );
-            else _dynPropagation.Refresh();
+            _dynPropagation.Refresh();
             return _dynPropagation;
         }
     }

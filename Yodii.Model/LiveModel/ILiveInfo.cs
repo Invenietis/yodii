@@ -43,9 +43,9 @@ namespace Yodii.Model
         /// <summary>
         /// Cancels any start or stop made by this caller.
         /// </summary>
-        /// <param name="callerKey">The caller key, used to identify the caller. Must not be null.</param>
+        /// <param name="callerKey">The caller key that identifies the caller. Null is considered to be the same as <see cref="String.Empty"/>.</param>
         /// <returns>Since canceling commands may trigger a runtime error, this method must return a result.</returns>
-        IYodiiEngineResult RevokeCaller( string callerKey );
+        IYodiiEngineResult RevokeCaller( string callerKey = null );
 
     }
 

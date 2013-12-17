@@ -45,10 +45,10 @@ namespace Yodii.Model
         /// and begins monitoring configuration for changes.
         /// </summary>
         /// <returns>Engine start result.</returns>
-        IYodiiEngineResult Start();
+        IYodiiEngineResult Start( IEnumerable<YodiiCommand> persistedCommands = null );
 
         /// <summary>
-        /// Stops the engine, and halts all configuration monitoring.
+        /// Stops the engine: stops monitoring configuration.
         /// </summary>
         void Stop();
         

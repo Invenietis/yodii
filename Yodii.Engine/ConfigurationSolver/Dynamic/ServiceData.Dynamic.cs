@@ -21,6 +21,7 @@ namespace Yodii.Engine
         /// </summary>
         public void DynamicResetState()
         {
+            _dynPropagation = null;
             _nbAllAvailablePlugins = 0;
             _dynFirstImpact = StartDependencyImpact.Unknown;
             switch( FinalConfigSolvedStatus )
@@ -43,6 +44,12 @@ namespace Yodii.Engine
                         _dynamicStatus = null;
                         break;
                     }
+            }
+            ServiceData s = FirstSpecialization;
+            while( s != null )
+            {
+                s.DynamicResetState();
+                s = s.NextSpecialization;
             }
         }
 
@@ -288,6 +295,7 @@ namespace Yodii.Engine
                 _dynamicStatus = RunningStatus.Running;
                 _dynamicReason = ServiceRunningStatusReason.StartedByPlugin;
             }
+            Debug.Assert( runningPlugin.DynamicStatus.HasValue && runningPlugin.DynamicStatus.Value >= RunningStatus.Running );
             Family.DynamicSetRunningPlugin( runningPlugin );
         }
 

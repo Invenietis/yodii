@@ -191,7 +191,7 @@ namespace Yodii.Engine
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
         {
-            foreach( var s in _services.Values ) s.DynamicResetState();
+            foreach( var f in _serviceFamilies ) f.DynamicResetState();
             foreach( var p in _plugins.Values ) p.DynamicResetState();
             foreach( var f in _serviceFamilies )
             {
@@ -219,7 +219,12 @@ namespace Yodii.Engine
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision();
+                if( !f.Root.Disabled ) f.DynamicFinalDecision( true );
+            }
+            foreach( var f in _serviceFamilies )
+            {
+                Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
+                if( !f.Root.Disabled ) f.DynamicFinalDecision( false );
             }
 
             List<IPluginInfo> disabled = new List<IPluginInfo>();

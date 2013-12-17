@@ -32,6 +32,7 @@ namespace Yodii.Engine
                 {
                     if( _runningPlugin != null )
                     {
+                        Debug.Assert( _runningPlugin.DynamicStatus.HasValue && _runningPlugin.DynamicStatus.Value == RunningStatus.RunningLocked );
                         DynamicSetRunningPlugin( _runningPlugin );
                         Debug.Assert( _dynRunningService == _runningPlugin.Service );
                     }
@@ -39,7 +40,7 @@ namespace Yodii.Engine
                     {
                         if( _runningService != null )
                         {
-                            Debug.Assert( _runningService._dynamicStatus != null && _runningService.DynamicStatus.Value == RunningStatus.RunningLocked );
+                            Debug.Assert( _runningService.DynamicStatus.HasValue && _runningService.DynamicStatus.Value == RunningStatus.RunningLocked );
                             DynamicSetRunningService( _runningService, ServiceRunningStatusReason.None );
                         }
                         Root.OnAllPluginsDynamicStateInitialized();
@@ -129,11 +130,9 @@ namespace Yodii.Engine
                     g = g.Generalization;
                     if( prevRunningService != null && g == prevRunningService.Generalization ) break;
                 }
-
-
             }
 
-            internal void DynamicFinalDecision()
+            internal void DynamicFinalDecision( bool runningOnly )
             {
                 Debug.Assert( !Root.Disabled );
                 Debug.Assert( _dynRunningPlugin == null 
@@ -155,7 +154,7 @@ namespace Yodii.Engine
                                             && Root.FindFirstPluginData( p => p != _dynRunningPlugin && p.DynamicStatus.Value >= RunningStatus.Running ) == null,
                                             "All plugins are stopped except the running plugin." );
                     }
-                    else                    
+                    else if( !runningOnly )
                     {
                         Debug.Assert( startPoint.DynamicStatus == null || startPoint.DynamicStatus.Value <= RunningStatus.Stopped );
                         if( startPoint.DynamicStatus == null ) startPoint.DynamicStopBy( ServiceRunningStatusReason.StoppedByFinalDecision );
@@ -163,7 +162,12 @@ namespace Yodii.Engine
                 }
             }
 
-
+            internal void DynamicResetState()
+            {
+                _dynRunningService = null;
+                _dynRunningPlugin = null;
+                Root.DynamicResetState();
+            }
         }
     }
 }
