@@ -54,10 +54,10 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
             cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginA-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Runnable );
-            cl.Items.Add( info.FindPlugin( "PluginB-1" ).PluginId.ToString(), ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
             return engine;
         }
 
@@ -103,8 +103,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
             cl.Items.Add( "ServiceAx", ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin( "PluginAx-1" ).PluginId.ToString(), ConfigurationStatus.Disabled );
-            cl.Items.Add( info.FindPlugin( "PluginA-2" ).PluginId.ToString(), ConfigurationStatus.Running );
+            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Disabled );
+            cl.Items.Add( "PluginA-2", ConfigurationStatus.Running );
             return engine;
         }
 

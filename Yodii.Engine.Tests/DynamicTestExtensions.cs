@@ -13,9 +13,6 @@ namespace Yodii.Engine.Tests
         public static void FullStart( this YodiiEngine @this, Action<YodiiEngine,IYodiiEngineResult> tests )
         {
             IYodiiEngineResult result;
-            result = @this.Start( true, true );
-            tests( @this, result );
-            @this.Stop();
             result = @this.Start( false, false );
             tests( @this, result );
             @this.Stop();
@@ -23,6 +20,9 @@ namespace Yodii.Engine.Tests
             tests( @this, result );
             @this.Stop();
             result = @this.Start( false, true );
+            tests( @this, result );
+            @this.Stop();
+            result = @this.Start( true, true );
             tests( @this, result );
         }
 
