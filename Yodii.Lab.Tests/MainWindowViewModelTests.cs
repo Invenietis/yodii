@@ -226,7 +226,7 @@ namespace Yodii.Lab.Tests
                 TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
             }
 
-            TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.ConfigurationManager, _vm2.LabState.Engine.ConfigurationManager );
+            TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
         }
 
         internal static MainWindowViewModel CreateViewModelWithGraph001()
@@ -306,11 +306,11 @@ namespace Yodii.Lab.Tests
             Assert.That( serviceAx.Implementations.Count == 1 );
 
             // Set configuration
-            var cLayer1 = vm.LabState.Engine.ConfigurationManager.Layers.Create( "Test layer" );
+            var cLayer1 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer" );
             var result = cLayer1.Items.Add( serviceA.ServiceFullName, ConfigurationStatus.Running, "Test reason" );
             Assert.That( result.Success );
 
-            var cLayer2 = vm.LabState.Engine.ConfigurationManager.Layers.Create( "Test layer 2" );
+            var cLayer2 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer 2" );
             result = cLayer2.Items.Add( pluginA2.PluginId.ToString(), ConfigurationStatus.Running, "Test reason 2" );
             Assert.That( result.Success );
 
@@ -324,7 +324,7 @@ namespace Yodii.Lab.Tests
                 TestExtensions.AssertPluginEquivalence( pi, pi, true );
             }
 
-            TestExtensions.AssertManagerEquivalence( vm.LabState.Engine.ConfigurationManager, vm.LabState.Engine.ConfigurationManager );
+            TestExtensions.AssertManagerEquivalence( vm.LabState.Engine.Configuration, vm.LabState.Engine.Configuration );
 
             return vm;
         }

@@ -63,7 +63,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConfigurationManagerTests.cs" />
-    <Compile Include="ConfigurationSolverTests\ConfigurationSolver.Static.cs">
+    <Compile Include="ConfigurationSolverTests\ConfigurationSolverTests.Dynamic.cs" />
+    <Compile Include="ConfigurationSolverTests\ConfigurationSolverTests.Static.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ConfigurationSolverTests\CurrentFailure\CurrentFailureTests.cs" />

@@ -102,7 +102,7 @@ namespace Yodii.Engine
             }
         }
 
-        public IConfigurationManager ConfigurationManager
+        public IConfigurationManager Configuration
         {
             get { return _manager; }
         }

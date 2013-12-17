@@ -80,10 +80,10 @@ namespace Yodii.Engine.Tests
         {
             foreach( var segment in expected )
             {
-                string[] opt = segment.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                var opt = segment.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).Select( s => s.Trim() );
                 if( !actual.Any( s => opt.Contains( s ) ) ) Assert.Fail( String.Format( "Expected '{0}' but it is missing in '{1}'.", segment, String.Join( ", ", actual ) ) );
             }
-            if( expected.Length < actual.Count() ) Assert.Fail( String.Format( "Expected {0} items in '{1}'.", expected.Length, String.Join( ", ", actual ) ) );
+            if( expected.Length < actual.Count() ) Assert.Fail( String.Format( "Expected '{0}' but was '{1}'.", String.Join( ", ", expected ), String.Join( ", ", actual ) ) );
         }
 
 

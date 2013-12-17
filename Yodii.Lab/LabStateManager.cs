@@ -345,9 +345,9 @@ namespace Yodii.Lab
             _serviceInfos.Clear();
 
             // Clear configuration manager
-            foreach( var l in Engine.ConfigurationManager.Layers.ToList() )
+            foreach( var l in Engine.Configuration.Layers.ToList() )
             {
-                var result = Engine.ConfigurationManager.Layers.Remove( l );
+                var result = Engine.Configuration.Layers.Remove( l );
                 Debug.Assert( result.Success );
             }
         }

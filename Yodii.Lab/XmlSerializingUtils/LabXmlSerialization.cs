@@ -105,9 +105,9 @@ namespace Yodii.Lab
             }
 
             // Clear configuration manager
-            foreach( var l in labState.Engine.ConfigurationManager.Layers.ToList() )
+            foreach( var l in labState.Engine.Configuration.Layers.ToList() )
             {
-                var result = labState.Engine.ConfigurationManager.Layers.Remove( l );
+                var result = labState.Engine.Configuration.Layers.Remove( l );
                 Debug.Assert( result.Success );
             }
 
@@ -127,7 +127,7 @@ namespace Yodii.Lab
             // Load configuration manager data
             foreach( PersistedConfigurationLayer l in persistentState.ConfigurationLayers )
             {
-                IConfigurationLayer newLayer = labState.Engine.ConfigurationManager.Layers.Create( l.LayerName );
+                IConfigurationLayer newLayer = labState.Engine.Configuration.Layers.Create( l.LayerName );
 
                 foreach( PersistedConfigurationItem item in l.Items )
                 {
@@ -148,7 +148,7 @@ namespace Yodii.Lab
             PersistedLabState persistedState = new PersistedLabState();
 
             // Persist layer
-            foreach( IConfigurationLayer l in runningState.Engine.ConfigurationManager.Layers)
+            foreach( IConfigurationLayer l in runningState.Engine.Configuration.Layers)
             {
                 PersistedConfigurationLayer persistedLayer = new PersistedConfigurationLayer();
                 persistedState.ConfigurationLayers.Add( persistedLayer );

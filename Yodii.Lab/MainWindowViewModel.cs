@@ -77,7 +77,7 @@ namespace Yodii.Lab
 
             _activityMonitor.OpenTrace().Send( "Hello world" );
 
-            _graph = new YodiiGraph( _engine.ConfigurationManager, _labStateManager );
+            _graph = new YodiiGraph( _engine.Configuration, _labStateManager );
 
             _removeSelectedVertexCommand = new RelayCommand( RemoveSelectedVertexExecute, CanEditSelectedVertex );
             _toggleEngineCommand = new RelayCommand( ToggleEngineExecute );
@@ -509,7 +509,7 @@ namespace Yodii.Lab
         {
             get
             {
-                return _engine.ConfigurationManager;
+                return _engine.Configuration;
             }
         }
 

@@ -23,7 +23,7 @@ namespace Yodii.Model
         /// <summary>
         /// Configuration manager.
         /// </summary>
-        IConfigurationManager ConfigurationManager { get; }
+        IConfigurationManager Configuration { get; }
         
         /// <summary>
         /// Currently active <see cref="YodiiCommand"/> on the engine.

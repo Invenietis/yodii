@@ -20,7 +20,7 @@ namespace Yodii.Engine.Tests
         {
             YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
 
-            IConfigurationLayer layer = e.ConfigurationManager.Layers.Create( "TestConfig" );
+            IConfigurationLayer layer = e.Configuration.Layers.Create( "TestConfig" );
             Assert.That( layer.Items.Count == 0 );
             Assert.That( layer.LayerName == "TestConfig" );
 
@@ -59,7 +59,7 @@ namespace Yodii.Engine.Tests
         public void LayerAddPrecedenceTest()
         {
             var engine = new YodiiEngine( new YodiiEngineHostMock() );
-            IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "TestConfig" );
+            IConfigurationLayer layer = engine.Configuration.Layers.Create( "TestConfig" );
 
             IYodiiEngineResult result;
 
@@ -140,7 +140,7 @@ namespace Yodii.Engine.Tests
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
-            engine.ConfigurationManager.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
+            engine.Configuration.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
             {
                 Assert.That( e.IsCanceled == false, "Configuration manager does not cancel by default." );
                 Assert.That( e.FinalConfiguration != null, "Proposed FinalConfiguration exists." );
@@ -148,7 +148,7 @@ namespace Yodii.Engine.Tests
                 managerChangingCount++;
             };
 
-            engine.ConfigurationManager.ConfigurationChanged += delegate( object sender, ConfigurationChangedEventArgs e )
+            engine.Configuration.ConfigurationChanged += delegate( object sender, ConfigurationChangedEventArgs e )
             {
                 Assert.That( e.FinalConfiguration != null, "FinalConfiguration exists." );
 
@@ -156,7 +156,7 @@ namespace Yodii.Engine.Tests
             };
 
             IYodiiEngineResult result;
-            IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "BaseConfig" );
+            IConfigurationLayer layer = engine.Configuration.Layers.Create( "BaseConfig" );
 
             result = layer.Items.Add( "Yodii.ManagerService", ConfigurationStatus.Runnable );
             Assert.That( result.Success, Is.True );
@@ -166,7 +166,7 @@ namespace Yodii.Engine.Tests
             Assert.That( managerChangingCount == 2 );
             Assert.That( managerChangedCount == 2 );
 
-            Assert.That( engine.ConfigurationManager.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
+            Assert.That( engine.Configuration.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
         }
 
         [Test]

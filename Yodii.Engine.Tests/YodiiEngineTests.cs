@@ -21,7 +21,7 @@ namespace Yodii.Engine.Tests
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             Assert.That( engine.Host, Is.Not.Null );
             Assert.That( engine.IsRunning, Is.False );
-            Assert.That( engine.ConfigurationManager, Is.Not.Null );
+            Assert.That( engine.Configuration, Is.Not.Null );
         }
 
         [Test]
