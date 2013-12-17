@@ -27,7 +27,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Collection of mock IPluginInfos.
         /// </summary>
-        readonly CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;
+        readonly CKObservableSortedArrayKeyList<PluginInfo, string> _pluginInfos;
 
         /// <summary>
         /// Collection of lab service wrappers.
@@ -68,10 +68,10 @@ namespace Yodii.Lab
             Debug.Assert( _engine.IsRunning == false );
 
             _serviceInfos = new CKObservableSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
-            _pluginInfos = new CKObservableSortedArrayKeyList<PluginInfo, Guid>( p => p.PluginId, false );
+            _pluginInfos = new CKObservableSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, false );
 
             _labServiceInfos = new CKObservableSortedArrayKeyList<LabServiceInfo, ServiceInfo>( s => s.ServiceInfo, ( x, y ) => String.CompareOrdinal( x.ServiceFullName, y.ServiceFullName ), false );
-            _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginId.ToString(), y.PluginId.ToString() ), false );
+            _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginFullName, y.PluginFullName ), false );
 
             _runningPlugins = new ObservableCollection<IPluginInfo>();
         }
@@ -186,6 +186,9 @@ namespace Yodii.Lab
             get { return _labPluginInfos; }
         }
 
+        /// <summary>
+        /// Currently running plugins, in this fake host.
+        /// </summary>
         public ObservableCollection<IPluginInfo> RunningPlugins
         {
             // TODO: Make it read-only
@@ -225,14 +228,8 @@ namespace Yodii.Lab
             else if( serviceOrPluginInfo is PluginInfo )
             {
                 PluginInfo plugin = serviceOrPluginInfo as PluginInfo;
-                if( String.IsNullOrWhiteSpace( plugin.PluginFullName ) )
-                {
-                    return String.Format( "Plugin: Unnamed plugin ({0})", plugin.PluginId.ToString() );
-                }
-                else
-                {
-                    return String.Format( "Plugin: {0}", plugin.PluginFullName );
-                }
+                return String.Format( "Plugin: {0}", plugin.PluginFullName );
+
             }
             else
             {
@@ -243,45 +240,26 @@ namespace Yodii.Lab
         /// <summary>
         /// Returns a descriptive of given service or plugin ID, provided it exists in our collections.
         /// </summary>
-        /// <param name="serviceOrPluginId">String of a Plugin ID (GUID) or Service ID (Anything else)</param>
+        /// <param name="serviceOrPluginId">Plugin or service name.</param>
         /// <returns>Descriptive of given service or plugin ID</returns>
         public string GetDescriptionOfServiceOrPluginId( string serviceOrPluginId )
         {
-            Guid pluginGuid;
-            bool isPlugin = Guid.TryParse( serviceOrPluginId, out pluginGuid );
+            bool isPlugin = false;
+            bool isService = false;
+
+            var matchingPlugin = _pluginInfos.GetByKey( serviceOrPluginId, out isPlugin );
+            var matchingService = _serviceInfos.GetByKey( serviceOrPluginId, out isService );
 
             if( isPlugin )
             {
-                PluginInfo p = PluginInfos.Where( x => x.PluginId == pluginGuid ).FirstOrDefault();
-                if( p != null )
-                {
-                    if( String.IsNullOrWhiteSpace( p.PluginFullName ) )
-                    {
-                        return String.Format( "Plugin: Unnamed plugin ({0})", pluginGuid.ToString() );
-                    }
-                    else
-                    {
-                        return String.Format( "Plugin: {0}", p.PluginFullName );
-                    }
-                }
-                else
-                {
-                    return String.Format( "Plugin: Unknown ({0})", pluginGuid.ToString() );
-                }
+                return String.Format( "Plugin: {0}", matchingPlugin.PluginFullName );
             }
-            else
+            else if( isService )
             {
-                ServiceInfo s = ServiceInfos.Where( x => x.ServiceFullName == serviceOrPluginId ).FirstOrDefault();
-
-                if( s != null )
-                {
-                    return String.Format( "Service: {0}", serviceOrPluginId );
-                }
-                else
-                {
-                    return String.Format( "Service: Unknown ({0})", serviceOrPluginId );
-                }
+                return String.Format( "Service: {0}", matchingService.ServiceFullName );
             }
+
+            return "Unknown plugin or service.";
         }
 
         #region IYodiiEngineHost Members
@@ -294,7 +272,7 @@ namespace Yodii.Lab
             Console.WriteLine( "Disabling:" );
             foreach( var plugin in toDisable )
             {
-                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
                 if( _runningPlugins.Contains( plugin ) )
                 {
                     _runningPlugins.Remove( plugin );
@@ -352,6 +330,15 @@ namespace Yodii.Lab
             }
         }
 
+        internal bool IsService( string serviceFullName )
+        {
+            return _serviceInfos.Contains( serviceFullName );
+        }
+
+        internal bool IsPlugin( string pluginFullName )
+        {
+            return _pluginInfos.Contains( pluginFullName );
+        }
 
         /// <summary>
         /// Creates a new named service, which specializes another service.
@@ -383,23 +370,23 @@ namespace Yodii.Lab
         /// <summary>
         /// Creates a new named plugin, which implements an existing service.
         /// </summary>
-        /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName = null, ServiceInfo service = null )
+        internal PluginInfo CreateNewPlugin( string pluginName, ServiceInfo service = null )
         {
+            Debug.Assert( !String.IsNullOrWhiteSpace( pluginName ) );
+
             if( _engine.IsRunning )
             {
                 throw new InvalidOperationException( "Cannot create Plugin while Engine is running." );
             }
 
-            Debug.Assert( pluginGuid != null );
             if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
-            PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
+            PluginInfo plugin = new PluginInfo( pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
 
-            _pluginInfos.Add( plugin );
+            _pluginInfos.Add( plugin ); // Throws on duplicate
 
             CreateLabPlugin( plugin );
 

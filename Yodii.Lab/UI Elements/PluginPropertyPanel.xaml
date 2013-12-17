@@ -66,26 +66,19 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
-                    Grid.Row="0">GUID</TextBlock>
+                    Grid.Row="0">Name</TextBlock>
                 <TextBlock
-                    Grid.Row="1">Name</TextBlock>
+                    Grid.Row="1">Service</TextBlock>
                 <TextBlock
-                    Grid.Row="2">Service</TextBlock>
-                <TextBlock
-                    Grid.Row="3">References</TextBlock>
+                    Grid.Row="2">References</TextBlock>
 
                 <TextBox
                     Grid.Column="1"
                     Grid.Row="0"
-                    Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}"
-                    IsEnabled="False" />
-                <TextBox
-                    Grid.Column="1"
-                    Grid.Row="1"
                     Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
                 <DockPanel
                     Grid.Column="1"
-                    Grid.Row="2">
+                    Grid.Row="1">
                     <Button
                         Style="{StaticResource RemoveButtonStyle}"
                         DockPanel.Dock="Right"
@@ -103,7 +96,7 @@
                 </DockPanel>
                 <StackPanel
                     Grid.Column="1"
-                    Grid.Row="3">
+                    Grid.Row="2">
                     <ItemsControl
                         ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>

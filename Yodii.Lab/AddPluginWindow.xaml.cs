@@ -17,15 +17,12 @@ namespace Yodii.Lab
         readonly Dictionary<IServiceInfo,DependencyRequirement> _serviceReferences; // TODO
 
         string _pluginName;
-        string _pluginGuidText;
         IServiceInfo _service;
 
         public AddPluginWindow( ICKObservableReadOnlyCollection<IServiceInfo> availableServices, IServiceInfo selectedService = null )
         {
             _serviceReferences = new Dictionary<IServiceInfo, DependencyRequirement>();
             AvailableServices = availableServices;
-
-            NewPluginGuidText = Guid.NewGuid().ToString();
 
             if( selectedService != null && availableServices.Count > 0 )
             {
@@ -65,19 +62,6 @@ namespace Yodii.Lab
             }
         }
 
-        public string NewPluginGuidText
-        {
-            get { return _pluginGuidText; }
-            set
-            {
-                if( value != _pluginGuidText )
-                {
-                    _pluginGuidText = value;
-                    RaisePropertyChanged( "NewPluginGuidText" );
-                }
-            }
-        }
-
         public IServiceInfo SelectedService
         {
             get { return _service; }
@@ -92,42 +76,28 @@ namespace Yodii.Lab
             }
         }
 
-
         #endregion Properties
 
         private void CreateButton_Click( object sender, RoutedEventArgs e )
         {
-            Guid newGuid;
-
-            if( !Guid.TryParse( NewPluginGuidText, out newGuid ) )
-            {
-                var mbResult = MessageBox.Show( "Invalid GUID.\nPress OK to generate a random one.", "Invalid GUID", MessageBoxButton.OKCancel, MessageBoxImage.Stop );
-                if( mbResult == MessageBoxResult.OK )
-                {
-                    NewPluginGuidText = Guid.NewGuid().ToString();
-                }
-                return; // StopByCommand here on wrong GUID.
-            }
-
             IServiceInfo service = SelectedService;
             if( !HasService ) service = null;
 
             string newPluginName = NewPluginName;
             if( newPluginName == null ) newPluginName = String.Empty;
 
-            if( RaiseNewPlugin( newGuid, newPluginName, service, _serviceReferences ) )
+            if( RaiseNewPlugin( newPluginName, service, _serviceReferences ) )
             {
                 this.Close();
             }
         }
 
-        private bool RaiseNewPlugin( Guid newGuid, string newPluginName, IServiceInfo service, Dictionary<IServiceInfo, DependencyRequirement> serviceReferences )
+        private bool RaiseNewPlugin( string newPluginName, IServiceInfo service, Dictionary<IServiceInfo, DependencyRequirement> serviceReferences )
         {
             if( NewPluginCreated != null )
             {
                 NewPluginEventArgs args = new NewPluginEventArgs()
                 {
-                    PluginId = newGuid,
                     PluginName = newPluginName,
                     Service = service,
                     ServiceReferences = serviceReferences
@@ -182,7 +152,6 @@ namespace Yodii.Lab
 
     internal class NewPluginEventArgs : EventArgs
     {
-        public Guid PluginId { get; internal set; }
         public string PluginName { get; internal set; }
         public IServiceInfo Service { get; internal set; }
 
