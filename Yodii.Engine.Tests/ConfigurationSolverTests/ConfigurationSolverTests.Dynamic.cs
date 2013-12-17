@@ -59,6 +59,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             YodiiEngine e = SuccessfulConfigurationSolverCommonReferencesWork4();
             e.LiveInfo.FindPlugin( "Plugin4" ).Start("toto", StartDependencyImpact.Minimal);
+            e.LiveInfo.FindPlugin( "Plugin1" ).Start( "toto", StartDependencyImpact.Minimal );
         }
     }
 }
