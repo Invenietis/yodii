@@ -24,11 +24,11 @@ namespace Yodii.Engine
 
         ServiceData FindExistingService( string serviceFullName );
         
-        PluginData FindExistingPlugin( string pluginId );
+        PluginData FindExistingPlugin( string pluginFullName );
         
         ServiceData FindService( string serviceFullName );
-        
-        PluginData FindPlugin( string pluginId );
+
+        PluginData FindPlugin( string pluginFullName );
         
         IEnumerable<ServiceData> AllServices { get; }
         

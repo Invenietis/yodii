@@ -12,26 +12,26 @@ namespace Yodii.Engine
 {
     public class ConfigurationItem : IConfigurationItem
     {
-        readonly string _serviceOrPluginId;
+        readonly string _serviceOrPluginFullName;
         readonly ConfigurationLayer _owner;
         
         ConfigurationStatus _status;
         string _statusReason;
 
-        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginId, ConfigurationStatus initialStatus, string initialStatusReason = "" )
+        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, string initialStatusReason = "" )
         {
-            Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginId ) );
+            Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
             Debug.Assert( configurationLayer != null );
             Debug.Assert( initialStatusReason != null );
             _owner = configurationLayer;
-            _serviceOrPluginId = serviceOrPluginId;
+            _serviceOrPluginFullName = serviceOrPluginFullName;
             _status = initialStatus;
             _statusReason = initialStatusReason;
         }
 
-        public string ServiceOrPluginId
+        public string ServiceOrPluginFullName
         {
-            get { return _serviceOrPluginId; }
+            get { return _serviceOrPluginFullName; }
         }
 
         public IConfigurationLayer Layer

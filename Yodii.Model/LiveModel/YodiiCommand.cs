@@ -56,19 +56,19 @@ namespace Yodii.Model
         /// <param name="callerKey">Calling object identifier.</param>
         /// <param name="start">True to start the plugin, false to stop the plugin.</param>
         /// <param name="impact">Range of impact on the plugin's dependencies.</param>
-        /// <param name="serviceOrPluginId">Plugin ID to act on.</param>
+        /// <param name="serviceOrPluginFullName">Plugin ID to act on.</param>
         /// <param name="isPlugin">Set to true if command is for a plugin. False for a service.</param>
-        public YodiiCommand( string callerKey, string serviceOrPluginId, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown, bool isPlugin = false )
+        public YodiiCommand( string callerKey, string serviceOrPluginFullName, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown, bool isPlugin = false )
             : this( callerKey, start, impact )
         {
-            if( string.IsNullOrWhiteSpace( serviceOrPluginId ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceOrPluginId" );
+            if( string.IsNullOrWhiteSpace( serviceOrPluginFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceOrPluginFullName" );
             if( isPlugin )
             {
-                PluginFullName = serviceOrPluginId;
+                PluginFullName = serviceOrPluginFullName;
             }
             else
             {
-                ServiceFullName = serviceOrPluginId;
+                ServiceFullName = serviceOrPluginFullName;
             }
         }
 

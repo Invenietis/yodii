@@ -157,7 +157,7 @@ namespace Yodii.Lab
                 foreach(IConfigurationItem i in l.Items)
                 {
                     PersistedConfigurationItem persistedItem = new PersistedConfigurationItem();
-                    persistedItem.ServiceOrPluginId = i.ServiceOrPluginId;
+                    persistedItem.ServiceOrPluginId = i.ServiceOrPluginFullName;
                     persistedItem.Status = i.Status;
                     persistedItem.StatusReason = i.StatusReason;
 

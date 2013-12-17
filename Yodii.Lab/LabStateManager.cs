@@ -240,15 +240,15 @@ namespace Yodii.Lab
         /// <summary>
         /// Returns a descriptive of given service or plugin ID, provided it exists in our collections.
         /// </summary>
-        /// <param name="serviceOrPluginId">Plugin or service name.</param>
+        /// <param name="serviceOrPluginFullName">Plugin or service name.</param>
         /// <returns>Descriptive of given service or plugin ID</returns>
-        public string GetDescriptionOfServiceOrPluginId( string serviceOrPluginId )
+        public string GetDescriptionOfServiceOrPluginFullName( string serviceOrPluginFullName )
         {
             bool isPlugin = false;
             bool isService = false;
 
-            var matchingPlugin = _pluginInfos.GetByKey( serviceOrPluginId, out isPlugin );
-            var matchingService = _serviceInfos.GetByKey( serviceOrPluginId, out isService );
+            var matchingPlugin = _pluginInfos.GetByKey( serviceOrPluginFullName, out isPlugin );
+            var matchingService = _serviceInfos.GetByKey( serviceOrPluginFullName, out isService );
 
             if( isPlugin )
             {

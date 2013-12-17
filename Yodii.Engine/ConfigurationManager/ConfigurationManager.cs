@@ -65,20 +65,20 @@ namespace Yodii.Engine
                 {
                     if( filter == null || filter( item ) )
                     {
-                        if( final.TryGetValue( item.ServiceOrPluginId, out status ) )
+                        if( final.TryGetValue( item.ServiceOrPluginFullName, out status ) )
                         {
                             if( status == ConfigurationStatus.Optional || (status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running) )
                             {
-                                final[item.ServiceOrPluginId] = item.Status;
+                                final[item.ServiceOrPluginFullName] = item.Status;
                             }
                             else if( status != item.Status )
                             {
-                                return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginId, item.Status, status ) );
+                                return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginFullName, item.Status, status ) );
                             }
                         }
                         else
                         {
-                            final.Add( item.ServiceOrPluginId, item.Status );
+                            final.Add( item.ServiceOrPluginFullName, item.Status );
                         }
                     }
                 }
@@ -92,7 +92,7 @@ namespace Yodii.Engine
             if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
 
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            final.Add( item.ServiceOrPluginId, newStatus );
+            final.Add( item.ServiceOrPluginFullName, newStatus );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, _engine);
@@ -103,7 +103,7 @@ namespace Yodii.Engine
         internal IYodiiEngineResult OnConfigurationItemAdding( ConfigurationItem newItem )
         {
             Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            final.Add( newItem.ServiceOrPluginId, newItem.Status );
+            final.Add( newItem.ServiceOrPluginFullName, newItem.Status );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, _engine );

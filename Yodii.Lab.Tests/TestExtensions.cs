@@ -105,7 +105,7 @@ namespace Yodii.Lab.Tests
 
                 foreach( var item in layerA.Items )
                 {
-                    Assert.That( layerB.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
+                    Assert.That( layerB.Items.Any( x => x.ServiceOrPluginFullName == item.ServiceOrPluginFullName && x.Status == item.Status ) );
                 }
             }
 
@@ -115,7 +115,7 @@ namespace Yodii.Lab.Tests
                 Assert.That( a.FinalConfiguration.Items.Count == b.FinalConfiguration.Items.Count );
                 foreach( var item in a.FinalConfiguration.Items )
                 {
-                    Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
+                    Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginFullName == item.ServiceOrPluginFullName && x.Status == item.Status ) );
                 }
             }
         }

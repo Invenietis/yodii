@@ -105,7 +105,7 @@ namespace Yodii.Lab
                     else
                         identifier = v.LabPluginInfo.PluginInfo.PluginFullName;
 
-                    var items = config.Items.Where( x => x.ServiceOrPluginId == identifier );
+                    var items = config.Items.Where( x => x.ServiceOrPluginFullName == identifier );
                     if( items.Count() > 0 )
                     {
                         v.HasConfiguration = true;

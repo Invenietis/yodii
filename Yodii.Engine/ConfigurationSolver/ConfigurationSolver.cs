@@ -48,9 +48,9 @@ namespace Yodii.Engine
             return _services[serviceFullName];
         }
 
-        public PluginData FindExistingPlugin( string pluginId )
+        public PluginData FindExistingPlugin( string pluginFullName )
         {
-            return _plugins[pluginId];
+            return _plugins[pluginFullName];
         }
 
         public ServiceData FindService( string serviceFullName )
@@ -58,9 +58,9 @@ namespace Yodii.Engine
             return _services.GetValueWithDefault( serviceFullName, null );
         }
 
-        public PluginData FindPlugin( string pluginId )
+        public PluginData FindPlugin( string pluginFullName )
         {
-            return _plugins.GetValueWithDefault( pluginId, null );
+            return _plugins.GetValueWithDefault( pluginFullName, null );
         }
 
         void IConfigurationSolver.DeferPropagation( ServiceData s )

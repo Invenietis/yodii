@@ -131,7 +131,7 @@ namespace Yodii.Lab
             {
                 foreach( var item in layer.Items.ToList() )
                 {
-                    if( item.ServiceOrPluginId == pluginOrServiceId )
+                    if( item.ServiceOrPluginFullName == pluginOrServiceId )
                     {
                         layer.Items.Remove( pluginOrServiceId );
                     }

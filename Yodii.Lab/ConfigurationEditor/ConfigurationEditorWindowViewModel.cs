@@ -91,13 +91,13 @@ namespace Yodii.Lab.ConfigurationEditor
 
             foreach( IConfigurationLayer layer in _configurationManager.Layers )
             {
-                foreach( string serviceOrPluginId in layer.Items.Where( x => x.Status == ConfigurationStatus.Optional ).Select( x => x.ServiceOrPluginId ).ToList() )
+                foreach( string serviceOrPluginId in layer.Items.Where( x => x.Status == ConfigurationStatus.Optional ).Select( x => x.ServiceOrPluginFullName ).ToList() )
                 {
                     var itemRemoveResult = layer.Items.Remove( serviceOrPluginId );
                     if( !itemRemoveResult.Success )
                     {
                         RaiseUserError("Couldn't remove item", String.Format("Failed to remove {0}.\n\n{1}", 
-                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId(serviceOrPluginId),
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName(serviceOrPluginId),
                             String.Join("; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons))
                             );
                     }
@@ -129,7 +129,7 @@ namespace Yodii.Lab.ConfigurationEditor
             if( !itemSetResult.Success )
             {
                         RaiseUserError("Couldn't set item", String.Format("Failed to set {0} to {2}.\n\n{1}",
-                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId(item.ServiceOrPluginId),
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName(item.ServiceOrPluginFullName),
                             String.Join("; ", itemSetResult.ConfigurationFailureResult.FailureReasons),
                             newStatus.ToString() )
                             );
@@ -144,11 +144,11 @@ namespace Yodii.Lab.ConfigurationEditor
             Debug.Assert( param is IConfigurationItem );
             IConfigurationItem item = (IConfigurationItem)param;
 
-            var itemRemoveResult = item.Layer.Items.Remove( item.ServiceOrPluginId );
+            var itemRemoveResult = item.Layer.Items.Remove( item.ServiceOrPluginFullName );
             if( !itemRemoveResult.Success )
             {
                 RaiseUserError( "Couldn't remove item", String.Format( "Failed to remove {0}.\n\n{1}",
-                    _serviceInfoManager.GetDescriptionOfServiceOrPluginId( item.ServiceOrPluginId ),
+                    _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName( item.ServiceOrPluginFullName ),
                     String.Join( "; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons ) )
                     );
             }
@@ -175,7 +175,7 @@ namespace Yodii.Lab.ConfigurationEditor
                     if( !itemAddResult.Success )
                     {
                         RaiseUserError( "Couldn't add item", String.Format( "Failed to add {0}.\n\n{1}",
-                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId( serviceOrPluginId ),
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName( serviceOrPluginId ),
                             String.Join( "; ", itemAddResult.ConfigurationFailureResult.FailureReasons ) )
                             );
                     }
