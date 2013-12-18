@@ -9,7 +9,6 @@ namespace Yodii.Engine
 {
     partial class ServiceData
     {
-        StartDependencyImpact _dynFirstImpact;
         RunningStatus? _dynamicStatus;
         ServiceRunningStatusReason _dynamicReason;
         int _nbAllAvailablePlugins;
@@ -23,7 +22,6 @@ namespace Yodii.Engine
         {
             _dynPropagation = null;
             _nbAllAvailablePlugins = 0;
-            _dynFirstImpact = StartDependencyImpact.Unknown;
             switch( FinalConfigSolvedStatus )
             {
                 case ConfigurationStatus.Disabled:
@@ -132,7 +130,6 @@ namespace Yodii.Engine
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
             Debug.Assert( _nbAllAvailablePlugins != 0 );
             if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
-            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
             return DynTestCanStart( impact );
         } 
         
@@ -140,7 +137,6 @@ namespace Yodii.Engine
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
             if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
-            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
             if( !DynTestCanStart( impact ) ) return false;
             DynamicStartBy( ServiceRunningStatusReason.StartedByCommand );
             return true;

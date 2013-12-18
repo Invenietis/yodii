@@ -36,7 +36,7 @@ namespace Yodii.Engine
             _configOriginalStatus = serviceData.ConfigOriginalStatus;
             _configSolvedStatus = serviceData.ConfigSolvedStatus;
             _configOriginalImpact = serviceData.ConfigOriginalImpact;
-            _configSolvedImpact = serviceData.ConfigSolvedImpact;
+            _configSolvedImpact = serviceData.RawConfigSolvedImpact;
 
             Debug.Assert( serviceData.DynamicStatus != null );
             _runningStatus = serviceData.DynamicStatus.Value;
@@ -51,7 +51,7 @@ namespace Yodii.Engine
             notifier.Update( this, ref _configSolvedStatus, s.ConfigSolvedStatus, () => ConfigSolvedStatus );
             notifier.Update( this, ref _runningStatus, s.DynamicStatus.Value, () => RunningStatus );
             notifier.Update( this, ref _configOriginalImpact, s.ConfigOriginalImpact, () => ConfigOriginalImpact );
-            notifier.Update( this, ref _configSolvedImpact, s.ConfigSolvedImpact, () => ConfigSolvedImpact );
+            notifier.Update( this, ref _configSolvedImpact, s.RawConfigSolvedImpact, () => ConfigSolvedImpact );
 
             if( wasRunning != _runningStatus >= RunningStatus.Running )
             {

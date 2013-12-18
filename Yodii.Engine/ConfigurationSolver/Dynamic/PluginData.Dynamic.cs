@@ -49,7 +49,6 @@ namespace Yodii.Engine
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
             if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
-            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
             return DynTestCanStart( impact );
         }
 
@@ -57,7 +56,6 @@ namespace Yodii.Engine
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
             if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
-            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
             if( !DynTestCanStart( impact ) ) return false;
             _dynamicStatus = RunningStatus.Running;
             _dynamicReason = PluginRunningStatusReason.StartedByCommand;
@@ -81,8 +79,6 @@ namespace Yodii.Engine
         public PluginRunningStatusReason GetStoppedReasonForStoppedReference( DependencyRequirement requirement )
         {
             StartDependencyImpact impact = _configSolvedImpact;
-            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
-
             switch( requirement )
             {
                 case DependencyRequirement.Running: return PluginRunningStatusReason.StoppedByRunningReference;
