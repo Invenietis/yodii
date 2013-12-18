@@ -91,7 +91,8 @@ namespace Yodii.Engine
         {
             get
             {
-                return (DynamicStatus != null && DynamicStatus.Value <= RunningStatus.Stopped)
+                return DynamicStatus == null 
+                        || DynamicStatus.Value <= RunningStatus.Stopped
                         || Family.DynRunningPlugin != null
                         || (Family.DynRunningService != null && this.IsStrictGeneralizationOf( Family.DynRunningService ));
             }

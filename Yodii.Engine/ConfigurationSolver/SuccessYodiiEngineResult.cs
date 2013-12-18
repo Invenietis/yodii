@@ -8,12 +8,20 @@ namespace Yodii.Engine
 {
     class SuccessYodiiEngineResult : IYodiiEngineResult
     {
-        public static readonly IYodiiEngineResult Default = new SuccessYodiiEngineResult();
+        readonly IYodiiEngine _engine;
 
-        SuccessYodiiEngineResult()
+        public static IYodiiEngineResult NullEngineSuccessResult = new SuccessYodiiEngineResult( null );
+
+        public SuccessYodiiEngineResult( YodiiEngine engine )
         {
+            _engine = engine;
         }
 
+        public IYodiiEngine Engine
+        {
+            get { return _engine; }
+        }
+        
         bool IYodiiEngineResult.Success
         {
             get { return true; }
@@ -43,6 +51,5 @@ namespace Yodii.Engine
         {
             get { return CK.Core.CKReadOnlyListEmpty<IServiceInfo>.Empty; ; }
         }
-
     }
 }

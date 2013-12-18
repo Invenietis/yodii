@@ -71,6 +71,7 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="YodiiModelExtension.cs" />
     <Compile Include="DiscoveredInfoExtension.cs" />
     <Compile Include="DependencyRequirement.cs" />
     <Compile Include="IConfigurationManagerFailureResult.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Solver\IStaticSolvedConfiguration.cs" />
     <Compile Include="Solver\IStaticSolvedPlugin.cs" />
     <Compile Include="Solver\IStaticSolvedService.cs" />
+    <Compile Include="Solver\IYodiiEngineStaticOnlyResult.cs" />
     <Compile Include="Solver\PluginRuntimeError.cs" />
   </ItemGroup>
   <ItemGroup>

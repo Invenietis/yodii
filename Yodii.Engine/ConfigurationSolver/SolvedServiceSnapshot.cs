@@ -31,7 +31,7 @@ namespace Yodii.Engine
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 
-        public string DisabledReason { get { return _serviceDisabledReason.ToString(); } }
+        public string DisabledReason { get { return _serviceDisabledReason == ServiceDisabledReason.None ? null : _serviceDisabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 

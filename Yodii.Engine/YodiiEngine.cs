@@ -17,6 +17,7 @@ namespace Yodii.Engine
         readonly IYodiiEngineHost _host;
         readonly LiveInfo _liveInfo;
         readonly YodiiCommandList _yodiiCommands;
+        readonly SuccessYodiiEngineResult _successResult;
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _currentSolver;
@@ -49,6 +50,7 @@ namespace Yodii.Engine
         public YodiiEngine( IYodiiEngineHost host )
         {
             if( host == null ) throw new ArgumentNullException( "host" );
+            _successResult = new SuccessYodiiEngineResult( this );
             _host = host;
             _discoveredInfo = EmptyDiscoveredInfo.Empty;
             _manager = new ConfigurationManager( this );
@@ -56,10 +58,15 @@ namespace Yodii.Engine
             _liveInfo = new LiveInfo( this );
         }
 
-        internal Tuple<IYodiiEngineResult,ConfigurationSolver> StaticResolution( FinalConfiguration finalConfiguration )
+        internal SuccessYodiiEngineResult SuccessResult 
+        { 
+            get { return _successResult; } 
+        }
+
+        internal Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> StaticResolutionByConfigurationManager( FinalConfiguration finalConfiguration )
         {
             Debug.Assert( IsRunning );
-            return ConfigurationSolver.CreateAndApplyStaticResolution( this, finalConfiguration, _discoveredInfo );
+            return ConfigurationSolver.CreateAndApplyStaticResolution( this, finalConfiguration, _discoveredInfo, false, false, false );
         }
 
         IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
@@ -81,7 +88,7 @@ namespace Yodii.Engine
                         
             _yodiiCommands.Merge( dynResult.Commands );
             if( wasStopped ) RaisePropertyChanged( "IsRunning" );
-            return SuccessYodiiEngineResult.Default;
+            return _successResult;
         }
 
         public IDiscoveredInfo DiscoveredInfo
@@ -140,7 +147,7 @@ namespace Yodii.Engine
             else
             {
                 _yodiiCommands.RemoveWhereAndReturnsRemoved( cmd => cmd.CallerKey == callerKey ).Count();
-                return SuccessYodiiEngineResult.Default;
+                return _successResult;
             }
         }
 
@@ -155,10 +162,11 @@ namespace Yodii.Engine
         /// </summary>
         /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
         /// <param name="revertPlugins">True to revert the list of the plugins (based on their <see cref="IPluginInfo.PluginFullName"/>).</param>
-        /// <returns>The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/>.</returns>
-        public IYodiiEngineResult StaticResolutionOnly( bool revertServices, bool revertPlugins )
+        /// <returns>The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.</returns>
+        public IYodiiEngineStaticOnlyResult StaticResolutionOnly( bool revertServices, bool revertPlugins )
         {
-            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
+            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, createStaticSolvedConfigOnSuccess:true );
+            Debug.Assert( r.Item1 != null, "Either an error or a successful static resolution." );
             return r.Item1;
         }
 
@@ -168,26 +176,36 @@ namespace Yodii.Engine
             {
                 _yodiiCommands.Clear();
                 if( persistedCommands != null ) _yodiiCommands.AddRange( persistedCommands );
-                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins );
-                if( !r.Item1.Success ) return r.Item1;
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, false );
+                if( r.Item1 != null )
+                {
+                    Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
+                    Debug.Assert( r.Item1.Engine == this );
+                    return r.Item1;
+                }
                 return DoDynamicResolution( r.Item2, null, null );
             }
-            return SuccessYodiiEngineResult.Default;
+            return _successResult;
         }
 
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
         {
             if( info == null ) throw new ArgumentNullException( "info" );
-            if( info == _discoveredInfo ) return SuccessYodiiEngineResult.Default;
+            if( info == _discoveredInfo ) return _successResult;
 
             if( IsRunning )
             {
-                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, info );
-                if( !r.Item1.Success ) return r.Item1;
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, info, false, false, false );
+                if( r.Item1 != null )
+                {
+                    Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
+                    Debug.Assert( r.Item1.Engine == this );
+                    return r.Item1;
+                }
                 return DoDynamicResolution( r.Item2, null, null, () => DiscoveredInfo = info );
             }
             else DiscoveredInfo = info;
-            return SuccessYodiiEngineResult.Default;
+            return _successResult;
         }
 
         public IObservableReadOnlyList<YodiiCommand> YodiiCommands

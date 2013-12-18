@@ -197,20 +197,34 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                     engine.LiveInfo.FindPlugin( "Plugin1" ).Start( "caller", StartDependencyImpact.Minimal );
                 } );
         }
+
+
         [Test]
         public void ValidRunnableReferences()
         {
-            #region
-            //See PNG for better viewing
-            //Config info: All items are set to optional. There are 9 Plugins, 4 service families and about a dozen runnable references.
-            #endregion
+            // file://Graphs/ValidRunnableReferences.png
+            // E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png
+            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png
+            // file://Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png
 
-            StaticConfigurationTests.CreateValidCommonReferences4().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidRunnableReferences().FullStart( ( engine, res ) =>
             {
-                engine.LiveInfo.FindPlugin( "Plugin5" ).Start( "caller", StartDependencyImpact.Minimal );         
-                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop( "caller" );
-                engine.LiveInfo.FindPlugin( "Plugin2" ).Start( "caller", StartDependencyImpact.Minimal );
-                engine.LiveInfo.FindPlugin( "Plugin2" ).Stop( "caller" );
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
+                
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop();
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
+                
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Start();
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin6, Plugin7, Plugin8, Plugin9" );
+                engine.CheckAllPluginsRunning( "Plugin5 " );
+
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin3, Plugin4, Plugin6, Plugin7, Plugin9" );
+                engine.CheckAllPluginsRunning( "Plugin2, Plugin5, Plugin8 " );
+                
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Stop();
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin6, Plugin7, Plugin8, Plugin9" );
+                engine.CheckAllPluginsRunning( "Plugin5 " );
             } );
         }
     }

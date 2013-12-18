@@ -15,7 +15,6 @@ namespace Yodii.Engine
 {
     internal class ConfigurationManager : IConfigurationManager
     {
-        readonly YodiiEngine _engine;
         readonly ConfigurationLayerCollection _configurationLayerCollection;
         FinalConfiguration _finalConfiguration;
 
@@ -46,10 +45,12 @@ namespace Yodii.Engine
 
         internal ConfigurationManager( YodiiEngine engine )
         {
-            _engine = engine;
+            Engine = engine;
             _configurationLayerCollection = new ConfigurationLayerCollection( this );
             _finalConfiguration = new FinalConfiguration();
         }
+
+        public readonly YodiiEngine Engine;
 
         internal void OnLayerNameChanged( IConfigurationLayer layer )
         {
@@ -95,7 +96,7 @@ namespace Yodii.Engine
             final.Add( item.ServiceOrPluginFullName, newStatus );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
-            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, _engine);
+            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine);
 
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
         }
@@ -106,7 +107,7 @@ namespace Yodii.Engine
             final.Add( newItem.ServiceOrPluginFullName, newItem.Status );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
-            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, _engine );
+            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine );
 
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ItemAdded, newItem ) );
         }
@@ -134,15 +135,18 @@ namespace Yodii.Engine
         IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration,ConfigurationChangingEventArgs> createChangingEvent )
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
-            if( _engine.IsRunning )
+            if( Engine.IsRunning )
             {
-                Tuple<IYodiiEngineResult,ConfigurationSolver> t = _engine.StaticResolution( finalConfiguration );
-                var result = t.Item1;
-                var solver = t.Item2;
-                if( !result.Success ) return result;
-                return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? _engine.OnConfigurationChanging( solver );
+                Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> t = Engine.StaticResolutionByConfigurationManager( finalConfiguration );
+                if( t.Item1 != null )
+                {
+                    Debug.Assert( !t.Item1.Success );
+                    Debug.Assert( t.Item1.Engine == Engine );
+                    return t.Item1;
+                }
+                return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.OnConfigurationChanging( t.Item2 );
             }
-            return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? SuccessYodiiEngineResult.Default;
+            return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.SuccessResult;
         }
 
         IYodiiEngineResult OnConfigurationChangingForExternalWorld( ConfigurationChangingEventArgs eventChanging )
@@ -151,7 +155,7 @@ namespace Yodii.Engine
             RaiseConfigurationChanging( _currentEventArgs );
             if( _currentEventArgs.IsCanceled )
             {
-                return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ), _engine );
+                return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ), Engine );
             }
             return null;
         }
@@ -235,7 +239,7 @@ namespace Yodii.Engine
             public IYodiiEngineResult Remove( IConfigurationLayer layer )
             {
                 if( layer == null ) throw new ArgumentNullException( "layer" );
-                if( layer.ConfigurationManager != _parent ) return SuccessYodiiEngineResult.Default;
+                if( layer.ConfigurationManager != _parent ) return _parent.Engine.SuccessResult;
                 // When called by a hacker.
                 ConfigurationLayer l = layer as ConfigurationLayer;
                 if ( l == null ) throw new ArgumentException( "Invalid layer.", "layer" );

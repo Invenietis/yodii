@@ -31,7 +31,7 @@ namespace Yodii.Engine
 
         public IPluginInfo PluginInfo { get { return _pluginInfo; } }
 
-        public string DisabledReason { get { return _disabledReason.ToString(); } }
+        public string DisabledReason { get { return _disabledReason == PluginDisabledReason.None ? null : _disabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
