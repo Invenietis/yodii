@@ -146,6 +146,7 @@
       <DependentUpon>YodiiVertexControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\BooleanAndConverter.cs" />
+    <Compile Include="Utils\BooleanConverter.cs" />
     <Compile Include="Utils\DropDownButton.cs" />
     <Compile Include="Utils\IntegerToBoolConverter.cs" />
     <Compile Include="Utils\IntegerToVisibilityConverter.cs" />

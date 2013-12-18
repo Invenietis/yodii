@@ -17,6 +17,10 @@
             x:Key="EnumToBooleanConv" />
         <BooleanToVisibilityConverter
             x:Key="BoolToVisibilityConv" />
+        <local:BooleanToVisibilityConverter
+            x:Key="InverseBooleanToVisibilityConverter"
+            True="Collapsed"
+            False="Visible" />
 
         <ObjectDataProvider
             MethodName="GetValues"
@@ -37,12 +41,15 @@
                 <StackPanel
                     Orientation="Horizontal">
                     <Button
+                        Visibility="{Binding Converter={StaticResource InverseBooleanToVisibilityConverter}, Path=LiveServiceInfo.IsRunning}"
                         Command="{Binding Path=StartServiceCommand}"
                         FontFamily="Webdings">4</Button>
                     <Button
+                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConv}, Path=LiveServiceInfo.IsRunning}"
                         Command="{Binding Path=StopServiceCommand}"
                         FontFamily="Webdings">&lt;</Button>
                     <TextBlock
+                        Margin="3pt,1pt,0,1pt"
                         Text="{Binding Path=LiveServiceInfo.RunningStatus}" />
                 </StackPanel>
             </StackPanel>
@@ -57,12 +64,15 @@
                 <StackPanel
                     Orientation="Horizontal">
                     <Button
+                        Visibility="{Binding Converter={StaticResource InverseBooleanToVisibilityConverter}, Path=LivePluginInfo.IsRunning}"
                         Command="{Binding Path=StartPluginCommand}"
                         FontFamily="Webdings">4</Button>
                     <Button
+                        Visibility="{Binding Converter={StaticResource BoolToVisibilityConv}, Path=LivePluginInfo.IsRunning}"
                         Command="{Binding Path=StopPluginCommand}"
                         FontFamily="Webdings">&lt;</Button>
                     <TextBlock
+                        Margin="3pt,1pt,0,1pt"
                         Text="{Binding Path=LivePluginInfo.RunningStatus}" />
                 </StackPanel>
             </StackPanel>
@@ -100,9 +110,9 @@
             <StackPanel
                 Orientation="Vertical"
                 Margin="1pt">
-                <StackPanel
-                    Orientation="Horizontal">
+                <DockPanel>
                     <Image
+                        DockPanel.Dock="Left"
                         x:Name="VertexIcon"
                         MaxHeight="12pt"
                         MaxWidth="12pt"
@@ -138,12 +148,34 @@
                         VerticalAlignment="Stretch"
                         Margin="0,0,3pt,0">
                     </Image>-->
+                    <StackPanel
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
+                        <TextBlock
+                            Visibility="{Binding Path=LiveObject.IsRunning, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}"
+                            FontFamily="Webdings"
+                            Foreground="#FF00FF00"
+                            LineHeight="18pt"
+                            Height="18pt"
+                            FontSize="18pt">
+                            4
+                        </TextBlock>
+                        <TextBlock
+                            Visibility="{Binding Path=LiveObject.IsRunning, Converter={StaticResource InverseBooleanToVisibilityConverter}, ConverterParameter=true, Mode=OneWay}"
+                            FontFamily="Webdings"
+                            Foreground="#FFFF0000"
+                            LineHeight="18pt"
+                            Height="18pt"
+                            FontSize="18pt">
+                            &lt;
+                        </TextBlock>
+                    </StackPanel>
                     <TextBlock
                         VerticalAlignment="Center"
                         x:Name="VertexTitle"
                         Text="{Binding Path=Title, Mode=OneWay, FallbackValue=Title}"
                         FontSize="12pt" />
-                </StackPanel>
+                </DockPanel>
                 <StackPanel
                     Orientation="Horizontal">
                     <Image
