@@ -24,6 +24,7 @@ namespace Yodii.Engine
                 Service = s;
                 _inclServices = new HashSet<ServiceData>[10];
                 _exclServices = new HashSet<ServiceData>[5];
+                _nbAvailablePlugins = -1;
             }
 
             protected BasePropagation( BasePropagation staticPropagation )
@@ -32,7 +33,7 @@ namespace Yodii.Engine
                 Service = staticPropagation.Service;
                 Copy( staticPropagation._inclServices, _inclServices );
                 Copy( staticPropagation._exclServices, _exclServices );
-                _nbAvailablePlugins = staticPropagation._nbAvailablePlugins;
+                _nbAvailablePlugins = -1;
             }
 
             static void Copy( HashSet<ServiceData>[] source, HashSet<ServiceData>[] dest )
