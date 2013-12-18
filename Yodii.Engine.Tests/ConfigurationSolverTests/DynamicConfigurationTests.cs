@@ -197,6 +197,21 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                     engine.LiveInfo.FindPlugin( "Plugin1" ).Start( "caller", StartDependencyImpact.Minimal );
                 } );
         }
+        [Test]
+        public void ValidRunnableReferences()
+        {
+            #region
+            //See PNG for better viewing
+            //Config info: All items are set to optional. There are 9 Plugins, 4 service families and about a dozen runnable references.
+            #endregion
 
+            StaticConfigurationTests.CreateValidCommonReferences4().FullStart( ( engine, res ) =>
+            {
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Start( "caller", StartDependencyImpact.Minimal );         
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop( "caller" );
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Start( "caller", StartDependencyImpact.Minimal );
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Stop( "caller" );
+            } );
+        }
     }
 }

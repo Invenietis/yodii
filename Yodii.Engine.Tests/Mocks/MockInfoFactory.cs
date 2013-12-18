@@ -583,5 +583,69 @@ namespace Yodii.Engine.Tests.Mocks
 
             return d;
         }
+
+        internal static IDiscoveredInfo CreateGraph006()
+        {
+            DiscoveredInfo d = new DiscoveredInfo();
+
+            #region graph       
+            //See PNG for better viewing
+            #endregion
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3", d.DefaultAssembly ) );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.1", d.DefaultAssembly ) );
+            d.FindService( "Service3.1" ).Generalization = d.FindService( "Service3" );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.2", d.DefaultAssembly ) );
+            d.FindService( "Service3.2" ).Generalization = d.FindService( "Service3" );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3.3", d.DefaultAssembly ) );
+            d.FindService( "Service3.3" ).Generalization = d.FindService( "Service3" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service4", d.DefaultAssembly ) );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service4.1", d.DefaultAssembly ) );
+            d.FindService( "Service4.1" ).Generalization = d.FindService( "Service4" );
+            d.ServiceInfos.Add( new ServiceInfo( "Service4.2", d.DefaultAssembly ) );
+            d.FindService( "Service4.2" ).Generalization = d.FindService( "Service4" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service4.1" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service1" );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service3.3" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service2" );
+            d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service3.2" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin4", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin4" ).Service = d.FindService( "Service2" );
+            d.FindPlugin( "Plugin4" ).AddServiceReference( d.FindService( "Service3.1" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin5", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin5" ).Service = d.FindService( "Service2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin6", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin6" ).Service = d.FindService( "Service4.1" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin7", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin7" ).Service = d.FindService( "Service3.1" );
+            d.FindPlugin( "Plugin7" ).AddServiceReference( d.FindService( "Service4.1" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin8", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin8" ).Service = d.FindService( "Service3.3" );
+            d.FindPlugin( "Plugin8" ).AddServiceReference( d.FindService( "Service1" ), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin9", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin9" ).Service = d.FindService( "Service3.2" );
+            d.FindPlugin( "Plugin9" ).AddServiceReference( d.FindService( "Service4.2" ), DependencyRequirement.Runnable );
+
+            return d;
+        }
+
     }
 }
