@@ -38,7 +38,7 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="callerKey">Caller identifier.</param>
         /// <returns>True if the service was successfully started, false otherwise.</returns>
-        IYodiiEngineResult Start( string callerKey );
+        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact );
 
         /// <summary>
         /// Stops the service.

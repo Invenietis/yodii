@@ -24,6 +24,7 @@ namespace Yodii.Engine
                 Service = s;
                 _inclServices = new HashSet<ServiceData>[10];
                 _exclServices = new HashSet<ServiceData>[5];
+                _nbAvailablePlugins = -1;
             }
 
             protected BasePropagation( BasePropagation staticPropagation )
@@ -32,7 +33,7 @@ namespace Yodii.Engine
                 Service = staticPropagation.Service;
                 Copy( staticPropagation._inclServices, _inclServices );
                 Copy( staticPropagation._exclServices, _exclServices );
-                _nbAvailablePlugins = staticPropagation._nbAvailablePlugins;
+                _nbAvailablePlugins = -1;
             }
 
             static void Copy( HashSet<ServiceData>[] source, HashSet<ServiceData>[] dest )
@@ -61,9 +62,9 @@ namespace Yodii.Engine
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
-                        if( !spec.Disabled )
+                        if( IsValidSpecialization( spec ) )
                         {
-                            BasePropagation propSpec = GetUsefulPropagationInfo( spec );
+                            BasePropagation propSpec = GetPropagationInfo( spec );
                             if( propSpec.TheOnlyPlugin != null )
                             {
                                 Debug.Assert( _theOnlyPlugin == null );
@@ -94,7 +95,9 @@ namespace Yodii.Engine
 
             protected abstract bool IsValidPlugin( PluginData p );
 
-            protected abstract BasePropagation GetUsefulPropagationInfo( ServiceData s );
+            protected abstract bool IsValidSpecialization( ServiceData s );
+
+            protected abstract BasePropagation GetPropagationInfo( ServiceData s );
 
             public IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact )
             {
@@ -105,7 +108,7 @@ namespace Yodii.Engine
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
-                        BasePropagation prop = GetUsefulPropagationInfo( spec );
+                        BasePropagation prop = GetPropagationInfo( spec );
                         if( prop != null )
                         {
                             if( excl == null ) excl = new HashSet<ServiceData>( prop.GetExcludedServices( impact ) );
@@ -142,7 +145,7 @@ namespace Yodii.Engine
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
-                        BasePropagation prop = GetUsefulPropagationInfo( spec );
+                        BasePropagation prop = GetPropagationInfo( spec );
                         if( prop != null )
                         {
                             if( incl == null ) incl = new HashSet<ServiceData>( prop.GetIncludedServices( impact, forRunnableStatus ) );

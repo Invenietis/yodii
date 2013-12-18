@@ -627,7 +627,7 @@ namespace Yodii.Engine.Tests.Mocks
             d.FindPlugin( "Plugin4" ).AddServiceReference( d.FindService( "Service3.1" ), DependencyRequirement.Runnable );
 
             d.PluginInfos.Add( new PluginInfo( "Plugin5", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin5" ).Service = d.FindService( "Service2" );
+            d.FindPlugin( "Plugin5" ).Service = d.FindService( "Service4.2" );
 
             d.PluginInfos.Add( new PluginInfo( "Plugin6", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin6" ).Service = d.FindService( "Service4.1" );

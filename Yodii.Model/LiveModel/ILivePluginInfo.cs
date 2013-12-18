@@ -30,7 +30,7 @@ namespace Yodii.Model
         /// <param name="callerKey">The caller key that identifies the caller. Null is considered to be the same as <see cref="String.Empty"/>.</param>
         /// <param name="impact">Dependency impact.</param>
         /// <returns>Engine result.</returns>
-        IYodiiEngineResult Start( string callerKey = null, StartDependencyImpact impact = StartDependencyImpact.Unknown );
+        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact );
 
         /// <summary>
         /// Stops this plugin.

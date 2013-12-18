@@ -494,6 +494,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
+                res.CheckAllPluginsOptional( "PluginA-1, PluginA-2" );
+                res.CheckAllServicesOptional( "ServiceA" );
             } );
         }
 
@@ -1079,6 +1081,20 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             return engine;
         }
+
+        [Test]
+        public void ValidRunnableReferences()
+        {
+            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png
+
+            var e = CreateValidRunnableReferences();
+            e.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllServicesOptional( "Service1, Service2, Service3, Service3.1, Service3.2, Service3.3, Service4, Service4.1, Service4.2" );
+                res.CheckAllPluginsOptional( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
+            } );
+       }
 
         internal static YodiiEngine CreateValidRunnableReferences()
         {

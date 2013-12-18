@@ -72,5 +72,9 @@ namespace Yodii.Model
             }
         }
 
+        public override string ToString()
+        {
+            return String.Format( "{0} {1} ({2}) by {3}.", Start ? "Start" : "Stop", PluginFullName ?? ServiceFullName, Impact, CallerKey );
+        }
     }
 }

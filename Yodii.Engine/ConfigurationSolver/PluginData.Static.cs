@@ -30,10 +30,15 @@ namespace Yodii.Engine
             _configSolvedStatus = pluginStatus;
             _configSolvedStatusReason = PluginRunningRequirementReason.Config;
 
-            _configSolvedImpact = ConfigOriginalImpact = impact;
-            if( _configSolvedImpact == StartDependencyImpact.Unknown && Service != null )
+            RawConfigSolvedImpact = ConfigOriginalImpact = impact;
+            if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Service != null )
             {
-                _configSolvedImpact = Service.ConfigSolvedImpact;
+                RawConfigSolvedImpact = Service.ConfigSolvedImpact;
+            }
+            _configSolvedImpact = RawConfigSolvedImpact;
+            if( _configSolvedImpact == StartDependencyImpact.Unknown || (_configSolvedImpact & StartDependencyImpact.IsTryOnly) != 0 )
+            {
+                _configSolvedImpact = StartDependencyImpact.Minimal;
             }
 
             if( ConfigOriginalStatus == ConfigurationStatus.Disabled )
@@ -120,7 +125,12 @@ namespace Yodii.Engine
         public readonly StartDependencyImpact ConfigOriginalImpact;
 
         /// <summary>
-        /// The solved StartDependencyImpact: it is this ConfigOriginalImpact if known or the Service's one if it exists.
+        /// The configured StartDependencyImpact (either ConfigOriginalImpact or the Service's one if ConfigOriginalImpact is unknown).
+        /// </summary>
+        public readonly StartDependencyImpact RawConfigSolvedImpact;
+
+        /// <summary>
+        /// The solved StartDependencyImpact for the static resolution: never IsTryOnly nor unknown.
         /// </summary>
         public StartDependencyImpact ConfigSolvedImpact
         {

@@ -76,7 +76,7 @@ namespace Yodii.Engine
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
-            if( _owner == null ) return SuccessYodiiEngineResult.Default;
+            if( _owner == null ) return SuccessYodiiEngineResult.NullEngineSuccessResult;
             return _owner.OnConfigurationItemChanging( item, newStatus );
         }
 
@@ -131,7 +131,7 @@ namespace Yodii.Engine
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );
-                    return SuccessYodiiEngineResult.Default;
+                    return SuccessYodiiEngineResult.NullEngineSuccessResult;
                 }
 
                 IYodiiEngineResult result = _layer._owner.OnConfigurationItemAdding( newItem );
@@ -161,7 +161,7 @@ namespace Yodii.Engine
                     {
                         target.OnRemoved();
                         _items.Remove( target );
-                        return SuccessYodiiEngineResult.Default;
+                        return SuccessYodiiEngineResult.NullEngineSuccessResult;
                     }
 
                     IYodiiEngineResult result = _layer._owner.OnConfigurationItemRemoving( target );
@@ -174,7 +174,7 @@ namespace Yodii.Engine
                     }
                     return result;
                 }
-                return new YodiiEngineResult( new ConfigurationFailureResult("Item not found") );
+                return new YodiiEngineResult( new ConfigurationFailureResult("Item not found"), _layer._owner != null ? _layer._owner.Engine : null );
             }
 
             public int Count

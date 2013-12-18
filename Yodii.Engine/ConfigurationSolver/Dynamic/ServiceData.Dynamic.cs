@@ -113,13 +113,18 @@ namespace Yodii.Engine
         {
             Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value >= RunningStatus.Running );
             Debug.Assert( reason == ServiceRunningStatusReason.StartedByCommand
+                            || reason == ServiceRunningStatusReason.StartedByPropagation
                             || reason == ServiceRunningStatusReason.StartedByOptionalReference
                             || reason == ServiceRunningStatusReason.StartedByOptionalTryStartReference
                             || reason == ServiceRunningStatusReason.StartedByRunnableReference
                             || reason == ServiceRunningStatusReason.StartedByRunnableTryStartReference
                             || reason == ServiceRunningStatusReason.StartedByRunningReference
                             );
-            if( _dynamicStatus == null ) Family.DynamicSetRunningService( this, reason );
+            if( _dynamicStatus == null )
+            {
+                Family.DynamicSetRunningService( this, reason );
+                DynPropagateStart();
+            }
         }
 
         internal bool DynamicCanStart( StartDependencyImpact impact )
@@ -143,7 +148,7 @@ namespace Yodii.Engine
 
         bool DynTestCanStart( StartDependencyImpact impact )
         {
-            DynamicPropagation p = DynGetUsefulPropagationInfo();
+            DynamicPropagation p = DynGetPropagationInfo();
             Debug.Assert( p != null );
             return p.TestCanStart( impact );
         }

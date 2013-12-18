@@ -11,9 +11,9 @@ namespace Yodii.Engine.Tests
     static class TestExtensions
     {
 
-        public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineResult> tests )
+        public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests )
         {
-            IYodiiEngineResult result;
+            IYodiiEngineStaticOnlyResult result;
             result = @this.StaticResolutionOnly( true, false );
             tests( result );
             @this.Stop();

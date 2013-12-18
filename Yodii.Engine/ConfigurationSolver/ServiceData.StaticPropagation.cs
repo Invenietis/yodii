@@ -29,7 +29,12 @@ namespace Yodii.Engine
                 return !p.Disabled;
             }
 
-            protected override BasePropagation GetUsefulPropagationInfo( ServiceData s )
+            protected override bool IsValidSpecialization( ServiceData s )
+            {
+                return !s.Disabled;
+            }
+
+            protected override BasePropagation GetPropagationInfo( ServiceData s )
             {
                 return s.GetUsefulPropagationInfo();
             }

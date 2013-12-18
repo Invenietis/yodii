@@ -9,37 +9,32 @@ namespace Yodii.Engine
 {
     class FinalConfigStartableStatus
     {
-        readonly IServiceDependentObject _obj;
-        int _finalStartableStatus;
+        public readonly bool CallableWithStartFullStop;
+        public readonly bool CallableWithStopOptionalAndRunnable;
+        public readonly bool CallableWithStartRecommended;
+        public readonly bool CallableWithFullStart;
 
         public FinalConfigStartableStatus( IServiceDependentObject pluginOrServicePropagation )
         {
-            _obj = pluginOrServicePropagation;
+            Debug.Assert( pluginOrServicePropagation.FinalConfigSolvedStatus == ConfigurationStatus.Optional || pluginOrServicePropagation.FinalConfigSolvedStatus == ConfigurationStatus.Runnable );
+            Debug.Assert( ComputeStartableFor( pluginOrServicePropagation, StartDependencyImpact.Minimal ) );
+            
+            StartDependencyImpact config = pluginOrServicePropagation.ConfigSolvedImpact == StartDependencyImpact.Unknown ? StartDependencyImpact.Minimal : pluginOrServicePropagation.ConfigSolvedImpact;
+            Debug.Assert( ComputeStartableFor( pluginOrServicePropagation, config ) );
 
-            Debug.Assert( _obj.FinalConfigSolvedStatus == ConfigurationStatus.Optional || _obj.FinalConfigSolvedStatus == ConfigurationStatus.Runnable );
-            Debug.Assert( ComputeStartableFor( StartDependencyImpact.Minimal ) );
-            Debug.Assert( ComputeStartableFor( _obj.ConfigSolvedImpact == StartDependencyImpact.Unknown ? StartDependencyImpact.Minimal : _obj.ConfigSolvedImpact ) );
+            CallableWithStartFullStop = config != StartDependencyImpact.FullStop ? ComputeStartableFor( pluginOrServicePropagation, StartDependencyImpact.FullStop ) : true;
+            CallableWithStopOptionalAndRunnable = config != StartDependencyImpact.StopOptionalAndRunnable ? ComputeStartableFor( pluginOrServicePropagation, StartDependencyImpact.StopOptionalAndRunnable ) : true;
+            CallableWithStartRecommended = config != StartDependencyImpact.StartRecommended ? ComputeStartableFor( pluginOrServicePropagation, StartDependencyImpact.StartRecommended ) : true;
+            CallableWithFullStart = config != StartDependencyImpact.FullStart ? ComputeStartableFor( pluginOrServicePropagation, StartDependencyImpact.FullStart ) : true;
         }
 
-        public bool IsStartable( StartDependencyImpact impact )
+        bool ComputeStartableFor( IServiceDependentObject o, StartDependencyImpact impact )
         {
-            if( impact == StartDependencyImpact.Unknown || impact == StartDependencyImpact.Minimal || impact == _obj.ConfigSolvedImpact ) return true;
-            int iImpact = (int)impact;
-            if( (_finalStartableStatus & (256 << iImpact)) == 0 )
-            {
-                _finalStartableStatus |= (256 << iImpact);
-                if( ComputeStartableFor( impact ) ) _finalStartableStatus |= (1 << iImpact);
-            }
-            return (_finalStartableStatus & (1 << iImpact)) != 0;
-        }
-
-        bool ComputeStartableFor( StartDependencyImpact impact )
-        {
-            foreach( var s in _obj.GetIncludedServices( impact, false ) )
+            foreach( var s in o.GetIncludedServices( impact, false ) )
             {
                 if( s.Disabled ) return false;
             }
-            foreach( var s in _obj.GetExcludedServices( impact ) )
+            foreach( var s in o.GetExcludedServices( impact ) )
             {
                 if( s.FinalConfigSolvedStatus == ConfigurationStatus.Running ) return false;
             }

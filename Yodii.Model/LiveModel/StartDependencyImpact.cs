@@ -49,7 +49,35 @@ namespace Yodii.Model
         /// <see cref="DependencyRequirement.RunnableTryStart"/>, but also the "not recommended" ones (<see cref="DependencyRequirement.Optional"/> 
         /// and <see cref="DependencyRequirement.Runnable"/>).
         /// </summary>
-        FullStart = 5
+        FullStart = 5, 
+
+        IsTryOnly = 8,
+
+        /// <summary>
+        /// Attempts to stop all dependencies: <see cref="DependencyRequirement.Optional"/>
+        /// and <see cref="DependencyRequirement.Runnable"/>, but also the "recommended" ones (<see cref="DependencyRequirement.OptionalTryStart"/>
+        /// and <see cref="DependencyRequirement.RunnableTryStart"/>).
+        /// </summary>
+        TryFullStop = FullStop | IsTryOnly,
+
+        /// <summary>
+        /// Attempts to stop "not recommended" dependencies (<see cref="DependencyRequirement.Optional"/>
+        /// and <see cref="DependencyRequirement.Runnable"/>).
+        /// </summary>
+        TryStopOptionalAndRunnable = StopOptionalAndRunnable | IsTryOnly,
+
+        /// <summary>
+        /// Attempts to start "recommended" dependencies: the ones that are <see cref="DependencyRequirement.OptionalTryStart"/>
+        /// and <see cref="DependencyRequirement.RunnableTryStart"/>.
+        /// </summary>
+        TryStartRecommended = StartRecommended | IsTryOnly,
+
+        /// <summary>
+        /// Attempts to start all dependencies: <see cref="DependencyRequirement.OptionalTryStart"/>, 
+        /// <see cref="DependencyRequirement.RunnableTryStart"/>, but also the "not recommended" ones (<see cref="DependencyRequirement.Optional"/> 
+        /// and <see cref="DependencyRequirement.Runnable"/>).
+        /// </summary>
+        TryFullStart = FullStart | IsTryOnly
 
     }
 }

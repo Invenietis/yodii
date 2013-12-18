@@ -13,6 +13,9 @@ namespace Yodii.Engine.Tests
         public static void FullStart( this YodiiEngine @this, Action<YodiiEngine,IYodiiEngineResult> tests )
         {
             IYodiiEngineResult result;
+            result = @this.Start( true, true );
+            tests( @this, result );
+            @this.Stop();
             result = @this.Start( false, false );
             tests( @this, result );
             @this.Stop();
@@ -21,15 +24,12 @@ namespace Yodii.Engine.Tests
             @this.Stop();
             result = @this.Start( false, true );
             tests( @this, result );
-            @this.Stop();
-            result = @this.Start( true, true );
-            tests( @this, result );
         }
 
         #region Plugins and Services
         public static void CheckAllDisabled( this YodiiEngine @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, RunningStatus.Running, pluginOrServiceNames, false );
+            CheckStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, false );
         }
 
         public static void CheckAllStopped( this YodiiEngine @this, string pluginOrServiceNames )
@@ -49,7 +49,7 @@ namespace Yodii.Engine.Tests
 
         public static void CheckDisabled( this YodiiEngine @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, RunningStatus.Running, pluginOrServiceNames, true );
+            CheckStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, true );
         }
 
         public static void CheckStopped( this YodiiEngine @this, string pluginOrServiceNames )
@@ -79,7 +79,7 @@ namespace Yodii.Engine.Tests
         #region Plugins only
         public static void CheckAllPluginsDisabled( this YodiiEngine @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Running, pluginOrServiceNames, false );
+            CheckPluginsStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, false );
         }
 
         public static void CheckAllPluginsStopped( this YodiiEngine @this, string pluginOrServiceNames )
@@ -99,7 +99,7 @@ namespace Yodii.Engine.Tests
 
         public static void CheckPluginsDisabled( this YodiiEngine @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Running, pluginOrServiceNames, true );
+            CheckPluginsStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, true );
         }
 
         public static void CheckPluginsStopped( this YodiiEngine @this, string pluginOrServiceNames )
@@ -128,7 +128,7 @@ namespace Yodii.Engine.Tests
         #region Services only
         public static void CheckAllServicesDisabled( this YodiiEngine @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Running, pluginOrServiceNames, false );
+            CheckServicesStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, false );
         }
 
         public static void CheckAllServicesStopped( this YodiiEngine @this, string pluginOrServiceNames )
@@ -148,7 +148,7 @@ namespace Yodii.Engine.Tests
 
         public static void CheckServicesDisabled( this YodiiEngine @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Running, pluginOrServiceNames, true );
+            CheckServicesStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, true );
         }
 
         public static void CheckServicesStopped( this YodiiEngine @this, string pluginOrServiceNames )
