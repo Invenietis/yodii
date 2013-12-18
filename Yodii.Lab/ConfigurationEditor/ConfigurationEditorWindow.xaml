@@ -38,12 +38,6 @@
 
 
 
-        <!-- Configuration items in layer -->
-        <DataTemplate
-            DataType="{x:Type ym:IConfigurationItem}">
-
-        </DataTemplate>
-
     </Window.Resources>
     <DockPanel>
         <Border
@@ -175,7 +169,7 @@
                                                             <MultiBinding
                                                                 Converter="{StaticResource idToDescriptionConverter}">
                                                                 <Binding
-                                                                    Path="ServiceOrPluginId"
+                                                                    Path="ServiceOrPluginFullName"
                                                                     Mode="OneWay" />
                                                                 <Binding
                                                                     RelativeSource="{RelativeSource AncestorType={x:Type Window}}"

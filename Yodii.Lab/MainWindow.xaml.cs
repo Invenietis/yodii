@@ -98,10 +98,39 @@ namespace Yodii.Lab
 
             if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
             {
-                this.GraphArea.RelayoutGraph();
+                try
+                {
+                    this.GraphArea.RelayoutGraph();
+                } catch( Exception ex )
+                {
+                    MessageBox.Show( String.Format("An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace),
+                        "Error while updating layout",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error, MessageBoxResult.OK );
+
+                    this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
+                    this.GraphArea.DefaultLayoutAlgorithmParams = null;
+
+                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                }
             } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
             {
-                this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                try
+                {
+                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                }
+                catch( Exception ex )
+                {
+                    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
+                        "Error while generating graph",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error, MessageBoxResult.OK );
+
+                    this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
+                    this.GraphArea.DefaultLayoutAlgorithmParams = null;
+
+                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                }
             }
 
         }

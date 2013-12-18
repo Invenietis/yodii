@@ -123,7 +123,7 @@ namespace Yodii.Lab
         private void ChangeConfiguration( ConfigurationStatus status )
         {
             if( Vertex == null ) return;
-            // If plugin: PluginInfo.PluginId / else: ServiceInfo.ServiceFullName
+
             string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LabPluginInfo.PluginInfo.PluginFullName : Vertex.LabServiceInfo.ServiceInfo.ServiceFullName;
 
             // TODO: Better handling of config change. Current implementation: remove all matching entries, then add the new one.

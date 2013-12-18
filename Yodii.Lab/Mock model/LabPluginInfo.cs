@@ -8,7 +8,7 @@ namespace Yodii.Lab.Mocks
     /// <summary>
     /// Lab plugin. Wrapper class around a mock PluginInfo, binding a LivePluginInfo when the engine is started.
     /// </summary>
-    [DebuggerDisplay( "Lab {PluginInfo.PluginFullName} = {PluginInfo.PluginId}" )]
+    [DebuggerDisplay( "Lab plugin: {PluginInfo.PluginFullName}" )]
     public class LabPluginInfo : ViewModelBase
     {
         readonly PluginInfo _pluginInfo;
