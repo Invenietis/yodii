@@ -1079,5 +1079,15 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             return engine;
         }
+
+        internal static YodiiEngine CreateValidRunnableReferences()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph006() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+
+            return engine;
+        }
     }
 }
