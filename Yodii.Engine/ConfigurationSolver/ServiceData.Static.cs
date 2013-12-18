@@ -25,7 +25,18 @@ namespace Yodii.Engine
             _backReferences = new List<BackReference>();
             ServiceInfo = s;
             ConfigOriginalStatus = serviceStatus;
-            _configSolvedImpact = ConfigOriginalImpact = impact;
+
+            RawConfigSolvedImpact = ConfigOriginalImpact = impact;
+            if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Generalization != null )
+            {
+                RawConfigSolvedImpact = Generalization.ConfigSolvedImpact;
+            }
+            _configSolvedImpact = RawConfigSolvedImpact;
+            if( _configSolvedImpact == StartDependencyImpact.Unknown || (_configSolvedImpact & StartDependencyImpact.IsTryOnly) != 0 )
+            {
+                _configSolvedImpact = StartDependencyImpact.Minimal;
+            }
+
             if( ConfigSolvedImpact == StartDependencyImpact.Unknown )
             {
                 if( Generalization != null ) _configSolvedImpact = Generalization.ConfigOriginalImpact;
@@ -123,6 +134,11 @@ namespace Yodii.Engine
         /// The original, configured, StartDependencyImpact of the service itself.
         /// </summary>
         public readonly StartDependencyImpact ConfigOriginalImpact;
+
+        /// <summary>
+        /// The configured StartDependencyImpact (either ConfigOriginalImpact or the Generalization's one if ConfigOriginalImpact is unknown).
+        /// </summary>
+        public readonly StartDependencyImpact RawConfigSolvedImpact;
 
         /// <summary>
         /// The solved StartDependencyImpact: it is this ConfigOriginalImpact if known or the Generalization's one if it exists.

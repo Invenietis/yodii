@@ -1091,6 +1091,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             e.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
+                res.CheckAllServicesOptional( "Service1, Service2, Service3, Service3.1, Service3.2, Service3.3, Service4, Service4.1, Service4.2" );
                 res.CheckAllPluginsOptional( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
             } );
        }

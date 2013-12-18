@@ -219,9 +219,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.CheckAllPluginsRunning( "Plugin5 " );
 
                 engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
-                engine.CheckAllPluginsStopped( "Plugin1, Plugin3, Plugin4, Plugin6, Plugin7, Plugin9" );
-                engine.CheckAllPluginsRunning( "Plugin2, Plugin5, Plugin8 " );
-                
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin3, Plugin4, Plugin6, Plugin7, Plugin8, Plugin9" );
+                engine.CheckAllPluginsRunning( "Plugin2, Plugin5" );
+
+                //engine.LiveInfo.FindPlugin( "Plugin2" ).Start( StartDependencyImpact.StartRecommended );
+                //engine.CheckAllPluginsStopped( "Plugin1, Plugin3, Plugin4, Plugin6, Plugin7, Plugin9" );
+                //engine.CheckAllPluginsRunning( "Plugin2, Plugin5, Plugin8" );
+
                 engine.LiveInfo.FindPlugin( "Plugin2" ).Stop();
                 engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin6, Plugin7, Plugin8, Plugin9" );
                 engine.CheckAllPluginsRunning( "Plugin5 " );

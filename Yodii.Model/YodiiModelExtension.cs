@@ -14,6 +14,60 @@ namespace Yodii.Model
 
         /// <summary>
         /// </summary>
+        /// <param name="this">This live plugin info.</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILivePluginInfo @this )
+        {
+            return @this.Start( null, StartDependencyImpact.Unknown );
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="this">This live service info.</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILiveServiceInfo @this )
+        {
+            return @this.Start( null, StartDependencyImpact.Unknown );
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="this">This live plugin info.</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILivePluginInfo @this, string callerKey )
+        {
+            return @this.Start( callerKey, StartDependencyImpact.Unknown );
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="this">This live service info.</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILiveServiceInfo @this, string callerKey )
+        {
+            return @this.Start( callerKey, StartDependencyImpact.Unknown );
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="this">This live plugin info.</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILivePluginInfo @this, StartDependencyImpact impact )
+        {
+            return @this.Start( null, impact );
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="this">This live service info.</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILiveServiceInfo @this, StartDependencyImpact impact )
+        {
+            return @this.Start( null, impact );
+        }
+
+        /// <summary>
+        /// </summary>
         /// <param name="this">This plugin information.</param>
         /// <returns>The final configuration status (considering the disabled case).</returns>
         public static ConfigurationStatus FinalConfigurationStatus( this IStaticSolvedPlugin @this )

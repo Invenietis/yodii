@@ -148,7 +148,7 @@ namespace Yodii.Engine
 
         bool DynTestCanStart( StartDependencyImpact impact )
         {
-            DynamicPropagation p = DynGetUsefulPropagationInfo();
+            DynamicPropagation p = DynGetPropagationInfo();
             Debug.Assert( p != null );
             return p.TestCanStart( impact );
         }

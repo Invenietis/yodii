@@ -103,21 +103,19 @@ namespace Yodii.Engine
 
         public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
-        public IYodiiEngineResult Start( string callerKey )
+        public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact )
         {
-            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( RunningStatus == RunningStatus.Disabled ) throw new InvalidOperationException( "the service is disabled" );
 
-            YodiiCommand command = new YodiiCommand( callerKey, _serviceInfo.ServiceFullName, true );
+            YodiiCommand command = new YodiiCommand( callerKey ?? String.Empty, _serviceInfo.ServiceFullName, true, impact );
             return _engine.AddYodiiCommand( command );
         }
 
         public IYodiiEngineResult Stop( string callerKey )
         {
-            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( RunningStatus == RunningStatus.RunningLocked ) throw new InvalidOperationException( "the service is running locked" );
 
-            YodiiCommand command = new YodiiCommand( callerKey, _serviceInfo.ServiceFullName, false );
+            YodiiCommand command = new YodiiCommand( callerKey ?? String.Empty, _serviceInfo.ServiceFullName, false );
             return _engine.AddYodiiCommand( command );
         }
 

@@ -29,9 +29,14 @@ namespace Yodii.Engine
                 return p.DynamicStatus == null;
             }
 
-            protected override BasePropagation GetUsefulPropagationInfo( ServiceData s )
+            protected override bool IsValidSpecialization( ServiceData s )
             {
-                return s.DynGetUsefulPropagationInfo();
+                return s.DynamicStatus == null || s.DynamicStatus.Value >= RunningStatus.Running;
+            }
+
+            protected override BasePropagation GetPropagationInfo( ServiceData s )
+            {
+                return s.DynGetPropagationInfo();
             }
 
             internal bool TestCanStart( StartDependencyImpact impact )
@@ -87,26 +92,21 @@ namespace Yodii.Engine
 
         DynamicPropagation _dynPropagation;
 
-        public bool DynPropagationIsUseless
+        public void DynPropagateStart()
         {
-            get
+            if( DynamicStatus != null
+                && DynamicStatus.Value >= RunningStatus.Running
+                && Family.DynRunningPlugin == null
+                && (Family.DynRunningService == null || !this.IsStrictGeneralizationOf( Family.DynRunningService )) )
             {
-                return DynamicStatus == null 
-                        || DynamicStatus.Value <= RunningStatus.Stopped
-                        || Family.DynRunningPlugin != null
-                        || (Family.DynRunningService != null && this.IsStrictGeneralizationOf( Family.DynRunningService ));
+                var p = DynGetPropagationInfo();
+                if( p != null ) p.PropagateStart();
             }
         }
 
-        public void DynPropagateStart()
+        DynamicPropagation DynGetPropagationInfo()
         {
-            var p = DynGetUsefulPropagationInfo();
-            if( p != null ) p.PropagateStart();
-        }
-
-        DynamicPropagation DynGetUsefulPropagationInfo()
-        {
-            if( DynPropagationIsUseless ) return null;
+            if( DynamicStatus != null && DynamicStatus.Value <= RunningStatus.Stopped ) return null;
             Debug.Assert( _propagation != null );
             if( _dynPropagation == null ) _dynPropagation = new DynamicPropagation( _propagation );
             _dynPropagation.Refresh();
