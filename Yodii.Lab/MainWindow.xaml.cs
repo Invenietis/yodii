@@ -69,6 +69,7 @@ namespace Yodii.Lab
             }
             GraphArea.ShowAllEdgesLabels();
             GraphArea.InvalidateVisual();
+
         }
 
         void GraphArea_GenerateGraphFinished( object sender, EventArgs e )
@@ -150,6 +151,28 @@ namespace Yodii.Lab
             this.GraphArea.DefaultLayoutAlgorithmParams = null;
 
             this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+        }
+
+        private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
+        {
+
+            this.GraphArea.ExportAsPNG( false );
+
+            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+
+            //dlg.DefaultExt = ".png";
+            //dlg.Filter = "PNG images (*.png)|*.png";
+            //dlg.CheckPathExists = true;
+            //dlg.OverwritePrompt = true;
+            //dlg.AddExtension = true;
+
+            //Nullable<bool> result = dlg.ShowDialog();
+
+            //if( result == true )
+            //{
+            //    string filePath = dlg.FileName;
+            //    this.GraphArea.ExportAsImage( ImageType.PNG, false, 96, 100 );
+            //}
         }
 
     }

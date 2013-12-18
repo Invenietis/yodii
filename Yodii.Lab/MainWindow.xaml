@@ -158,6 +158,15 @@
                             </Style>
                         </Fluent:SplitButton.ItemContainerStyle>
                     </Fluent:SplitButton>
+                    <Fluent:Button
+                        Header="Export to PNG"
+                        Click="ExportToPngButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource PlayIconGreen}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
