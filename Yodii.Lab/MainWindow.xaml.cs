@@ -108,10 +108,7 @@ namespace Yodii.Lab
                         MessageBoxButton.OK,
                         MessageBoxImage.Error, MessageBoxResult.OK );
 
-                    this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
-                    this.GraphArea.DefaultLayoutAlgorithmParams = null;
-
-                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                    ResetGraphToDefaultState();
                 }
             } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
             {
@@ -126,10 +123,7 @@ namespace Yodii.Lab
                         MessageBoxButton.OK,
                         MessageBoxImage.Error, MessageBoxResult.OK );
 
-                    this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
-                    this.GraphArea.DefaultLayoutAlgorithmParams = null;
-
-                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                    ResetGraphToDefaultState();
                 }
             }
 
@@ -148,6 +142,14 @@ namespace Yodii.Lab
         private void graphLayout_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
         {
             _vm.SelectedVertex = null;
+        }
+
+        private void ResetGraphToDefaultState()
+        {
+            this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
+            this.GraphArea.DefaultLayoutAlgorithmParams = null;
+
+            this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
         }
 
     }
