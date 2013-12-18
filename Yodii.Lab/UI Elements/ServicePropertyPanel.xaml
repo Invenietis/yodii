@@ -15,6 +15,10 @@
     <UserControl.Resources>
         <local:NullToBoolValueConverter
             x:Key="NullToBoolValueConverter" />
+        <local:InverseBooleanConverter
+            x:Key="InverseBoolConverter" />
+        <local:BooleanAndConverter
+            x:Key="BooleanAndConverter" />
     </UserControl.Resources>
     <Border
         Padding="5pt">
@@ -53,7 +57,7 @@
                     Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}"
                     LostFocus="ServiceNamePropertyTextBox_LostFocus"
                     KeyDown="ServiceNamePropertyTextBox_KeyDown"
-                    IsEnabled="True" />
+                    IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}" />
                 <DockPanel
                     Grid.Column="1"
                     Grid.Row="1">
@@ -62,13 +66,26 @@
                         DockPanel.Dock="Right"
                         ToolTip="Clear service"
                         Margin="5,0,0,0"
-                        IsEnabled="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=ServiceInfo.Generalization, Mode=OneWay, ConverterParameter=true}"
-                        Click="ClearGeneralizationButton_Click" />
+                        Click="ClearGeneralizationButton_Click">
+                        <Button.IsEnabled>
+                            <MultiBinding
+                                Converter="{StaticResource BooleanAndConverter}">
+                                <Binding
+                                    Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
+                                    ConverterParameter="true"
+                                    Path="ServiceInfo.Generalization" />
+                                <Binding
+                                    Path="IsLive"
+                                    Converter="{StaticResource InverseBoolConverter}" />
+                            </MultiBinding>
+                        </Button.IsEnabled>
+                    </Button>
                     <ComboBox
+                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                         x:Name="GeneralizationComboBox"
                         SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=OneWay}"
                         SelectionChanged="GeneralizationComboBox_SelectionChanged"
-                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}" >
+                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock
@@ -86,8 +103,7 @@
                             <DataTemplate>
                                 <TextBlock>
                                         <Run
-                                        Text="{Binding Path=PluginFullName, Mode=OneWay}" /> (<Run
-                                        Text="{Binding Path=PluginId, Mode=OneWay}" />)
+                                        Text="{Binding Path=PluginFullName, Mode=OneWay}" />
                                 </TextBlock>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

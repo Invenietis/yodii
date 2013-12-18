@@ -814,7 +814,7 @@ namespace Yodii.Lab
             {
                 // TODO: Detailed exceptions
 
-                string reason = ex.Message;
+                string reason = ex.ToString();
 
                 RaiseNewNotification( new Notification() { Title = "Failed to load file", Message = reason } );
             }
@@ -939,5 +939,4 @@ namespace Yodii.Lab
 
         #endregion Private methods
     }
-
 }

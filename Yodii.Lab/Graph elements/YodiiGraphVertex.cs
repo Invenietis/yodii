@@ -21,6 +21,7 @@ namespace Yodii.Lab
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
         bool _hasConfiguration;
+        ILivePluginOrServiceInfo _liveItem;
         #endregion
 
         #region Constructors
@@ -74,7 +75,9 @@ namespace Yodii.Lab
             switch( e.PropertyName )
             {
                 case "LivePluginInfo":
+                    LiveObject = _livePlugin.LivePluginInfo;
                     RaisePropertyChanged( "IsLive" );
+                    RaisePropertyChanged( "IsRunning" );
                     RaisePropertyChanged( "IsEditable" );
                     break;
 
@@ -86,7 +89,9 @@ namespace Yodii.Lab
             switch( e.PropertyName )
             {
                 case "LiveServiceInfo":
+                    LiveObject = _liveService.LiveServiceInfo;
                     RaisePropertyChanged( "IsLive" );
+                    RaisePropertyChanged( "IsRunning" );
                     RaisePropertyChanged( "IsEditable" );
                     break;
 
@@ -165,6 +170,22 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Live object for this element, either ILivePluginInfo or ILiveServiceInfo.
+        /// </summary>
+        public ILivePluginOrServiceInfo LiveObject
+        {
+            get { return _liveItem; }
+            internal set
+            {
+                if( value != _liveItem )
+                {
+                    _liveItem = value;
+                    RaisePropertyChanged( "LiveObject" );
+                }
+            }
+        }
+
+        /// <summary>
         /// Title of this vertex.
         /// </summary>
         public string Title
@@ -233,6 +254,26 @@ namespace Yodii.Lab
                 {
                     return RunningStatus.Disabled;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Whether this vertex's object is running.
+        /// </summary>
+        public bool IsRunning
+        {
+            get
+            {
+                if( IsService && LabServiceInfo.IsLive )
+                {
+                    return LabServiceInfo.LiveServiceInfo.RunningStatus == RunningStatus.Running || LabServiceInfo.LiveServiceInfo.RunningStatus == RunningStatus.RunningLocked;
+                }
+                else if( IsPlugin && LabPluginInfo.IsLive )
+                {
+                    return LabServiceInfo.LiveServiceInfo.RunningStatus == RunningStatus.Running || LabServiceInfo.LiveServiceInfo.RunningStatus == RunningStatus.RunningLocked;
+                }
+
+                return false;
             }
         }
 

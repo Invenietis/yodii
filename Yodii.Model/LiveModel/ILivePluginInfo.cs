@@ -11,7 +11,7 @@ namespace Yodii.Model
     /// <summary>
     /// Live status of a plugin, when the engine is started.
     /// </summary>
-    public interface ILivePluginInfo : IDynamicSolvedPlugin, INotifyPropertyChanged
+    public interface ILivePluginInfo : ILivePluginOrServiceInfo, IDynamicSolvedPlugin, INotifyPropertyChanged
     {
         /// <summary>
         /// Whether the plugin is running.
