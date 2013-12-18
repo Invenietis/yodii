@@ -21,7 +21,7 @@ namespace Yodii.Lab
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
         bool _hasConfiguration;
-        object _liveItem;
+        ILivePluginOrServiceInfo _liveItem;
         #endregion
 
         #region Constructors
@@ -172,7 +172,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Live object for this element, either ILivePluginInfo or ILiveServiceInfo.
         /// </summary>
-        public object LiveObject
+        public ILivePluginOrServiceInfo LiveObject
         {
             get { return _liveItem; }
             internal set

@@ -11,7 +11,7 @@ namespace Yodii.Model
     /// <summary>
     /// Live status of a service, when the engine is started.
     /// </summary>
-    public interface ILiveServiceInfo : IDynamicSolvedService, INotifyPropertyChanged
+    public interface ILiveServiceInfo : ILivePluginOrServiceInfo, IDynamicSolvedService, INotifyPropertyChanged
     {
         /// <summary>
         /// Whether this service is running.

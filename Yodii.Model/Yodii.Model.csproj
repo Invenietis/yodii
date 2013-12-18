@@ -86,6 +86,7 @@
     <Compile Include="IYodiiEngineHost.cs" />
     <Compile Include="IYodiiEngineResult.cs" />
     <Compile Include="LiveModel\ILiveInfo.cs" />
+    <Compile Include="LiveModel\ILivePluginOrServiceInfo.cs" />
     <Compile Include="LiveModel\StartDependencyImpact.cs" />
     <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
