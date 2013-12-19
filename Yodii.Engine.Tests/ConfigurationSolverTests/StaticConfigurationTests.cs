@@ -1105,5 +1105,29 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             return engine;
         }
+
+        [Test]
+        public void ValidOnlyOneRunnableReference()
+        {
+            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidOnlyOneRunnableReference.png
+
+            var e = CreateValidOnlyOneRunnableReference();
+            e.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllServicesOptional( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
+                res.CheckAllPluginsOptional( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5" );
+            } );
+        }
+
+        internal static YodiiEngine CreateValidOnlyOneRunnableReference()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph007() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+
+            return engine;
+        }
     }
 }
