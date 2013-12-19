@@ -794,6 +794,7 @@ namespace Yodii.Lab
         public DetailedOperationResult LoadState( string filePath )
         {
             _hideNotifications = true;
+            Graph.LockGraphUpdates = true;
 
             XmlReaderSettings rs = new XmlReaderSettings();
 
@@ -807,6 +808,9 @@ namespace Yodii.Lab
                     }
                 }
                 _hideNotifications = false;
+                Graph.LockGraphUpdates = false;
+
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
 
                 RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
                 return new DetailedOperationResult( true );
@@ -822,6 +826,7 @@ namespace Yodii.Lab
             finally
             {
                 _hideNotifications = false;
+                Graph.LockGraphUpdates = false;
             }
 
             return new DetailedOperationResult( false );
