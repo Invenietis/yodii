@@ -80,7 +80,7 @@ namespace Yodii.Engine.Tests.Mocks
 
         public string ErrorMessage
         {
-            get { return _hasError ? "An error occured." : null; }
+            get { return _hasError ? "An error occurred." : null; }
         }
 
 
