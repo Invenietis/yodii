@@ -138,10 +138,13 @@ namespace Yodii.Lab
                 }
             }
 
+            // Remove configuration when selecting Optional.
+            if( status == ConfigurationStatus.Optional ) return;
+
             IConfigurationLayer changedLayer;
             if( ConfigurationManager.Layers.Count == 0 )
             {
-                changedLayer = ConfigurationManager.Layers.Create("Auto-added layer");
+                changedLayer = ConfigurationManager.Layers.Create("DefaultLayer");
             }
             else
             {

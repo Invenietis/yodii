@@ -288,11 +288,11 @@
                                         AutoReverse="False">
                                         <DoubleAnimation
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                            To="1.3"
+                                            To="1.1"
                                             Duration="00:00:00.25" />
                                         <DoubleAnimation
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                            To="1.3"
+                                            To="1.1"
                                             Duration="00:00:00.25" />
                                     </Storyboard>
                                 </BeginStoryboard>
