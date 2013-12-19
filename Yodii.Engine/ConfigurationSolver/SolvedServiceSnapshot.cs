@@ -11,10 +11,12 @@ namespace Yodii.Engine
     internal class SolvedServiceSnapshot : IStaticSolvedService, IDynamicSolvedService
     {
         readonly ServiceDisabledReason _serviceDisabledReason;
-        readonly SolvedConfigurationStatus _configSolvedStatus;
+        readonly ConfigurationStatus _configSolvedStatus;
         readonly IServiceInfo _serviceInfo;
         readonly ConfigurationStatus _configurationStatus;
         readonly RunningStatus? _runningStatus;
+        readonly StartDependencyImpact _configOriginalImpact;
+        readonly StartDependencyImpact _configSolvedImpact;
 
         public SolvedServiceSnapshot( ServiceData s )
         {
@@ -23,20 +25,26 @@ namespace Yodii.Engine
             _configSolvedStatus = s.ConfigSolvedStatus;
             _configurationStatus = s.ConfigOriginalStatus;
             _runningStatus = s.DynamicStatus;
+            _configOriginalImpact = s.ConfigOriginalImpact;
+            _configSolvedImpact = s.RawConfigSolvedImpact;
         }
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 
-        public ServiceDisabledReason ConfigDisabledReason { get { return _serviceDisabledReason; } }
+        public string DisabledReason { get { return _serviceDisabledReason == ServiceDisabledReason.None ? null : _serviceDisabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
-        SolvedConfigurationStatus IStaticSolvedService.WantedConfigSolvedStatus
+        public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
+
+        public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
+
+        ConfigurationStatus IStaticSolvedService.WantedConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
 
-        SolvedConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
+        ConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -44,14 +52,10 @@ namespace Yodii.Engine
 
         bool IStaticSolvedService.IsBlocking 
         { 
-            get 
-            { 
-                return _configSolvedStatus >= SolvedConfigurationStatus.Runnable 
-                        && _serviceDisabledReason != ServiceDisabledReason.None; 
-            } 
+            get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
         }
-        
-        RunningStatus IDynamicSolvedService.RunningStatus
+
+        RunningStatus IDynamicYodiiItem.RunningStatus
         {
             get
             {
@@ -65,10 +69,5 @@ namespace Yodii.Engine
             return String.Format( "{0} - {1} - {2}", _serviceInfo.ServiceFullName, _serviceDisabledReason.ToString(), _configSolvedStatus.ToString() );
         }
 
-
-        public ServiceDisabledReason DisabledReason
-        {
-            get { throw new NotImplementedException(); }
-        }
     }
 }

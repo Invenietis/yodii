@@ -12,12 +12,7 @@ namespace Yodii.Model
     public interface IPluginInfo : IDiscoveredItem
     {
         /// <summary>
-        /// Gets the unique identifier of the plugin.
-        /// </summary>
-        Guid PluginId { get; }
-
-        /// <summary>
-        /// Gets the full name of the plugin (namespace and class name).
+        /// Gets the unique full name of the plugin (namespace and class name).
         /// </summary>
         string PluginFullName { get; }
 

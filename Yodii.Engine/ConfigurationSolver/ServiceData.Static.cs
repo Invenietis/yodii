@@ -4,72 +4,71 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Engine
 {   
     internal partial class ServiceData
     {
-        readonly Dictionary<string,ServiceData> _allServices;
+        ServiceData[] _directExcludedServices;
         ServiceDisabledReason _configDisabledReason;
-        SolvedConfigurationStatus _configSolvedStatus;
+        
+        ConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
-        ServiceData _configMustExistSpecialization;
-        ServiceData _configDirectMustExistSpecialization;
-
-        class BackReference
+        readonly StartDependencyImpact _configSolvedImpact;
+        readonly List<BackReference> _backReferences;
+        FinalConfigStartableStatus _finalConfigStartableStatus;
+        
+        ServiceData( IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact )
         {
-            public readonly PluginData PluginData;
-            public readonly DependencyRequirement Requirement;
-            public readonly BackReference Next;
-
-            public BackReference( BackReference next, PluginData p, DependencyRequirement req )
-            {
-                PluginData = p;
-                Requirement = req;
-                Next = next;
-            }
-
-        }
-        BackReference _firstBackRunnableReference;
-
-        public readonly IServiceInfo ServiceInfo;
-
-        /// <summary>
-        /// The direct generalization if any.
-        /// When null, this instance is a <see cref="ServiceRootData"/>.
-        /// </summary>
-        public readonly ServiceData Generalization;
-
-        /// <summary>
-        /// Root of Generalization. Never null since when this is not a specialization, this is its own root.
-        /// </summary>
-        public readonly ServiceRootData GeneralizationRoot;
-
-        /// <summary>
-        /// The SolvedConfigStatus of the Service. 
-        /// </summary>
-        public readonly ConfigurationStatus ConfigOriginalStatus;
-
-        internal ServiceData( Dictionary<string, ServiceData> allServices, IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, Func<IServiceInfo,bool> isExternalServiceAvailable )
-        {
-            _allServices = allServices;
+            _directExcludedServices = Util.EmptyArray<ServiceData>.Empty;
+            _backReferences = new List<BackReference>();
             ServiceInfo = s;
-            if( (Generalization = generalization) != null )
+            ConfigOriginalStatus = serviceStatus;
+
+            RawConfigSolvedImpact = ConfigOriginalImpact = impact;
+            if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Generalization != null )
             {
-                GeneralizationRoot = Generalization.GeneralizationRoot;
-                NextSpecialization = Generalization.FirstSpecialization;
-                Generalization.FirstSpecialization = this;
-                ++Generalization.SpecializationCount;
+                RawConfigSolvedImpact = Generalization.ConfigSolvedImpact;
             }
-            else
+            _configSolvedImpact = RawConfigSolvedImpact;
+            if( _configSolvedImpact == StartDependencyImpact.Unknown || (_configSolvedImpact & StartDependencyImpact.IsTryOnly) != 0 )
             {
-                GeneralizationRoot = (ServiceRootData)this;
+                _configSolvedImpact = StartDependencyImpact.Minimal;
             }
-            if ( (ConfigOriginalStatus = serviceStatus) == ConfigurationStatus.Disabled )
+
+            if( ConfigSolvedImpact == StartDependencyImpact.Unknown )
+            {
+                if( Generalization != null ) _configSolvedImpact = Generalization.ConfigOriginalImpact;
+            }
+        }
+
+        internal ServiceData( IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+            : this( s, serviceStatus, impact )
+        {
+            Family = generalization.Family;
+            Generalization = generalization;
+            NextSpecialization = Generalization.FirstSpecialization;
+            Generalization.FirstSpecialization = this;
+            Initialize();
+        }
+
+        internal ServiceData( IConfigurationSolver solver, IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+            : this( s, serviceStatus, impact )
+        {
+            Family = new ServiceFamily( solver, this );
+            Initialize();
+        }
+
+        void Initialize()
+        {
+            _configSolvedStatus = ConfigOriginalStatus;
+            _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
+            if( ConfigOriginalStatus == ConfigurationStatus.Disabled )
             {
                 _configDisabledReason = ServiceDisabledReason.Config;
             }
-            else if( s.HasError )
+            else if( ServiceInfo.HasError )
             {
                 _configDisabledReason = ServiceDisabledReason.ServiceInfoHasError;
             }
@@ -77,20 +76,25 @@ namespace Yodii.Engine
             {
                 _configDisabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
             }
-            //else if( !s.IsDynamicService && !isExternalServiceAvailable( s ) )
-            //{
-            //    _disabledReason = ServiceDisabledReason.ExternalServiceUnavailable;
-            //}            
-            _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
-            if ( !Disabled )
+            if( Disabled )
             {
-                Debug.Assert( (int)SolvedConfigurationStatus.Disabled == (int)ConfigurationStatus.Disabled );
-                Debug.Assert( (int)SolvedConfigurationStatus.Optional == (int)ConfigurationStatus.Optional );
-                Debug.Assert( (int)SolvedConfigurationStatus.Runnable == (int)ConfigurationStatus.Runnable );
-                Debug.Assert( (int)SolvedConfigurationStatus.Running == (int)ConfigurationStatus.Running );
-                _configSolvedStatus = (SolvedConfigurationStatus)serviceStatus;
+                _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
+            }
+            else if( ConfigOriginalStatus == ConfigurationStatus.Running )
+            {
+                Family.SetRunningService( this, ServiceSolvedConfigStatusReason.Config );
             }
         }
+
+        /// <summary>
+        /// The ServiceInfo discovered object.
+        /// </summary>
+        public readonly IServiceInfo ServiceInfo;
+
+        /// <summary>
+        /// Never null.
+        /// </summary>
+        public readonly ServiceData.ServiceFamily Family;
 
         /// <summary>
         /// Gets whether this service is disabled. 
@@ -98,219 +102,6 @@ namespace Yodii.Engine
         public bool Disabled
         {
             get { return _configDisabledReason != ServiceDisabledReason.None; }
-        }
-
-        public ServiceData MustExistSpecialization
-        {
-            get { return _configMustExistSpecialization; }
-        }
-
-        private bool IsStrictGeneralizationOf( ServiceData d )
-        {
-            var g = d.Generalization;
-            if( g == null || d.GeneralizationRoot != GeneralizationRoot ) return false;
-            do
-            {
-                if( g == this ) return true;
-                g = g.Generalization;
-            }
-            while( g != null );
-            return false;
-        }
-
-        /// <summary>
-        /// Gets the first reason why this service is disabled. 
-        /// </summary>
-        public ServiceDisabledReason DisabledReason
-        {
-            get { return _configDisabledReason; }
-        }
-
-        internal virtual void SetDisabled( ServiceDisabledReason r )
-        {
-            Debug.Assert( r != ServiceDisabledReason.None );
-            Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
-            Debug.Assert( !GeneralizationRoot.Disabled ||
-                (GeneralizationRoot.DisabledReason == ServiceDisabledReason.MultipleSpecializationsMustExistByConfig
-                || GeneralizationRoot.DisabledReason == ServiceDisabledReason.GeneralizationIsDisabled)
-                && r == ServiceDisabledReason.GeneralizationIsDisabled, "A root is necessarily not disabled if one of its specialization is not disabled except if we are propagating a MultipleSpecializationsMustExistByConfig to the specialized Services." );
-            _configDisabledReason = r;
-            ServiceData spec = FirstSpecialization;
-            while( spec != null )
-            {
-                if( !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.GeneralizationIsDisabled );
-                spec = spec.NextSpecialization;
-            }
-            PluginData plugin = FirstPlugin;
-            while( plugin != null )
-            {
-                if( !plugin.Disabled ) plugin.SetDisabled( PluginDisabledReason.ServiceIsDisabled );
-                plugin = plugin.NextPluginForService;
-            }
-            Debug.Assert( _theOnlyPlugin == null && _commonReferences == null, "Disabling all plugins must have set them to null." );
-            // The _mustExistReferencer list contains plugins that has at least a MustExist reference to this service
-            // and have been initialized when this Service was not yet disabled.
-            BackReference br = _firstBackRunnableReference;
-            while( br != null )
-            {
-                if( !br.PluginData.Disabled ) br.PluginData.SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
-                br = br.Next;
-            }
-            _configDirectMustExistSpecialization = null;
-            _configMustExistSpecialization = null;
-        }
-
-
-        /// <summary>
-        /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
-        /// </summary>
-        public SolvedConfigurationStatus ConfigSolvedStatus
-        {
-            get { return _configMustExistSpecialization != null ? _configMustExistSpecialization._configSolvedStatus : _configSolvedStatus; }
-        }
-
-        /// <summary>
-        /// Gets the minimal running requirement for this service (not the one of MustExistSpecialization if it exists).
-        /// </summary>
-        public SolvedConfigurationStatus ThisMinimalRunningRequirement
-        {
-            get { return _configSolvedStatus; }
-        }
-
-        /// <summary>
-        /// Gets the strongest reason that explains this service ThisMinimalRunningRequirement. 
-        /// </summary>
-        public ServiceSolvedConfigStatusReason ThisRunningRequirementReason 
-        {
-            get { return _configSolvedStatusReason; }
-        }
-
-        /// <summary>
-        /// This can be called on an already disabled service and may trigger changes on the whole system.
-        /// </summary>
-        /// <param name="s"></param>
-        /// <param name="reason"></param>
-        /// <returns>True if the requirement can be satisfied at this level. False otherwise.</returns>
-        internal bool SetSolvedConfigurationStatus( SolvedConfigurationStatus s, ServiceSolvedConfigStatusReason reason )
-        {
-            if( _configMustExistSpecialization != null && _configMustExistSpecialization != this )
-            {
-                return _configMustExistSpecialization.SetSolvedConfigurationStatus( s, reason );
-            }
-            if( s <= _configSolvedStatus )
-            {
-                if( s >= SolvedConfigurationStatus.Runnable ) return !Disabled;
-                return true;
-            }
-            // New requirement is stronger than the previous one.
-            // We now try to honor the requirement at the service level.
-            // If we fail, this service will be disabled, but we set the requirement to prevent reentrancy.
-            // Reentrancy can nevertheless be caused by subsequent requirements MustExistTryStart or MustExistAndRun:
-            // we allow this (there will be at most 3 reentrant calls to this method). 
-            // Note that we capture the reason only on the first call, not on each failing call: the reason is not necessarily 
-            // associated to the running requirement.
-            var current = _configSolvedStatus;
-            _configSolvedStatus = s;
-            // Is it compliant with a Disabled service? If yes, it is always satisfied.
-            if( s < SolvedConfigurationStatus.Runnable )
-            {
-                _configSolvedStatusReason = reason;
-                // Propagate TryStart.
-                PropagateRunningRequirementToOnlyPluginOrCommonReferences();
-                return true;
-            }
-            // The new requirement is at least MustExist.
-            // If this is already disabled, there is nothing to do.
-            if( Disabled ) return false;
-
-            _configSolvedStatusReason = reason;
-
-            // Call SetAsRunnableService only if this Service becomes Runnable or Running.
-            if( current < SolvedConfigurationStatus.Runnable )
-            {
-                if( !SetAsRunnableService() ) return false;
-            }
-            Debug.Assert( !Disabled );
-            // Now, if the OnlyPlugin exists, propagate the MustExist (or more) requirement to it.
-            // MustExist requirement triggers MustExist on MustExist plugins to services requirements.
-            // (This can be easily propagated if there is one and only one plugin for the service.)
-            //
-            // If more than one plugin exist, we can actually propagate requirements to all the Services that are shared 
-            // by all our non-disabled plugins: we initialize our CommonServiceReferences object.
-            //
-            if( TotalAvailablePluginCount > 1 ) InitializePropagation( TotalAvailablePluginCount, fromConfig:false );
-            PropagateRunningRequirementToOnlyPluginOrCommonReferences();
-            return !Disabled;
-        }
-
-        /// <summary>
-        /// Called by SetRunningRequirement whenever the Requirement becomes Runnable, or by ServiceRootData.OnAllPluginsAdded
-        /// if a RunnablePluginByConfig exists for the root.
-        /// </summary>
-        /// <returns></returns>
-        internal bool SetAsRunnableService( bool fromRunnablePlugin = false )
-        {
-            if( fromRunnablePlugin )
-            {
-                _configSolvedStatus = GeneralizationRoot.RunnablePluginByConfig.ConfigSolvedStatus;
-            }
-            Debug.Assert( _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
-            // From a non running requirement to a running requirement.
-            var currentMustExist = GeneralizationRoot.MustExistService;
-            //
-            // Only 3 possible cases here:
-            //
-            // - There is no current Runnable Service for our Generalization.
-            // - we are the current one... We are necessarily already be Runnable.
-            // - We specialize the current one.
-            //
-            Debug.Assert( currentMustExist == null || currentMustExist == this || currentMustExist.IsStrictGeneralizationOf( this ) );
-            // Note: The other cases would be:
-            //    - We are a Generalization of the current one. This is not possible since SetRunningRequirement is routed to the _mustExistSpecialization if it exists.
-            //    - a specialization exists and we are not a specialization nor a generalization of it: this is not possible since we would have been disabled.
-            //
-            // When a Runnable appears below a current one, the requirement of the current one (the generalization) may be stronger than
-            // the new one: the new one must be updated to honor the generalization's requirement.
-            //
-            // Once a Runnable is set, the _runnableSpecialization is used to reroute the call to SetRunningRequirement and the MinimalRunningRequirement property:
-            // it is useless to propagate Requirement up to the Runnable branch.
-            //
-            if( currentMustExist != null && currentMustExist._configSolvedStatus > _configSolvedStatus )
-            {
-                _configSolvedStatus = currentMustExist._configSolvedStatus;
-                _configSolvedStatusReason = currentMustExist._configSolvedStatusReason;
-            }
-
-            // We must disable all sibling services (and plugins) from this up to Runnable (when Runnable is null, up to the root).
-            _configMustExistSpecialization = this;
-            var g = Generalization;
-            if( g != null )
-            {
-                var specThatMustExist = this;
-                do
-                {
-                    g._configMustExistSpecialization = this;
-                    g._configDirectMustExistSpecialization = specThatMustExist;
-                    var spec = g.FirstSpecialization;
-                    while( spec != null )
-                    {
-                        if( spec != specThatMustExist && !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustExist );
-                        spec = spec.NextSpecialization;
-                    }
-                    PluginData p = g.FirstPlugin;
-                    while( p != null )
-                    {
-                        if( !p.Disabled ) p.SetDisabled( PluginDisabledReason.ServiceSpecializationMustExist );
-                        p = p.NextPluginForService;
-                    }
-                    specThatMustExist = g;
-                    g = g.Generalization;
-                }
-                while( g != null ); //changed condition g != currentMustExist with g != null 
-            }
-            if( Disabled ) return false;
-            GeneralizationRoot.MustExistServiceChanged( this );
-            return true;
         }
 
         /// <summary>
@@ -324,14 +115,38 @@ namespace Yodii.Engine
         public readonly ServiceData NextSpecialization;
 
         /// <summary>
-        /// Number of direct specializations.
-        /// </summary>
-        public int SpecializationCount;
-
-        /// <summary>
         /// Head of the linked list of PluginData that implement this exact Service (not specialized ones).
         /// </summary>
         public PluginData FirstPlugin;
+
+        /// <summary>
+        /// The direct generalization if any.
+        /// When null, this instance is a <see cref="ServiceRootData"/>.
+        /// </summary>
+        public readonly ServiceData Generalization;
+
+        /// <summary>
+        /// The ConfigurationStatus of the Service. 
+        /// </summary>
+        public readonly ConfigurationStatus ConfigOriginalStatus;
+
+        /// <summary>
+        /// The original, configured, StartDependencyImpact of the service itself.
+        /// </summary>
+        public readonly StartDependencyImpact ConfigOriginalImpact;
+
+        /// <summary>
+        /// The configured StartDependencyImpact (either ConfigOriginalImpact or the Generalization's one if ConfigOriginalImpact is unknown).
+        /// </summary>
+        public readonly StartDependencyImpact RawConfigSolvedImpact;
+
+        /// <summary>
+        /// The solved StartDependencyImpact: it is this ConfigOriginalImpact if known or the Generalization's one if it exists.
+        /// </summary>
+        public StartDependencyImpact ConfigSolvedImpact
+        {
+            get { return _configSolvedImpact; }
+        }
 
         /// <summary>
         /// Number of plugins for this exact service.
@@ -371,90 +186,129 @@ namespace Yodii.Engine
         }
 
         /// <summary>
-        /// First step after object construction.
+        /// Never null.
         /// </summary>
-        /// <returns>The deepest specialization that must exist or null if none must exist or a conflict exists.</returns>
-        protected ServiceData GetMustExistService()
+        internal IEnumerable<ServiceData> DirectExcludedServices
         {
-            Debug.Assert( !Disabled, "Must NOT be called on already disabled service." );
-            // Handles direct specializations that MustExist.
-            ServiceData directSpecThatHasMustExist = null;
-            ServiceData specMustExist = null;
+            get { return _directExcludedServices; }
+        }
+
+        /// <summary>
+        /// Tests whether this service is a generalization of another one.
+        /// </summary>
+        /// <param name="s">Service that is a potential specialization.</param>
+        /// <returns>True if this generalizes <paramref name="s"/>.</returns>
+        internal bool IsStrictGeneralizationOf( ServiceData s )
+        {
+            var g = s.Generalization;
+            if( g == null || s.Family != Family ) return false;
+            do
+            {
+                if( g == this ) return true;
+                g = g.Generalization;
+            }
+            while( g != null );
+            return false;
+        }
+
+        internal bool IsGeneralizationOf( ServiceData d )
+        {
+            return this == d || IsStrictGeneralizationOf( d );
+        }
+
+        /// <summary>
+        /// Gets the first reason why this service is disabled. 
+        /// </summary>
+        public ServiceDisabledReason DisabledReason
+        {
+            get { return _configDisabledReason; }
+        }
+
+        /// <summary>
+        /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
+        /// </summary>
+        public ConfigurationStatus ConfigSolvedStatus
+        {
+            get { return _configSolvedStatus; }
+        }
+
+        /// <summary>
+        /// Gets the ConfigSolvedStatus that is ConfigurationStatus.Disabled if the service is actually Disabled.
+        /// </summary>
+        public ConfigurationStatus FinalConfigSolvedStatus
+        {
+            get { return _configDisabledReason != ServiceDisabledReason.None ? ConfigurationStatus.Disabled : _configSolvedStatus; }
+        }
+
+        struct BackReference
+        {
+            public readonly PluginData PluginData;
+            public readonly DependencyRequirement Requirement;
+
+            public BackReference( PluginData p, DependencyRequirement r )
+            {
+                PluginData = p;
+                Requirement = r;
+            }
+        }
+
+        internal void RegisterPluginReference( PluginData p, DependencyRequirement r )
+        {
+            _backReferences.Add( new BackReference( p, r ) );
+        }
+
+        internal void SetDisabled( ServiceDisabledReason r )
+        {
+            Debug.Assert( r != ServiceDisabledReason.None );
+            Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
+            _configDisabledReason = r;
             ServiceData spec = FirstSpecialization;
             while( spec != null )
             {
-                if( !spec.Disabled )
-                {
-                    var mustExist = spec.GetMustExistService();
-                    // We may stop as soon as a conflict is detected, but we continue the loop to let any branches detect other potential conflicts.
-                    if( !Disabled )
-                    {
-                        if( spec.DisabledReason == ServiceDisabledReason.MultipleSpecializationsMustExistByConfig )
-                        {
-                            Debug.Assert( mustExist == null, "Since a conflict has been detected below, returned mustExist is null." );
-                            SetDisabled( ServiceDisabledReason.MultipleSpecializationsMustExistByConfig );
-                            directSpecThatHasMustExist = specMustExist = null;
-                        }
-                        else
-                        {
-                            Debug.Assert( spec.Disabled == false, "Since it was not disabled before calling GetMustExistService, it could only be ServiceDisabledReason.MultipleSpecializationsMustExist." );
-                            if( mustExist != null )
-                            {
-                                if( specMustExist != null )
-                                {
-                                    SetDisabled( ServiceDisabledReason.MultipleSpecializationsMustExistByConfig );
-                                    directSpecThatHasMustExist = specMustExist = null;
-                                }
-                                else
-                                {
-                                    specMustExist = mustExist;
-                                    directSpecThatHasMustExist = spec;
-                                }
-                            }
-                        }
-                    }
-                }
+                if( !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.GeneralizationIsDisabled );
                 spec = spec.NextSpecialization;
             }
-            Debug.Assert( !Disabled || specMustExist == null, "(Conflict below <==> Disabled) => specMustExist has been set to null." );
-            Debug.Assert( (specMustExist != null) == (directSpecThatHasMustExist != null) );
-            if( !Disabled )
+            PluginData plugin = FirstPlugin;
+            while( plugin != null )
             {
-                // No specialization is required to exist, is it our case?
-                if( specMustExist == null )
-                {
-                    Debug.Assert( ConfigOriginalStatus != ConfigurationStatus.Disabled, "Caution: Disabled is greater than MustExist." );
-                    if ( ConfigOriginalStatus >= ConfigurationStatus.Runnable ) specMustExist = _configMustExistSpecialization = this;
-                }
-                else
-                {
-                    // A specialization must exist: it must be the only one, others are disabled.
-                    spec = FirstSpecialization;
-                    while( spec != null )
-                    {
-                        if( spec != directSpecThatHasMustExist && !spec.Disabled )
-                        {
-                            spec.SetDisabled( ServiceDisabledReason.AnotherSpecializationMustExistByConfig );
-                        }
-                        spec = spec.NextSpecialization;
-                    }
-                    _configMustExistSpecialization = specMustExist;
-                    _configDirectMustExistSpecialization = directSpecThatHasMustExist;
-                    // Since there is a MustExist specialization, it concentrates the running requirements
-                    // of all its generalization (here from their configurations).
-                    if( _configSolvedStatus > specMustExist._configSolvedStatus )
-                    {
-                        specMustExist._configSolvedStatus = _configSolvedStatus;
-                        specMustExist._configSolvedStatusReason = ServiceSolvedConfigStatusReason.FromGeneralization;
-                    }
-                }
-                Debug.Assert( !Disabled, "The fact that this service (or a specialization) must exist, can not disable this service." );
+                if( !plugin.Disabled ) plugin.SetDisabled( PluginDisabledReason.ServiceIsDisabled );
+                plugin = plugin.NextPluginForService;
             }
-            return specMustExist;
+            foreach( var backRef in _backReferences )
+            {
+                PluginDisabledReason reason = backRef.PluginData.GetDisableReasonForDisabledReference( backRef.Requirement );
+                if( reason != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( reason );
+            }
         }
 
+        internal bool SetSolvedStatus( ConfigurationStatus status, ServiceSolvedConfigStatusReason reason )
+        {
+            Debug.Assert( status >= ConfigurationStatus.Runnable );
+            if( _configSolvedStatus >= status ) return !Disabled;
+            if( status == ConfigurationStatus.Running )
+            {
+                if( !Family.SetRunningService( this, reason ) ) return false;
+            }
+            else
+            {
+                ServiceData g = Generalization;
+                while( g != null )
+                {
+                    if( g._configSolvedStatus <= ConfigurationStatus.Runnable )
+                    {
+                        g._configSolvedStatus = ConfigurationStatus.Runnable;
+                        g._configSolvedStatusReason = ServiceSolvedConfigStatusReason.FromSpecialization;
+                    }
+                    g = g.Generalization;
+                }
+                _configSolvedStatus = ConfigurationStatus.Runnable;
+                _configSolvedStatusReason = reason;
+            }
+            PropagateSolvedStatus();
+            return !Disabled;
+        }
 
-        PluginData FindFirstPluginData( Func<PluginData, bool> filter )
+        internal PluginData FindFirstPluginData( Func<PluginData, bool> filter )
         {
             PluginData p = FirstPlugin;
             while( p != null )
@@ -474,17 +328,6 @@ namespace Yodii.Engine
 
         internal void AddPlugin( PluginData p )
         {
-            // Consider its RunningRequirements to detect trivial case: the fact that another plugin 
-            // must exist for the same Generalization service.
-            // The less trivially case when this must exist plugin conflicts with some MustExist at the services level
-            // is already handled in PluginData constructor thanks to service.MustExistSpecialization beeing not null that 
-            // immediately disables the plugin.
-            if( p.ConfigSolvedStatus >= SolvedConfigurationStatus.Runnable )
-            {
-                Debug.Assert( !p.Disabled );
-                GeneralizationRoot.SetMustExistPluginByConfig( p );
-            }
-            // Adds the plugin, taking its disabled state into account.
             p.NextPluginForService = FirstPlugin;
             FirstPlugin = p;
             ++PluginCount;
@@ -499,73 +342,123 @@ namespace Yodii.Engine
             while( g != null );
         }
 
-        /// <summary>
-        /// Adds a plugin that requires this service with Runnable, RunnableTryStart or Running requirement.
-        /// </summary>
-        /// <param name="plugin">The plugin that references us.</param>
-        internal void AddRunnableReferencer( PluginData plugin, DependencyRequirement req )
-        {
-            Debug.Assert( !Disabled );
-            Debug.Assert( req >= DependencyRequirement.Runnable );
-            _firstBackRunnableReference = new BackReference( _firstBackRunnableReference, plugin, req );
-        }
-
-        internal virtual void OnAllPluginsAdded()
+        internal void OnAllPluginsAdded()
         {
             Debug.Assert( !Disabled, "Must NOT be called on already disabled service." );
-            Debug.Assert( (MustExistSpecialization == null || MustExistSpecialization == this) || PluginCount == DisabledPluginCount, "If there is a must exist specialization, all our plugins are disabled." );
 
-            // Recursive call: the only plugin or the CommonServiceReferences are
-            // updated bottom up, so that this Generalization can reuse them.
-            ServiceData spec = FirstSpecialization;
-            while( spec != null )
+            // First, disables a service without plugins.
+            if( TotalPluginCount == 0 )
             {
-                if( !spec.Disabled ) spec.OnAllPluginsAdded();
-                spec = spec.NextSpecialization;
+                SetDisabled( ServiceDisabledReason.NoPlugin );
             }
-            // For raw Service (from Service container) we have nothing to do... 
-            // they are available or not (and then they are Disabled).
+            else if( TotalAvailablePluginCount == 0 )
+            {
+                SetDisabled( ServiceDisabledReason.AllPluginsAreDisabled );
+            }
+
             if( !Disabled )
             {
-                if( TotalPluginCount == 0 )
+                // Build the directly excluded services before calling OnAllPluginsAdded on specializations.
+                List<ServiceData> excl = null;
+                if( Generalization != null )
                 {
-                    SetDisabled( ServiceDisabledReason.NoPlugin );
-                }
-                else
-                {
-                    int nbAvailable = TotalAvailablePluginCount;
-                    if( nbAvailable == 0 )
+                    if( Generalization._directExcludedServices.Length > 0 ) excl = new List<ServiceData>( Generalization._directExcludedServices.Where( s => !s.Disabled ) );
+                    ServiceData sibling = Generalization.FirstSpecialization;
+                    while( sibling != null )
                     {
-                        SetDisabled( ServiceDisabledReason.AllPluginsAreDisabled );
+                        if( sibling != this && !sibling.Disabled )
+                        {
+                            if( excl == null ) excl = new List<ServiceData>();
+                            excl.Add( sibling );
+                        }
+                        sibling = sibling.NextSpecialization;
                     }
-                    else InitializePropagation( nbAvailable, fromConfig: true );
+                    if( excl != null ) _directExcludedServices = excl.Where( s => !s.Disabled ).ToArray();
                 }
+
+                ServiceData spec = FirstSpecialization;
+                while( spec != null )
+                {
+                    if( !spec.Disabled ) spec.OnAllPluginsAdded();
+                    spec = spec.NextSpecialization;
+                }
+
+                Debug.Assert( !Disabled );
+                Family.Solver.DeferPropagation( this );
             }
         }
 
         internal void OnPluginDisabled( PluginData p )
         {
-            Debug.Assert( (p.Service == this || IsStrictGeneralizationOf( p.Service )) && p.Disabled );
+            Debug.Assert( this.IsGeneralizationOf( p.Service ) && p.Disabled );
             if( p.Service == this ) ++DisabledPluginCount;
             ++TotalDisabledPluginCount;
-            if ( !Disabled )
+            if( Generalization != null ) Generalization.OnPluginDisabled( p );
+            if( !Disabled && Family.AllPluginsHaveBeenAdded )
             {
-                int nbAvailable = TotalAvailablePluginCount;
-                if ( nbAvailable == 0 )
+                if( TotalAvailablePluginCount == 0 )
                 {
-                    _theOnlyPlugin = null;
-                    _commonReferences = null;
                     SetDisabled( ServiceDisabledReason.AllPluginsAreDisabled );
                 }
-                else InitializePropagation( nbAvailable, fromConfig: false );
+                else Family.Solver.DeferPropagation( this );
             }
-            // We must update and check the total number of plugins.
-            if( Generalization != null ) Generalization.OnPluginDisabled( p );
+        }
+
+        internal void InitializeFinalStartableStatus()
+        {
+            ConfigurationStatus final = FinalConfigSolvedStatus;
+            if( final == ConfigurationStatus.Optional || final == ConfigurationStatus.Runnable )
+            {
+                _finalConfigStartableStatus = new FinalConfigStartableStatus( GetUsefulPropagationInfo() );
+            }
         }
 
         public override string ToString()
         {
-            return String.Format( "{0} - {1} - {2} - {4} plugins => ((Dynamic: {3})", ServiceInfo.ServiceFullName, Disabled ? DisabledReason.ToString() : "!Disabled", ConfigSolvedStatus, _dynamicStatus, TotalAvailablePluginCount );
+            StringBuilder b = new StringBuilder();
+            ToString( b, String.Empty );
+            return b.ToString();
+        }
+
+        public void ToString( StringBuilder b, string prefix )
+        {
+            b.Append( prefix );
+            if( Disabled )
+            {
+                b.AppendFormat( "{0} - DisableReason: {1}, Solved: {2} => Dynamic: {3}",
+                    ServiceInfo.ServiceFullName,
+                    DisabledReason,
+                    ConfigSolvedStatus,
+                    _dynamicStatus );
+            }
+            else
+            {
+                b.AppendFormat( "{0} - Solved: {1}, Config: {2} => Dynamic: {3}",
+                    ServiceInfo.ServiceFullName,
+                    ConfigSolvedStatus,
+                    ConfigOriginalStatus,
+                    _dynamicStatus );
+            }
+            if( PluginCount > 0 )
+            {
+                b.AppendLine();
+                b.Append( prefix ).AppendFormat( " - {0}/{1} plugins - {2}/{3} total plugins.", AvailablePluginCount, PluginCount, TotalAvailablePluginCount, TotalPluginCount );
+                var prefix2 = prefix + " --- ";
+                PluginData p = FirstPlugin;
+                while( p != null )
+                {
+                    b.AppendLine().Append( prefix2 ).Append( p.ToString() );
+                    p = p.NextPluginForService;
+                }
+            }
+            var prefixS = prefix + "   > ";
+            ServiceData spec = FirstSpecialization;
+            while( spec != null )
+            {
+                b.AppendLine();
+                spec.ToString( b, prefixS );
+                spec = spec.NextSpecialization;
+            }
         }
     }
 }

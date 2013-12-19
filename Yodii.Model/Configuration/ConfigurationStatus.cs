@@ -27,7 +27,7 @@ namespace Yodii.Model
         Runnable = 4,
 
         /// <summary>
-        /// Iteml must run.
+        /// Item must run.
         /// </summary>
         Running = 6
     }

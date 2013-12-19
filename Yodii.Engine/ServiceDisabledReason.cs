@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model
+namespace Yodii.Engine
 {
     /// <summary>
     /// Reasons for which a service was disabled.
     /// </summary>
-    public enum ServiceDisabledReason
+    enum ServiceDisabledReason
     {
         /// <summary>
         /// The service is not disabled.
@@ -43,13 +43,13 @@ namespace Yodii.Model
         /// <summary>
         /// Sets by ServiceData.GetMustExistService.
         /// </summary>
-        MultipleSpecializationsMustExistByConfig,
+        MultipleSpecializationsRunningByConfig,
 
         /// <summary>
         /// Sets by ServiceData.GetMustExistService.
         /// </summary>
         AnotherSpecializationMustExistByConfig,
-        
+
         /// <summary>
         /// Sets by ServiceData.SetDisabled.
         /// </summary>
@@ -58,13 +58,13 @@ namespace Yodii.Model
         /// <summary>
         /// Sets by ServiceData.SetRunningRequirement method.
         /// </summary>
-        AnotherSpecializationMustExist,
+        AnotherSpecializationMustRun,
 
         /// <summary>
         /// Sets by ServiceData.OnAllPluginsAdded method.
         /// </summary>
         NoPlugin,
-        
+
         /// <summary>
         /// Sets by ServiceData.OnAllPluginsAdded method and ServiceData.OnPluginDisabled.
         /// </summary>
@@ -74,7 +74,21 @@ namespace Yodii.Model
         /// The service is not a dynamic service (it does not extend IDynamicService) and can not be 
         /// found in the Service provider. 
         /// </summary>
-        ExternalServiceUnavailable
+        ExternalServiceUnavailable,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        ExcludingServiceIsBlocking,
+        AnotherServiceIsRunningByConfig,
+        PluginRunningAbove,
+        SiblingSpecializationRunning,
+        PluginRunningElsewhere,
+        StopppedByPropagation,
+        AnotherServiceRunningInFamily,
+        PropagationFailed,
+        PropagationToSinglePluginFailed,
+        PropagationToCommonPluginReferencesFailed
     }
 
 }

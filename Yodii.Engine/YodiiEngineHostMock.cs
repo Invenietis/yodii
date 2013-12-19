@@ -18,28 +18,16 @@ namespace Yodii.Engine
         {
             Debug.Assert( toDisable.Any() || toStop.Any() || toStart.Any() );
             List<Tuple<IPluginInfo, Exception>> pluginErrors = new List<Tuple<IPluginInfo, Exception>>();
+            IEnumerable<IPluginInfo> toCheck = toDisable.Concat( toStop ).Concat( toStart );
 
-            foreach(IPluginInfo pluginToDisable in toDisable)
+            foreach(IPluginInfo plugin in toCheck)
             {
-                if( pluginToDisable.PluginFullName.Contains("buggy") )
+                if ( plugin.PluginFullName.Contains( "buggy" ) )
                 {
-                    pluginErrors.Add( new Tuple<IPluginInfo, Exception>( pluginToDisable, new Exception( "HostError" ) ) );
+                    pluginErrors.Add( new Tuple<IPluginInfo, Exception>( plugin, new Exception( "HostError" ) ) );
                 }
             }
-            foreach ( IPluginInfo pluginToStop in toStop )
-            {
-                if ( pluginToStop.PluginFullName.Contains( "buggy" ) )
-                {
-                    pluginErrors.Add( new Tuple<IPluginInfo, Exception>( pluginToStop, new Exception( "HostError" ) ) );
-                }
-            }
-            foreach ( IPluginInfo pluginToStart in toStart )
-            {
-                if ( pluginToStart.PluginFullName.Contains( "buggy" ) )
-                {
-                    pluginErrors.Add( new Tuple<IPluginInfo, Exception>( pluginToStart, new Exception( "HostError" ) ) );
-                }
-            }
+            
             if ( pluginErrors.Any() ) return pluginErrors;
             return null;
         }

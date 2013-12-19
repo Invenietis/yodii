@@ -4,16 +4,104 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Engine
 {
-    partial class PluginData
+    partial class PluginData : IServiceDependentObject
     {
-        readonly Dictionary<string,ServiceData> _allServices;
+        readonly IConfigurationSolver _solver;
+        IReadOnlyList<ServiceData> _runningIncludedServices;
+        IReadOnlyList<ServiceData> _runnableIncludedServices;
+        IReadOnlyList<ServiceData>[] _exclServices;
+        IReadOnlyList<ServiceData>[] _inclServices;
         PluginDisabledReason _configDisabledReason;
-        SolvedConfigurationStatus _configSolvedStatus;
+        ConfigurationStatus _configSolvedStatus;
         PluginRunningRequirementReason _configSolvedStatusReason;
+        readonly StartDependencyImpact _configSolvedImpact;
+        FinalConfigStartableStatus _finalConfigStartableStatus;
 
+        internal PluginData( IConfigurationSolver solver, IPluginInfo p, ServiceData service, ConfigurationStatus pluginStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        {
+            _solver = solver;
+            PluginInfo = p;
+            Service = service;
+            ConfigOriginalStatus = pluginStatus;
+            _configSolvedStatus = pluginStatus;
+            _configSolvedStatusReason = PluginRunningRequirementReason.Config;
+
+            RawConfigSolvedImpact = ConfigOriginalImpact = impact;
+            if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Service != null )
+            {
+                RawConfigSolvedImpact = Service.ConfigSolvedImpact;
+            }
+            _configSolvedImpact = RawConfigSolvedImpact;
+            if( _configSolvedImpact == StartDependencyImpact.Unknown || (_configSolvedImpact & StartDependencyImpact.IsTryOnly) != 0 )
+            {
+                _configSolvedImpact = StartDependencyImpact.Minimal;
+            }
+
+            if( ConfigOriginalStatus == ConfigurationStatus.Disabled )
+            {
+                _configDisabledReason = PluginDisabledReason.Config;
+            }
+            else if( p.HasError )
+            {
+                _configDisabledReason = PluginDisabledReason.PluginInfoHasError;
+            }
+            else if( Service != null )
+            {
+                if( Service.Disabled )
+                {
+                    _configDisabledReason = PluginDisabledReason.ServiceIsDisabled;
+                }
+                else if( Service.Family.RunningPlugin != null )
+                {
+                    _configDisabledReason = PluginDisabledReason.AnotherRunningPluginExistsInFamilyByConfig;
+                }
+            }
+            // Register Runnable references to Services from this plugin.
+            foreach( var sRef in PluginInfo.ServiceReferences )
+            {
+                if( sRef.Requirement >= DependencyRequirement.Runnable )
+                {
+                    // If the required service is already disabled, we immediately disable this plugin.
+                    if( sRef.Reference.HasError )
+                    {
+                        SetDisabled( PluginDisabledReason.RunnableReferenceServiceIsOnError );
+                        break;
+                    }
+                    ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                    if( sr.Disabled )
+                    {
+                        SetDisabled( PluginDisabledReason.RunnableReferenceIsDisabled );
+                        break;
+                    }
+                }
+            }
+            if( !Disabled  )
+            {
+                // If the plugin is not yet disabled, we register it:
+                // whenever the referenced service is disabled (or stopped during dynamic resolution), this 
+                // will disable (or stop) the plugin according to its ConfigSolvedImpact.
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    _solver.FindExistingService( sRef.Reference.ServiceFullName ).RegisterPluginReference( this, sRef.Requirement );
+                }
+                if( Service != null )
+                {
+                    if( ConfigOriginalStatus == ConfigurationStatus.Running )
+                    {
+                        Service.Family.SetRunningPlugin( this );
+                    }
+                    Service.AddPlugin( this );
+                }
+            }
+        }
+
+        /// <summary>
+        /// The discovered plugin information.
+        /// </summary>
         public readonly IPluginInfo PluginInfo;
 
         /// <summary>
@@ -31,76 +119,22 @@ namespace Yodii.Engine
         /// </summary>
         public readonly ConfigurationStatus ConfigOriginalStatus;
 
+        /// <summary>
+        /// The original, configured, StartDependencyImpact of the plugin itself.
+        /// </summary>
+        public readonly StartDependencyImpact ConfigOriginalImpact;
 
-        internal static readonly PluginData[] EmptyArray = new PluginData[0];
+        /// <summary>
+        /// The configured StartDependencyImpact (either ConfigOriginalImpact or the Service's one if ConfigOriginalImpact is unknown).
+        /// </summary>
+        public readonly StartDependencyImpact RawConfigSolvedImpact;
 
-        internal PluginData( Dictionary<string,ServiceData> allServices, IPluginInfo p, ServiceData service, ConfigurationStatus pluginStatus )
+        /// <summary>
+        /// The solved StartDependencyImpact for the static resolution: never IsTryOnly nor unknown.
+        /// </summary>
+        public StartDependencyImpact ConfigSolvedImpact
         {
-            _allServices = allServices;
-            PluginInfo = p;
-            // Updates disabled state first so that AddPlugin can take disabled state into account.
-            if( (ConfigOriginalStatus = pluginStatus) == ConfigurationStatus.Disabled )
-            {
-                _configDisabledReason = PluginDisabledReason.Config;
-            }
-            else if( p.HasError )
-            {
-                _configDisabledReason = PluginDisabledReason.PluginInfoHasError;
-            }
-            else if( service != null )
-            {
-                if( service.Disabled )
-                {
-                    _configDisabledReason = PluginDisabledReason.ServiceIsDisabled;
-                }
-                else if( service.MustExistSpecialization != null && service.MustExistSpecialization != service )
-                {
-                    _configDisabledReason = PluginDisabledReason.ServiceSpecializationMustExist;
-                }
-            }
-            if( !Disabled )
-            {
-                // Register MustExist references to Services from this plugin.
-                foreach( var sRef in PluginInfo.ServiceReferences )
-                {
-                    if( sRef.Requirement >= DependencyRequirement.Runnable )
-                    {
-                        // If the required service is already disabled, we immediately disable this plugin.
-                        // If the required service is not yet disabled, we register this plugin data:
-                        // whenever the service is disabled, it will disable the plugin.
-                        if( sRef.Reference.HasError )
-                        {
-                            SetDisabled( PluginDisabledReason.MustExistReferenceServiceIsOnError );
-                            break;
-                        }
-                        ServiceData sr = allServices[sRef.Reference.ServiceFullName];
-                        if( sr.Disabled )
-                        {
-                            SetDisabled( PluginDisabledReason.MustExistReferenceIsDisabled );
-                            break;
-                        }
-                        sr.AddRunnableReferencer( this, sRef.Requirement );
-                    }
-                }
-            }
-            // Updates SolvedConfigurationStatus so that AddPlugin can take Runnable into account.
-            _configSolvedStatusReason = PluginRunningRequirementReason.Config;
-            if ( !Disabled )
-            {
-                Debug.Assert( (int)SolvedConfigurationStatus.Disabled == (int)ConfigurationStatus.Disabled );
-                Debug.Assert( (int)SolvedConfigurationStatus.Optional == (int)ConfigurationStatus.Optional );
-                Debug.Assert( (int)SolvedConfigurationStatus.Runnable == (int)ConfigurationStatus.Runnable );
-                Debug.Assert( (int)SolvedConfigurationStatus.Running == (int)ConfigurationStatus.Running );
-                _configSolvedStatus = (SolvedConfigurationStatus)pluginStatus;
-            }
-            Debug.Assert( !Disabled || _configSolvedStatus == SolvedConfigurationStatus.Optional, "Disabled => status is Optional." );
-            if( service != null )
-            {
-                service.AddPlugin( this );
-                // Sets Service after AddPlugin call to avoid calling Service.OnPluginDisabled 
-                // if the AddPlugin or references checks above disables it.
-                Service = service;
-            }
+            get { return _configSolvedImpact; }
         }
 
         /// <summary>
@@ -108,9 +142,17 @@ namespace Yodii.Engine
         /// if this plugin implements a service.
         /// This is the minimal requirement after having propagated the constraints through the graph.
         /// </summary>
-        public SolvedConfigurationStatus ConfigSolvedStatus
+        public ConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
+        }
+
+        /// <summary>
+        /// Gets the ConfigSolvedStatus that is ConfigurationStatus.Disabled if the plugin is actually Disabled.
+        /// </summary>
+        public ConfigurationStatus FinalConfigSolvedStatus
+        {
+            get { return _configDisabledReason != PluginDisabledReason.None ? ConfigurationStatus.Disabled : _configSolvedStatus; }
         }
 
         /// <summary>
@@ -146,78 +188,250 @@ namespace Yodii.Engine
             if( Service != null ) Service.OnPluginDisabled( this );
         }
 
-        /// <summary>
-        /// Called by ServiceData.RetrieveTheOnlyPlugin and ServiceData.SetSolvedConfigurationStatus.
-        /// In both cases, it is to propagate the current service solved status to the plugin.
-        /// When called by RetrieveTheOnlyPlugin, it when the plugin became the only plugin.
-        /// When called by SetSolvedConfigurationStatus, it is because this plugin is the only plugin.
-        /// </summary>
-        internal bool SetSolvedConfigurationStatus( SolvedConfigurationStatus s, PluginRunningRequirementReason reason )
+        internal bool SetSolvedStatus( ConfigurationStatus status, PluginRunningRequirementReason reason )
         {
-            if( s <= _configSolvedStatus )
-            {
-                if( s >= SolvedConfigurationStatus.Runnable) return !Disabled;
-                return true;
-            }
-            // New requirement is stronger than the previous one.
-            _configSolvedStatus = s;
-            // Is it compliant with a Disabled plugin? If yes, it is always satisfied.
-            if ( s < SolvedConfigurationStatus.Runnable )
-            {
-                _configSolvedStatusReason = reason;
-                // The new requirement is OptionalTryStart. This can always be satisfied.
-                return true;
-            }
-            // The new requirement is at least MustExist.
-            // If this is already disabled, there is nothing to do.
-            if( Disabled ) return false;
-
+            Debug.Assert( status >= ConfigurationStatus.Runnable );
+            if( _configSolvedStatus >= status ) return !Disabled;
+            _configSolvedStatus = status;
             _configSolvedStatusReason = reason;
 
-            // We are always called by our service: it is useless to upgrade the running
-            // requirement of our service here: once the plugin is created, its MustExist configuration
-            // is immediately taken into account => this plugin requirement never "pops up" without beeing 
-            // driven by one of its Services.
+            if( status == ConfigurationStatus.Running && Service != null && !Service.Family.SetRunningPlugin( this ) ) return false;
 
-            return CheckReferencesWhenMustExist();
+            return PropagateSolvedStatus();
         }
 
-        /// <summary>
-        /// This is called by SetRunningRequirement and by ConfigurationSolver.
-        /// </summary>
-        /// <returns></returns>
-        internal bool CheckReferencesWhenMustExist()
+        internal bool PropagateSolvedStatus()
         {
-            Debug.Assert( !Disabled && _configSolvedStatus >= SolvedConfigurationStatus.Runnable );
-
-            Debug.Assert( (int)SolvedConfigurationStatus.Disabled == -1 );
-            Debug.Assert( (int)SolvedConfigurationStatus.Optional == (int)DependencyRequirement.Optional );
-            Debug.Assert( (int)SolvedConfigurationStatus.OptionalTryStart == (int)DependencyRequirement.OptionalTryStart );
-            Debug.Assert( (int)SolvedConfigurationStatus.Runnable == (int)DependencyRequirement.Runnable );
-            Debug.Assert( (int)SolvedConfigurationStatus.RunnableTryStart == (int)DependencyRequirement.RunnableTryStart );
-            Debug.Assert( (int)SolvedConfigurationStatus.Running == (int)DependencyRequirement.Running );
-
-            foreach( var sRef in PluginInfo.ServiceReferences )
+            Debug.Assert( FinalConfigSolvedStatus >= ConfigurationStatus.Runnable );
+            if( !Disabled )
             {
-                SolvedConfigurationStatus propagation = (SolvedConfigurationStatus)sRef.Requirement;
-                if( _configSolvedStatus < propagation ) propagation = _configSolvedStatus;
-
-                ServiceData sr = _allServices[sRef.Reference.ServiceFullName];
-                if( !sr.SetSolvedConfigurationStatus( propagation, ServiceSolvedConfigStatusReason.FromMustExistReference ) )
+                foreach( var s in GetIncludedServices( _configSolvedImpact, ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                 {
-                    if( !Disabled ) SetDisabled( PluginDisabledReason.RequirementPropagationToReferenceFailed );
-                    break;
+                    if( !s.SetSolvedStatus( _configSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
+                    {
+                        if( !Disabled )
+                        {
+                            // Instead of generic "PropagationFailed", take the time to compute a detailed reason
+                            // for the first reason why this plugin is disabled.
+                            var requirement = PluginInfo.ServiceReferences.First( sRef => sRef.Reference == s.ServiceInfo ).Requirement;
+                            var reason = GetDisableReasonForDisabledReference( requirement );
+                            Debug.Assert( reason != PluginDisabledReason.None );
+                            SetDisabled( reason );
+                        }
+                    }
+                }
+                if( !Disabled )
+                {
+                    foreach( var s in GetExcludedServices( _configSolvedImpact ) )
+                    {
+                        if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation ); 
+                    }
                 }
             }
             return !Disabled;
         }
-                  
-        public override string ToString()
-        //_status is obtained through the PluginData.Dynamic partial class
+
+        internal void InitializeFinalStartableStatus()
         {
-            return String.Format( "{0} - {1} - {2} => (Dynamic: {3})", PluginInfo.PluginFullName, Disabled ? DisabledReason.ToString() : "!Disabled", ConfigSolvedStatus, _dynamicStatus );
+            ConfigurationStatus final = FinalConfigSolvedStatus;
+            if( final == ConfigurationStatus.Optional || final == ConfigurationStatus.Runnable )
+            {
+                _finalConfigStartableStatus = new FinalConfigStartableStatus( this );
+            }
         }
 
-    }
+        public PluginDisabledReason GetDisableReasonForDisabledReference( DependencyRequirement req )
+        {
+            switch( req )
+            {
+                case DependencyRequirement.Running: return PluginDisabledReason.ByRunningReference;
+                case DependencyRequirement.RunnableTryStart: return PluginDisabledReason.ByRunnableTryStartReference;
+                case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
+                case DependencyRequirement.OptionalTryStart:
+                    if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
+                    {
+                        return PluginDisabledReason.ByOptionalTryStartReference;
+                    }
+                    break;
+                case DependencyRequirement.Optional:
+                    if( _configSolvedImpact == StartDependencyImpact.FullStart )
+                    {
+                        return PluginDisabledReason.ByOptionalReference;
+                    }
+                    break;
+            }
+            return PluginDisabledReason.None;
+        }
 
+        public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
+        {
+            if( _runningIncludedServices == null )
+            {
+                var running = new HashSet<ServiceData>();
+                var g = Service;
+                while( g != null )
+                {
+                    running.Add( g );
+                    g = g.Generalization;
+                }
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    if( sRef.Requirement == DependencyRequirement.Running ) running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                }
+                _runningIncludedServices = running.ToReadOnlyList();
+                bool newRunnableAdded = false;
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    if( sRef.Requirement == DependencyRequirement.Runnable ) newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                }
+                _runnableIncludedServices = newRunnableAdded ? running.ToReadOnlyList() : _runningIncludedServices;
+            }
+
+            if( impact == StartDependencyImpact.Minimal ) return forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
+
+            if( _inclServices == null ) _inclServices = new IReadOnlyList<ServiceData>[8];
+            int iImpact = (int)impact;
+            if( impact > StartDependencyImpact.Minimal ) --impact;
+            if( forRunnableStatus ) iImpact *= 2;
+            --iImpact;
+
+            IReadOnlyList < ServiceData > i = _inclServices[iImpact];
+            if( i == null )
+            {
+                var baseSet = forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
+                var incl = new HashSet<ServiceData>( baseSet );
+                bool newAdded = false;
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                    switch( sRef.Requirement )
+                    {
+                        case DependencyRequirement.RunnableTryStart:
+                            {
+                                if( impact >= StartDependencyImpact.StartRecommended )
+                                {
+                                    newAdded |= incl.Add( sr );
+                                }
+                                break;
+                            }
+                        case DependencyRequirement.Runnable:
+                            {
+                                if( impact == StartDependencyImpact.FullStart )
+                                {
+                                    newAdded |= incl.Add( sr );
+                                }
+                                break;
+                            }
+                        case DependencyRequirement.OptionalTryStart:
+                            {
+                                if( impact >= StartDependencyImpact.StartRecommended )
+                                {
+                                    newAdded |= incl.Add( sr );
+                                }
+                                break;
+                            }
+                        case DependencyRequirement.Optional:
+                            {
+                                if( impact == StartDependencyImpact.FullStart )
+                                {
+                                    newAdded |= incl.Add( sr );
+                                }
+                                break;
+                            }
+                    }
+                }
+                i = _inclServices[iImpact] = newAdded ? incl.ToReadOnlyList() : baseSet;
+            }
+            return i;
+        }
+
+        public IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact )
+        {
+            if( _exclServices == null ) _exclServices = new IReadOnlyList<ServiceData>[5];
+            IReadOnlyList<ServiceData> e = _exclServices[(int)impact-1];
+            if( e == null )
+            {
+                HashSet<ServiceData> excl = new HashSet<ServiceData>();
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                    switch( sRef.Requirement )
+                    {
+                        case DependencyRequirement.Running:
+                            {
+                                excl.UnionWith( sr.DirectExcludedServices );
+                                break;
+                            }
+                        case DependencyRequirement.RunnableTryStart:
+                            {
+                                if( impact >= StartDependencyImpact.StartRecommended )
+                                {
+                                    excl.UnionWith( sr.DirectExcludedServices );
+                                }
+                                else if( impact == StartDependencyImpact.FullStop )
+                                {
+                                    excl.Add( sr );
+                                }
+                                break;
+                            }
+                        case DependencyRequirement.Runnable:
+                            {
+                                if( impact == StartDependencyImpact.FullStart )
+                                {
+                                    excl.UnionWith( sr.DirectExcludedServices );
+                                }
+                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
+                                {
+                                    excl.Add( sr );
+                                }
+                                break;
+                            }
+                        case DependencyRequirement.OptionalTryStart:
+                            {
+                                if( impact >= StartDependencyImpact.StartRecommended )
+                                {
+                                    excl.UnionWith( sr.DirectExcludedServices );
+                                }
+                                else if( impact == StartDependencyImpact.FullStop )
+                                {
+                                    excl.Add( sr );
+                                }
+                                break;
+                            }
+                        case DependencyRequirement.Optional:
+                            {
+                                if( impact == StartDependencyImpact.FullStart )
+                                {
+                                    excl.UnionWith( sr.DirectExcludedServices );
+                                }
+                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
+                                {
+                                    excl.Add( sr );
+                                }
+                                break;
+                            }
+                    }
+                }
+                e = _exclServices[(int)impact-1] = excl.ToReadOnlyList();
+            }
+            return e;
+        }
+
+        public override string ToString()
+        {
+            if( Disabled )
+            {
+                return String.Format( "{0} - DisableReason: {1}, Solved: {2} => Dynamic: {3}",
+                    PluginInfo.PluginFullName,
+                    DisabledReason,
+                    ConfigSolvedStatus,
+                    _dynamicStatus );
+            }
+            return String.Format( "{0} - Solved: {1}, Config: {2} => Dynamic: {3}",
+                PluginInfo.PluginFullName,
+                ConfigSolvedStatus,
+                ConfigOriginalStatus,
+                _dynamicStatus );
+        }
+    }
 }

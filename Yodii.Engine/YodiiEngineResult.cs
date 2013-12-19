@@ -8,92 +8,91 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    class YodiiEngineResult : IYodiiEngineResult
+    class YodiiEngineResult : IYodiiEngineStaticOnlyResult
     {
+        readonly IYodiiEngine _engine;
         readonly IConfigurationFailureResult _configurationFailureResult;
         readonly IStaticFailureResult _staticFailureResult;
         readonly IDynamicFailureResult _hostFailureResult;
         readonly IReadOnlyList<IPluginInfo> _pluginCulprits;
         readonly IReadOnlyList<IServiceInfo> _serviceCulprits;
+        readonly IStaticSolvedConfiguration _staticOnlyResultConfiguration;
+
+        /// <summary>
+        /// Static only success resolution constructor.
+        /// </summary>
+        public YodiiEngineResult( IConfigurationSolver solver, YodiiEngine engine )
+        {
+            Debug.Assert( solver != null );
+            Debug.Assert( engine != null );
+
+            var allP = solver.AllPlugins.Select( p => new SolvedPluginSnapshot( p ) ).ToDictionary( p => p.PluginInfo );
+            var allS = solver.AllServices.Select( s => new SolvedServiceSnapshot( s ) ).ToDictionary( s => s.ServiceInfo.ServiceFullName );
+            _staticOnlyResultConfiguration = new StaticSolvedConfiguration( allP.Values.ToReadOnlyList(), allS.Values.ToReadOnlyList() );
+            _pluginCulprits = CKReadOnlyListEmpty<IPluginInfo>.Empty;
+            _serviceCulprits = CKReadOnlyListEmpty<IServiceInfo>.Empty;
+            _engine = engine;
+        }
 
         /// <summary>
         /// Static failure resolution constructor.
         /// </summary>
-        /// <param name="services"></param>
-        /// <param name="plugins"></param>
-        /// <param name="blockingPlugins"></param>
-        /// <param name="blockingServices"></param>
-        public YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<Guid, PluginData> plugins, List<PluginData> blockingPlugins, List<ServiceData> blockingServices )
+        public YodiiEngineResult( IConfigurationSolver solver, List<PluginData> blockingPlugins, List<ServiceData> blockingServices, YodiiEngine engine )
         {
-            Debug.Assert( blockingPlugins != null || blockingServices != null );
-            Debug.Assert( services != null || plugins != null );
+            Debug.Assert( blockingPlugins != null || blockingServices != null, "At least one must not be null." );
+            Debug.Assert( solver != null );
+            Debug.Assert( engine != null );
 
-            List<IStaticSolvedService> AllServices = new List<IStaticSolvedService>();
-            List<IStaticSolvedPlugin> AllPlugins = new List<IStaticSolvedPlugin>();
+            var allP = solver.AllPlugins.Select( p => new SolvedPluginSnapshot( p ) ).ToDictionary( p => p.PluginInfo );
+            var allS = solver.AllServices.Select( s => new SolvedServiceSnapshot( s ) ).ToDictionary( s => s.ServiceInfo.ServiceFullName );
+            _staticOnlyResultConfiguration = new StaticSolvedConfiguration( allP.Values.ToReadOnlyList(), allS.Values.ToReadOnlyList() );
 
-            List<IStaticSolvedService> BlockingServices = new List<IStaticSolvedService>();
-            List<IStaticSolvedPlugin> BlockingPlugins = new List<IStaticSolvedPlugin>();
+            var blkP = blockingPlugins == null
+                            ? CKReadOnlyListEmpty<IStaticSolvedPlugin>.Empty
+                            : blockingPlugins.Select( p => allP[p.PluginInfo] ).ToReadOnlyList();
+            _pluginCulprits = blkP.Select( ps => ps.PluginInfo ).ToReadOnlyList();
 
-            foreach ( ServiceData s in services.Values )
-            {
-                AllServices.Add( new SolvedServiceSnapshot( s ) );
-            }
+            var blkS = blockingServices == null
+                            ? CKReadOnlyListEmpty<IStaticSolvedService>.Empty
+                            : blockingServices.Select( s => allS[s.ServiceInfo.ServiceFullName] ).ToReadOnlyList();
+            _serviceCulprits = blkS.Select( ss => ss.ServiceInfo ).ToReadOnlyList();
 
-            foreach ( PluginData p in plugins.Values )
-            {
-                AllPlugins.Add( new SolvedPluginSnapshot( p ) );
-            }
-            if ( blockingPlugins != null )
-            {
-                foreach ( PluginData pb in blockingPlugins )
-                {
-                    BlockingPlugins.Add( new SolvedPluginSnapshot( pb ) );
-                }
-            }
-            if ( blockingServices != null )
-            {
-                foreach ( ServiceData sb in blockingServices )
-                {
-                    BlockingServices.Add( new SolvedServiceSnapshot( sb ) );
-                }
-            }
-            _staticFailureResult = new StaticFailureResult( new StaticSolvedConfiguration(AllPlugins, AllServices), BlockingPlugins, BlockingServices );
+            _engine = engine;
+            _staticFailureResult = new StaticFailureResult( _staticOnlyResultConfiguration, blkP, blkS );
         }
 
-        internal YodiiEngineResult( Dictionary<string, ServiceData> services, Dictionary<Guid, PluginData> plugins, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo )
+        /// <summary>
+        /// Dynamic failure constructor.
+        /// </summary>
+        internal YodiiEngineResult( IConfigurationSolver solver, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo, YodiiEngine engine )
         {
-            Debug.Assert( errorInfo.Any() );
+            Debug.Assert( solver != null );
+            Debug.Assert( errorInfo != null && errorInfo.Any() );
+            Debug.Assert( engine != null );
 
-            List<IDynamicSolvedPlugin> dynamicPlugins = new List<IDynamicSolvedPlugin>();
-            List<IDynamicSolvedService> dynamicServices = new List<IDynamicSolvedService>();
-            List<PluginRuntimeError> runtimeErrors = new List<PluginRuntimeError>();
+            var allP = solver.AllPlugins.Select( p => new SolvedPluginSnapshot( p ) ).ToDictionary( ps => ps.PluginInfo );
+            var allS = solver.AllServices.Select( s => new SolvedServiceSnapshot( s ) ).ToReadOnlyList();
 
-            foreach ( ServiceData s in services.Values )
-            {
-                dynamicServices.Add( new SolvedServiceSnapshot( s ) );
-            }
+            var errors = errorInfo.Select( e => new PluginRuntimeError( allP[e.Item1], e.Item2 ) ).ToReadOnlyList();
+            _pluginCulprits = errors.Select( e => e.Plugin.PluginInfo ).ToReadOnlyList();
+            _serviceCulprits = _pluginCulprits.Select( p => p.Service ).Where( s => s != null ).ToReadOnlyList();
+            _engine = engine;
 
-            foreach ( PluginData p in plugins.Values )
-            {
-                dynamicPlugins.Add( new SolvedPluginSnapshot( p ) );
-            }
-
-            for(int i = 0; i < errorInfo.Count(); i++)
-            {
-                IDynamicSolvedPlugin pluginHasError = dynamicPlugins.FirstOrDefault( dynamicPlugin => dynamicPlugin.PluginInfo == errorInfo.ElementAt(i).Item1 );
-                if(pluginHasError != null)
-                {
-                    runtimeErrors.Add( new PluginRuntimeError( pluginHasError, errorInfo.ElementAt( i ).Item2 ) );
-                }
-            }
-            _hostFailureResult = new DynamicFailureResult( new DynamicSolvedConfiguration( dynamicPlugins, dynamicServices ), runtimeErrors.AsReadOnlyList() );
+            _hostFailureResult = new DynamicFailureResult( new DynamicSolvedConfiguration( allP.Values.ToReadOnlyList(), allS ), errors );
         }
 
-        internal YodiiEngineResult( IConfigurationFailureResult configurationFailureResult )
+        /// <summary>
+        /// Configuration failure constructor.
+        /// </summary>
+        internal YodiiEngineResult( IConfigurationFailureResult configurationFailureResult, YodiiEngine engine )
         {
             Debug.Assert( configurationFailureResult.FailureReasons != null && configurationFailureResult.FailureReasons.Count > 0 );
+
+            _engine = engine;
             _configurationFailureResult = configurationFailureResult;
         }
+
+        public IYodiiEngine Engine { get { return _engine; } }
 
         public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
 
@@ -120,6 +119,11 @@ namespace Yodii.Engine
         public IReadOnlyList<IServiceInfo> ServiceCulprits
         {
             get { return _serviceCulprits; }
+        }
+
+        IStaticSolvedConfiguration IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration
+        {
+            get { return _staticOnlyResultConfiguration; }
         }
     }
 }

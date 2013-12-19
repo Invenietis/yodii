@@ -11,17 +11,19 @@ namespace Yodii.Model
     public interface IStaticFailureResult
     {
         /// <summary>
-        /// Solved static configuration.
+        /// Solved static configuration. Never null.
         /// </summary>
         IStaticSolvedConfiguration StaticSolvedConfiguration { get; }
 
         /// <summary>
         /// Plugins that blocked the static resolution.
+        /// Never null (but can be empty).
         /// </summary>
         IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins { get; }
 
         /// <summary>
         /// Services that blocked the static resolution.
+        /// Never null (but can be empty).
         /// </summary>
         IReadOnlyList<IStaticSolvedService> BlockingServices { get; }
     }

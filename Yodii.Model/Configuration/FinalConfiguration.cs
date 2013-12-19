@@ -26,12 +26,12 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the final configuration status for a given service or plugin ID.
         /// </summary>
-        /// <param name="serviceOrPluginId">Service or plugin ID to check.</param>
+        /// <param name="serviceOrPluginFullName">Service or plugin ID to check.</param>
         /// <returns>The status of the item, or Optional if the item does not exist.</returns>
-        public ConfigurationStatus GetStatus( string serviceOrPluginId )
+        public ConfigurationStatus GetStatus( string serviceOrPluginFullName )
         {
             Debug.Assert( ConfigurationStatus.Optional == 0 );
-            return _items.GetByKey( serviceOrPluginId ).Status;
+            return _items.GetByKey( serviceOrPluginFullName ).Status;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Yodii.Model
         /// </summary>
         public FinalConfiguration()
         {
-            _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginId, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
+            _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
         }
     }
 }

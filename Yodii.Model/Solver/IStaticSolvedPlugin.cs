@@ -18,7 +18,7 @@ namespace Yodii.Model
         /// <summary>
         /// Reason behind this plugin's disabled status.
         /// </summary>
-        PluginDisabledReason DisabledReason { get; }
+        string DisabledReason { get; }
 
         /// <summary>
         /// Status as set by initial configuration.
@@ -26,9 +26,20 @@ namespace Yodii.Model
         ConfigurationStatus ConfigOriginalStatus { get; }
 
         /// <summary>
-        /// Desired configuration status.
+        /// Dependency impact as set by initial configuration.
         /// </summary>
-        SolvedConfigurationStatus WantedConfigSolvedStatus { get; }
+        StartDependencyImpact ConfigOriginalImpact { get; }
+
+        /// <summary>
+        /// Final dependency impact (the Service's one if this plugin implements a Service and 
+        /// this <see cref="ConfigOriginalImpact"/> is <see cref="StartDependencyImpact.Unknown"/>).
+        /// </summary>
+        StartDependencyImpact ConfigSolvedImpact { get; }
+
+        /// <summary>
+        /// Final configuration status based on requirements from other participants.
+        /// </summary>
+        ConfigurationStatus WantedConfigSolvedStatus { get; }
 
         /// <summary>
         /// Whether this plugin blocks static resolution.

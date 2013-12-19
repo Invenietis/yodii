@@ -16,7 +16,7 @@ namespace Yodii.Lab.ConfigurationEditor
     /// 
     /// Note that this one acts as controller for all ConfigurationManager-related entities, without descending into ConfigurationLayer/ConfigurationItem view models.
     /// </summary>
-    class ConfigurationEditorWindowViewModel : ViewModelBase
+    class ConfigurationEditorWindowViewModel : ViewModelBase, IDisposable
     {
         #region Fields
         readonly IConfigurationManager _configurationManager;
@@ -30,6 +30,7 @@ namespace Yodii.Lab.ConfigurationEditor
         readonly ICommand _setConfigItemStatusCommand;
         readonly ICommand _clearOptionalItemsCommand;
 
+        bool _disposed;
         bool _isChangingConfig = false; // Prevents reentrancy, and command being run twice. Use when adding/changing items.
         /* When creating a ConfigurationItem that already exists, the existing item's status is changed.
          * In this editor, the existing item's status (in the ComboBox) is changed.
@@ -91,14 +92,14 @@ namespace Yodii.Lab.ConfigurationEditor
 
             foreach( IConfigurationLayer layer in _configurationManager.Layers )
             {
-                foreach( string serviceOrPluginId in layer.Items.Where( x => x.Status == ConfigurationStatus.Optional ).Select( x => x.ServiceOrPluginId ).ToList() )
+                foreach( string serviceOrPluginId in layer.Items.Where( x => x.Status == ConfigurationStatus.Optional ).Select( x => x.ServiceOrPluginFullName ).ToList() )
                 {
                     var itemRemoveResult = layer.Items.Remove( serviceOrPluginId );
                     if( !itemRemoveResult.Success )
                     {
-                        RaiseUserError("Couldn't remove item", String.Format("Failed to remove {0}.\n\n{1}", 
-                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId(serviceOrPluginId),
-                            String.Join("; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons))
+                        RaiseUserError( "Couldn't remove item", String.Format( "Failed to remove {0}.\n\n{1}",
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName( serviceOrPluginId ),
+                            String.Join( "; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons ) )
                             );
                     }
                 }
@@ -111,13 +112,14 @@ namespace Yodii.Lab.ConfigurationEditor
                 var layerRemoveResult = _configurationManager.Layers.Remove( layerToDelete );
                 if( !layerRemoveResult.Success )
                 {
-                        RaiseUserError("Couldn't remove layer", String.Format("Failed to remove layer.\n\n{1}", String.Join("; ", layerRemoveResult.ConfigurationFailureResult.FailureReasons)));
+                    RaiseUserError( "Couldn't remove layer", String.Format( "Failed to remove layer.\n\n{1}", String.Join( "; ", layerRemoveResult.ConfigurationFailureResult.FailureReasons ) ) );
                 }
             }
         }
 
         private void ExecuteSetConfigItemStatus( object param )
         {
+            if( _disposed ) return;
             if( _isChangingConfig ) return;
             _isChangingConfig = true;
             ComboBox box = (ComboBox)param;
@@ -128,28 +130,29 @@ namespace Yodii.Lab.ConfigurationEditor
             var itemSetResult = item.SetStatus( newStatus, "ConfigurationEditor" );
             if( !itemSetResult.Success )
             {
-                        RaiseUserError("Couldn't set item", String.Format("Failed to set {0} to {2}.\n\n{1}",
-                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId(item.ServiceOrPluginId),
-                            String.Join("; ", itemSetResult.ConfigurationFailureResult.FailureReasons),
-                            newStatus.ToString() )
-                            );
+                RaiseUserError( "Couldn't set item", String.Format( "Could not set {0} to {2}, as it would cause the following error:\n\n{1}",
+                    _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName( item.ServiceOrPluginFullName ),
+                    itemSetResult.Describe(),
+                    newStatus.ToString() )
+                    );
             }
 
             _isChangingConfig = false;
-            box.GetBindingExpression(ComboBox.SelectedItemProperty).UpdateTarget();
+            box.GetBindingExpression( ComboBox.SelectedItemProperty ).UpdateTarget();
         }
 
         private void ExecuteRemoveConfigItem( object param )
         {
+            if( _disposed ) return;
             Debug.Assert( param is IConfigurationItem );
             IConfigurationItem item = (IConfigurationItem)param;
 
-            var itemRemoveResult = item.Layer.Items.Remove( item.ServiceOrPluginId );
+            var itemRemoveResult = item.Layer.Items.Remove( item.ServiceOrPluginFullName );
             if( !itemRemoveResult.Success )
             {
-                RaiseUserError( "Couldn't remove item", String.Format( "Failed to remove {0}.\n\n{1}",
-                    _serviceInfoManager.GetDescriptionOfServiceOrPluginId( item.ServiceOrPluginId ),
-                    String.Join( "; ", itemRemoveResult.ConfigurationFailureResult.FailureReasons ) )
+                RaiseUserError( "Couldn't remove item", String.Format( "Could not remove {0}, as it would cause the following error:\n\n{1}",
+                    _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName( item.ServiceOrPluginFullName ),
+                    itemRemoveResult.Describe() )
                     );
             }
         }
@@ -157,8 +160,9 @@ namespace Yodii.Lab.ConfigurationEditor
         private void ExecuteAddConfigItem( object param )
         {
             if( _isChangingConfig ) return;
+            if( _disposed ) return;
             _isChangingConfig = true;
-            Debug.Assert( param != null && param is IConfigurationLayer);
+            Debug.Assert( param != null && param is IConfigurationLayer );
 
             IConfigurationLayer layer = param as IConfigurationLayer;
             CreateConfigurationItemWindow w = new CreateConfigurationItemWindow( _serviceInfoManager );
@@ -166,7 +170,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
             var windowResult = w.ShowDialog();
 
-            if(windowResult == true)
+            if( windowResult == true )
             {
                 string serviceOrPluginId = w.ViewModel.SelectedServiceOrPluginId;
                 if( serviceOrPluginId != null )
@@ -174,9 +178,11 @@ namespace Yodii.Lab.ConfigurationEditor
                     var itemAddResult = layer.Items.Add( serviceOrPluginId, w.ViewModel.SelectedStatus );
                     if( !itemAddResult.Success )
                     {
-                        RaiseUserError( "Couldn't add item", String.Format( "Failed to add {0}.\n\n{1}",
-                            _serviceInfoManager.GetDescriptionOfServiceOrPluginId( serviceOrPluginId ),
-                            String.Join( "; ", itemAddResult.ConfigurationFailureResult.FailureReasons ) )
+                        string message = itemAddResult.Describe();
+
+                        RaiseUserError( "Couldn't add item", String.Format( "Configuration of {0} could not be added, as it would cause the following error:\n\n{1}",
+                            _serviceInfoManager.GetDescriptionOfServiceOrPluginFullName( serviceOrPluginId ),
+                            message )
                             );
                     }
                 }
@@ -194,7 +200,7 @@ namespace Yodii.Lab.ConfigurationEditor
             if( layer.Items.Count != 0 )
             {
                 var messageBoxResult = MessageBox.Show( "Really delete this layer ?\n\nIts configuration will be lost.", "Confirm layer deletion", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, MessageBoxOptions.None );
-                if (messageBoxResult != MessageBoxResult.Yes)
+                if( messageBoxResult != MessageBoxResult.Yes )
                 {
                     cancelled = true;
                 }
@@ -226,10 +232,19 @@ namespace Yodii.Lab.ConfigurationEditor
         #endregion
 
         #region Private methods
-        void RaiseUserError(string title, string message)
+        void RaiseUserError( string title, string message )
         {
             MessageBox.Show( message, title, MessageBoxButton.OK, MessageBoxImage.Stop, MessageBoxResult.OK );
         }
+        #endregion
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            _disposed = true;
+        }
+
         #endregion
     }
 }

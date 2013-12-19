@@ -18,6 +18,7 @@ namespace Yodii.Lab.ConfigurationEditor
         object _selectedItem;
         ConfigurationStatus _selectedStatus;
         #endregion
+
         #region Constructor
         public CreateConfigurationItemWindowViewModel( LabStateManager serviceManager )
         {
@@ -30,6 +31,7 @@ namespace Yodii.Lab.ConfigurationEditor
             _selectItemCommand = new RelayCommand( SelectItemExecute );
         }
         #endregion
+
         #region Observable properties
         public ConfigurationStatus SelectedStatus
         {
@@ -70,7 +72,14 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 if( SelectedItem == null )
                 {
-                    return "Select a service or a plugin.";
+                    if( ServiceInfoManager.ServiceInfos.Count == 0 && ServiceInfoManager.PluginInfos.Count == 0 )
+                    {
+                        return "No items. Create a plugin or service first.";
+                    }
+                    else
+                    {
+                        return "Select an existing service or plugin.";
+                    }
                 }
                 else
                 {
@@ -90,7 +99,7 @@ namespace Yodii.Lab.ConfigurationEditor
             {
                 if( SelectedItem == null ) return null;
                 else if( SelectedItem is ServiceInfo ) return ((ServiceInfo)SelectedItem).ServiceFullName;
-                else return ((PluginInfo)SelectedItem).PluginId.ToString();
+                else return ((PluginInfo)SelectedItem).PluginFullName;
             }
         }
         #endregion

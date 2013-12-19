@@ -8,38 +8,48 @@ namespace Yodii.Engine
 {
     class SuccessYodiiEngineResult : IYodiiEngineResult
     {
-        #region IYodiiEngineResult Members
+        readonly IYodiiEngine _engine;
 
-        public bool Success
+        public static IYodiiEngineResult NullEngineSuccessResult = new SuccessYodiiEngineResult( null );
+
+        public SuccessYodiiEngineResult( YodiiEngine engine )
+        {
+            _engine = engine;
+        }
+
+        public IYodiiEngine Engine
+        {
+            get { return _engine; }
+        }
+        
+        bool IYodiiEngineResult.Success
         {
             get { return true; }
         }
 
-        public IConfigurationFailureResult ConfigurationFailureResult
+        IConfigurationFailureResult IYodiiEngineResult.ConfigurationFailureResult
         {
             get { return null; }
         }
 
-        public IStaticFailureResult StaticFailureResult
+        IStaticFailureResult IYodiiEngineResult.StaticFailureResult
         {
             get { return null; }
         }
 
-        public IDynamicFailureResult HostFailureResult
+        IDynamicFailureResult IYodiiEngineResult.HostFailureResult
         {
             get { return null; }
         }
 
-        public IReadOnlyList<IPluginInfo> PluginCulprits
+        IReadOnlyList<IPluginInfo> IYodiiEngineResult.PluginCulprits
         {
-            get { return null; }
+            get { return CK.Core.CKReadOnlyListEmpty<IPluginInfo>.Empty; }
         }
 
-        public IReadOnlyList<IServiceInfo> ServiceCulprits
+        IReadOnlyList<IServiceInfo> IYodiiEngineResult.ServiceCulprits
         {
-            get { return null; }
+            get { return CK.Core.CKReadOnlyListEmpty<IServiceInfo>.Empty; ; }
         }
-
-        #endregion
     }
 }

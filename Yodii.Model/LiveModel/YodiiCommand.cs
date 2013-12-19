@@ -14,65 +14,72 @@ namespace Yodii.Model
     public class YodiiCommand
     {
         /// <summary>
-        /// Object that requested the command.
-        /// <seealso cref="ILiveInfo.RevokeCaller(object)"/>
+        /// Identifies the object that requested the command.
+        /// <seealso cref="ILiveInfo.RevokeCaller(string)"/>
         /// </summary>
-        public readonly object Caller;
+        public string CallerKey { get { return _callerKey; } }
+        private readonly string _callerKey;
 
         /// <summary>
         /// True if it is a command to start a plugin/service, false to stop a plugin/service.
         /// </summary>
-        public readonly bool Start;
+        public bool Start { get { return _start; } }
+        private readonly bool _start;
 
         /// <summary>
-        /// If acting on a plugin's status: plugin ID.
-        /// <seealso cref="YodiiCommand.FullName"/>
+        /// If acting on a plugin's status: plugin full name.
+        /// <seealso cref="YodiiCommand.ServiceFullName"/>
         /// </summary>
-        public readonly Guid PluginId;
+        public string PluginFullName { get { return _pluginFullName; } }
+        private readonly string _pluginFullName;
 
         /// <summary>
         /// When acting on a plugin, range of impact on the plugin's dependencies.
         /// </summary>
-        public readonly StartDependencyImpact Impact;
+        public StartDependencyImpact Impact { get { return _impact; } }
+        private readonly StartDependencyImpact _impact;
 
         /// <summary>
         /// If acting on a service: service full name.
-        /// <seealso cref="YodiiCommand.PluginId"/>
+        /// <seealso cref="YodiiCommand.PluginFullName"/>
         /// </summary>
-        public readonly string FullName;
+        public string ServiceFullName { get { return _serviceFullName; } }
+        private readonly string _serviceFullName;
 
-        private YodiiCommand( object caller, bool start )
+        YodiiCommand( string callerKey, bool start, StartDependencyImpact impact )
         {
-            Caller = caller;
-            Start = start;
+            if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
+            if( !start && impact != StartDependencyImpact.Unknown ) throw new ArgumentException( "Impact must be None when stopping a plugin or a service.", "impact" );
+            _callerKey = callerKey;
+            _start = start;
+            _impact = impact;
         }
 
         /// <summary>
         /// Creates a new YodiiCommand, to act on a plugin's status.
         /// </summary>
-        /// <param name="caller">Calling object.</param>
+        /// <param name="callerKey">Calling object identifier.</param>
         /// <param name="start">True to start the plugin, false to stop the plugin.</param>
         /// <param name="impact">Range of impact on the plugin's dependencies.</param>
-        /// <param name="pluginId">Plugin ID to act on.</param>
-        public YodiiCommand( object caller, bool start, StartDependencyImpact impact, Guid pluginId )
-            : this( caller, start )
+        /// <param name="serviceOrPluginFullName">Plugin ID to act on.</param>
+        /// <param name="isPlugin">Set to true if command is for a plugin. False for a service.</param>
+        public YodiiCommand( string callerKey, string serviceOrPluginFullName, bool start, StartDependencyImpact impact = StartDependencyImpact.Unknown, bool isPlugin = false )
+            : this( callerKey, start, impact )
         {
-            Debug.Assert( pluginId != null );
-            PluginId = pluginId;
-            Impact = impact;
+            if( string.IsNullOrWhiteSpace( serviceOrPluginFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceOrPluginFullName" );
+            if( isPlugin )
+            {
+                _pluginFullName = serviceOrPluginFullName;
+            }
+            else
+            {
+                _serviceFullName = serviceOrPluginFullName;
+            }
         }
 
-        /// <summary>
-        /// Creates a new YodiiCommand, to act on a service's status.
-        /// </summary>
-        /// <param name="caller">Calling object.</param>
-        /// <param name="start">True to start the service, false to stop the service.</param>
-        /// <param name="fullName">Service full name to act on.</param>
-        public YodiiCommand( object caller, bool start, string fullName )
-            : this( caller, start )
+        public override string ToString()
         {
-            Debug.Assert( string.IsNullOrEmpty( fullName ) != true );
-            FullName = fullName;
+            return String.Format( "{0} {1} ({2}) by {3}.", Start ? "Start" : "Stop", PluginFullName ?? ServiceFullName, Impact, CallerKey );
         }
     }
 }

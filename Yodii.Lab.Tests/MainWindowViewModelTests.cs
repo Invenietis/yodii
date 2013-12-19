@@ -211,8 +211,8 @@ namespace Yodii.Lab.Tests
             Assert.That( _vm1.PluginInfos.Count == _vm2.PluginInfos.Count );
             foreach( var infoB in _vm2.PluginInfos )
             {
-                Assert.That( _vm1.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).Count() == 1 );
-                IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginId == infoB.PluginId ).First();
+                Assert.That( _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).Count() == 1 );
+                IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).First();
 
                 TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
             }
@@ -225,19 +225,21 @@ namespace Yodii.Lab.Tests
 
                 TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
             }
+
+            TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
         }
 
         internal static MainWindowViewModel CreateViewModelWithGraph001()
         {
             /** Imagine a graph like this:
-             *                 +--------+                              +--------+
+             *                 +RUNNING-+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
              *     |           +---+----+       |   | Need Running     +---+----+
              *     |               |            |   |                      |
              *     |               |            |   |                      |
              *     |               |            |   |                      |
              *     |               |            |   |                      |
-             * +---+-----+     +---+-----+  +---+---*-+                +---+-----+
+             * +---+-----+     +---+-----+  +RUNNING*-+                +---+-----+
              * |ServiceAx|     |PluginA-1|  |PluginA-2|                |PluginB-1|
              * +----+----+     +---------+  +---------+                +---------+
              *      |
@@ -283,15 +285,15 @@ namespace Yodii.Lab.Tests
             Assert.That( serviceAx.Generalization == serviceA );
 
             // Plugins
-            IPluginInfo pluginWithoutService = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Without.Service" );
+            IPluginInfo pluginWithoutService = vm.CreateNewPlugin( "Plugin.Without.Service" );
 
-            IPluginInfo pluginA1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.A1", serviceA );
+            IPluginInfo pluginA1 = vm.CreateNewPlugin( "Plugin.A1", serviceA );
 
-            IPluginInfo pluginA2 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.A2", serviceA );
+            IPluginInfo pluginA2 = vm.CreateNewPlugin( "Plugin.A2", serviceA );
 
-            IPluginInfo pluginAx1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.Ax1", serviceAx );
+            IPluginInfo pluginAx1 = vm.CreateNewPlugin( "Plugin.Ax1", serviceAx );
 
-            IPluginInfo pluginB1 = vm.CreateNewPlugin( Guid.NewGuid(), "Plugin.B1", serviceB );
+            IPluginInfo pluginB1 = vm.CreateNewPlugin( "Plugin.B1", serviceB );
 
             vm.SetPluginDependency( pluginA2, serviceB, DependencyRequirement.Running );
 
@@ -303,6 +305,15 @@ namespace Yodii.Lab.Tests
             Assert.That( serviceB.Implementations.Count == 1 );
             Assert.That( serviceAx.Implementations.Count == 1 );
 
+            // Set configuration
+            var cLayer1 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer" );
+            var result = cLayer1.Items.Add( serviceA.ServiceFullName, ConfigurationStatus.Running, "Test reason" );
+            Assert.That( result.Success );
+
+            var cLayer2 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer 2" );
+            result = cLayer2.Items.Add( pluginA2.PluginFullName, ConfigurationStatus.Running, "Test reason 2" );
+            Assert.That( result.Success );
+
             // Testing tests
             foreach(var si in vm.ServiceInfos )
             {
@@ -312,6 +323,8 @@ namespace Yodii.Lab.Tests
             {
                 TestExtensions.AssertPluginEquivalence( pi, pi, true );
             }
+
+            TestExtensions.AssertManagerEquivalence( vm.LabState.Engine.Configuration, vm.LabState.Engine.Configuration );
 
             return vm;
         }

@@ -26,6 +26,8 @@
                     TypeName="ym:ConfigurationStatus" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        
+        <local:IntegerToBoolConverter x:Key="IntToBoolConverter" />
 
     </Window.Resources>
 
@@ -57,6 +59,7 @@
                     DockPanel.Dock="Left"
                     VerticalAlignment="Center"
                     Content="Service"
+                    IsEnabled="{Binding Path=ServiceInfoManager.ServiceInfos.Count, Converter={StaticResource IntToBoolConverter}}"
                     Margin="0,0,5,0">
                     <local:DropDownButton.DropDown>
                         <ContextMenu
@@ -73,15 +76,15 @@
                                         Value="{Binding}" />
                                 </Style>
                             </ContextMenu.ItemContainerStyle>
-
                         </ContextMenu>
                     </local:DropDownButton.DropDown>
                 </local:DropDownButton>
                 <local:DropDownButton
+                    IsEnabled="{Binding Path=ServiceInfoManager.PluginInfos.Count, Converter={StaticResource IntToBoolConverter}}"
                     DockPanel.Dock="Left"
                     VerticalAlignment="Center"
                     Content="Plugin"
-                    Margin="0,0,5,0">
+                    Margin="0,0,5,0.115">
                     <local:DropDownButton.DropDown>
                         <ContextMenu
                             ItemsSource="{Binding Path=ServiceInfoManager.PluginInfos}"
@@ -104,9 +107,14 @@
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="1"
+                FontSize="9pt"
+                LineHeight="12pt"
+                MaxHeight="24pt"
                 VerticalAlignment="Center"
-                Margin="5pt"
-                Text="{Binding Path=SelectedItemDescription, FallbackValue='Select plugin or service.'}"
+                Margin="5pt,0pt"
+                
+                Text="{Binding Path=SelectedItemDescription, FallbackValue='Select an existing plugin/service.'}"
+                TextWrapping="Wrap"
                 TextTrimming="CharacterEllipsis" />
             <TextBlock
                 Margin="5pt"

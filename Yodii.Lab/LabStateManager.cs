@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using System.Xml;
 using CK.Core;
 using Yodii.Engine;
@@ -15,7 +18,7 @@ namespace Yodii.Lab
     /// Handles lifecycle of mock services and plugins, and exposes methods to create and delete them.
     /// Handles item bindings.
     /// </summary>
-    public class LabStateManager : IDiscoveredInfo, IYodiiEngineHost
+    public class LabStateManager : IYodiiEngineHost
     {
         #region Fields
         /// <summary>
@@ -26,7 +29,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Collection of mock IPluginInfos.
         /// </summary>
-        readonly CKObservableSortedArrayKeyList<PluginInfo, Guid> _pluginInfos;
+        readonly CKObservableSortedArrayKeyList<PluginInfo, string> _pluginInfos;
 
         /// <summary>
         /// Collection of lab service wrappers.
@@ -37,6 +40,11 @@ namespace Yodii.Lab
         /// Collection of lab plugin wrappers.
         /// </summary>
         readonly CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo> _labPluginInfos;
+
+        /// <summary>
+        /// Collection of plugins running in this fake host.
+        /// </summary>
+        readonly ObservableCollection<IPluginInfo> _runningPlugins;
 
         /// <summary>
         /// Yodii engine to use. Created in constructor
@@ -52,44 +60,77 @@ namespace Yodii.Lab
         {
             YodiiEngine engine = new YodiiEngine( this );
             _engine = engine;
-            engine.PropertyChanged += _engine_PropertyChanged;
-            engine.SetDiscoveredInfo( this );
+
+            Debug.Assert( _engine.LiveInfo != null );
+            _engine.PropertyChanged += _engine_PropertyChanged;
+            _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
+            _engine.LiveInfo.Services.CollectionChanged += Services_CollectionChanged;
 
             Debug.Assert( _engine.IsRunning == false );
 
             _serviceInfos = new CKObservableSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
-            _pluginInfos = new CKObservableSortedArrayKeyList<PluginInfo, Guid>( p => p.PluginId, false );
+            _pluginInfos = new CKObservableSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, false );
 
             _labServiceInfos = new CKObservableSortedArrayKeyList<LabServiceInfo, ServiceInfo>( s => s.ServiceInfo, ( x, y ) => String.CompareOrdinal( x.ServiceFullName, y.ServiceFullName ), false );
-            _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginId.ToString(), y.PluginId.ToString() ), false );
+            _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginFullName, y.PluginFullName ), false );
+
+            _runningPlugins = new ObservableCollection<IPluginInfo>();
+
+            _serviceInfos.CollectionChanged += _staticInfos_CollectionChanged;
+            _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
+
+            UpdateEngineInfos();
+        }
+
+        void _pluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            _staticInfos_CollectionChanged( sender, e );
+            if( e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add )
+            {
+                foreach( var i in e.NewItems )
+                {
+                    PluginInfo s = (PluginInfo)i;
+                    s.InternalServiceReferences.CollectionChanged += _staticInfos_CollectionChanged;
+                    foreach( var serviceRef in s.InternalServiceReferences )
+                    {
+                        serviceRef.PropertyChanged += staticInfo_PropertyChanged;
+                    }
+                }
+            }
+        }
+
+        void _staticInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            if( e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add )
+            {
+                foreach( var i in e.NewItems )
+                {
+                    INotifyPropertyChanged s = (INotifyPropertyChanged)i;
+                    s.PropertyChanged += staticInfo_PropertyChanged;
+                }
+            }
+            UpdateEngineInfos();
+        }
+
+        void staticInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            UpdateEngineInfos();
+        }
+
+        internal void UpdateEngineInfos()
+        {
+            var result = _engine.SetDiscoveredInfo( new DiscoveredInfoClone( ServiceInfos, PluginInfos ) );
+
+            if( !result.Success )
+            {
+                Engine.Stop();
+                MessageBox.Show( String.Format( "Engine would have this error:\n\n{0}", result.Describe() ), "Change refused", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
+            }
         }
 
         #endregion
 
         #region Event handlers
-        void _engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
-        {
-            Debug.Assert( sender == _engine );
-
-            switch( e.PropertyName )
-            {
-                case "LiveInfo":
-                    if( _engine.LiveInfo != null )
-                    {
-                        // New LiveInfo
-                        LoadLiveInfoFromEngine();
-                        _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
-                        _engine.LiveInfo.Services.CollectionChanged += Services_CollectionChanged;
-                    }
-                    else
-                    {
-                        // No more LiveInfo
-                        ClearLiveInfos();
-                    }
-                    break;
-            }
-        }
-
         void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
         {
             switch( e.Action )
@@ -113,7 +154,8 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     throw new NotImplementedException();
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    throw new NotImplementedException();
+                    ClearLivePluginInfos();
+                    break;
             }
         }
 
@@ -140,7 +182,16 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     throw new NotImplementedException();
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
-                    throw new NotImplementedException();
+                    ClearLiveServiceInfos();
+                    break;
+            }
+        }
+
+        void _engine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "IsRunning" && !_engine.IsRunning )
+            {
+                _runningPlugins.Clear();
             }
         }
 
@@ -187,16 +238,17 @@ namespace Yodii.Lab
             get { return _labPluginInfos; }
         }
 
-        #region IDiscoveredInfo implementation
-        IReadOnlyList<IServiceInfo> IDiscoveredInfo.ServiceInfos
+        /// <summary>
+        /// Currently running plugins, in this fake host.
+        /// </summary>
+        public ObservableCollection<IPluginInfo> RunningPlugins
         {
-            get { return _serviceInfos; }
+            // TODO: Make it read-only
+            get
+            {
+                return _runningPlugins;
+            }
         }
-        IReadOnlyList<IPluginInfo> IDiscoveredInfo.PluginInfos
-        {
-            get { return _pluginInfos; }
-        }
-        #endregion
 
         #endregion Properties
 
@@ -217,14 +269,8 @@ namespace Yodii.Lab
             else if( serviceOrPluginInfo is PluginInfo )
             {
                 PluginInfo plugin = serviceOrPluginInfo as PluginInfo;
-                if( String.IsNullOrWhiteSpace( plugin.PluginFullName ) )
-                {
-                    return String.Format( "Plugin: Unnamed plugin ({0})", plugin.PluginId.ToString() );
-                }
-                else
-                {
-                    return String.Format( "Plugin: {0}", plugin.PluginFullName );
-                }
+                return String.Format( "Plugin: {0}", plugin.PluginFullName );
+
             }
             else
             {
@@ -235,45 +281,26 @@ namespace Yodii.Lab
         /// <summary>
         /// Returns a descriptive of given service or plugin ID, provided it exists in our collections.
         /// </summary>
-        /// <param name="serviceOrPluginId">String of a Plugin ID (GUID) or Service ID (Anything else)</param>
+        /// <param name="serviceOrPluginFullName">Plugin or service name.</param>
         /// <returns>Descriptive of given service or plugin ID</returns>
-        public string GetDescriptionOfServiceOrPluginId( string serviceOrPluginId )
+        public string GetDescriptionOfServiceOrPluginFullName( string serviceOrPluginFullName )
         {
-            Guid pluginGuid;
-            bool isPlugin = Guid.TryParse( serviceOrPluginId, out pluginGuid );
+            bool isPlugin = false;
+            bool isService = false;
+
+            var matchingPlugin = _pluginInfos.GetByKey( serviceOrPluginFullName, out isPlugin );
+            var matchingService = _serviceInfos.GetByKey( serviceOrPluginFullName, out isService );
 
             if( isPlugin )
             {
-                PluginInfo p = PluginInfos.Where( x => x.PluginId == pluginGuid ).FirstOrDefault();
-                if( p != null )
-                {
-                    if( String.IsNullOrWhiteSpace( p.PluginFullName ) )
-                    {
-                        return String.Format( "Plugin: Unnamed plugin ({0})", pluginGuid.ToString() );
-                    }
-                    else
-                    {
-                        return String.Format( "Plugin: {0}", p.PluginFullName );
-                    }
-                }
-                else
-                {
-                    return String.Format( "Plugin: Unknown ({0})", pluginGuid.ToString() );
-                }
+                return String.Format( "Plugin: {0}", matchingPlugin.PluginFullName );
             }
-            else
+            else if( isService )
             {
-                ServiceInfo s = ServiceInfos.Where( x => x.ServiceFullName == serviceOrPluginId ).FirstOrDefault();
-
-                if( s != null )
-                {
-                    return String.Format( "Service: {0}", serviceOrPluginId );
-                }
-                else
-                {
-                    return String.Format( "Service: Unknown ({0})", serviceOrPluginId );
-                }
+                return String.Format( "Service: {0}", matchingService.ServiceFullName );
             }
+
+            return "Unknown plugin or service.";
         }
 
         #region IYodiiEngineHost Members
@@ -286,19 +313,31 @@ namespace Yodii.Lab
             Console.WriteLine( "Disabling:" );
             foreach( var plugin in toDisable )
             {
-                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
+                if( _runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Remove( plugin );
+                }
             }
 
             Console.WriteLine( "Stopping:" );
             foreach( var plugin in toStop )
             {
-                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
+                if( _runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Remove( plugin );
+                }
             }
 
             Console.WriteLine( "Starting:" );
             foreach( var plugin in toStart )
             {
-                Console.WriteLine( String.Format( "- {0} / {1}", plugin.PluginFullName, plugin.PluginId.ToString() ) );
+                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
+                if( !_runningPlugins.Contains( plugin ) )
+                {
+                    _runningPlugins.Add( plugin );
+                }
             }
 
             return exceptionList;
@@ -310,7 +349,7 @@ namespace Yodii.Lab
 
         #region Internal methods
         /// <summary>
-        /// Stops and clears everything in this lab.
+        /// Stops and clears everything in this lab, including configuration manager entries.
         /// </summary>
         internal void ClearState()
         {
@@ -323,8 +362,24 @@ namespace Yodii.Lab
             _labServiceInfos.Clear();
             _pluginInfos.Clear();
             _serviceInfos.Clear();
+
+            // Clear configuration manager
+            foreach( var l in Engine.Configuration.Layers.ToList() )
+            {
+                var result = Engine.Configuration.Layers.Remove( l );
+                Debug.Assert( result.Success );
+            }
         }
 
+        internal bool IsService( string serviceFullName )
+        {
+            return _serviceInfos.Contains( serviceFullName );
+        }
+
+        internal bool IsPlugin( string pluginFullName )
+        {
+            return _pluginInfos.Contains( pluginFullName );
+        }
 
         /// <summary>
         /// Creates a new named service, which specializes another service.
@@ -335,10 +390,6 @@ namespace Yodii.Lab
         /// <remarks>Cannot be used when engine is running.</remarks>
         internal ServiceInfo CreateNewService( string serviceName, ServiceInfo generalization = null )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot create Service while Engine is running." );
-            }
             Debug.Assert( serviceName != null );
             Debug.Assert( _serviceInfos.Any( x => x.ServiceFullName == serviceName ) == false, "Service does not exist and can be added" );
 
@@ -346,9 +397,9 @@ namespace Yodii.Lab
 
             ServiceInfo newService = new ServiceInfo( serviceName, AssemblyInfoHelper.ExecutingAssemblyInfo, generalization );
 
+            CreateLabService( newService );
             _serviceInfos.Add( newService ); // Throws on duplicate
 
-            CreateLabService( newService );
 
             return newService;
         }
@@ -356,25 +407,19 @@ namespace Yodii.Lab
         /// <summary>
         /// Creates a new named plugin, which implements an existing service.
         /// </summary>
-        /// <param name="pluginGuid">Guid of the new plugin</param>
         /// <param name="pluginName">Name of the new plugin</param>
         /// <param name="service">Implemented service</param>
         /// <returns>New plugin</returns>
-        internal PluginInfo CreateNewPlugin( Guid pluginGuid, string pluginName = null, ServiceInfo service = null )
+        internal PluginInfo CreateNewPlugin( string pluginName, ServiceInfo service = null )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot create Plugin while Engine is running." );
-            }
+            Debug.Assert( !String.IsNullOrWhiteSpace( pluginName ) );
 
-            Debug.Assert( pluginGuid != null );
             if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
-            PluginInfo plugin = new PluginInfo( pluginGuid, pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
-
-            _pluginInfos.Add( plugin );
+            PluginInfo plugin = new PluginInfo( pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
 
             CreateLabPlugin( plugin );
+            _pluginInfos.Add( plugin ); // Throws on duplicate
 
             return plugin;
         }
@@ -407,10 +452,6 @@ namespace Yodii.Lab
         /// <param name="serviceInfo">Mock service info to remove</param>
         internal void RemoveService( ServiceInfo serviceInfo )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot remove Service while Engine is running." );
-            }
             // If we delete a service : Unbind linked plugins and services.
 
             // Unbind generalized services
@@ -445,11 +486,6 @@ namespace Yodii.Lab
         /// <param name="pluginInfo">Mock plugin info to remove</param>
         internal void RemovePlugin( PluginInfo pluginInfo )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot remove Plugin while Engine is running." );
-            }
-
             if( pluginInfo.Service != null )
             {
                 pluginInfo.InternalService.InternalImplementations.Remove( pluginInfo );
@@ -484,28 +520,6 @@ namespace Yodii.Lab
             serviceInfo.ServiceFullName = newName;
 
             return new Utils.DetailedOperationResult( true );
-        }
-
-        /// <summary>
-        /// Clears our state, then attempts to load it from a XmlReader.
-        /// </summary>
-        /// <param name="r">XmlReader to use</param>
-        internal void LoadFromXmlReader( XmlReader r )
-        {
-            // May throw
-            var state = MockInfoXmlSerializer.DeserializeLabStateFromXmlReader( r );
-
-            ClearState();
-
-            foreach( var serviceInfo in state.ServiceInfos )
-            {
-                LoadServiceInfo( serviceInfo );
-            }
-
-            foreach( var pluginInfo in state.PluginInfos )
-            {
-                LoadPluginInfo( pluginInfo );
-            }
         }
 
         #endregion Internal methods
@@ -553,12 +567,13 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Loads a foreign mock service info into our collections.
+        /// Loads a foreign mock service info and all it depends on into our collections.
         /// </summary>
         /// <param name="serviceInfo">Foreign mock service info</param>
-        private void LoadServiceInfo( ServiceInfo serviceInfo )
+        internal void LoadServiceInfo( ServiceInfo serviceInfo )
         {
             if( _serviceInfos.Contains( serviceInfo ) ) return; // Already loaded
+            CreateLabService( serviceInfo );
             _serviceInfos.Add( serviceInfo );
 
             if( serviceInfo.Generalization != null )
@@ -566,14 +581,13 @@ namespace Yodii.Lab
                 LoadServiceInfo( (ServiceInfo)serviceInfo.Generalization );
             }
 
-            CreateLabService( serviceInfo );
         }
 
         /// <summary>
-        /// Loads a foreign mock plugin info into our collections.
+        /// Loads a foreign mock plugin info and al it depends on into our collections.
         /// </summary>
         /// <param name="pluginInfo">Foreign mock plugin info</param>
-        private void LoadPluginInfo( PluginInfo pluginInfo )
+        internal void LoadPluginInfo( PluginInfo pluginInfo )
         {
             if( _pluginInfos.Contains( pluginInfo ) ) return; // Already loaded
             _pluginInfos.Add( pluginInfo );
@@ -592,16 +606,16 @@ namespace Yodii.Lab
             CreateLabPlugin( pluginInfo );
         }
 
-        /// <summary>
-        /// Removes all live data from our services/plugins.
-        /// </summary>
-        private void ClearLiveInfos()
+        private void ClearLiveServiceInfos()
         {
             foreach( LabServiceInfo labService in _labServiceInfos )
             {
                 labService.LiveServiceInfo = null;
             }
+        }
 
+        private void ClearLivePluginInfos()
+        {
             foreach( LabPluginInfo labPlugin in _labPluginInfos )
             {
                 labPlugin.LivePluginInfo = null;
@@ -635,8 +649,9 @@ namespace Yodii.Lab
         {
             Debug.Assert( info.ServiceInfo is ServiceInfo );
 
-            LabServiceInfo labService = _labServiceInfos.GetByKey( (ServiceInfo)info.ServiceInfo );
-            labService.LiveServiceInfo = null;
+            bool exists;
+            LabServiceInfo labService = _labServiceInfos.GetByKey( (ServiceInfo)info.ServiceInfo, out exists );
+            if( exists ) labService.LiveServiceInfo = null;
         }
 
         private void LookupAndBindLivePluginInfoToPlugin( ILivePluginInfo info )
@@ -651,10 +666,46 @@ namespace Yodii.Lab
         {
             Debug.Assert( info.PluginInfo is PluginInfo );
 
-            LabPluginInfo labPlugin = _labPluginInfos.GetByKey( (PluginInfo)info.PluginInfo );
-            labPlugin.LivePluginInfo = null;
+            bool exists;
+            LabPluginInfo labPlugin = _labPluginInfos.GetByKey( (PluginInfo)info.PluginInfo, out exists );
+            if( exists ) labPlugin.LivePluginInfo = null;
         }
         #endregion
 
+    }
+
+    /// <summary>
+    /// Read-only, shallow copy of given IDiscoveredInfo.
+    /// </summary>
+    public class DiscoveredInfoClone : IDiscoveredInfo
+    {
+        readonly IReadOnlyList<IServiceInfo> _serviceInfos;
+        readonly IReadOnlyList<IPluginInfo> _pluginInfos;
+
+        internal DiscoveredInfoClone(IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins)
+        {
+            _serviceInfos = new List<IServiceInfo>( services ).AsReadOnlyList();
+            _pluginInfos = new List<IPluginInfo>( plugins ).AsReadOnlyList();
+        }
+
+        #region IDiscoveredInfo Members
+
+        /// <summary>
+        /// Service infos.
+        /// </summary>
+        public IReadOnlyList<IServiceInfo> ServiceInfos
+        {
+            get { return _serviceInfos; }
+        }
+
+        /// <summary>
+        /// Plugin infos.
+        /// </summary>
+        public IReadOnlyList<IPluginInfo> PluginInfos
+        {
+            get { return _pluginInfos; }
+        }
+
+        #endregion
     }
 }

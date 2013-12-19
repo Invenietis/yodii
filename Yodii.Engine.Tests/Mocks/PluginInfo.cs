@@ -11,7 +11,6 @@ namespace Yodii.Engine.Tests.Mocks
 {
     public class PluginInfo : IPluginInfo
     {
-        readonly Guid _guid;
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
         readonly List<IServiceReferenceInfo> _serviceReferences;
@@ -23,7 +22,6 @@ namespace Yodii.Engine.Tests.Mocks
             Debug.Assert( !String.IsNullOrEmpty( pluginFullName ) );
             Debug.Assert( assemblyInfo != null );
 
-            _guid = Guid.NewGuid();
             _pluginFullName = pluginFullName;
             _assemblyInfo = assemblyInfo;
             _serviceReferences = new List<IServiceReferenceInfo>();
@@ -38,11 +36,6 @@ namespace Yodii.Engine.Tests.Mocks
         }
 
         #region IPluginInfo Members
-
-        public Guid PluginId
-        {
-            get { return _guid; }
-        }
 
         public string PluginFullName
         {
@@ -87,7 +80,7 @@ namespace Yodii.Engine.Tests.Mocks
 
         public string ErrorMessage
         {
-            get { return _hasError ? "An error occured." : null; }
+            get { return _hasError ? "An error occurred." : null; }
         }
 
 

@@ -8,20 +8,20 @@ namespace Yodii.Model
     public interface IConfigurationItem : INotifyPropertyChanged
     {
         /// <summary>
-        /// Parent configuration layer.
+        /// Gets the parent configuration layer.
         /// </summary>
         IConfigurationLayer Layer { get; }
 
         /// <summary>
-        /// Service or plugin ID this configuration applies to.
+        /// Service or plugin identifier this configuration applies to.
         /// </summary>
-        string ServiceOrPluginId { get; }
+        string ServiceOrPluginFullName { get; }
 
         /// <summary>
         /// Attempts to change the required ConfigurationStatus of this item.
         /// </summary>
-        /// <param name="newStatus">Status to change to</param>
-        /// <param name="statusReason">Description of the change</param>
+        /// <param name="newStatus">New status for this item.</param>
+        /// <param name="statusReason">Optional reason for this status.</param>
         /// <returns>Engine change result.</returns>
         IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" );
 
@@ -31,7 +31,7 @@ namespace Yodii.Model
         ConfigurationStatus Status { get; }
 
         /// <summary>
-        /// Description of last status change.
+        /// Description of last status change reason.
         /// </summary>
         string StatusReason { get; set; }
     }

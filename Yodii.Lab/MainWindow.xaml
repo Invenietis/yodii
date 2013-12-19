@@ -20,6 +20,8 @@
             x:Key="boolToVisibilityConverter" />
         <local:EnumToBooleanConverter
             x:Key="EnumToBooleanConv" />
+        <local:NullToBoolValueConverter
+            x:Key="NullToBoolConverter" />
 
         <ObjectDataProvider
             MethodName="GetValues"
@@ -44,7 +46,7 @@
             DataType="local:YodiiGraphVertex">
             <local:PluginPropertyPanel
                 LivePluginInfo="{Binding Path=LabPluginInfo, Mode=OneWay}"
-                ServiceInfos="{Binding Path=DataContext.LabState, ElementName=MainWindowRoot, Mode=OneWay}" />
+                ServiceInfos="{Binding Path=DataContext.LabState.ServiceInfos, ElementName=MainWindowRoot, Mode=OneWay}" />
         </DataTemplate>
 
         <local:VertexPropertiesTemplateSelector
@@ -65,6 +67,15 @@
                 Header="Home">
                 <Fluent:RibbonGroupBox
                     Header="File">
+                    <Fluent:Button
+                        Header="New"
+                        Command="{Binding Path=ClearAllCommand}">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource NewFileIcon}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Open"
                         Command="{Binding Path=OpenFileCommand}">
@@ -149,11 +160,50 @@
                             </Style>
                         </Fluent:SplitButton.ItemContainerStyle>
                     </Fluent:SplitButton>
+                    <Fluent:Button
+                        Header="Export to PNG"
+                        Click="ExportToPngButton_Click">
+                        <Fluent:Button.LargeIcon>
+                            <Viewbox
+                                Stretch="UniformToFill"
+                                Child="{StaticResource PlayIconGreen}" />
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
-                        Header="Start engine"
-                        Command="{Binding Path=StartEngineCommand}">
+                        Header="{Binding Path=ToggleEngineText}"
+                        Command="{Binding Path=ToggleEngineCommand}">
+                        <Fluent:Button.Style>
+                            <Style>
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                        Value="true">
+                                        <Setter
+                                            Property="Fluent:Button.LargeIcon">
+                                            <Setter.Value>
+                                                <Viewbox
+                                                    Stretch="UniformToFill"
+                                                    Child="{StaticResource PowerIconRed}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                        Value="false">
+                                        <Setter
+                                            Property="Fluent:Button.LargeIcon">
+                                            <Setter.Value>
+                                                <Viewbox
+                                                    Stretch="UniformToFill"
+                                                    Child="{StaticResource PowerIcon}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Fluent:Button.Style>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
             </Fluent:RibbonTabItem>
@@ -162,19 +212,20 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition
-                    Height="4*" />
-                <!--<RowDefinition
+                    Height="*" />
+                <RowDefinition
                     Height="3pt" />
                 <RowDefinition
-                    Height="1*" />-->
+                    Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition
-                    Width="3*" />
+                    Width="*" />
                 <ColumnDefinition
                     Width="3pt" />
                 <ColumnDefinition
-                    Width="1*" />
+                    Width="200pt"
+                    MinWidth="200pt" />
             </Grid.ColumnDefinitions>
 
             <Grid.Resources>
@@ -237,11 +288,11 @@
                                         AutoReverse="False">
                                         <DoubleAnimation
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                            To="1.3"
+                                            To="1.1"
                                             Duration="00:00:00.25" />
                                         <DoubleAnimation
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                            To="1.3"
+                                            To="1.1"
                                             Duration="00:00:00.25" />
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -302,13 +353,13 @@
                             Value="true">
                             <Setter
                                 Property="Foreground"
-                                Value="Orange" />
+                                Value="#00FF00" />
                             <Setter
                                 Property="StrokeThickness"
                                 Value="2" />
                             <Setter
                                 Property="DashStyle"
-                                Value="Dot" />
+                                Value="Dash" />
                         </DataTrigger>
                     </Style.Triggers>
 
@@ -376,20 +427,23 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Grid.Column="0"
-                Grid.Row="0" />
-            
+                Grid.Row="0"
+                Grid.RowSpan="3" />
+
             <!-- Graph viewer -->
             <gxc:ZoomControl
                 x:Name="ZoomBox"
                 MouseDown="graphLayout_MouseDown"
                 Background="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"
                 Grid.Column="0"
-                Grid.Row="0">
+                Grid.Row="0"
+                Grid.RowSpan="3">
                 <local:YodiiGraphArea
                     x:Name="GraphArea" />
             </gxc:ZoomControl>
 
             <!-- Right panel -->
+            <!-- Vertical splitter -->
             <GridSplitter
                 ResizeDirection="Columns"
                 Grid.Row="0"
@@ -397,12 +451,157 @@
                 Grid.RowSpan="3"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch" />
+            <!-- Horizontal splitter -->
+            <GridSplitter
+                ResizeDirection="Rows"
+                Grid.Row="1"
+                Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch" />
+            <!-- Vertex properties -->
             <ContentControl
                 Grid.Row="0"
                 Grid.Column="2"
                 Content="{Binding Path=SelectedVertex, UpdateSourceTrigger=PropertyChanged}"
                 ContentTemplateSelector="{StaticResource ResourceKey=vertexPropertiesTemplateSelector}" />
+            <!-- Yodii commands properties -->
+            <Border
+                Padding="5pt"
+                Grid.Row="2"
+                Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+                <DockPanel
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                    <TextBlock
+                        DockPanel.Dock="Top"
+                        FontWeight="Bold"
+                        Margin="0,3pt">Yodii dynamic commands</TextBlock>
+                    <DockPanel
+                        Height="Auto"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        Visibility="{Binding LabState.Engine.IsRunning, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">
+                        <DockPanel
+                            DockPanel.Dock="Top">
+                            <Button
+                                DockPanel.Dock="Right"
+                                Command="{Binding Path=RevokeAllCommandsCommand}">Revoke all</Button>
+                            <TextBlock VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"
+                                       TextTrimming="CharacterEllipsis">
+                                <Run
+                                    Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.
+                            </TextBlock>
+                        </DockPanel>
+                        <ScrollViewer
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            VerticalScrollBarVisibility="Auto">
+                            <ItemsControl
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top"
+                                ItemsSource="{Binding LabState.Engine.YodiiCommands, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate
+                                        DataType="ym:YodiiCommand">
+                                        <Border
+                                            BorderBrush="Black"
+                                            BorderThickness="1pt"
+                                            CornerRadius="3"
+                                            Padding="3pt">
+                                            <DockPanel>
+                                                <Image
+                                                    DockPanel.Dock="Left"
+                                                    MaxHeight="12pt"
+                                                    MaxWidth="12pt"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,3pt,0">
+                                                    <Image.Style>
+                                                        <Style
+                                                            TargetType="Image">
+                                                            <Style.Triggers>
+                                                                <DataTrigger
+                                                                    Binding="{Binding Path=Start, Mode=OneWay}"
+                                                                    Value="true">
+                                                                    <Setter
+                                                                        Property="Source"
+                                                                        Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                                                </DataTrigger>
+                                                                <DataTrigger
+                                                                    Binding="{Binding Path=Start, Mode=OneWay}"
+                                                                    Value="false">
+                                                                    <Setter
+                                                                        Property="Source"
+                                                                        Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Image.Style>
+                                                </Image>
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    Margin="3pt,0"
+                                                    Text="{Binding Path=CallerKey}" />
+                                                <TextBlock
+                                                    DockPanel.Dock="Right"
+                                                    Margin="3pt,0"
+                                                    Foreground="Purple"
+                                                    Text="{Binding Path=Impact}" />
 
+                                                <TextBlock
+                                                    FontWeight="Bold"
+                                                    TextWrapping="NoWrap"
+                                                    TextTrimming="CharacterEllipsis">
+                                                    <TextBlock.Style>
+                                                        <Style
+                                                            TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger
+                                                                    Binding="{Binding Path=PluginFullName, Converter={StaticResource NullToBoolConverter}, Mode=OneWay}"
+                                                                    Value="false">
+                                                                    <Setter
+                                                                        Property="Text">
+                                                                        <Setter.Value>
+                                                                            <Binding
+                                                                                Path="PluginFullName"
+                                                                                Mode="OneWay" />
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                    <Setter
+                                                                        Property="Foreground"
+                                                                        Value="Blue" />
+                                                                </DataTrigger>
+                                                                <DataTrigger
+                                                                    Binding="{Binding Path=ServiceFullName, Converter={StaticResource NullToBoolConverter}, Mode=OneWay}"
+                                                                    Value="false">
+                                                                    <Setter
+                                                                        Property="Text">
+                                                                        <Setter.Value>
+                                                                            <Binding
+                                                                                Path="ServiceFullName"
+                                                                                Mode="OneWay" />
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                    <Setter
+                                                                        Property="Foreground"
+                                                                        Value="Red" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </DockPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </DockPanel>
+                </DockPanel>
+            </Border>
             <!-- Bottom panel -->
             <!--<GridSplitter
                 ResizeDirection="Rows"

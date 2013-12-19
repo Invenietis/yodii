@@ -14,6 +14,10 @@
     d:DesignHeight="300"
     d:DesignWidth="300">
     <UserControl.Resources>
+        <local:InverseBooleanConverter
+            x:Key="InverseBoolConverter" />
+        <local:BooleanAndConverter
+            x:Key="BooleanAndConverter" />
         <local:NullToBoolValueConverter
             x:Key="NullToBoolValueConverter" />
 
@@ -66,34 +70,34 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
-                    Grid.Row="0">GUID</TextBlock>
+                    Grid.Row="0">Name</TextBlock>
                 <TextBlock
-                    Grid.Row="1">Name</TextBlock>
+                    Grid.Row="1">Service</TextBlock>
                 <TextBlock
-                    Grid.Row="2">Service</TextBlock>
-                <TextBlock
-                    Grid.Row="3">References</TextBlock>
+                    Grid.Row="2">References</TextBlock>
 
                 <TextBox
+                    IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                     Grid.Column="1"
                     Grid.Row="0"
-                    Text="{Binding Path=PluginInfo.PluginId, Mode=OneWay}"
-                    IsEnabled="False" />
-                <TextBox
-                    Grid.Column="1"
-                    Grid.Row="1"
                     Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
                 <DockPanel
                     Grid.Column="1"
-                    Grid.Row="2">
+                    Grid.Row="1">
                     <Button
                         Style="{StaticResource RemoveButtonStyle}"
                         DockPanel.Dock="Right"
                         ToolTip="Clear service"
                         Margin="0,0,5,0"
-                        IsEnabled="{Binding Converter={StaticResource ResourceKey=NullToBoolValueConverter}, Path=PluginInfo.Service, Mode=OneWay, ConverterParameter=true}"
-                        Click="ClearServiceButton_Click" />
-                   <ComboBox
+                        Click="ClearServiceButton_Click">
+                        <Button.IsEnabled>
+                            <Binding
+                                Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
+                                ConverterParameter="true"
+                                Path="PluginInfo.Service" />
+                        </Button.IsEnabled>
+                    </Button>
+                    <ComboBox
                         x:Name="PluginServiceComboBox"
                         Margin="5,0"
                         ItemTemplate="{StaticResource serviceFullNameTemplate}"
@@ -103,7 +107,7 @@
                 </DockPanel>
                 <StackPanel
                     Grid.Column="1"
-                    Grid.Row="3">
+                    Grid.Row="2">
                     <ItemsControl
                         ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
@@ -113,12 +117,14 @@
                                 <DockPanel
                                     Margin="0,3">
                                     <Button
+                                        IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
                                         Style="{StaticResource RemoveButtonStyle}"
                                         DockPanel.Dock="Right"
                                         ToolTip="Remove reference"
                                         Margin="5,0"
                                         Click="DeleteReferenceButton_Click" />
                                     <ComboBox
+                                        IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
                                         x:Name="ReferenceRequirementComboBox"
                                         DockPanel.Dock="Right"
                                         SelectedItem="{Binding Path=Requirement, Mode=OneWay}"

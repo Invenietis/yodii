@@ -21,7 +21,6 @@ namespace Yodii.Lab.Tests
 
             Assert.That( a != null && b != null );
 
-            Assert.That( a.PluginId == b.PluginId );
             Assert.That( a.PluginFullName == b.PluginFullName );
 
             if( a.Service == null )
@@ -34,7 +33,7 @@ namespace Yodii.Lab.Tests
             Assert.That( a.ServiceReferences.Count == b.ServiceReferences.Count );
             foreach(var referenceB in b.ServiceReferences)
             {
-                var referenceA = a.ServiceReferences.Where( x => x.Owner.PluginId == referenceB.Owner.PluginId &&
+                var referenceA = a.ServiceReferences.Where( x => x.Owner.PluginFullName == referenceB.Owner.PluginFullName &&
                     x.Reference.ServiceFullName == referenceB.Reference.ServiceFullName &&
                     x.Requirement == referenceB.Requirement ).FirstOrDefault();
 
@@ -62,8 +61,8 @@ namespace Yodii.Lab.Tests
             {
                 foreach( var pluginB in b.Implementations )
                 {
-                    Assert.That( a.Implementations.Where( x => x.PluginId == pluginB.PluginId ).Count() == 1 );
-                    var pluginA = a.Implementations.Where( x => x.PluginId == pluginB.PluginId ).First();
+                    Assert.That( a.Implementations.Where( x => x.PluginFullName == pluginB.PluginFullName ).Count() == 1 );
+                    var pluginA = a.Implementations.Where( x => x.PluginFullName == pluginB.PluginFullName ).First();
 
                     AssertPluginEquivalence( pluginA, pluginB, false );
                 }
@@ -81,6 +80,44 @@ namespace Yodii.Lab.Tests
             if( a == null && b == null ) return;
 
             Assert.That( a != null && b != null );
+        }
+
+        /// <summary>
+        /// Asserts equivalence between two IConfigurationManager.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        public static void AssertManagerEquivalence( IConfigurationManager a, IConfigurationManager b )
+        {
+            if( a == null && b == null ) return;
+
+            Assert.That( a != null && b != null );
+
+            Assert.That( a.Layers.Count == b.Layers.Count );
+
+            for( int i = 0; i < a.Layers.Count; i++ )
+            {
+                // Consider equivalent if they're in the exact same order?
+                var layerA = a.Layers[i];
+                var layerB = b.Layers[i];
+
+                Assert.That( layerA.LayerName == layerB.LayerName );
+
+                foreach( var item in layerA.Items )
+                {
+                    Assert.That( layerB.Items.Any( x => x.ServiceOrPluginFullName == item.ServiceOrPluginFullName && x.Status == item.Status ) );
+                }
+            }
+
+            if( a.FinalConfiguration != null )
+            {
+                Assert.That( b.FinalConfiguration != null );
+                Assert.That( a.FinalConfiguration.Items.Count == b.FinalConfiguration.Items.Count );
+                foreach( var item in a.FinalConfiguration.Items )
+                {
+                    Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginFullName == item.ServiceOrPluginFullName && x.Status == item.Status ) );
+                }
+            }
         }
     }
 }

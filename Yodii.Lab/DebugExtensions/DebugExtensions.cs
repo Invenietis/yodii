@@ -11,20 +11,10 @@ namespace Yodii.Lab
         public static string Describe( this IYodiiEngineResult result )
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append( "IYodiiEngineResult: " );
-            if( result.Success )
-            {
-                sb.AppendLine( "Success" );
-            }
-            else
-            {
-                sb.AppendLine( "Failure" );
-            }
-
             // ConfigurationFailureResult
             if( result.ConfigurationFailureResult != null && result.ConfigurationFailureResult.FailureReasons.Count > 0 )
             {
-                sb.AppendLine( "ConfigurationFailureResult:" );
+                sb.AppendLine( "Configuration error:" );
                 foreach( var reason in result.ConfigurationFailureResult.FailureReasons )
                 {
                     sb.AppendLine( String.Format( "- {0}", reason ) );
@@ -34,24 +24,24 @@ namespace Yodii.Lab
             // StaticFailureResult
             if( result.StaticFailureResult != null )
             {
-                sb.AppendLine( "StaticFailureResult:" );
+                sb.AppendLine( "Error during static resolution:" );
                 if( result.StaticFailureResult.BlockingServices.Count > 0 )
                 {
-                    sb.AppendLine( "BlockingServices:" );
+                    sb.AppendLine( "* These services could not be started:" );
                     foreach( var s in result.StaticFailureResult.BlockingServices )
                     {
                         sb.AppendLine(
-                            String.Format( "- {0}: {1}", s.ServiceInfo.ServiceFullName, s.DisabledReason.ToString() )
+                            String.Format( "  - Service '{0}':\n    {1}", s.ServiceInfo.ServiceFullName, s.DisabledReason )
                         );
                     }
                 }
                 if( result.StaticFailureResult.BlockingPlugins.Count > 0 )
                 {
-                    sb.AppendLine( "BlockingPlugins:" );
+                    sb.AppendLine( "* These plugins could not be started:" );
                     foreach( var p in result.StaticFailureResult.BlockingPlugins )
                     {
                         sb.AppendLine(
-                            String.Format( "- {0}/{1}: {2}", p.PluginInfo.PluginFullName, p.PluginInfo.PluginId.ToString(), p.DisabledReason.ToString() )
+                            String.Format( "  - Plugin '{0}':\n    {1}", p.PluginInfo.PluginFullName, p.DisabledReason )
                         );
                     }
                 }
@@ -59,33 +49,33 @@ namespace Yodii.Lab
 
             if( result.HostFailureResult != null )
             {
-                sb.AppendLine("HostFailureResult:");
+                sb.AppendLine( "There was a runtime error on the plugin host:" );
                 foreach( var r in result.HostFailureResult.ErrorPlugins )
                 {
                     sb.AppendLine(
-                        String.Format("- {0}/{1}: {2}", r.Plugin.PluginInfo.PluginFullName, r.Plugin.PluginInfo.PluginId.ToString(), r.Error.Message)
+                        String.Format( "For plugin '{0}':\n  * {1}", r.Plugin.PluginInfo.PluginFullName, r.Error.Message )
                         );
                 }
             }
 
-            if( result.ServiceCulprits != null && result.ServiceCulprits.Count > 0 )
+            if( result.ServiceCulprits.Count > 0 )
             {
-                sb.AppendLine( "ServiceCulprits:" );
+                sb.AppendLine( "These services caused the error:" );
                 foreach( var pc in result.ServiceCulprits )
                 {
                     sb.AppendLine(
-                        String.Format( "- {0}: {1}", pc.ServiceFullName, pc.ErrorMessage )
+                            String.Format( "- '{0}'", pc.ServiceFullName )
                         );
                 }
             }
 
-            if( result.PluginCulprits != null && result.PluginCulprits.Count > 0 )
+            if( result.PluginCulprits.Count > 0 )
             {
-                sb.AppendLine( "PluginCulprits:" );
+                sb.AppendLine( "These plugins caused the error:" );
                 foreach( var pc in result.PluginCulprits )
                 {
                     sb.AppendLine(
-                        String.Format( "- {0}/{1}: {2}", pc.PluginFullName, pc.PluginId.ToString(), pc.ErrorMessage )
+                            String.Format( "- '{0}'", pc.PluginFullName )
                         );
                 }
             }

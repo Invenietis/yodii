@@ -10,7 +10,7 @@ namespace Yodii.Model
     public interface IServiceInfo : IDiscoveredItem
     {
         /// <summary>
-        /// Gets the full name of the service (namespace and interface name).
+        /// Gets the unique full name of the service (namespace and interface name).
         /// </summary>
         string ServiceFullName { get; }
 

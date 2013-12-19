@@ -126,6 +126,7 @@
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphEdgeType.cs" />
     <Compile Include="Graph elements\YodiiGraphVertex.cs" />
+    <Compile Include="LiveDataTemplateSelector.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="Mock model\AssemblyInfoHelper.cs" />
     <Compile Include="Mock model\MockAssemblyInfo.cs" />
@@ -144,12 +145,15 @@
     <Compile Include="UI Elements\YodiiVertexControl.xaml.cs">
       <DependentUpon>YodiiVertexControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\BooleanAndConverter.cs" />
+    <Compile Include="Utils\BooleanConverter.cs" />
     <Compile Include="Utils\DropDownButton.cs" />
+    <Compile Include="Utils\IntegerToBoolConverter.cs" />
     <Compile Include="Utils\IntegerToVisibilityConverter.cs" />
+    <Compile Include="Utils\InverseBooleanConverter.cs" />
     <Compile Include="Utils\ServiceOrPluginIdToDescriptionConverter.cs" />
     <Compile Include="Utils\EnumToBooleanConverter.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
-    <Compile Include="XmlSerializingUtils\MockInfoXmlSerializer.cs" />
     <Compile Include="Mock model\MockServiceReferenceInfo.cs" />
     <Compile Include="Mock model\PluginInfo.cs" />
     <Compile Include="Mock model\ServiceInfo.cs" />
@@ -161,6 +165,7 @@
     <Compile Include="Utils\RelayCommand.cs" />
     <Compile Include="Utils\ViewModelBase.cs" />
     <Compile Include="VertexPropertiesTemplateSelector.cs" />
+    <Compile Include="XmlSerializingUtils\LabXmlSerialization.cs" />
     <Page Include="AddPluginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -281,6 +286,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DesignModel\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\RunningStatusDisabled.png" />
+    <Resource Include="Assets\RunningStatusRunning.png" />
+    <Resource Include="Assets\RunningStatusRunningLocked.png" />
+    <Resource Include="Assets\RunningStatusStopped.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" />

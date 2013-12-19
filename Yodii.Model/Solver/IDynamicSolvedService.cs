@@ -9,7 +9,7 @@ namespace Yodii.Model
     /// <summary>
     /// Solved dynamic service data.
     /// </summary>
-    public interface IDynamicSolvedService
+    public interface IDynamicSolvedService : IDynamicYodiiItem
     {
         /// <summary>
         /// Static service information.
@@ -19,7 +19,7 @@ namespace Yodii.Model
         /// <summary>
         /// Reason behind this service's disabled status.
         /// </summary>
-        ServiceDisabledReason DisabledReason { get; }
+        string DisabledReason { get; }
 
         /// <summary>
         /// This service's status as set in the initial configuration.
@@ -29,11 +29,17 @@ namespace Yodii.Model
         /// <summary>
         /// Status as set in the resolved configuration.
         /// </summary>
-        SolvedConfigurationStatus ConfigSolvedStatus { get; }
+        ConfigurationStatus ConfigSolvedStatus { get; }
 
         /// <summary>
-        /// Running status.
+        /// Dependency impact as set by initial configuration.
         /// </summary>
-        RunningStatus RunningStatus { get; }
+        StartDependencyImpact ConfigOriginalImpact { get; }
+
+        /// <summary>
+        /// Final dependency impact (the Service's one if this plugin implements a Service and 
+        /// this <see cref="ConfigOriginalImpact"/> is <see cref="StartDependencyImpact.Unknown"/>).
+        /// </summary>
+        StartDependencyImpact ConfigSolvedImpact { get; }
     }
 }

@@ -25,6 +25,8 @@ namespace Yodii.Lab
         readonly ICKObservableReadOnlyCollection<LabPluginInfo> _pluginInfos;
         readonly LabStateManager _serviceManager;
 
+        internal bool LockGraphUpdates = false;
+
         IConfigurationManager _configurationManager;
 
         #region Constructor
@@ -88,7 +90,7 @@ namespace Yodii.Lab
         {
             if( config == null )
             {
-                foreach(  var v in Vertices )
+                foreach( var v in Vertices )
                 {
                     v.HasConfiguration = false;
                     v.ConfigurationStatus = ConfigurationStatus.Optional;
@@ -103,9 +105,9 @@ namespace Yodii.Lab
                     if( v.IsService )
                         identifier = v.LabServiceInfo.ServiceInfo.ServiceFullName;
                     else
-                        identifier = v.LabPluginInfo.PluginInfo.PluginId.ToString();
+                        identifier = v.LabPluginInfo.PluginInfo.PluginFullName;
 
-                    var items = config.Items.Where( x => x.ServiceOrPluginId == identifier);
+                    var items = config.Items.Where( x => x.ServiceOrPluginFullName == identifier );
                     if( items.Count() > 0 )
                     {
                         v.HasConfiguration = true;
@@ -256,7 +258,7 @@ namespace Yodii.Lab
             GraphX.LayoutAlgorithmTypeEnum? newLayout = null,
             GraphX.GraphSharp.Algorithms.Layout.ILayoutParameters algoParams = null )
         {
-            if( this.GraphUpdateRequested != null )
+            if( this.GraphUpdateRequested != null && !LockGraphUpdates )
             {
                 this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type, newLayout, algoParams ) );
             }
@@ -268,44 +270,58 @@ namespace Yodii.Lab
         {
             if( e.Action == NotifyCollectionChangedAction.Add )
             {
-                CreatePluginVertex( (LabPluginInfo)e.NewItems[0] );
+                foreach( var item in e.NewItems )
+                {
+                    CreatePluginVertex( (LabPluginInfo)item );
+                }
+                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
             {
-                RemovePluginVertex( (LabPluginInfo)e.OldItems[0] );
+                foreach( var item in e.OldItems )
+                {
+                    RemovePluginVertex( (LabPluginInfo)item );
+                }
+                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
             }
             else if( e.Action == NotifyCollectionChangedAction.Replace )
             {
-                RemovePluginVertex( (LabPluginInfo)e.OldItems[0] );
-                CreatePluginVertex( (LabPluginInfo)e.NewItems[0] );
+                throw new NotImplementedException();
             }
             else if( e.Action == NotifyCollectionChangedAction.Reset )
             {
                 ClearPluginVertices();
+                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
             }
-            RaiseGraphUpdateRequested();
         }
 
         void _serviceInfos_CollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
         {
             if( e.Action == NotifyCollectionChangedAction.Add )
             {
-                CreateServiceVertex( (LabServiceInfo)e.NewItems[0] );
+                foreach( var item in e.NewItems )
+                {
+                    CreateServiceVertex( (LabServiceInfo)item );
+                    RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                }
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
             {
-                RemoveServiceVertex( (LabServiceInfo)e.OldItems[0] );
+                foreach( var item in e.OldItems )
+                {
+                    RemoveServiceVertex( (LabServiceInfo)e.OldItems[0] );
+                    RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                }
             }
             else if( e.Action == NotifyCollectionChangedAction.Replace )
             {
-                RemoveServiceVertex( (LabServiceInfo)e.OldItems[0] );
-                CreateServiceVertex( (LabServiceInfo)e.NewItems[0] );
+                throw new NotImplementedException();
             }
             else if( e.Action == NotifyCollectionChangedAction.Reset )
             {
                 ClearServiceVertices();
+                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
             }
-            RaiseGraphUpdateRequested();
         }
 
         void ObservableServiceReferences_CollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
@@ -329,7 +345,7 @@ namespace Yodii.Lab
                         e2.Source.IsPlugin && e2.Source.LabPluginInfo.PluginInfo == reference.Owner
                         && e2.Target.IsService && e2.Target.LabServiceInfo.ServiceInfo == reference.Reference );
             }
-            RaiseGraphUpdateRequested();
+            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
         }
 
         void ServiceInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -352,7 +368,7 @@ namespace Yodii.Lab
                 }
 
             }
-            RaiseGraphUpdateRequested();
+            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
         }
 
         void PluginInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -375,7 +391,7 @@ namespace Yodii.Lab
                     AddEdge( newEdge );
                 }
             }
-            RaiseGraphUpdateRequested();
+            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
         }
         #endregion Event handlers
     }

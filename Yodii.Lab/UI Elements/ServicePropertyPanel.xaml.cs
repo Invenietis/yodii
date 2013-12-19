@@ -115,6 +115,7 @@ namespace Yodii.Lab
         private void ClearGeneralizationButton_Click( object sender, RoutedEventArgs e )
         {
             if( LiveServiceInfo == null ) return;
+            if( LiveServiceInfo.IsLive ) return;
             _resettingGeneralizationComboBox = true;
             LiveServiceInfo.ServiceInfo.Generalization = null;
 

@@ -16,7 +16,7 @@ namespace Yodii.Lab
         /// </summary>
         public MainWindow()
         {
-            _vm = new MainWindowViewModel(true);
+            _vm = new MainWindowViewModel(false);
             this.DataContext = _vm;
             _vm.NewNotification += _vm_NewNotification;
             InitializeComponent();
@@ -69,6 +69,7 @@ namespace Yodii.Lab
             }
             GraphArea.ShowAllEdgesLabels();
             GraphArea.InvalidateVisual();
+
         }
 
         void GraphArea_GenerateGraphFinished( object sender, EventArgs e )
@@ -98,10 +99,33 @@ namespace Yodii.Lab
 
             if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
             {
-                this.GraphArea.GenerateGraph( _vm.Graph );
+                try
+                {
+                    this.GraphArea.RelayoutGraph();
+                } catch( Exception ex )
+                {
+                    MessageBox.Show( String.Format("An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace),
+                        "Error while updating layout",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error, MessageBoxResult.OK );
+
+                    ResetGraphToDefaultState();
+                }
             } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
             {
-                this.GraphArea.RelayoutGraph();
+                try
+                {
+                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                }
+                catch( Exception ex )
+                {
+                    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
+                        "Error while generating graph",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error, MessageBoxResult.OK );
+
+                    ResetGraphToDefaultState();
+                }
             }
 
         }
@@ -119,6 +143,36 @@ namespace Yodii.Lab
         private void graphLayout_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
         {
             _vm.SelectedVertex = null;
+        }
+
+        private void ResetGraphToDefaultState()
+        {
+            this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
+            this.GraphArea.DefaultLayoutAlgorithmParams = null;
+
+            this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+        }
+
+        private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
+        {
+
+            this.GraphArea.ExportAsPNG( false );
+
+            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+
+            //dlg.DefaultExt = ".png";
+            //dlg.Filter = "PNG images (*.png)|*.png";
+            //dlg.CheckPathExists = true;
+            //dlg.OverwritePrompt = true;
+            //dlg.AddExtension = true;
+
+            //Nullable<bool> result = dlg.ShowDialog();
+
+            //if( result == true )
+            //{
+            //    string filePath = dlg.FileName;
+            //    this.GraphArea.ExportAsImage( ImageType.PNG, false, 96, 100 );
+            //}
         }
 
     }

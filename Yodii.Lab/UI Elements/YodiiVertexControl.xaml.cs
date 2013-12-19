@@ -24,7 +24,7 @@ namespace Yodii.Lab
 
         public static readonly DependencyProperty VertexProperty = 
             DependencyProperty.Register( "Vertex", typeof( YodiiGraphVertex ),
-            typeof( YodiiVertexControl ), new FrameworkPropertyMetadata(OnVertexChangedCallback)
+            typeof( YodiiVertexControl ), new FrameworkPropertyMetadata( OnVertexChangedCallback )
             );
 
         private static void OnVertexChangedCallback( DependencyObject d, DependencyPropertyChangedEventArgs e )
@@ -45,7 +45,7 @@ namespace Yodii.Lab
 
         void ItemContainerGenerator_StatusChanged( object sender, EventArgs e )
         {
-            if(ConfigurationStatusMenu.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            if( ConfigurationStatusMenu.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated )
             {
                 UpdateCheckbox();
             }
@@ -123,32 +123,44 @@ namespace Yodii.Lab
         private void ChangeConfiguration( ConfigurationStatus status )
         {
             if( Vertex == null ) return;
-            // If plugin: PluginInfo.PluginId / else: ServiceInfo.ServiceFullName
-            string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LabPluginInfo.PluginInfo.PluginId.ToString() : Vertex.LabServiceInfo.ServiceInfo.ServiceFullName;
+
+            string pluginOrServiceId = Vertex.IsPlugin ? Vertex.LabPluginInfo.PluginInfo.PluginFullName : Vertex.LabServiceInfo.ServiceInfo.ServiceFullName;
 
             // TODO: Better handling of config change. Current implementation: remove all matching entries, then add the new one.
             foreach( IConfigurationLayer layer in ConfigurationManager.Layers )
             {
                 foreach( var item in layer.Items.ToList() )
                 {
-                    if( item.ServiceOrPluginId == pluginOrServiceId )
+                    if( item.ServiceOrPluginFullName == pluginOrServiceId )
                     {
                         layer.Items.Remove( pluginOrServiceId );
                     }
                 }
             }
 
+            // Remove configuration when selecting Optional.
+            if( status == ConfigurationStatus.Optional ) return;
+
             IConfigurationLayer changedLayer;
             if( ConfigurationManager.Layers.Count == 0 )
             {
-                changedLayer = ConfigurationManager.Layers.Create("Auto-added layer");
+                changedLayer = ConfigurationManager.Layers.Create( "DefaultLayer" );
             }
             else
             {
                 changedLayer = ConfigurationManager.Layers.First();
             }
 
-            changedLayer.Items.Add( pluginOrServiceId, status, "Right-click change" );
+            var result = changedLayer.Items.Add( pluginOrServiceId, status, "Right-click change" );
+
+            if( !result.Success )
+            {
+                MessageBox.Show( String.Format( "Could not set {0} to {2}, as it would cause the following error:\n\n{1}",
+                    pluginOrServiceId,
+                    result.Describe(),
+                    status.ToString() ), "Couldn't set item", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK
+                    );
+            }
         }
 
         private void DeleteMenuItem_Click( object sender, RoutedEventArgs e )

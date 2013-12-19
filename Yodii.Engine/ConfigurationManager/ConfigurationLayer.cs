@@ -76,7 +76,7 @@ namespace Yodii.Engine
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
-            if( _owner == null ) return new SuccessYodiiEngineResult();
+            if( _owner == null ) return SuccessYodiiEngineResult.NullEngineSuccessResult;
             return _owner.OnConfigurationItemChanging( item, newStatus );
         }
 
@@ -104,7 +104,7 @@ namespace Yodii.Engine
 
             internal ConfigurationItemCollection( ConfigurationLayer parent )
             {
-                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginId, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
+                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
                 _layer = parent;
                 _items.PropertyChanged += RetrievePropertyEvent;
                 _items.CollectionChanged += RetrieveCollectionEvent;
@@ -120,18 +120,18 @@ namespace Yodii.Engine
                 FirePropertyChanged( e );
             }
 
-            public IYodiiEngineResult Add( string serviceOrPluginId, ConfigurationStatus status, string statusReason = "" )
+            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "" )
             {
-                if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
+                if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
-                ConfigurationItem existing = _items.GetByKey( serviceOrPluginId );
+                ConfigurationItem existing = _items.GetByKey( serviceOrPluginFullName );
                 if( existing != null ) return existing.SetStatus( status );
 
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginId, status, statusReason );
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, statusReason );
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );
-                    return new SuccessYodiiEngineResult();
+                    return SuccessYodiiEngineResult.NullEngineSuccessResult;
                 }
 
                 IYodiiEngineResult result = _layer._owner.OnConfigurationItemAdding( newItem );
@@ -148,20 +148,20 @@ namespace Yodii.Engine
             /// <summary>
             /// Removes a configuration for plugin or a service.
             /// </summary>
-            /// <param name="serviceOrPluginId">The identifier.</param>
+            /// <param name="serviceOrPluginFullName">The identifier.</param>
             /// <returns>Detailed result of the operation.</returns>
-            public IYodiiEngineResult Remove( string serviceOrPluginId )
+            public IYodiiEngineResult Remove( string serviceOrPluginFullName )
             {
-                if( String.IsNullOrEmpty( serviceOrPluginId ) ) throw new ArgumentException( "serviceOrPluginId is null or empty" );
+                if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
-                ConfigurationItem target = _items.GetByKey( serviceOrPluginId );
+                ConfigurationItem target = _items.GetByKey( serviceOrPluginFullName );
                 if( target != null )
                 {
                     if( _layer._owner == null )
                     {
                         target.OnRemoved();
                         _items.Remove( target );
-                        return new SuccessYodiiEngineResult();
+                        return SuccessYodiiEngineResult.NullEngineSuccessResult;
                     }
 
                     IYodiiEngineResult result = _layer._owner.OnConfigurationItemRemoving( target );
@@ -174,7 +174,7 @@ namespace Yodii.Engine
                     }
                     return result;
                 }
-                return new YodiiEngineResult( new ConfigurationFailureResult("Item not found") );
+                return new YodiiEngineResult( new ConfigurationFailureResult("Item not found"), _layer._owner != null ? _layer._owner.Engine : null );
             }
 
             public int Count

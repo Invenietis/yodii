@@ -28,7 +28,7 @@ namespace Yodii.Lab
             Debug.Assert( values.Length == 2 );
             if( values[0] == null || values[0] == DependencyProperty.UnsetValue || values[1] == null || !(values[1] is LabStateManager) ) return String.Empty;
 
-            return ((LabStateManager)values[1]).GetDescriptionOfServiceOrPluginId( (string)values[0] );
+            return ((LabStateManager)values[1]).GetDescriptionOfServiceOrPluginFullName( (string)values[0] );
         }
 
         /// <summary>

@@ -117,6 +117,7 @@ namespace Yodii.Lab
         private void CreateReferenceButton_Click( object sender, RoutedEventArgs e )
         {
             if( LivePluginInfo == null ) return;
+
             Button button = sender as Button;
             FrameworkElement parentElement = button.Parent as FrameworkElement;
 
@@ -132,6 +133,7 @@ namespace Yodii.Lab
         private void ClearServiceButton_Click( object sender, RoutedEventArgs e )
         {
             if( LivePluginInfo == null ) return;
+
 
             LivePluginInfo.PluginInfo.Service = null;
         }

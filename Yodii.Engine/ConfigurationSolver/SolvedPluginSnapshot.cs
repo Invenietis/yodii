@@ -14,7 +14,9 @@ namespace Yodii.Engine
         readonly PluginDisabledReason _disabledReason;
         readonly ConfigurationStatus _configurationStatus;
         readonly RunningStatus? _runningStatus;
-        readonly SolvedConfigurationStatus _configSolvedStatus;
+        readonly ConfigurationStatus _configSolvedStatus;
+        readonly StartDependencyImpact _configOriginalImpact;
+        readonly StartDependencyImpact _configSolvedImpact;
 
         public SolvedPluginSnapshot( PluginData plugin )
         {
@@ -23,34 +25,39 @@ namespace Yodii.Engine
             _runningStatus = plugin.DynamicStatus;
             _configurationStatus = plugin.ConfigOriginalStatus;
             _configSolvedStatus = plugin.ConfigSolvedStatus;
+            _configOriginalImpact = plugin.ConfigOriginalImpact;
+            _configSolvedImpact = plugin.RawConfigSolvedImpact;
         }
 
         public IPluginInfo PluginInfo { get { return _pluginInfo; } }
 
-        public PluginDisabledReason DisabledReason { get { return _disabledReason; } }
+        public string DisabledReason { get { return _disabledReason == PluginDisabledReason.None ? null : _disabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
-        SolvedConfigurationStatus IStaticSolvedPlugin.WantedConfigSolvedStatus 
+        ConfigurationStatus IStaticSolvedPlugin.WantedConfigSolvedStatus 
         { 
             get { return _configSolvedStatus; } 
         }
 
-        SolvedConfigurationStatus IDynamicSolvedPlugin.ConfigSolvedStatus 
+        ConfigurationStatus IDynamicSolvedPlugin.ConfigSolvedStatus 
         { 
             get { return _configSolvedStatus; } 
         }
+
+        public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
+
+        public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
         bool IStaticSolvedPlugin.IsBlocking 
         { 
             get 
             { 
-                return _configSolvedStatus >= SolvedConfigurationStatus.Runnable 
-                            && _disabledReason != PluginDisabledReason.None; 
+                return _configSolvedStatus >= ConfigurationStatus.Runnable && _disabledReason != PluginDisabledReason.None; 
             } 
         }
 
-        RunningStatus IDynamicSolvedPlugin.RunningStatus
+        RunningStatus IDynamicYodiiItem.RunningStatus
         { 
             get 
             {

@@ -11,7 +11,7 @@ namespace Yodii.Model
     public interface IConfigurationManager : INotifyPropertyChanged
     {
         /// <summary>
-        /// Triggered when a configuration change was not cancelled, once a new FinalConfiguration is available.
+        /// Triggered when a configuration change was not canceled, once a new FinalConfiguration is available.
         /// </summary>
         event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;
 
@@ -24,7 +24,7 @@ namespace Yodii.Model
         /// Read-only collection container of read-only configuration items.
         /// </summary>
         /// <remarks>
-        /// Changes when an engine change was not cancelled through <see cref="IConfigurationManager.ConfigurationChanging"/>.
+        /// Changes when an engine change was not canceled through <see cref="IConfigurationManager.ConfigurationChanging"/>.
         /// </remarks>
         FinalConfiguration FinalConfiguration { get; }
 

@@ -20,7 +20,7 @@ namespace Yodii.Engine.Tests
         {
             YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
 
-            IConfigurationLayer layer = e.ConfigurationManager.Layers.Create( "TestConfig" );
+            IConfigurationLayer layer = e.Configuration.Layers.Create( "TestConfig" );
             Assert.That( layer.Items.Count == 0 );
             Assert.That( layer.LayerName == "TestConfig" );
 
@@ -59,7 +59,7 @@ namespace Yodii.Engine.Tests
         public void LayerAddPrecedenceTest()
         {
             var engine = new YodiiEngine( new YodiiEngineHostMock() );
-            IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "TestConfig" );
+            IConfigurationLayer layer = engine.Configuration.Layers.Create( "TestConfig" );
 
             IYodiiEngineResult result;
 
@@ -140,7 +140,7 @@ namespace Yodii.Engine.Tests
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
-            engine.ConfigurationManager.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
+            engine.Configuration.ConfigurationChanging += delegate( object sender, ConfigurationChangingEventArgs e )
             {
                 Assert.That( e.IsCanceled == false, "Configuration manager does not cancel by default." );
                 Assert.That( e.FinalConfiguration != null, "Proposed FinalConfiguration exists." );
@@ -148,7 +148,7 @@ namespace Yodii.Engine.Tests
                 managerChangingCount++;
             };
 
-            engine.ConfigurationManager.ConfigurationChanged += delegate( object sender, ConfigurationChangedEventArgs e )
+            engine.Configuration.ConfigurationChanged += delegate( object sender, ConfigurationChangedEventArgs e )
             {
                 Assert.That( e.FinalConfiguration != null, "FinalConfiguration exists." );
 
@@ -156,7 +156,7 @@ namespace Yodii.Engine.Tests
             };
 
             IYodiiEngineResult result;
-            IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "BaseConfig" );
+            IConfigurationLayer layer = engine.Configuration.Layers.Create( "BaseConfig" );
 
             result = layer.Items.Add( "Yodii.ManagerService", ConfigurationStatus.Runnable );
             Assert.That( result.Success, Is.True );
@@ -166,7 +166,7 @@ namespace Yodii.Engine.Tests
             Assert.That( managerChangingCount == 2 );
             Assert.That( managerChangedCount == 2 );
 
-            Assert.That( engine.ConfigurationManager.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
+            Assert.That( engine.Configuration.FinalConfiguration != null, "Non-cancelled FinalConfiguration exists." );
         }
 
         [Test]
@@ -222,73 +222,7 @@ namespace Yodii.Engine.Tests
             //Assert.That( engine.ConfigurationManager.Layers[0].Items.Remove( "schmurtz1" ).Success, Is.False);
             //Assert.That( engine.ConfigurationManager.Layers.Remove( layer2 ).Success, Is.False);
 
-
-
-            //// XML serialization test
-
-            //XmlWriterSettings ws = new XmlWriterSettings();
-            //ws.NewLineHandling = NewLineHandling.None;
-
-            //XmlReaderSettings rs = new XmlReaderSettings();
-
-            //ConfigurationManager deserializedManager;
-
-            //using( MemoryStream ms = new MemoryStream() )
-            //{
-            //    using( XmlWriter xw = XmlWriter.Create( ms, ws ) )
-            //    {
-            //        ConfigurationManagerXmlSerializer.SerializeConfigurationManager( manager, xw );
-            //    }
-
-            //    ms.Seek( 0, System.IO.SeekOrigin.Begin );
-
-            //    // Debug string
-            //    //using( StreamReader sr = new StreamReader( ms ) )
-            //    //{
-            //    //    string s = sr.ReadToEnd();
-            //    //}
-
-            //    using( XmlReader r = XmlReader.Create( ms, rs ) )
-            //    {
-            //        deserializedManager = ConfigurationManagerXmlSerializer.DeserializeConfigurationManager( r );
-            //    }
-            //}
-
-            //AssertManagerEquivalence( manager, deserializedManager );
-
         }
-
-        private void AssertManagerEquivalence( ConfigurationManager a, ConfigurationManager b )
-        {
-            if( a == null && b == null ) return;
-
-            Assert.That( a != null && b != null );
-
-            Assert.That( a.Layers.Count == b.Layers.Count );
-
-            for( int i = 0; i < a.Layers.Count; i++ )
-            {
-                // Consider equivalent if they're in the exact same order?
-                var layerA = a.Layers[i];
-                var layerB = b.Layers[i];
-
-                foreach( var item in layerA.Items )
-                {
-                    Assert.That( layerB.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
-                }
-            }
-
-            if( a.FinalConfiguration != null )
-            {
-                Assert.That( b.FinalConfiguration != null );
-                Assert.That( a.FinalConfiguration.Items.Count == b.FinalConfiguration.Items.Count );
-                foreach( var item in a.FinalConfiguration.Items )
-                {
-                    Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginId == item.ServiceOrPluginId && x.Status == item.Status ) );
-                }
-            }
-        }
-
 
     }
 }

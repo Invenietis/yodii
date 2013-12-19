@@ -10,12 +10,18 @@
     xmlns:local="clr-namespace:Yodii.Lab"
     mc:Ignorable="d"
     x:Name="VertexControlRoot"
-    d:DesignHeight="60"
+    d:DesignHeight="2000"
     d:DesignWidth="200">
     <UserControl.Resources>
         <local:EnumToBooleanConverter
             x:Key="EnumToBooleanConv" />
-        
+        <BooleanToVisibilityConverter
+            x:Key="BoolToVisibilityConv" />
+        <local:BooleanToVisibilityConverter
+            x:Key="InverseBooleanToVisibilityConverter"
+            True="Collapsed"
+            False="Visible" />
+
         <ObjectDataProvider
             MethodName="GetValues"
             ObjectType="{x:Type sys:Enum}"
@@ -27,10 +33,10 @@
         </ObjectDataProvider>
     </UserControl.Resources>
     <Border
-        Background="Black"
-        BorderThickness="1"
-        CornerRadius="0,0,0,0"
-        Padding="5">
+        BorderThickness="1pt"
+        CornerRadius="3"
+        Padding="3pt"
+        Margin="0">
         <Border.ContextMenu>
             <ContextMenu>
                 <MenuItem
@@ -42,6 +48,7 @@
                 <Separator />
                 <MenuItem
                     Header="Delete"
+                    IsEnabled="{Binding Path=IsEditable}"
                     Click="DeleteMenuItem_Click" />
             </ContextMenu>
         </Border.ContextMenu>
@@ -52,9 +59,9 @@
             <StackPanel
                 Orientation="Vertical"
                 Margin="1pt">
-                <StackPanel
-                    Orientation="Horizontal">
+                <DockPanel>
                     <Image
+                        DockPanel.Dock="Left"
                         x:Name="VertexIcon"
                         MaxHeight="12pt"
                         MaxWidth="12pt"
@@ -83,14 +90,157 @@
                             </Style>
                         </Image.Style>
                     </Image>
+                    <Image
+                        Margin="3pt,0,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        DockPanel.Dock="Right"
+                        Height="16px"
+                        Width="16px"
+                        SnapsToDevicePixels="True"
+                        Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
+                        <Image.Style>
+                            <Style
+                                TargetType="Image">
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Disabled">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusDisabled.png" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Stopped">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Running">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="RunningLocked">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusRunningLocked.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Button
+                        Margin="3pt,0,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Height="12pt"
+                        Width="12pt"
+                        DockPanel.Dock="Right"
+                        Command="{Binding Path=ToggleItemCommand}"
+                        FontFamily="Webdings">
+                        <Button.Style>
+                            <Style
+                                TargetType="{x:Type Button}"
+                                BasedOn="{StaticResource {x:Type Button}}">
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=IsLive, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="false">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Disabled">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="RunningLocked">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Running">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Stopped">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Image
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            SnapsToDevicePixels="True">
+
+                            <Image.Style>
+                                <Style
+                                    TargetType="{x:Type Image}">
+                                    <Style.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                            Value="Running">
+                                            <Setter
+                                                Property="Source"
+                                                Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                        </DataTrigger>
+                                        <DataTrigger
+                                            Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                            Value="Stopped">
+                                            <Setter
+                                                Property="Source"
+                                                Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+
+                        </Image>
+                    </Button>
                     <TextBlock
                         VerticalAlignment="Center"
                         x:Name="VertexTitle"
                         Text="{Binding Path=Title, Mode=OneWay, FallbackValue=Title}"
                         FontSize="12pt" />
-                </StackPanel>
+                </DockPanel>
                 <StackPanel
                     Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style
+                            TargetType="StackPanel">
+                            <Setter
+                                Property="Visibility"
+                                Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Path=ConfigurationStatus}"
+                                    Value="Optional">
+                                    <Setter
+                                        Property="Visibility"
+                                        Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <Image
                         VerticalAlignment="Center"
                         Stretch="Uniform"
@@ -122,21 +272,6 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </StackPanel>
-                <!--<StackPanel
-                    Orientation="Horizontal">
-                    <Button>
-                        <Run
-                            FontFamily="Webdings">&lt;</Run>
-                    </Button>
-                    <Button>
-                        <Run
-                            FontFamily="Webdings">4</Run>
-                    </Button>
-                    <TextBlock
-                        Margin="3pt,0,0,0"
-                        x:Name="IsStartedText"
-                        Text="Stopped" />
-                </StackPanel>-->
             </StackPanel>
         </ContentControl>
 
@@ -150,6 +285,9 @@
         <Border.Style>
             <Style
                 TargetType="Border">
+                <Setter
+                    Property="Background"
+                    Value="Black" />
                 <Style.Triggers>
                     <!-- Service styling -->
                     <DataTrigger
@@ -166,6 +304,42 @@
                         <Setter
                             Property="BorderBrush"
                             Value="Blue" />
+                    </DataTrigger>
+                    <!-- Running status -->
+                    <DataTrigger
+                        Binding="{Binding Path=IsLive, Mode=OneWay}"
+                        Value="false">
+                        <Setter
+                            Property="Background"
+                            Value="Black" />
+                    </DataTrigger>
+                    <DataTrigger
+                        Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
+                        Value="RunningLocked">
+                        <Setter
+                            Property="Background"
+                            Value="#FF002200" />
+                    </DataTrigger>
+                    <DataTrigger
+                        Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
+                        Value="Running">
+                        <Setter
+                            Property="Background"
+                            Value="#FF002200" />
+                    </DataTrigger>
+                    <DataTrigger
+                        Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
+                        Value="Stopped">
+                        <Setter
+                            Property="Background"
+                            Value="#FF220000" />
+                    </DataTrigger>
+                    <DataTrigger
+                        Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
+                        Value="Disabled">
+                        <Setter
+                            Property="Background"
+                            Value="#FF220000" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

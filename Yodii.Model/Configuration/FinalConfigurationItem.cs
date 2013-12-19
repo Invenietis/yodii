@@ -12,15 +12,15 @@ namespace Yodii.Model
     /// </summary>
     public struct FinalConfigurationItem
     {
-        readonly string _serviceOrPluginId;
+        readonly string _serviceOrPluginFullName;
         readonly ConfigurationStatus _status;
 
         /// <summary>
         /// Service or plugin ID.
         /// </summary>
-        public string ServiceOrPluginId
+        public string ServiceOrPluginFullName
         {
-            get { return _serviceOrPluginId; }
+            get { return _serviceOrPluginFullName; }
         }
 
         /// <summary>
@@ -31,11 +31,11 @@ namespace Yodii.Model
             get { return _status; }
         }
 
-        internal FinalConfigurationItem( string serviceOrPluginId, ConfigurationStatus status )
+        internal FinalConfigurationItem( string serviceOrPluginFullName, ConfigurationStatus status )
         {
-            Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginId ) );
+            Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
 
-            _serviceOrPluginId = serviceOrPluginId;
+            _serviceOrPluginFullName = serviceOrPluginFullName;
             _status = status;
         }
     }
