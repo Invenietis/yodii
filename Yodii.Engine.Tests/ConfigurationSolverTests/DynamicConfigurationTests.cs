@@ -231,5 +231,100 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.CheckAllPluginsRunning( "Plugin5 " );
             } );
         }
+
+        [Test]
+        public void ValidOnlyOneRunnableReference()
+        {
+            StaticConfigurationTests.CreateValidOnlyOneRunnableReference().FullStart( ( engine, res ) =>
+            {
+                engine.CheckAllServicesStopped( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5" );
+
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Stop();
+
+                engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5" );
+                engine.CheckAllServicesStopped( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
+
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Start();
+                
+                engine.CheckAllServicesStopped( "Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
+                engine.CheckAllServicesRunning( "Service1, Service1.1" );
+                engine.CheckAllPluginsStopped( "Plugin2, Plugin3, Plugin4, Plugin5" );
+
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
+                engine.LiveInfo.FindService( "Service1" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Stop();
+
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Start();
+                engine.LiveInfo.FindService( "Service1" ).Stop();
+
+                engine.LiveInfo.FindService( "Service1.1" ).Start();
+                engine.LiveInfo.FindService( "Service1.2" ).Start();
+                engine.LiveInfo.FindService( "Service1" ).Start();
+                engine.LiveInfo.FindService( "Service2.2" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Stop();
+                engine.LiveInfo.FindService( "Service1.3" ).Stop();
+                engine.LiveInfo.FindService( "Service2" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Stop();
+                engine.LiveInfo.FindService( "Service2.1" ).Stop();
+                engine.LiveInfo.FindService( "Service1.3" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop();
+                engine.LiveInfo.FindService( "Service1.1" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin4" ).Start();
+                engine.LiveInfo.FindService( "Service1.3" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Start();
+
+                engine.LiveInfo.FindService( "Service1" ).Start();
+                engine.LiveInfo.FindService( "Service1.1" ).Start();
+                engine.LiveInfo.FindService( "Service1.2" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
+                engine.LiveInfo.FindService( "Service1.2" ).Stop();
+                engine.LiveInfo.FindService( "Service1" ).Stop();
+                engine.LiveInfo.FindService( "Service1.3" ).Start();
+                engine.LiveInfo.FindService( "Service2" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Start();
+                engine.LiveInfo.FindService( "Service2.1" ).Start();
+                engine.LiveInfo.FindService( "Service1.3" ).Start();
+                engine.LiveInfo.FindService( "Service2.2" ).Stop();
+                engine.LiveInfo.FindService( "Service1.1" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Start();
+                engine.LiveInfo.FindService( "Service2.2" ).Start();
+
+
+
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Stop();
+                engine.LiveInfo.FindService( "Service1" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop();
+                engine.LiveInfo.FindService( "Service1.1" ).Stop();
+                engine.LiveInfo.FindService( "Service1.2" ).Stop();
+                engine.LiveInfo.FindService( "Service1" ).Stop();
+                engine.LiveInfo.FindService( "Service2.2" ).Stop();
+                engine.LiveInfo.FindService( "Service1.1" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin4" ).Stop();
+                engine.LiveInfo.FindService( "Service1.3" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop();
+
+                engine.LiveInfo.FindService( "Service1" ).Stop();
+                engine.LiveInfo.FindService( "Service1.1" ).Stop();
+                engine.LiveInfo.FindService( "Service1.2" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin1" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Stop();
+                engine.LiveInfo.FindService( "Service1.3" ).Stop();
+                engine.LiveInfo.FindService( "Service2" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Stop();
+                engine.LiveInfo.FindService( "Service2.1" ).Stop();
+                engine.LiveInfo.FindService( "Service1.3" ).Stop();
+                engine.LiveInfo.FindPlugin( "Plugin5" ).Stop();
+                engine.LiveInfo.FindService( "Service2.2" ).Stop();
+            } );
+        }
+
     }
 }

@@ -44,7 +44,7 @@ namespace Yodii.Model
         /// Stops the service.
         /// </summary>
         /// <param name="callerKey">Caller identifier.</param>
-         IYodiiEngineResult Stop( string callerKey );
+         IYodiiEngineResult Stop( string callerKey = null );
 
     }
 }

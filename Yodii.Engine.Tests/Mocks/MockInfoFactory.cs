@@ -647,5 +647,45 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
+        internal static IDiscoveredInfo CreateGraph007()
+        {
+            DiscoveredInfo d = new DiscoveredInfo();
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1.1", d.DefaultAssembly ) );
+            d.FindService( "Service1.1" ).Generalization = d.FindService( "Service1" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1.2", d.DefaultAssembly ) );
+            d.FindService( "Service1.2" ).Generalization = d.FindService( "Service1" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service1.3", d.DefaultAssembly ) );
+            d.FindService( "Service1.3" ).Generalization = d.FindService( "Service1" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service2.1", d.DefaultAssembly ) );
+            d.FindService( "Service2.1" ).Generalization = d.FindService( "Service2" );
+
+            d.ServiceInfos.Add( new ServiceInfo( "Service2.2", d.DefaultAssembly ) );
+            d.FindService( "Service2.2" ).Generalization = d.FindService( "Service2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1.1" );
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService("Service2.1"), DependencyRequirement.Runnable );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service1.2" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service1.3" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin4", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin4" ).Service = d.FindService( "Service2.1" );
+
+            d.PluginInfos.Add( new PluginInfo( "Plugin5", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin5" ).Service = d.FindService( "Service2.2" );
+
+            return d;
+        }
     }
 }
