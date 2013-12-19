@@ -674,6 +674,9 @@ namespace Yodii.Lab
 
     }
 
+    /// <summary>
+    /// Read-only, shallow copy of given IDiscoveredInfo.
+    /// </summary>
     public class DiscoveredInfoClone : IDiscoveredInfo
     {
         readonly IReadOnlyList<IServiceInfo> _serviceInfos;
@@ -687,11 +690,17 @@ namespace Yodii.Lab
 
         #region IDiscoveredInfo Members
 
+        /// <summary>
+        /// Service infos.
+        /// </summary>
         public IReadOnlyList<IServiceInfo> ServiceInfos
         {
             get { return _serviceInfos; }
         }
 
+        /// <summary>
+        /// Plugin infos.
+        /// </summary>
         public IReadOnlyList<IPluginInfo> PluginInfos
         {
             get { return _pluginInfos; }

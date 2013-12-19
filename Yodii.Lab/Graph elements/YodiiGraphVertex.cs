@@ -179,6 +179,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// Command to toggle (Start or Stop) this live item.
+        /// </summary>
         public ICommand ToggleItemCommand { get { return _toggleItemCommand; } }
 
         /// <summary>

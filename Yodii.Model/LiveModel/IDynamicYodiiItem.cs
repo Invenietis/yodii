@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Yodii.Model
 {
+    /// <summary>
+    /// Dynamic plugin or service.
+    /// </summary>
     public interface IDynamicYodiiItem
     {
         /// <summary>
