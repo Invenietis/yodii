@@ -224,6 +224,23 @@
                 </DockPanel>
                 <StackPanel
                     Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style
+                            TargetType="StackPanel">
+                            <Setter
+                                Property="Visibility"
+                                Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Path=ConfigurationStatus}"
+                                    Value="Optional">
+                                    <Setter
+                                        Property="Visibility"
+                                        Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <Image
                         VerticalAlignment="Center"
                         Stretch="Uniform"
