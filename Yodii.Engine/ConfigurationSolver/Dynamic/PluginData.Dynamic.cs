@@ -123,9 +123,10 @@ namespace Yodii.Engine
             Debug.Assert( reason != PluginRunningStatusReason.None );
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = reason;
-            if( Service != null && reason != PluginRunningStatusReason.StoppedByStoppedService && reason != PluginRunningStatusReason.StoppedByRunningSibling )
+            if( Service != null )
             {
                 Service.OnPluginStopped();
+                Service.OnPostPluginStopped();
             }
         }
 

@@ -215,7 +215,7 @@ namespace Yodii.Engine
 
             foreach( var previous in pastCommands )
             {
-                if( newOne == null || newOne.CallerKey != previous.CallerKey || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
+                if( newOne == null || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
                 {
                     if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
                     {

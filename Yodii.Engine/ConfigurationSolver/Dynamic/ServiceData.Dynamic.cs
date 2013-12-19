@@ -241,10 +241,17 @@ namespace Yodii.Engine
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = reason;
 
-            Debug.Assert( (reason == ServiceRunningStatusReason.StoppedByPluginStopped) == (_nbAllAvailablePlugins == 0), "StoppedByPluginStopped <==> _nbAvailablePlugins == 0" );
-            if( reason != ServiceRunningStatusReason.StoppedByPluginStopped )
+            if( _nbAllAvailablePlugins > 0 )
             {
-                _nbAllAvailablePlugins = 0; 
+                // Stops the specialized services.
+                ServiceData child = FirstSpecialization;
+                while( child != null )
+                {
+                    Debug.Assert( child.DynamicStatus == null || child.DynamicStatus.Value <= RunningStatus.Stopped );
+                    if( child.DynamicStatus == null ) child.DynamicStopBy( ServiceRunningStatusReason.StoppedByGeneralization );
+                    child = child.NextSpecialization;
+                }
+                // Stops the plugins.
                 PluginData p = FirstPlugin;
                 while( p != null )
                 {
@@ -252,14 +259,7 @@ namespace Yodii.Engine
                     if( p.DynamicStatus == null ) p.DynamicStopBy( PluginRunningStatusReason.StoppedByStoppedService );
                     p = p.NextPluginForService;
                 }
-                // Stops the specialized services.
-                ServiceData child = FirstSpecialization;
-                while( child != null )
-                {
-                    Debug.Assert( child.DynamicStatus == null || child.DynamicStatus.Value < RunningStatus.Running );
-                    if( child.DynamicStatus == null ) child.DynamicStopBy( ServiceRunningStatusReason.StoppedByGeneralization );
-                    child = child.NextSpecialization;
-                }
+                Debug.Assert( _nbAllAvailablePlugins == 0 );
             }
             foreach( var backRef in _backReferences )
             {
@@ -277,14 +277,23 @@ namespace Yodii.Engine
 
         internal void OnPluginStopped()
         {
-            if( _dynamicStatus != null && _dynamicStatus.Value <= RunningStatus.Stopped ) return;
-            Debug.Assert( _nbAllAvailablePlugins > 0 );
-            
-            --_nbAllAvailablePlugins;
-            if( _nbAllAvailablePlugins == 0 ) DynamicStopBy( ServiceRunningStatusReason.StoppedByPluginStopped );
-            else DynPropagateStart();
-
             if( Generalization != null ) Generalization.OnPluginStopped();
+            Debug.Assert( _nbAllAvailablePlugins > 0 );
+            --_nbAllAvailablePlugins;
+        }
+
+        internal void OnPostPluginStopped()
+        {
+            if( _nbAllAvailablePlugins == 0 ) 
+            {
+                Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value <= RunningStatus.Stopped );
+                if( _dynamicStatus == null ) DynamicStopBy( ServiceRunningStatusReason.StoppedByPluginStopped );
+            }
+            else if( _dynamicStatus != null && _dynamicStatus.Value >= RunningStatus.Running ) 
+            {
+                DynPropagateStart();
+            }
+            if( Generalization != null ) Generalization.OnPostPluginStopped();
         }
 
         internal void OnDirectPluginStarted( PluginData runningPlugin )
