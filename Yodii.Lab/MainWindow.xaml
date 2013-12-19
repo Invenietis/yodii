@@ -483,9 +483,18 @@
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Visibility="{Binding LabState.Engine.IsRunning, Converter={StaticResource boolToVisibilityConverter}, Mode=OneWay}">
-                        <TextBlock
-                            DockPanel.Dock="Top"><Run
-                                Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.</TextBlock>
+                        <DockPanel
+                            DockPanel.Dock="Top">
+                            <Button
+                                DockPanel.Dock="Right"
+                                Command="{Binding Path=RevokeAllCommandsCommand}">Revoke all</Button>
+                            <TextBlock VerticalAlignment="Center"
+                                       HorizontalAlignment="Left"
+                                       TextTrimming="CharacterEllipsis">
+                                <Run
+                                    Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.
+                            </TextBlock>
+                        </DockPanel>
                         <ScrollViewer
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"

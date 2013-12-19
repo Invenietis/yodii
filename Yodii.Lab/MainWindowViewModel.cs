@@ -42,6 +42,7 @@ namespace Yodii.Lab
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
         readonly ICommand _clearAllCommand;
+        readonly ICommand _revokeAllCommandsCommand;
 
         readonly ActivityMonitor _activityMonitor;
 
@@ -88,12 +89,37 @@ namespace Yodii.Lab
             _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
             _clearAllCommand = new RelayCommand( ClearAllExecute );
+            _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
 
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
 
             if( loadDefaultState ) LoadDefaultState();
+        }
+
+        private bool CanRevokeAllCommands( object obj )
+        {
+            return LabState.Engine.IsRunning && LabState.Engine.YodiiCommands.Count > 0;
+        }
+
+        private void RevokeAllCommandsExecute( object obj )
+        {
+            if( !CanRevokeAllCommands( obj ) ) return;
+
+            IEnumerable<string> callers = LabState.Engine.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
+
+            foreach( string callerKey in callers )
+            {
+                var result = LabState.Engine.LiveInfo.RevokeCaller( callerKey );
+
+                if( !result.Success )
+                {
+                    MessageBox.Show(
+                        String.Format( "Couldn't revoke caller key '{0}' as it would raise this error:\n\n{1}", callerKey, result.Describe() ),
+                        "Command revoke failed", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
+                }
+            }
         }
 
         private void LoadDefaultState()
@@ -292,7 +318,7 @@ namespace Yodii.Lab
                     RaiseNewNotification( new Notification() { Title = String.Format( "Service {0} already exists", nse.ServiceName ) } );
                     nse.CancelReason = String.Format( "Service with name {0} already exists. Pick another name.", nse.ServiceName );
                 }
-                else if( _labStateManager.IsPlugin(nse.ServiceName) )
+                else if( _labStateManager.IsPlugin( nse.ServiceName ) )
                 {
                     string reason = String.Format( "A plugin with the name '{0}' name already exists.", nse.ServiceName );
                     RaiseNewNotification( "Can't add service", reason );
@@ -343,7 +369,7 @@ namespace Yodii.Lab
                     RaiseNewNotification( "Can't add plugin", reason );
                     npe.CancelReason = reason;
                 }
-                else if( _labStateManager.IsService(npe.PluginName) )
+                else if( _labStateManager.IsService( npe.PluginName ) )
                 {
                     string reason = String.Format( "A service with the name '{0}' name already exists.", npe.PluginName );
                     RaiseNewNotification( "Can't add plugin", reason );
@@ -653,6 +679,10 @@ namespace Yodii.Lab
         /// Command to open a window allowing creation of a new service.
         /// </summary>
         public ICommand ClearAllCommand { get { return _clearAllCommand; } }
+        /// <summary>
+        /// Command to revoke all callers.
+        /// </summary>
+        public ICommand RevokeAllCommandsCommand { get { return _revokeAllCommandsCommand; } }
         #endregion Properties
 
         #region Public methods
@@ -690,7 +720,7 @@ namespace Yodii.Lab
         /// <returns>New plugin</returns>
         public IPluginInfo CreateNewPlugin( string pluginName )
         {
-            return CreateNewPlugin(  pluginName, null );
+            return CreateNewPlugin( pluginName, null );
         }
 
         /// <summary>
@@ -701,7 +731,7 @@ namespace Yodii.Lab
         /// <returns>New plugin</returns>
         public IPluginInfo CreateNewPlugin( string pluginName, IServiceInfo service )
         {
-            if( String.IsNullOrWhiteSpace(pluginName) ) throw new ArgumentNullException( "pluginName" );
+            if( String.IsNullOrWhiteSpace( pluginName ) ) throw new ArgumentNullException( "pluginName" );
 
             if( service != null && !ServiceInfos.Contains<IServiceInfo>( service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
 
