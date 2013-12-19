@@ -241,8 +241,7 @@ namespace Yodii.Engine
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = reason;
 
-            Debug.Assert( (reason == ServiceRunningStatusReason.StoppedByPluginStopped) == (_nbAllAvailablePlugins == 0), "StoppedByPluginStopped <==> _nbAvailablePlugins == 0" );
-            if( reason != ServiceRunningStatusReason.StoppedByPluginStopped )
+            if( _nbAllAvailablePlugins > 0 )
             {
                 // Stops the specialized services.
                 ServiceData child = FirstSpecialization;
