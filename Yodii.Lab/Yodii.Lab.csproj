@@ -287,6 +287,12 @@
   <ItemGroup>
     <Folder Include="DesignModel\" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\RunningStatusDisabled.png" />
+    <Resource Include="Assets\RunningStatusRunning.png" />
+    <Resource Include="Assets\RunningStatusRunningLocked.png" />
+    <Resource Include="Assets\RunningStatusStopped.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

@@ -148,28 +148,51 @@
                         VerticalAlignment="Stretch"
                         Margin="0,0,3pt,0">
                     </Image>-->
-                    <StackPanel
+                    <Image
+                        Margin="5pt,0,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
                         DockPanel.Dock="Right"
+                        Height="16px"
+                        Width="16px"
+                        SnapsToDevicePixels="True"
                         Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
-                        <TextBlock
-                            Visibility="{Binding Path=LiveObject.IsRunning, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}"
-                            FontFamily="Webdings"
-                            Foreground="#FF00FF00"
-                            LineHeight="18pt"
-                            Height="18pt"
-                            FontSize="18pt">
-                            4
-                        </TextBlock>
-                        <TextBlock
-                            Visibility="{Binding Path=LiveObject.IsRunning, Converter={StaticResource InverseBooleanToVisibilityConverter}, ConverterParameter=true, Mode=OneWay}"
-                            FontFamily="Webdings"
-                            Foreground="#FFFF0000"
-                            LineHeight="18pt"
-                            Height="18pt"
-                            FontSize="18pt">
-                            &lt;
-                        </TextBlock>
-                    </StackPanel>
+                        <Image.Style>
+                            <Style
+                                TargetType="Image">
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Disabled">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusDisabled.png" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Stopped">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Running">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="RunningLocked">
+                                        <Setter
+                                            Property="Source"
+                                            Value="/Yodii.Lab;component/Assets/RunningStatusRunningLocked.png" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
                     <TextBlock
                         VerticalAlignment="Center"
                         x:Name="VertexTitle"
