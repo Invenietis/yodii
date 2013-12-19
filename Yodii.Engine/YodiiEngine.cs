@@ -42,8 +42,7 @@ namespace Yodii.Engine
                 {
                     if( !YodiiCommandEquals( newCommands[i], this[i] ) ) this.RemoveAt( i-- );
                 }
-                for(; this.Count > newCommands.Count ;)
-                    this.RemoveAt( Count - 1 );
+                while( this.Count > newCommands.Count ) this.RemoveAt( Count - 1 );
                 Debug.Assert( this.Count == newCommands.Count );
             }
 
