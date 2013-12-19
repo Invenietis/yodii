@@ -26,7 +26,7 @@ namespace Yodii.Engine
             _configurationStatus = plugin.ConfigOriginalStatus;
             _configSolvedStatus = plugin.ConfigSolvedStatus;
             _configOriginalImpact = plugin.ConfigOriginalImpact;
-            _configSolvedImpact = plugin.ConfigSolvedImpact;
+            _configSolvedImpact = plugin.RawConfigSolvedImpact;
         }
 
         public IPluginInfo PluginInfo { get { return _pluginInfo; } }

@@ -203,12 +203,9 @@ namespace Yodii.Engine
         internal bool PropagateSolvedStatus()
         {
             Debug.Assert( FinalConfigSolvedStatus >= ConfigurationStatus.Runnable );
-            StartDependencyImpact impact = _configSolvedImpact;
-            if( _configSolvedImpact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
-
             if( !Disabled )
             {
-                foreach( var s in GetIncludedServices( impact, ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
+                foreach( var s in GetIncludedServices( _configSolvedImpact, ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                 {
                     if( !s.SetSolvedStatus( _configSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
                     {
@@ -225,7 +222,7 @@ namespace Yodii.Engine
                 }
                 if( !Disabled )
                 {
-                    foreach( var s in GetExcludedServices( impact ) )
+                    foreach( var s in GetExcludedServices( _configSolvedImpact ) )
                     {
                         if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation ); 
                     }
@@ -245,22 +242,19 @@ namespace Yodii.Engine
 
         public PluginDisabledReason GetDisableReasonForDisabledReference( DependencyRequirement req )
         {
-            StartDependencyImpact impact = _configSolvedImpact;
-            if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
-
             switch( req )
             {
                 case DependencyRequirement.Running: return PluginDisabledReason.ByRunningReference;
                 case DependencyRequirement.RunnableTryStart: return PluginDisabledReason.ByRunnableTryStartReference;
                 case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
                 case DependencyRequirement.OptionalTryStart:
-                    if( impact >= StartDependencyImpact.StartRecommended )
+                    if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
                     {
                         return PluginDisabledReason.ByOptionalTryStartReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
-                    if( impact == StartDependencyImpact.FullStart )
+                    if( _configSolvedImpact == StartDependencyImpact.FullStart )
                     {
                         return PluginDisabledReason.ByOptionalReference;
                     }
