@@ -91,23 +91,16 @@
                         Margin="0,0,5,0"
                         Click="ClearServiceButton_Click">
                         <Button.IsEnabled>
-                            <MultiBinding
-                                Converter="{StaticResource BooleanAndConverter}">
-                                <Binding
-                                    Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
-                                    ConverterParameter="true"
-                                    Path="PluginInfo.Service" />
-                                <Binding
-                                    Path="IsLive"
-                                    Converter="{StaticResource InverseBoolConverter}" />
-                            </MultiBinding>
+                            <Binding
+                                Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
+                                ConverterParameter="true"
+                                Path="PluginInfo.Service" />
                         </Button.IsEnabled>
                     </Button>
                     <ComboBox
                         x:Name="PluginServiceComboBox"
                         Margin="5,0"
                         ItemTemplate="{StaticResource serviceFullNameTemplate}"
-                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                         SelectedValue="{Binding Path=PluginInfo.Service}"
                         ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
                     </ComboBox>
@@ -151,7 +144,6 @@
                     <DockPanel
                         Margin="0,3">
                         <Button
-                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                             DockPanel.Dock="Right"
                             Margin="5,0"
                             Click="CreateReferenceButton_Click">
@@ -160,7 +152,6 @@
                                 Source="/Yodii.Lab;component/Icons/action_add_16xLG.png" />
                         </Button>
                         <ComboBox
-                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                             x:Name="NewReferenceRequirementComboBox"
                             DockPanel.Dock="Right"
                             SelectedIndex="0"
@@ -168,7 +159,6 @@
                             Width="70pt" />
 
                         <ComboBox
-                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                             x:Name="NewReferenceServiceComboBox"
                             SelectedIndex="0"
                             Margin="5,0"

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using System.Xml;
 using CK.Core;
 using Yodii.Engine;
@@ -16,7 +18,7 @@ namespace Yodii.Lab
     /// Handles lifecycle of mock services and plugins, and exposes methods to create and delete them.
     /// Handles item bindings.
     /// </summary>
-    public class LabStateManager : IDiscoveredInfo, IYodiiEngineHost
+    public class LabStateManager : IYodiiEngineHost
     {
         #region Fields
         /// <summary>
@@ -58,7 +60,6 @@ namespace Yodii.Lab
         {
             YodiiEngine engine = new YodiiEngine( this );
             _engine = engine;
-            engine.SetDiscoveredInfo( this );
 
             Debug.Assert( _engine.LiveInfo != null );
             _engine.PropertyChanged += _engine_PropertyChanged;
@@ -74,6 +75,57 @@ namespace Yodii.Lab
             _labPluginInfos = new CKObservableSortedArrayKeyList<LabPluginInfo, PluginInfo>( p => p.PluginInfo, ( x, y ) => String.CompareOrdinal( x.PluginFullName, y.PluginFullName ), false );
 
             _runningPlugins = new ObservableCollection<IPluginInfo>();
+
+            _serviceInfos.CollectionChanged += _staticInfos_CollectionChanged;
+            _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
+
+            UpdateEngineInfos();
+        }
+
+        void _pluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            _staticInfos_CollectionChanged( sender, e );
+            if( e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add )
+            {
+                foreach( var i in e.NewItems )
+                {
+                    PluginInfo s = (PluginInfo)i;
+                    s.InternalServiceReferences.CollectionChanged += _staticInfos_CollectionChanged;
+                    foreach( var serviceRef in s.InternalServiceReferences )
+                    {
+                        serviceRef.PropertyChanged += staticInfo_PropertyChanged;
+                    }
+                }
+            }
+        }
+
+        void _staticInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            if( e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add )
+            {
+                foreach( var i in e.NewItems )
+                {
+                    INotifyPropertyChanged s = (INotifyPropertyChanged)i;
+                    s.PropertyChanged += staticInfo_PropertyChanged;
+                }
+            }
+            UpdateEngineInfos();
+        }
+
+        void staticInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            UpdateEngineInfos();
+        }
+
+        internal void UpdateEngineInfos()
+        {
+            var result = _engine.SetDiscoveredInfo( new DiscoveredInfoClone( ServiceInfos, PluginInfos ) );
+
+            if( !result.Success )
+            {
+                Engine.Stop();
+                MessageBox.Show( String.Format( "Engine would have this error:\n\n{0}", result.Describe() ), "Change refused", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
+            }
         }
 
         #endregion
@@ -197,17 +249,6 @@ namespace Yodii.Lab
                 return _runningPlugins;
             }
         }
-
-        #region IDiscoveredInfo implementation
-        IReadOnlyList<IServiceInfo> IDiscoveredInfo.ServiceInfos
-        {
-            get { return _serviceInfos; }
-        }
-        IReadOnlyList<IPluginInfo> IDiscoveredInfo.PluginInfos
-        {
-            get { return _pluginInfos; }
-        }
-        #endregion
 
         #endregion Properties
 
@@ -349,10 +390,6 @@ namespace Yodii.Lab
         /// <remarks>Cannot be used when engine is running.</remarks>
         internal ServiceInfo CreateNewService( string serviceName, ServiceInfo generalization = null )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot create Service while Engine is running." );
-            }
             Debug.Assert( serviceName != null );
             Debug.Assert( _serviceInfos.Any( x => x.ServiceFullName == serviceName ) == false, "Service does not exist and can be added" );
 
@@ -360,9 +397,9 @@ namespace Yodii.Lab
 
             ServiceInfo newService = new ServiceInfo( serviceName, AssemblyInfoHelper.ExecutingAssemblyInfo, generalization );
 
+            CreateLabService( newService );
             _serviceInfos.Add( newService ); // Throws on duplicate
 
-            CreateLabService( newService );
 
             return newService;
         }
@@ -377,18 +414,12 @@ namespace Yodii.Lab
         {
             Debug.Assert( !String.IsNullOrWhiteSpace( pluginName ) );
 
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot create Plugin while Engine is running." );
-            }
-
             if( service != null ) Debug.Assert( ServiceInfos.Contains( service ) );
 
             PluginInfo plugin = new PluginInfo( pluginName, AssemblyInfoHelper.ExecutingAssemblyInfo, service );
 
-            _pluginInfos.Add( plugin ); // Throws on duplicate
-
             CreateLabPlugin( plugin );
+            _pluginInfos.Add( plugin ); // Throws on duplicate
 
             return plugin;
         }
@@ -421,10 +452,6 @@ namespace Yodii.Lab
         /// <param name="serviceInfo">Mock service info to remove</param>
         internal void RemoveService( ServiceInfo serviceInfo )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot remove Service while Engine is running." );
-            }
             // If we delete a service : Unbind linked plugins and services.
 
             // Unbind generalized services
@@ -459,11 +486,6 @@ namespace Yodii.Lab
         /// <param name="pluginInfo">Mock plugin info to remove</param>
         internal void RemovePlugin( PluginInfo pluginInfo )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot remove Plugin while Engine is running." );
-            }
-
             if( pluginInfo.Service != null )
             {
                 pluginInfo.InternalService.InternalImplementations.Remove( pluginInfo );
@@ -551,6 +573,7 @@ namespace Yodii.Lab
         internal void LoadServiceInfo( ServiceInfo serviceInfo )
         {
             if( _serviceInfos.Contains( serviceInfo ) ) return; // Already loaded
+            CreateLabService( serviceInfo );
             _serviceInfos.Add( serviceInfo );
 
             if( serviceInfo.Generalization != null )
@@ -558,7 +581,6 @@ namespace Yodii.Lab
                 LoadServiceInfo( (ServiceInfo)serviceInfo.Generalization );
             }
 
-            CreateLabService( serviceInfo );
         }
 
         /// <summary>
@@ -627,8 +649,9 @@ namespace Yodii.Lab
         {
             Debug.Assert( info.ServiceInfo is ServiceInfo );
 
-            LabServiceInfo labService = _labServiceInfos.GetByKey( (ServiceInfo)info.ServiceInfo );
-            labService.LiveServiceInfo = null;
+            bool exists;
+            LabServiceInfo labService = _labServiceInfos.GetByKey( (ServiceInfo)info.ServiceInfo, out exists );
+            if( exists ) labService.LiveServiceInfo = null;
         }
 
         private void LookupAndBindLivePluginInfoToPlugin( ILivePluginInfo info )
@@ -643,10 +666,37 @@ namespace Yodii.Lab
         {
             Debug.Assert( info.PluginInfo is PluginInfo );
 
-            LabPluginInfo labPlugin = _labPluginInfos.GetByKey( (PluginInfo)info.PluginInfo );
-            labPlugin.LivePluginInfo = null;
+            bool exists;
+            LabPluginInfo labPlugin = _labPluginInfos.GetByKey( (PluginInfo)info.PluginInfo, out exists );
+            if( exists ) labPlugin.LivePluginInfo = null;
         }
         #endregion
 
+    }
+
+    public class DiscoveredInfoClone : IDiscoveredInfo
+    {
+        readonly IReadOnlyList<IServiceInfo> _serviceInfos;
+        readonly IReadOnlyList<IPluginInfo> _pluginInfos;
+
+        internal DiscoveredInfoClone(IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins)
+        {
+            _serviceInfos = new List<IServiceInfo>( services ).AsReadOnlyList();
+            _pluginInfos = new List<IPluginInfo>( plugins ).AsReadOnlyList();
+        }
+
+        #region IDiscoveredInfo Members
+
+        public IReadOnlyList<IServiceInfo> ServiceInfos
+        {
+            get { return _serviceInfos; }
+        }
+
+        public IReadOnlyList<IPluginInfo> PluginInfos
+        {
+            get { return _pluginInfos; }
+        }
+
+        #endregion
     }
 }

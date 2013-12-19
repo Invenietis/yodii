@@ -68,20 +68,13 @@
                         Margin="5,0,0,0"
                         Click="ClearGeneralizationButton_Click">
                         <Button.IsEnabled>
-                            <MultiBinding
-                                Converter="{StaticResource BooleanAndConverter}">
                                 <Binding
                                     Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
                                     ConverterParameter="true"
                                     Path="ServiceInfo.Generalization" />
-                                <Binding
-                                    Path="IsLive"
-                                    Converter="{StaticResource InverseBoolConverter}" />
-                            </MultiBinding>
                         </Button.IsEnabled>
                     </Button>
                     <ComboBox
-                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
                         x:Name="GeneralizationComboBox"
                         SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=OneWay}"
                         SelectionChanged="GeneralizationComboBox_SelectionChanged"

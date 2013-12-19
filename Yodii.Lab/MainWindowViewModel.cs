@@ -268,12 +268,6 @@ namespace Yodii.Lab
 
         private void CreateServiceExecute( object param )
         {
-            if( _engine.IsRunning )
-            {
-                RaiseNewNotification( "Engine is running", "Cannot create Services while engine is running." );
-                return;
-            }
-
             Debug.Assert( param == null || param is Window );
             IServiceInfo selectedService = null;
 
@@ -318,11 +312,6 @@ namespace Yodii.Lab
 
         private void CreatePluginExecute( object param )
         {
-            if( _engine.IsRunning )
-            {
-                RaiseNewNotification( "Engine is running", "Cannot create Plugins while engine is running." );
-                return;
-            }
 
             Debug.Assert( param != null || param is Window );
             IServiceInfo selectedService = null;
@@ -453,7 +442,7 @@ namespace Yodii.Lab
 
         private bool CanEditItems( object obj )
         {
-            return !_engine.IsRunning;
+            return true;
         }
 
         private void RemoveSelectedVertexExecute( object obj )
