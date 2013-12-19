@@ -1,9 +1,77 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Threading;
 using GraphX;
+using GraphX.GraphSharp.Algorithms.Layout;
 
 namespace Yodii.Lab
 {
+    class YodiiLayout : IExternalLayout<YodiiGraphVertex>
+    {
+        readonly YodiiGraphArea _graphArea;
+        readonly Dictionary<YodiiGraphVertex, Point> _vertexPositions = new Dictionary<YodiiGraphVertex, Point>();
+        IDictionary<YodiiGraphVertex, Size> _vertexSizes;
+
+        public YodiiLayout( YodiiGraphArea graphArea )
+        {
+            _graphArea = graphArea;
+        }
+        public void Compute()
+        {
+            Dictionary<YodiiGraphVertex,Point> d = null;
+            Application.Current.Dispatcher.Invoke( DispatcherPriority.Normal, new Action(() => {
+                d = _graphArea.GetVertexPositions();
+            }));
+
+
+            _vertexPositions.Clear();
+
+            foreach( var v in _vertexSizes )
+            {
+
+                Point currentPoint;
+                if( d.TryGetValue( v.Key, out currentPoint ) )
+                { // Update by index: TODO
+                    if( Double.IsNaN(currentPoint.X) || Double.IsNaN(currentPoint.Y))
+                    {
+                        _vertexPositions.Add( v.Key, new Point( 0, 0 ) );
+
+
+                    }
+                    else
+                    {
+                        _vertexPositions.Add( v.Key, currentPoint );
+                    }
+                } else {
+                    _vertexPositions.Add( v.Key, new Point(0,0));
+                }
+            }
+        }
+
+        public bool NeedVertexSizes
+        {
+            get { return true; }
+        }
+
+        public System.Collections.Generic.IDictionary<YodiiGraphVertex, Point> VertexPositions
+        {
+            get { return _vertexPositions; }
+        }
+
+        public System.Collections.Generic.IDictionary<YodiiGraphVertex, Size> VertexSizes
+        {
+            get
+            {
+                return _vertexSizes;
+            }
+            set
+            {
+                _vertexSizes = value;
+            }
+        }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -16,7 +84,7 @@ namespace Yodii.Lab
         /// </summary>
         public MainWindow()
         {
-            _vm = new MainWindowViewModel(false);
+            _vm = new MainWindowViewModel( false );
             this.DataContext = _vm;
             _vm.NewNotification += _vm_NewNotification;
             InitializeComponent();
@@ -39,8 +107,9 @@ namespace Yodii.Lab
             _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
 
-            GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
-            GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
+            //GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
+            //GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
+            GraphArea.ExternalLayoutAlgorithm = new YodiiLayout( GraphArea );
 
             this.Loaded += MainWindow_Loaded;
         }
@@ -97,21 +166,23 @@ namespace Yodii.Lab
                 GraphArea.DefaultLayoutAlgorithmParams = e.AlgorithmParameters;
             }
 
-            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
+            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph )
             {
                 try
                 {
                     this.GraphArea.RelayoutGraph();
-                } catch( Exception ex )
+                }
+                catch( Exception ex )
                 {
-                    MessageBox.Show( String.Format("An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace),
+                    MessageBox.Show( String.Format( "An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
                         "Error while updating layout",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error, MessageBoxResult.OK );
 
                     ResetGraphToDefaultState();
                 }
-            } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
+            }
+            else if( e.RequestType == GraphGenerationRequestType.RegenerateGraph )
             {
                 try
                 {
