@@ -14,56 +14,40 @@ namespace Yodii.Model
 
         /// <summary>
         /// </summary>
-        /// <param name="this">This live plugin info.</param>
+        /// <param name="this">This live plugin/service info.</param>
         /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILivePluginInfo @this )
+        public static IYodiiEngineResult Start( this ILiveYodiiItem @this )
         {
             return @this.Start( null, StartDependencyImpact.Unknown );
         }
 
         /// <summary>
         /// </summary>
-        /// <param name="this">This live service info.</param>
+        /// <param name="this">This live plugin/service info.</param>
+        /// <param name="callerKey">Caller key.</param>
         /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILiveServiceInfo @this )
-        {
-            return @this.Start( null, StartDependencyImpact.Unknown );
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="this">This live plugin info.</param>
-        /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILivePluginInfo @this, string callerKey )
+        public static IYodiiEngineResult Start( this ILiveYodiiItem @this, string callerKey )
         {
             return @this.Start( callerKey, StartDependencyImpact.Unknown );
         }
 
         /// <summary>
         /// </summary>
-        /// <param name="this">This live service info.</param>
+        /// <param name="this">This live plugin/service info.</param>
+        /// <param name="impact">The impact.</param>
         /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILiveServiceInfo @this, string callerKey )
-        {
-            return @this.Start( callerKey, StartDependencyImpact.Unknown );
-        }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="this">This live plugin info.</param>
-        /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILivePluginInfo @this, StartDependencyImpact impact )
+        public static IYodiiEngineResult Start( this ILiveYodiiItem @this, StartDependencyImpact impact )
         {
             return @this.Start( null, impact );
         }
 
         /// <summary>
         /// </summary>
-        /// <param name="this">This live service info.</param>
+        /// <param name="this">This live plugin/service info.</param>
         /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILiveServiceInfo @this, StartDependencyImpact impact )
+        public static IYodiiEngineResult Stop( this ILiveYodiiItem @this )
         {
-            return @this.Start( null, impact );
+            return @this.Stop( null );
         }
 
         /// <summary>

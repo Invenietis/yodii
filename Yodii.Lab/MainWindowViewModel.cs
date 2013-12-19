@@ -92,6 +92,7 @@ namespace Yodii.Lab
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
+
             if( loadDefaultState ) LoadDefaultState();
         }
 
