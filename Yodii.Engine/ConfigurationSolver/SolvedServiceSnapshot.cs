@@ -54,8 +54,8 @@ namespace Yodii.Engine
         { 
             get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
         }
-        
-        RunningStatus IDynamicSolvedService.RunningStatus
+
+        RunningStatus IDynamicYodiiItem.RunningStatus
         {
             get
             {

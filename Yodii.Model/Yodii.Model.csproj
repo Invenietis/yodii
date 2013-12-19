@@ -71,6 +71,7 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="LiveModel\IDynamicYodiiItem.cs" />
     <Compile Include="YodiiModelExtension.cs" />
     <Compile Include="DiscoveredInfoExtension.cs" />
     <Compile Include="DependencyRequirement.cs" />

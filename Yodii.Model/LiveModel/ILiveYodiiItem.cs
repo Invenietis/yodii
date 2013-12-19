@@ -9,7 +9,7 @@ namespace Yodii.Model
     /// <summary>
     /// Live plugin or service info.
     /// </summary>
-    public interface ILiveYodiiItem : INotifyPropertyChanged
+    public interface ILiveYodiiItem : IDynamicYodiiItem, INotifyPropertyChanged
     {
         /// <summary>
         /// Whether this live Yodii item, plugin or status, is running.
@@ -28,5 +28,6 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="callerKey">Caller identifier.</param>
         IYodiiEngineResult Stop( string callerKey );
+
     }
 }

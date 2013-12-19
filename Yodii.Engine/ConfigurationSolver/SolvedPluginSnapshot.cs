@@ -57,7 +57,7 @@ namespace Yodii.Engine
             } 
         }
 
-        RunningStatus IDynamicSolvedPlugin.RunningStatus
+        RunningStatus IDynamicYodiiItem.RunningStatus
         { 
             get 
             {

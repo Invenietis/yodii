@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using GraphX;
 using Yodii.Lab.Mocks;
 using Yodii.Model;
@@ -17,6 +18,7 @@ namespace Yodii.Lab
         readonly LabServiceInfo _liveService;
         readonly LabPluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
+        readonly ICommand _toggleItemCommand;
 
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
@@ -28,9 +30,31 @@ namespace Yodii.Lab
         /// <summary>
         /// Creates a new, empty vertex. Used by GraphX serialization, not implemented yet.
         /// </summary>
-        public YodiiGraphVertex()
+        private YodiiGraphVertex()
         {
+            _toggleItemCommand = new RelayCommand( ToggleLiveItemExecute, CanToggleLiveItemExecute );
+        }
 
+        private bool CanToggleLiveItemExecute( object obj )
+        {
+            if( LiveObject == null ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked ) return false;
+
+            return true;
+        }
+
+        private void ToggleLiveItemExecute( object obj )
+        {
+            if( !CanToggleLiveItemExecute( obj ) ) return;
+
+            if( LiveObject.RunningStatus == RunningStatus.Stopped )
+            {
+                LiveObject.Start();
+            }
+            else
+            {
+                LiveObject.Stop();
+            }
         }
         /// <summary>
         /// Creates a new plugin vertex.
@@ -38,6 +62,7 @@ namespace Yodii.Lab
         /// <param name="parentGraph"></param>
         /// <param name="plugin"></param>
         internal YodiiGraphVertex( YodiiGraph parentGraph, LabPluginInfo plugin )
+            : this()
         {
             Debug.Assert( parentGraph != null );
             Debug.Assert( plugin != null );
@@ -56,6 +81,7 @@ namespace Yodii.Lab
         /// <param name="parentGraph"></param>
         /// <param name="service"></param>
         internal YodiiGraphVertex( YodiiGraph parentGraph, LabServiceInfo service )
+            : this()
         {
             Debug.Assert( parentGraph != null );
             Debug.Assert( service != null );
@@ -152,6 +178,8 @@ namespace Yodii.Lab
                 }
             }
         }
+
+        public ICommand ToggleItemCommand { get { return _toggleItemCommand; } }
 
         /// <summary>
         /// The configuration status for this element, from the ConfigurationManager.
@@ -300,7 +328,8 @@ namespace Yodii.Lab
             if( IsService )
             {
                 _parentGraph.RemoveService( LabServiceInfo.ServiceInfo );
-            } else if (IsPlugin)
+            }
+            else if( IsPlugin )
             {
                 _parentGraph.RemovePlugin( LabPluginInfo.PluginInfo );
             }
