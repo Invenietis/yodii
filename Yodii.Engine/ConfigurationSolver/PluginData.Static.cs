@@ -66,13 +66,13 @@ namespace Yodii.Engine
                 if( sRef.Requirement >= DependencyRequirement.Runnable )
                 {
                     // If the required service is already disabled, we immediately disable this plugin.
-                    if( sRef.Reference.HasError )
+                    if( sRef.Reference.HasError && !Disabled )
                     {
                         SetDisabled( PluginDisabledReason.RunnableReferenceServiceIsOnError );
                         break;
                     }
                     ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                    if( sr.Disabled )
+                    if( sr.Disabled && !Disabled)
                     {
                         SetDisabled( PluginDisabledReason.RunnableReferenceIsDisabled );
                         break;
