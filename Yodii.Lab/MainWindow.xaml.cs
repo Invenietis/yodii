@@ -43,6 +43,15 @@ namespace Yodii.Lab
             GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
 
             this.Loaded += MainWindow_Loaded;
+            this.Closing += MainWindow_Closing;
+        }
+
+        void MainWindow_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            if( !_vm.SaveBeforeClosingFile())
+            {
+                e.Cancel = true;
+            }
         }
 
         void _vm_NewNotification( object sender, NotificationEventArgs e )

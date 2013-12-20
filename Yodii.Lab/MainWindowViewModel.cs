@@ -37,11 +37,12 @@ namespace Yodii.Lab
         readonly ICommand _toggleEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
+        readonly ICommand _saveCommand;
         readonly ICommand _reorderGraphLayoutCommand;
         readonly ICommand _createServiceCommand;
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
-        readonly ICommand _clearAllCommand;
+        readonly ICommand _newFileCommand;
         readonly ICommand _revokeAllCommandsCommand;
 
         readonly ActivityMonitor _activityMonitor;
@@ -89,11 +90,12 @@ namespace Yodii.Lab
             _toggleEngineCommand = new RelayCommand( ToggleEngineExecute );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
+            _saveCommand = new RelayCommand( SaveExecute ); // Save is always available.e
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
             _createPluginCommand = new RelayCommand( CreatePluginExecute, CanEditItems );
             _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
-            _clearAllCommand = new RelayCommand( ClearAllExecute );
+            _newFileCommand = new RelayCommand( NewFileExecute );
             _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
 
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
@@ -492,25 +494,7 @@ namespace Yodii.Lab
 
         private void SaveAsFileExecute( object param )
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckPathExists = true;
-            dlg.OverwritePrompt = true;
-            dlg.AddExtension = true;
-
-            Nullable<bool> result = dlg.ShowDialog();
-
-            if( result == true )
-            {
-                string filePath = dlg.FileName;
-                var r = SaveState( filePath );
-                if( !r )
-                {
-                    MessageBox.Show( r.Reason, "Couldn't save file" );
-                }
-            }
+            SaveAs();
         }
 
         private void ToggleEngineExecute( object obj )
@@ -566,9 +550,14 @@ namespace Yodii.Lab
             SelectedVertex = null;
         }
 
-        private void ClearAllExecute( object obj )
+        private void NewFileExecute( object obj )
         {
-            LabState.ClearState();
+            if( SaveBeforeClosingFile() )
+            {
+                OpenedFilePath = null;
+                LabState.ClearState();
+                ChangedSinceLastSave = true;
+            }
         }
 
         private bool CanRevokeAllCommands( object obj )
@@ -595,9 +584,29 @@ namespace Yodii.Lab
             }
         }
 
+        private void SaveExecute( object obj )
+        {
+            Save();
+        }
+
         #endregion Command handlers
 
         #region Properties
+
+        /// <summary>
+        /// Window title.
+        /// </summary>
+        public string WindowTitle
+        {
+            get
+            {
+                return String.Format(
+                    "Yodii.Lab - {0}{1}",
+                    OpenedFilePath != null ? Path.GetFileName(OpenedFilePath) : "(New file)",
+                    ChangedSinceLastSave == true ? " *" : String.Empty
+                    );
+            }
+        }
 
         /// <summary>
         /// Services created in this Lab.
@@ -641,6 +650,7 @@ namespace Yodii.Lab
                 {
                     _changedSinceLastSave = value;
                     RaisePropertyChanged();
+                    RaisePropertyChanged( "WindowTitle" );
                 }
             }
         }
@@ -660,6 +670,7 @@ namespace Yodii.Lab
                 {
                     _lastSavePath = value;
                     RaisePropertyChanged();
+                    RaisePropertyChanged( "WindowTitle" );
                 }
             }
         }
@@ -803,6 +814,10 @@ namespace Yodii.Lab
         /// </summary>
         public ICommand SaveAsFileCommand { get { return _saveAsFileCommand; } }
         /// <summary>
+        /// Command to save the opened file, or define a new file to save to.
+        /// </summary>
+        public ICommand SaveCommand { get { return _saveCommand; } }
+        /// <summary>
         /// Command to reorder the graph, or to change the graph's layout.
         /// </summary>
         public ICommand ReorderGraphLayoutCommand { get { return _reorderGraphLayoutCommand; } }
@@ -815,9 +830,9 @@ namespace Yodii.Lab
         /// </summary>
         public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
         /// <summary>
-        /// Command to open a window allowing creation of a new service.
+        /// Command to create a new file.
         /// </summary>
-        public ICommand ClearAllCommand { get { return _clearAllCommand; } }
+        public ICommand NewFileCommand { get { return _newFileCommand; } }
         /// <summary>
         /// Command to revoke all callers.
         /// </summary>
@@ -1076,6 +1091,81 @@ namespace Yodii.Lab
         #endregion Public methods
 
         #region Private methods
+
+        public bool SaveBeforeClosingFile()
+        {
+            if( ChangedSinceLastSave )
+            {
+                var result = MessageBox.Show( "Save changes?\nUnsaved data will be lost if you press No.", "Save file", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel );
+                if( result == MessageBoxResult.Cancel ) return false;
+
+                if( result == MessageBoxResult.Yes )
+                {
+                    return Save();
+                }
+            }
+
+            return true;
+        }
+        
+        private bool Save()
+        {
+            if( !String.IsNullOrWhiteSpace( OpenedFilePath ) )
+            {
+                var r = SaveState( OpenedFilePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+                return r.IsSuccessful;
+            }
+            else
+            {
+                return SaveAs();
+            }
+        }
+
+        private bool SaveAs()
+        {
+            string saveFilePath = SelectSaveFile();
+
+            if( saveFilePath != null )
+            {
+                var r = SaveState( saveFilePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private string SelectSaveFile()
+        {
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckPathExists = true;
+            dlg.OverwritePrompt = true;
+            dlg.AddExtension = true;
+            dlg.FileName = OpenedFilePath;
+
+            Nullable<bool> result = dlg.ShowDialog();
+
+            if( result == true )
+            {
+                return dlg.FileName;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         private static ILayoutParameters GetDefaultLayoutParameters( LayoutAlgorithmTypeEnum layoutType )
         {
