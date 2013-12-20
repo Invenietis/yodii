@@ -234,14 +234,17 @@ namespace Yodii.Lab.Tests
         {
             MainWindowViewModel emptyVm = new MainWindowViewModel();
             Assert.That( emptyVm.ChangedSinceLastSave, Is.True );
+            Assert.That( emptyVm.OpenedFilePath, Is.Null );
 
             MainWindowViewModel vm = CreateViewModelWithGraph001();
             Assert.That( vm.ChangedSinceLastSave, Is.True );
+            Assert.That( vm.OpenedFilePath, Is.Null );
 
             string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
 
             DetailedOperationResult r = vm.SaveState( tempFilePath );
             Assert.That( r.IsSuccessful );
+            Assert.That( vm.OpenedFilePath == tempFilePath );
 
             Assert.That( vm.ChangedSinceLastSave, Is.False );
 
@@ -349,6 +352,8 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.ChangedSinceLastSave, Is.True );
             r = vm.SaveState( tempFilePath );
             Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            Assert.That( vm.OpenedFilePath == tempFilePath );
 
             File.Delete( tempFilePath );
         }

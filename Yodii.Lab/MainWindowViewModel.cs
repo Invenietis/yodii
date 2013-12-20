@@ -54,7 +54,9 @@ namespace Yodii.Lab
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
         bool _hideNotifications = false;
+
         bool _changedSinceLastSave = true;
+        string _lastSavePath;
 
         #endregion
 
@@ -624,6 +626,9 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// State changed since it was last saved/loaded.
+        /// </summary>
         public bool ChangedSinceLastSave
         {
             get
@@ -635,6 +640,25 @@ namespace Yodii.Lab
                 if( value != _changedSinceLastSave )
                 {
                     _changedSinceLastSave = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Last path loaded/saved.
+        /// </summary>
+        public string OpenedFilePath
+        {
+            get
+            {
+                return _lastSavePath;
+            }
+            private set
+            {
+                if( value != _lastSavePath )
+                {
+                    _lastSavePath = value;
                     RaisePropertyChanged();
                 }
             }
@@ -965,6 +989,7 @@ namespace Yodii.Lab
                 RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
 
                 ChangedSinceLastSave = false;
+                OpenedFilePath = filePath;
                 return new DetailedOperationResult( true );
             }
             catch( Exception ex )
@@ -1007,6 +1032,7 @@ namespace Yodii.Lab
                     }
                 }
                 ChangedSinceLastSave = false;
+                OpenedFilePath = filePath;
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {
