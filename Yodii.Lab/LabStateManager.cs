@@ -119,7 +119,16 @@ namespace Yodii.Lab
 
         internal void UpdateEngineInfos()
         {
-            var result = _engine.SetDiscoveredInfo( new DiscoveredInfoClone( ServiceInfos, PluginInfos ) );
+            var newInfo = new DiscoveredInfoClone( ServiceInfos, PluginInfos );
+
+            if( !newInfo.IsValid() )
+            {
+                Engine.Stop();
+                MessageBox.Show( "DiscoveredInfo failed sanity check." );
+                return;
+            }
+
+            var result = _engine.SetDiscoveredInfo( newInfo );
 
             if( !result.Success )
             {

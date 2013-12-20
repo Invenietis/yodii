@@ -10,8 +10,7 @@
     Height="130pt"
     Width="250pt"
     MinHeight="130pt"
-    MinWidth="200pt"
-    MaxHeight="130pt">
+    MinWidth="200pt">
     <Window.Resources>
         <local:IntegerToBoolConverter
             x:Key="IntToBoolConverter" />
