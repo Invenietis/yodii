@@ -54,6 +54,7 @@ namespace Yodii.Lab
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
         bool _hideNotifications = false;
+        bool _changedSinceLastSave = true;
 
         #endregion
 
@@ -73,6 +74,8 @@ namespace Yodii.Lab
             _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
             _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
             _labStateManager.RunningPlugins.CollectionChanged += RunningPlugins_CollectionChanged;
+
+            _engine.Configuration.Layers.CollectionChanged += Layers_CollectionChanged;
 
             _activityMonitor = new ActivityMonitor();
 
@@ -94,32 +97,7 @@ namespace Yodii.Lab
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-
             if( loadDefaultState ) LoadDefaultState();
-        }
-
-        private bool CanRevokeAllCommands( object obj )
-        {
-            return LabState.Engine.IsRunning && LabState.Engine.YodiiCommands.Count > 0;
-        }
-
-        private void RevokeAllCommandsExecute( object obj )
-        {
-            if( !CanRevokeAllCommands( obj ) ) return;
-
-            IEnumerable<string> callers = LabState.Engine.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
-
-            foreach( string callerKey in callers )
-            {
-                var result = LabState.Engine.LiveInfo.RevokeCaller( callerKey );
-
-                if( !result.Success )
-                {
-                    MessageBox.Show(
-                        String.Format( "Couldn't revoke caller key '{0}' as it would raise this error:\n\n{1}", callerKey, result.Describe() ),
-                        "Command revoke failed", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
-                }
-            }
         }
 
         private void LoadDefaultState()
@@ -133,6 +111,59 @@ namespace Yodii.Lab
         #endregion Constructor
 
         #region Event handlers
+
+        void Layers_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IConfigurationLayer layer = (IConfigurationLayer)i;
+                        layer.PropertyChanged += staticInfo_PropertyChanged;
+                        layer.Items.CollectionChanged += Items_CollectionChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IConfigurationLayer layer = (IConfigurationLayer)i;
+                        layer.PropertyChanged -= staticInfo_PropertyChanged;
+                        layer.Items.CollectionChanged -= Items_CollectionChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            ChangedSinceLastSave = true;
+        }
+
+        void Items_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IConfigurationItem item = (IConfigurationItem)i;
+                        item.PropertyChanged += staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IConfigurationItem item = (IConfigurationItem)i;
+                        item.PropertyChanged -= staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            ChangedSinceLastSave = true;
+        }
+
         void RunningPlugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
         {
             switch( e.Action )
@@ -192,7 +223,11 @@ namespace Yodii.Lab
                             SelectedVertex = null;
                         }
 
-                        IPluginInfo newPlugin = (IPluginInfo)i;
+                        PluginInfo newPlugin = (PluginInfo)i;
+
+                        newPlugin.PropertyChanged += staticInfo_PropertyChanged;
+                        newPlugin.InternalServiceReferences.CollectionChanged += InternalServiceReferences_CollectionChanged;
+
                         RaiseNewNotification( "Plugin added",
                             String.Format( "Added new plugin: '{0}'", newPlugin.PluginFullName )
                             );
@@ -207,7 +242,11 @@ namespace Yodii.Lab
                             SelectedVertex = null;
                         }
 
-                        IPluginInfo oldPlugin = (IPluginInfo)i;
+                        PluginInfo oldPlugin = (PluginInfo)i;
+
+                        oldPlugin.PropertyChanged -= staticInfo_PropertyChanged;
+                        oldPlugin.InternalServiceReferences.CollectionChanged += InternalServiceReferences_CollectionChanged;
+
                         RaiseNewNotification( "Plugin removed",
                             String.Format( "Removed plugin: '{0}'", oldPlugin.PluginFullName )
                             );
@@ -217,6 +256,32 @@ namespace Yodii.Lab
                     RaiseNewNotification( "Plugins reset", "Removed all plugins." );
                     break;
             }
+            ChangedSinceLastSave = true;
+        }
+
+        void InternalServiceReferences_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        MockServiceReferenceInfo serviceRef = (MockServiceReferenceInfo)i;
+                        serviceRef.PropertyChanged += staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        MockServiceReferenceInfo serviceRef = (MockServiceReferenceInfo)i;
+                        serviceRef.PropertyChanged -= staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            ChangedSinceLastSave = true;
         }
 
         void ServiceInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -226,16 +291,20 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach( var i in e.NewItems )
                     {
-                        IServiceInfo newService = (IServiceInfo)i;
+                        ServiceInfo newService = (ServiceInfo)i;
+                        newService.PropertyChanged += staticInfo_PropertyChanged;
+
                         RaiseNewNotification( "Service added",
                             String.Format( "Added new service: '{0}'", newService.ServiceFullName )
                             );
+
                     }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     foreach( var i in e.OldItems )
                     {
-                        IServiceInfo oldService = (IServiceInfo)i;
+                        ServiceInfo oldService = (ServiceInfo)i;
+                        oldService.PropertyChanged -= staticInfo_PropertyChanged;
                         RaiseNewNotification( "Service removed",
                             String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
                             );
@@ -251,6 +320,12 @@ namespace Yodii.Lab
                     SelectedVertex = null;
                     break;
             }
+            ChangedSinceLastSave = true;
+        }
+
+        void staticInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            ChangedSinceLastSave = true;
         }
         #endregion
 
@@ -494,6 +569,30 @@ namespace Yodii.Lab
             LabState.ClearState();
         }
 
+        private bool CanRevokeAllCommands( object obj )
+        {
+            return LabState.Engine.IsRunning && LabState.Engine.YodiiCommands.Count > 0;
+        }
+
+        private void RevokeAllCommandsExecute( object obj )
+        {
+            if( !CanRevokeAllCommands( obj ) ) return;
+
+            IEnumerable<string> callers = LabState.Engine.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
+
+            foreach( string callerKey in callers )
+            {
+                var result = LabState.Engine.LiveInfo.RevokeCaller( callerKey );
+
+                if( !result.Success )
+                {
+                    MessageBox.Show(
+                        String.Format( "Couldn't revoke caller key '{0}' as it would raise this error:\n\n{1}", callerKey, result.Describe() ),
+                        "Command revoke failed", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
+                }
+            }
+        }
+
         #endregion Command handlers
 
         #region Properties
@@ -522,6 +621,22 @@ namespace Yodii.Lab
             get
             {
                 return _graph;
+            }
+        }
+
+        public bool ChangedSinceLastSave
+        {
+            get
+            {
+                return _changedSinceLastSave;
+            }
+            private set
+            {
+                if( value != _changedSinceLastSave )
+                {
+                    _changedSinceLastSave = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 
@@ -758,6 +873,22 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Removes an existing dependency from a plugin to a service.
+        /// </summary>
+        /// <param name="plugin">Plugin owner.</param>
+        /// <param name="service">Service reference.</param>
+        public void RemovePluginDependency( IPluginInfo plugin, IServiceInfo service )
+        {
+            if( plugin == null ) throw new ArgumentNullException( "plugin" );
+            if( service == null ) throw new ArgumentNullException( "service" );
+
+            if( !ServiceInfos.Contains( (ServiceInfo)service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
+            if( !PluginInfos.Contains( (PluginInfo)plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
+
+            _labStateManager.RemovePluginDependency( (PluginInfo)plugin, (ServiceInfo)service );
+        }
+
+        /// <summary>
         /// Removes and deletes a plugin.
         /// </summary>
         /// <param name="pluginInfo">Plugin to remove</param>
@@ -832,6 +963,8 @@ namespace Yodii.Lab
                 Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
 
                 RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
+
+                ChangedSinceLastSave = false;
                 return new DetailedOperationResult( true );
             }
             catch( Exception ex )
@@ -873,6 +1006,7 @@ namespace Yodii.Lab
                         xw.WriteEndDocument();
                     }
                 }
+                ChangedSinceLastSave = false;
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {

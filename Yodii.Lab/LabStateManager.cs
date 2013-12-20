@@ -432,18 +432,30 @@ namespace Yodii.Lab
         /// <param name="runningRequirement">How the plugin depends on the service</param>
         internal void SetPluginDependency( PluginInfo plugin, ServiceInfo service, DependencyRequirement runningRequirement )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot create reference while Engine is running." );
-            }
             Debug.Assert( plugin != null );
             Debug.Assert( service != null );
             Debug.Assert( ServiceInfos.Contains( service ) );
             Debug.Assert( PluginInfos.Contains( plugin ) );
 
-            MockServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, DependencyRequirement.Running );
+            MockServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, runningRequirement );
             plugin.InternalServiceReferences.Add( reference );
 
+        }
+
+        /// <summary>
+        /// Removes an existing plugin dependency.
+        /// </summary>
+        /// <param name="plugin">Plugin owner.</param>
+        /// <param name="service">Service reference</param>
+        internal void RemovePluginDependency( PluginInfo plugin, ServiceInfo service )
+        {
+            Debug.Assert( plugin != null );
+            Debug.Assert( service != null );
+            Debug.Assert( ServiceInfos.Contains( service ) );
+            Debug.Assert( PluginInfos.Contains( plugin ) );
+
+            MockServiceReferenceInfo reference = plugin.InternalServiceReferences.First( x => x.Reference == service );
+            if( reference != null ) plugin.InternalServiceReferences.Remove( reference );
         }
 
         /// <summary>
@@ -671,6 +683,7 @@ namespace Yodii.Lab
             if( exists ) labPlugin.LivePluginInfo = null;
         }
         #endregion
+
 
     }
 

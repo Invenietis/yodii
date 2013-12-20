@@ -228,6 +228,130 @@ namespace Yodii.Lab.Tests
 
             TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
         }
+        
+        [Test]
+        public void ViewModelRegistersAllChanges()
+        {
+            MainWindowViewModel emptyVm = new MainWindowViewModel();
+            Assert.That( emptyVm.ChangedSinceLastSave, Is.True );
+
+            MainWindowViewModel vm = CreateViewModelWithGraph001();
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+
+            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
+
+            DetailedOperationResult r = vm.SaveState( tempFilePath );
+            Assert.That( r.IsSuccessful );
+
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            MainWindowViewModel vm2 = new MainWindowViewModel();
+            DetailedOperationResult r2 = vm2.LoadState( tempFilePath );
+            Assert.That( r2.IsSuccessful );
+
+            Assert.That( vm2.ChangedSinceLastSave, Is.False );
+
+            // Monitor Configuration changes:
+            // Layer created
+            var layer = vm.LabState.Engine.Configuration.Layers.Create();
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer item added
+            var yr = layer.Items.Add( "PluginA-2", ConfigurationStatus.Disabled, "test" );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer item changed
+            yr = layer.Items["PluginA-2"].SetStatus( ConfigurationStatus.Running );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer item removed
+            yr = layer.Items.Remove( "PluginA-2" );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer removed
+            yr = vm.LabState.Engine.Configuration.Layers.Remove( layer );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Monitor DiscoveredInfo changes:
+            // Service added
+            var newService = vm.CreateNewService( "ServiceC" );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service name changed (White box testing)
+            var castNewService = (ServiceInfo)newService;
+            castNewService.ServiceFullName = "ServiceD";
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service generalization changed (White box testing)
+            castNewService.Generalization = vm.LabState.ServiceInfos.First( x => x.ServiceFullName == "ServiceB" );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Plugin added
+            var newPlugin = vm.CreateNewPlugin( "My New Plugin" );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Plugin name changed (White box testing)
+            var castNewPlugin = (PluginInfo)newPlugin;
+            castNewPlugin.PluginFullName = "My New Plugin With A Better Name";
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Plugin service changed (White box testing)
+            castNewPlugin.Service = castNewService;
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service reference added
+            vm.SetPluginDependency( newPlugin, newService, DependencyRequirement.Runnable );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Reference's Dependency modified (White box testing)
+            var castReference = (MockServiceReferenceInfo)castNewPlugin.ServiceReferences.First();
+            castReference.Requirement = DependencyRequirement.Running;
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Reference removed (White box testing)
+            vm.RemovePluginDependency( newPlugin, newService );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service deleted
+            vm.RemoveService( newService );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            File.Delete( tempFilePath );
+        }
 
         internal static MainWindowViewModel CreateViewModelWithGraph001()
         {
