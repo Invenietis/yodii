@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
-using CK.Core;
-using QuickGraph;
-using Yodii.Model;
+using Yodii.Engine.Tests;
 using Yodii.Lab.Mocks;
-using System.IO;
 using Yodii.Lab.Utils;
-using System.Xml;
+using Yodii.Model;
 
 namespace Yodii.Lab.Tests
 {
@@ -194,7 +189,7 @@ namespace Yodii.Lab.Tests
         {
             MainWindowViewModel _vm1 = CreateViewModelWithGraph001();
 
-            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName());
+            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
 
             DetailedOperationResult r = _vm1.SaveState( tempFilePath );
 
@@ -214,7 +209,7 @@ namespace Yodii.Lab.Tests
                 Assert.That( _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).Count() == 1 );
                 IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).First();
 
-                TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
+                EquivalenceExtensions.AssertPluginEquivalence( infoA, infoB, true );
             }
 
             Assert.That( _vm1.ServiceInfos.Count == _vm2.ServiceInfos.Count );
@@ -223,12 +218,12 @@ namespace Yodii.Lab.Tests
                 Assert.That( _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
                 var infoA = _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();
 
-                TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
+                EquivalenceExtensions.AssertServiceEquivalence( infoA, infoB, true );
             }
 
-            TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
+            EquivalenceExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
         }
-        
+
         [Test]
         public void ViewModelRegistersAllChanges()
         {
@@ -444,16 +439,16 @@ namespace Yodii.Lab.Tests
             Assert.That( result.Success );
 
             // Testing tests
-            foreach(var si in vm.ServiceInfos )
+            foreach( var si in vm.ServiceInfos )
             {
-                TestExtensions.AssertServiceEquivalence( si, si, true );
+                EquivalenceExtensions.AssertServiceEquivalence( si, si, true );
             }
             foreach( var pi in vm.PluginInfos )
             {
-                TestExtensions.AssertPluginEquivalence( pi, pi, true );
+                EquivalenceExtensions.AssertPluginEquivalence( pi, pi, true );
             }
 
-            TestExtensions.AssertManagerEquivalence( vm.LabState.Engine.Configuration, vm.LabState.Engine.Configuration );
+            EquivalenceExtensions.AssertManagerEquivalence( vm.LabState.Engine.Configuration, vm.LabState.Engine.Configuration );
 
             return vm;
         }

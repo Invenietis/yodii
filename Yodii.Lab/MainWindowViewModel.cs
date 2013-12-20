@@ -104,13 +104,15 @@ namespace Yodii.Lab
 
             if( loadDefaultState ) LoadDefaultState();
 
+            if( Application.Current != null )
+            {
+                DispatcherTimer autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
 
-            DispatcherTimer autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
+                autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
+                autosaveTimer.Tick += AutosaveTick;
 
-            autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
-            autosaveTimer.Tick += AutosaveTick;
-
-            autosaveTimer.Start();
+                autosaveTimer.Start();
+            }
         }
 
         private void LoadDefaultState()
