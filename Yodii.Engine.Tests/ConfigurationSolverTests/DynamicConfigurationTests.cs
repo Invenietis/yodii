@@ -325,6 +325,5 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.LiveInfo.FindService( "Service2.2" ).Stop();
             } );
         }
-
     }
 }

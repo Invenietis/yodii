@@ -1129,5 +1129,43 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             return engine;
         }
+
+        [Test]
+        public void ValidRunnableTryStartReference()
+        {
+            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableTryStartReference.png
+            var e = CreateValidRunnableTryStartReference();
+            e.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValidRunnableTryStartReference()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph008() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Plugin1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin3", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin4", ConfigurationStatus.Running );
+            cl.Items.Add( "Plugin6", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin8", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin9", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin10", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin14", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin17", ConfigurationStatus.Running );
+            cl.Items.Add( "Plugin19", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin20", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin24", ConfigurationStatus.Disabled );
+
+            cl.Items.Add( "Service1.1", ConfigurationStatus.Running );
+            cl.Items.Add( "Service1.2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Service1.1.2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Service1.1.3", ConfigurationStatus.Runnable );
+
+            return engine;
+        }
     }
 }
