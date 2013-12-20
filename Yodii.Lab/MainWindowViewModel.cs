@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using System.Xml;
 using CK.Core;
 using GraphX;
@@ -102,6 +103,14 @@ namespace Yodii.Lab
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             if( loadDefaultState ) LoadDefaultState();
+
+
+            DispatcherTimer autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
+
+            autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
+            autosaveTimer.Tick += AutosaveTick;
+
+            autosaveTimer.Start();
         }
 
         private void LoadDefaultState()
@@ -110,6 +119,7 @@ namespace Yodii.Lab
             XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
 
             LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+            ChangedSinceLastSave = false;
         }
 
         #endregion Constructor
@@ -602,7 +612,7 @@ namespace Yodii.Lab
             {
                 return String.Format(
                     "Yodii.Lab - {0}{1}",
-                    OpenedFilePath != null ? Path.GetFileName(OpenedFilePath) : "(New file)",
+                    OpenedFilePath != null ? Path.GetFileName( OpenedFilePath ) : "(New file)",
                     ChangedSinceLastSave == true ? " *" : String.Empty
                     );
             }
@@ -1048,6 +1058,7 @@ namespace Yodii.Lab
                 }
                 ChangedSinceLastSave = false;
                 OpenedFilePath = filePath;
+                ClearAutosave();
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {
@@ -1092,6 +1103,126 @@ namespace Yodii.Lab
 
         #region Private methods
 
+        /// <summary>
+        /// Whether the Lab has an auto-saved state.
+        /// </summary>
+        /// <returns>True if there is an auto-saved state.</returns>
+        public bool HasAutosave()
+        {
+            return !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents );
+        }
+
+        /// <summary>
+        /// Load autosaved state, if present.
+        /// </summary>
+        public void LoadAutosave()
+        {
+            if( !HasAutosave() ) return;
+            OpenedFilePath = null;
+            LabState.ClearState();
+
+            if( !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath ) )
+            {
+                OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
+            }
+
+            using( StringReader sr = new StringReader(Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents))
+            {
+                using( XmlReader r = XmlReader.Create(sr))
+                {
+                    try
+                    {
+                        _hideNotifications = true;
+                        Graph.LockGraphUpdates = true;
+                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+                        Graph.LockGraphUpdates = false;
+                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                        _hideNotifications = false;
+                        RaiseNewNotification( "Autosave loaded", OpenedFilePath );
+                    }
+                    catch( Exception ex )
+                    {
+                        MessageBox.Show(
+                            String.Format( "Load from autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
+                            "Loading failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error,
+                            MessageBoxResult.OK
+                            );
+
+                    }
+                    finally
+                    {
+                        _hideNotifications = false;
+                        Graph.LockGraphUpdates = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove any existing autosave.
+        /// </summary>
+        public void ClearAutosave()
+        {
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = String.Empty;
+
+            Yodii.Lab.Properties.Settings.Default.Save();
+        }
+
+        private void AutosaveTick( object sender, EventArgs e )
+        {
+            Autosave();
+        }
+
+        private void Autosave()
+        {
+            if( !ChangedSinceLastSave ) return;
+
+            string xmlString;
+
+            using( StringWriter sw = new StringWriter() )
+            {
+                using( XmlWriter xw = XmlWriter.Create( sw ) )
+                {
+                    try
+                    {
+                        xw.WriteStartDocument( true );
+                        LabXmlSerialization.SerializeToXml( LabState, xw );
+                        xw.WriteEndDocument();
+                    }
+                    catch( Exception ex )
+                    {
+                        MessageBox.Show(
+                            String.Format( "Autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
+                            "Autosave failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error,
+                            MessageBoxResult.OK
+                            );
+
+                    }
+                }
+
+                xmlString = sw.ToString();
+            }
+
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = xmlString;
+            if( String.IsNullOrWhiteSpace(OpenedFilePath))
+            {
+                Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
+            }
+            else
+            {
+                Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = OpenedFilePath;
+            }
+
+            Yodii.Lab.Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// In case the file changed, attempts to save the last file.
+        /// </summary>
+        /// <returns>True if save was successful. False if save failed, or was cancelled.</returns>
         public bool SaveBeforeClosingFile()
         {
             if( ChangedSinceLastSave )
@@ -1107,7 +1238,7 @@ namespace Yodii.Lab
 
             return true;
         }
-        
+
         private bool Save()
         {
             if( !String.IsNullOrWhiteSpace( OpenedFilePath ) )

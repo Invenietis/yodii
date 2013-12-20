@@ -139,12 +139,6 @@ namespace Yodii.Lab
 
         private static PersistedLabState CreatePersistentObject( LabStateManager runningState )
         {
-            // Stop running engine
-            if( runningState.Engine.IsRunning )
-            {
-                runningState.Engine.Stop();
-            }
-
             PersistedLabState persistedState = new PersistedLabState();
 
             // Persist layer
