@@ -51,7 +51,7 @@ namespace Yodii.Engine
                 return ( (a.PluginFullName != null && b.PluginFullName != null) && (a.PluginFullName == b.PluginFullName)
                     || (a.ServiceFullName != null && b.ServiceFullName != null) && (a.ServiceFullName == b.ServiceFullName) ) 
                     && a.Start == b.Start
-                    && a.Impact == b .Impact; 
+                    && a.Impact == b.Impact; 
             }
         }
 
