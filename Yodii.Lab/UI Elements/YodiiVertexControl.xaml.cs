@@ -24,7 +24,7 @@ namespace Yodii.Lab
 
         public static readonly DependencyProperty VertexProperty = 
             DependencyProperty.Register( "Vertex", typeof( YodiiGraphVertex ),
-            typeof( YodiiVertexControl ), new FrameworkPropertyMetadata(OnVertexChangedCallback)
+            typeof( YodiiVertexControl ), new FrameworkPropertyMetadata( OnVertexChangedCallback )
             );
 
         private static void OnVertexChangedCallback( DependencyObject d, DependencyPropertyChangedEventArgs e )
@@ -45,7 +45,7 @@ namespace Yodii.Lab
 
         void ItemContainerGenerator_StatusChanged( object sender, EventArgs e )
         {
-            if(ConfigurationStatusMenu.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            if( ConfigurationStatusMenu.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated )
             {
                 UpdateCheckbox();
             }
@@ -138,17 +138,29 @@ namespace Yodii.Lab
                 }
             }
 
+            // Remove configuration when selecting Optional.
+            if( status == ConfigurationStatus.Optional ) return;
+
             IConfigurationLayer changedLayer;
             if( ConfigurationManager.Layers.Count == 0 )
             {
-                changedLayer = ConfigurationManager.Layers.Create("Auto-added layer");
+                changedLayer = ConfigurationManager.Layers.Create( "DefaultLayer" );
             }
             else
             {
                 changedLayer = ConfigurationManager.Layers.First();
             }
 
-            changedLayer.Items.Add( pluginOrServiceId, status, "Right-click change" );
+            var result = changedLayer.Items.Add( pluginOrServiceId, status, "Right-click change" );
+
+            if( !result.Success )
+            {
+                MessageBox.Show( String.Format( "Could not set {0} to {2}, as it would cause the following error:\n\n{1}",
+                    pluginOrServiceId,
+                    result.Describe(),
+                    status.ToString() ), "Couldn't set item", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK
+                    );
+            }
         }
 
         private void DeleteMenuItem_Click( object sender, RoutedEventArgs e )

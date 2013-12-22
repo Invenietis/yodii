@@ -117,7 +117,7 @@ namespace Yodii.Lab
         private void CreateReferenceButton_Click( object sender, RoutedEventArgs e )
         {
             if( LivePluginInfo == null ) return;
-            if( LivePluginInfo.IsLive ) return;
+
             Button button = sender as Button;
             FrameworkElement parentElement = button.Parent as FrameworkElement;
 
@@ -126,14 +126,20 @@ namespace Yodii.Lab
 
             ServiceInfo service = serviceComboBox.SelectedItem as ServiceInfo;
             DependencyRequirement req = (DependencyRequirement)requirementComboBox.SelectedItem;
-
-            LivePluginInfo.PluginInfo.InternalServiceReferences.Add( new MockServiceReferenceInfo( LivePluginInfo.PluginInfo, service, req ) );
+            if( LivePluginInfo.PluginInfo.CanReference( service ) )
+            {
+                LivePluginInfo.PluginInfo.InternalServiceReferences.Add( new MockServiceReferenceInfo( LivePluginInfo.PluginInfo, service, req ) );
+            }
+            else
+            {
+                MessageBox.Show( "You cannot reference this service.\nMake sure the selected service is in another family, or in the same family branch.", "Reference failed" );
+            }
         }
 
         private void ClearServiceButton_Click( object sender, RoutedEventArgs e )
         {
             if( LivePluginInfo == null ) return;
-            if( LivePluginInfo.IsLive ) return;
+
 
             LivePluginInfo.PluginInfo.Service = null;
         }

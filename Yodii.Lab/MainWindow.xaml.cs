@@ -86,6 +86,7 @@ namespace Yodii.Lab
         {
             _vm = new MainWindowViewModel( false );
             this.DataContext = _vm;
+
             _vm.NewNotification += _vm_NewNotification;
             InitializeComponent();
 
@@ -112,6 +113,19 @@ namespace Yodii.Lab
             GraphArea.ExternalLayoutAlgorithm = new YodiiLayout( GraphArea );
 
             this.Loaded += MainWindow_Loaded;
+            this.Closing += MainWindow_Closing;
+        }
+
+        void MainWindow_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            if( !_vm.SaveBeforeClosingFile())
+            {
+                e.Cancel = true;
+            }
+            else
+            {
+                _vm.ClearAutosave();
+            }
         }
 
         void _vm_NewNotification( object sender, NotificationEventArgs e )
@@ -125,6 +139,26 @@ namespace Yodii.Lab
         void MainWindow_Loaded( object sender, RoutedEventArgs e )
         {
             GraphArea.GenerateGraph( _vm.Graph );
+
+            if( _vm.HasAutosave() )
+            {
+                var result = MessageBox.Show(
+                    "Program did not properly close last time.\nDo you wish to load the last automatic save?\nPressing No will discard the save.",
+                    "Auto-save available",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Exclamation,
+                    MessageBoxResult.Yes
+                    );
+
+                if( result == MessageBoxResult.Yes )
+                {
+                    _vm.LoadAutosave();
+                }
+                else
+                {
+                    _vm.ClearAutosave();
+                }
+            }
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )

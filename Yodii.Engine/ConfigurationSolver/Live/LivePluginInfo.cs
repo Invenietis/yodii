@@ -35,7 +35,7 @@ namespace Yodii.Engine
             _configOriginalStatus = p.ConfigOriginalStatus;
             _configSolvedStatus = p.ConfigSolvedStatus;
             _configOriginalImpact = p.ConfigOriginalImpact;
-            _configSolvedImpact = p.ConfigSolvedImpact;
+            _configSolvedImpact = p.RawConfigSolvedImpact;
         }
 
         internal void UpdateFrom( PluginData p, DelayedPropertyNotification notifier )
@@ -47,7 +47,7 @@ namespace Yodii.Engine
             notifier.Update( this, ref _configOriginalStatus, p.ConfigOriginalStatus, () => ConfigOriginalStatus );
             notifier.Update( this, ref _configSolvedStatus, p.ConfigSolvedStatus, () => ConfigSolvedStatus );
             notifier.Update( this, ref _configOriginalImpact, p.ConfigOriginalImpact, () => ConfigOriginalImpact );
-            notifier.Update( this, ref _configSolvedImpact, p.ConfigSolvedImpact, () => ConfigSolvedImpact );
+            notifier.Update( this, ref _configSolvedImpact, p.RawConfigSolvedImpact, () => ConfigSolvedImpact );
         }
 
         internal void Bind( PluginData p, Func<string, LiveServiceInfo> serviceFinder, DelayedPropertyNotification notifier )

@@ -17,37 +17,42 @@ namespace Yodii.Model
         /// Identifies the object that requested the command.
         /// <seealso cref="ILiveInfo.RevokeCaller(string)"/>
         /// </summary>
-        public readonly string CallerKey;
+        public string CallerKey { get { return _callerKey; } }
+        private readonly string _callerKey;
 
         /// <summary>
         /// True if it is a command to start a plugin/service, false to stop a plugin/service.
         /// </summary>
-        public readonly bool Start;
+        public bool Start { get { return _start; } }
+        private readonly bool _start;
 
         /// <summary>
         /// If acting on a plugin's status: plugin full name.
         /// <seealso cref="YodiiCommand.ServiceFullName"/>
         /// </summary>
-        public readonly string PluginFullName;
+        public string PluginFullName { get { return _pluginFullName; } }
+        private readonly string _pluginFullName;
 
         /// <summary>
         /// When acting on a plugin, range of impact on the plugin's dependencies.
         /// </summary>
-        public readonly StartDependencyImpact Impact;
+        public StartDependencyImpact Impact { get { return _impact; } }
+        private readonly StartDependencyImpact _impact;
 
         /// <summary>
         /// If acting on a service: service full name.
         /// <seealso cref="YodiiCommand.PluginFullName"/>
         /// </summary>
-        public readonly string ServiceFullName;
+        public string ServiceFullName { get { return _serviceFullName; } }
+        private readonly string _serviceFullName;
 
         YodiiCommand( string callerKey, bool start, StartDependencyImpact impact )
         {
             if( callerKey == null ) throw new ArgumentNullException( "callerKey" );
             if( !start && impact != StartDependencyImpact.Unknown ) throw new ArgumentException( "Impact must be None when stopping a plugin or a service.", "impact" );
-            CallerKey = callerKey;
-            Start = start;
-            Impact = impact;
+            _callerKey = callerKey;
+            _start = start;
+            _impact = impact;
         }
 
         /// <summary>
@@ -64,11 +69,11 @@ namespace Yodii.Model
             if( string.IsNullOrWhiteSpace( serviceOrPluginFullName ) ) throw new ArgumentException( "Must be not null nor empty nor white space.", "serviceOrPluginFullName" );
             if( isPlugin )
             {
-                PluginFullName = serviceOrPluginFullName;
+                _pluginFullName = serviceOrPluginFullName;
             }
             else
             {
-                ServiceFullName = serviceOrPluginFullName;
+                _serviceFullName = serviceOrPluginFullName;
             }
         }
 

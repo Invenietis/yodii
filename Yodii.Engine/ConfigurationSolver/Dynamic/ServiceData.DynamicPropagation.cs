@@ -66,9 +66,7 @@ namespace Yodii.Engine
             {
                 Debug.Assert( Service.DynamicStatus != null && Service.DynamicStatus.Value >= RunningStatus.Running );
 
-                StartDependencyImpact impact = Service._dynFirstImpact;
-                if( impact == StartDependencyImpact.Unknown ) impact = Service.ConfigSolvedImpact;
-                if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal;
+                StartDependencyImpact impact = Service.ConfigSolvedImpact;
 
                 if( TheOnlyPlugin != null )
                 {

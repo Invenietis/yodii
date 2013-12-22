@@ -25,6 +25,8 @@ namespace Yodii.Lab
         readonly ICKObservableReadOnlyCollection<LabPluginInfo> _pluginInfos;
         readonly LabStateManager _serviceManager;
 
+        internal bool LockGraphUpdates = false;
+
         IConfigurationManager _configurationManager;
 
         #region Constructor
@@ -256,7 +258,7 @@ namespace Yodii.Lab
             GraphX.LayoutAlgorithmTypeEnum? newLayout = null,
             GraphX.GraphSharp.Algorithms.Layout.ILayoutParameters algoParams = null )
         {
-            if( this.GraphUpdateRequested != null )
+            if( this.GraphUpdateRequested != null && !LockGraphUpdates )
             {
                 this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type, newLayout, algoParams ) );
             }

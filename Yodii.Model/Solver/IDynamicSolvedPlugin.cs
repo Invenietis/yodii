@@ -9,7 +9,7 @@ namespace Yodii.Model
     /// <summary>
     /// Solved dynamic plugin data.
     /// </summary>
-    public interface IDynamicSolvedPlugin
+    public interface IDynamicSolvedPlugin : IDynamicYodiiItem
     {
         /// <summary>
         /// Static plugin information.
@@ -41,10 +41,5 @@ namespace Yodii.Model
         /// this <see cref="ConfigOriginalImpact"/> is <see cref="StartDependencyImpact.Unknown"/>).
         /// </summary>
         StartDependencyImpact ConfigSolvedImpact { get; }
-        
-        /// <summary>
-        /// Running status.
-        /// </summary>
-        RunningStatus RunningStatus { get; }
     }
 }

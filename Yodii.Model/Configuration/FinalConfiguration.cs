@@ -26,8 +26,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the final configuration status for a given service or plugin ID.
         /// </summary>
-        /// <param name="serviceOr
-        /// ">Service or plugin ID to check.</param>
+        /// <param name="serviceOrPluginFullName">Service or plugin ID to check.</param>
         /// <returns>The status of the item, or Optional if the item does not exist.</returns>
         public ConfigurationStatus GetStatus( string serviceOrPluginFullName )
         {

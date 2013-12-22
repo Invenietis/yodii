@@ -215,7 +215,7 @@ namespace Yodii.Engine
 
             foreach( var previous in pastCommands )
             {
-                if( newOne == null || newOne.CallerKey != previous.CallerKey || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
+                if( newOne == null || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
                 {
                     if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
                     {
@@ -261,8 +261,8 @@ namespace Yodii.Engine
             if( cmd.ServiceFullName != null )
             {
                 // If the service does not exist, we keep the command.
-                ServiceData s = _services[cmd.ServiceFullName];
-                if( s != null )
+                ServiceData s;
+                if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
                 {
                     if ( cmd.Start ) return s.DynamicStartByCommand( cmd.Impact );
                     return s.DynamicStopByCommand();
@@ -271,8 +271,8 @@ namespace Yodii.Engine
             }
             // Starts or stops the plugin.
             // If the plugin does not exist, we keep the command.
-            PluginData p = _plugins[cmd.PluginFullName];
-            if( p != null )
+            PluginData p;
+            if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
             {
                 if ( cmd.Start ) return p.DynamicStartByCommand( cmd.Impact );
                 else return p.DynamicStopByCommand();

@@ -9,7 +9,7 @@ namespace Yodii.Model
     /// <summary>
     /// Solved dynamic service data.
     /// </summary>
-    public interface IDynamicSolvedService
+    public interface IDynamicSolvedService : IDynamicYodiiItem
     {
         /// <summary>
         /// Static service information.
@@ -41,10 +41,5 @@ namespace Yodii.Model
         /// this <see cref="ConfigOriginalImpact"/> is <see cref="StartDependencyImpact.Unknown"/>).
         /// </summary>
         StartDependencyImpact ConfigSolvedImpact { get; }
-
-        /// <summary>
-        /// Running status.
-        /// </summary>
-        RunningStatus RunningStatus { get; }
     }
 }

@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
-using CK.Core;
-using QuickGraph;
-using Yodii.Model;
+using Yodii.Engine.Tests;
 using Yodii.Lab.Mocks;
-using System.IO;
 using Yodii.Lab.Utils;
-using System.Xml;
+using Yodii.Model;
 
 namespace Yodii.Lab.Tests
 {
@@ -194,7 +189,7 @@ namespace Yodii.Lab.Tests
         {
             MainWindowViewModel _vm1 = CreateViewModelWithGraph001();
 
-            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName());
+            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
 
             DetailedOperationResult r = _vm1.SaveState( tempFilePath );
 
@@ -214,7 +209,7 @@ namespace Yodii.Lab.Tests
                 Assert.That( _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).Count() == 1 );
                 IPluginInfo infoA = _vm1.PluginInfos.Where( x => x.PluginFullName == infoB.PluginFullName ).First();
 
-                TestExtensions.AssertPluginEquivalence( infoA, infoB, true );
+                EquivalenceExtensions.AssertPluginEquivalence( infoA, infoB, true );
             }
 
             Assert.That( _vm1.ServiceInfos.Count == _vm2.ServiceInfos.Count );
@@ -223,10 +218,139 @@ namespace Yodii.Lab.Tests
                 Assert.That( _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
                 var infoA = _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();
 
-                TestExtensions.AssertServiceEquivalence( infoA, infoB, true );
+                EquivalenceExtensions.AssertServiceEquivalence( infoA, infoB, true );
             }
 
-            TestExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
+            EquivalenceExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
+        }
+
+        [Test]
+        public void ViewModelRegistersAllChanges()
+        {
+            MainWindowViewModel emptyVm = new MainWindowViewModel();
+            Assert.That( emptyVm.ChangedSinceLastSave, Is.True );
+            Assert.That( emptyVm.OpenedFilePath, Is.Null );
+
+            MainWindowViewModel vm = CreateViewModelWithGraph001();
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            Assert.That( vm.OpenedFilePath, Is.Null );
+
+            string tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() );
+
+            DetailedOperationResult r = vm.SaveState( tempFilePath );
+            Assert.That( r.IsSuccessful );
+            Assert.That( vm.OpenedFilePath == tempFilePath );
+
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            MainWindowViewModel vm2 = new MainWindowViewModel();
+            DetailedOperationResult r2 = vm2.LoadState( tempFilePath );
+            Assert.That( r2.IsSuccessful );
+
+            Assert.That( vm2.ChangedSinceLastSave, Is.False );
+
+            // Monitor Configuration changes:
+            // Layer created
+            var layer = vm.LabState.Engine.Configuration.Layers.Create();
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer item added
+            var yr = layer.Items.Add( "PluginA-2", ConfigurationStatus.Disabled, "test" );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer item changed
+            yr = layer.Items["PluginA-2"].SetStatus( ConfigurationStatus.Running );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer item removed
+            yr = layer.Items.Remove( "PluginA-2" );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Layer removed
+            yr = vm.LabState.Engine.Configuration.Layers.Remove( layer );
+            Assert.That( yr.Success );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Monitor DiscoveredInfo changes:
+            // Service added
+            var newService = vm.CreateNewService( "ServiceC" );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service name changed (White box testing)
+            var castNewService = (ServiceInfo)newService;
+            castNewService.ServiceFullName = "ServiceD";
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service generalization changed (White box testing)
+            castNewService.Generalization = vm.LabState.ServiceInfos.First( x => x.ServiceFullName == "ServiceB" );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Plugin added
+            var newPlugin = vm.CreateNewPlugin( "My New Plugin" );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Plugin name changed (White box testing)
+            var castNewPlugin = (PluginInfo)newPlugin;
+            castNewPlugin.PluginFullName = "My New Plugin With A Better Name";
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Plugin service changed (White box testing)
+            castNewPlugin.Service = castNewService;
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service reference added
+            vm.SetPluginDependency( newPlugin, newService, DependencyRequirement.Runnable );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Reference's Dependency modified (White box testing)
+            var castReference = (MockServiceReferenceInfo)castNewPlugin.ServiceReferences.First();
+            castReference.Requirement = DependencyRequirement.Running;
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Reference removed (White box testing)
+            vm.RemovePluginDependency( newPlugin, newService );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            // Service deleted
+            vm.RemoveService( newService );
+            Assert.That( vm.ChangedSinceLastSave, Is.True );
+            r = vm.SaveState( tempFilePath );
+            Assert.That( vm.ChangedSinceLastSave, Is.False );
+
+            Assert.That( vm.OpenedFilePath == tempFilePath );
+
+            File.Delete( tempFilePath );
         }
 
         internal static MainWindowViewModel CreateViewModelWithGraph001()
@@ -315,16 +439,16 @@ namespace Yodii.Lab.Tests
             Assert.That( result.Success );
 
             // Testing tests
-            foreach(var si in vm.ServiceInfos )
+            foreach( var si in vm.ServiceInfos )
             {
-                TestExtensions.AssertServiceEquivalence( si, si, true );
+                EquivalenceExtensions.AssertServiceEquivalence( si, si, true );
             }
             foreach( var pi in vm.PluginInfos )
             {
-                TestExtensions.AssertPluginEquivalence( pi, pi, true );
+                EquivalenceExtensions.AssertPluginEquivalence( pi, pi, true );
             }
 
-            TestExtensions.AssertManagerEquivalence( vm.LabState.Engine.Configuration, vm.LabState.Engine.Configuration );
+            EquivalenceExtensions.AssertManagerEquivalence( vm.LabState.Engine.Configuration, vm.LabState.Engine.Configuration );
 
             return vm;
         }

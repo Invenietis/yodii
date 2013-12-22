@@ -26,7 +26,7 @@ namespace Yodii.Engine
             _configurationStatus = s.ConfigOriginalStatus;
             _runningStatus = s.DynamicStatus;
             _configOriginalImpact = s.ConfigOriginalImpact;
-            _configSolvedImpact = s.ConfigSolvedImpact;
+            _configSolvedImpact = s.RawConfigSolvedImpact;
         }
 
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
@@ -54,8 +54,8 @@ namespace Yodii.Engine
         { 
             get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
         }
-        
-        RunningStatus IDynamicSolvedService.RunningStatus
+
+        RunningStatus IDynamicYodiiItem.RunningStatus
         {
             get
             {

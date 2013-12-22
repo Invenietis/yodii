@@ -6,9 +6,9 @@ using System.Text;
 using NUnit.Framework;
 using Yodii.Model;
 
-namespace Yodii.Lab.Tests
+namespace Yodii.Engine.Tests
 {
-    class TestExtensions
+    class EquivalenceExtensions
     {
         /// <summary>
         /// Assert equivalence between two IPluginInfo, in the context of Yodii.Lab.
@@ -118,6 +118,45 @@ namespace Yodii.Lab.Tests
                     Assert.That( b.FinalConfiguration.Items.Any( x => x.ServiceOrPluginFullName == item.ServiceOrPluginFullName && x.Status == item.Status ) );
                 }
             }
+        }
+
+        /// <summary>
+        /// Asserts that both DiscoveredInfo are equivalent.
+        /// </summary>
+        /// <param name="a">A</param>
+        /// <param name="b">B</param>
+        public static void AssertDiscoveredInfoEquivalence( IDiscoveredInfo a, IDiscoveredInfo b )
+        {
+            Assert.That( a.PluginInfos.Count == b.PluginInfos.Count );
+            Assert.That( a.ServiceInfos.Count == b.ServiceInfos.Count );
+
+            foreach( var sA in a.ServiceInfos )
+            {
+                var sB = b.ServiceInfos.First( s => sA.ServiceFullName == s.ServiceFullName );
+
+                AssertServiceEquivalence( sA, sB, true );
+            }
+
+            foreach( var pA in a.PluginInfos )
+            {
+                var pB = b.PluginInfos.First( p => pA.PluginFullName == p.PluginFullName );
+
+                AssertPluginEquivalence( pA, pB, true );
+            }
+
+            Assert.That( a.IsValid() == b.IsValid() );
+        }
+
+        /// <summary>
+        /// Asserts that both engines have equivalent static infos.
+        /// </summary>
+        /// <param name="a">A</param>
+        /// <param name="b">B</param>
+        public static void AssertEngineInfoEquivalence(IYodiiEngine a, IYodiiEngine b)
+        {
+            AssertDiscoveredInfoEquivalence( a.DiscoveredInfo, b.DiscoveredInfo );
+
+            AssertManagerEquivalence( a.Configuration, b.Configuration );
         }
     }
 }
