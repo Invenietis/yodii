@@ -7,71 +7,6 @@ using GraphX.GraphSharp.Algorithms.Layout;
 
 namespace Yodii.Lab
 {
-    class YodiiLayout : IExternalLayout<YodiiGraphVertex>
-    {
-        readonly YodiiGraphArea _graphArea;
-        readonly Dictionary<YodiiGraphVertex, Point> _vertexPositions = new Dictionary<YodiiGraphVertex, Point>();
-        IDictionary<YodiiGraphVertex, Size> _vertexSizes;
-
-        public YodiiLayout( YodiiGraphArea graphArea )
-        {
-            _graphArea = graphArea;
-        }
-        public void Compute()
-        {
-            Dictionary<YodiiGraphVertex,Point> d = null;
-            Application.Current.Dispatcher.Invoke( DispatcherPriority.Normal, new Action(() => {
-                d = _graphArea.GetVertexPositions();
-            }));
-
-
-            _vertexPositions.Clear();
-
-            foreach( var v in _vertexSizes )
-            {
-
-                Point currentPoint;
-                if( d.TryGetValue( v.Key, out currentPoint ) )
-                { // Update by index: TODO
-                    if( Double.IsNaN(currentPoint.X) || Double.IsNaN(currentPoint.Y))
-                    {
-                        _vertexPositions.Add( v.Key, new Point( 0, 0 ) );
-
-
-                    }
-                    else
-                    {
-                        _vertexPositions.Add( v.Key, currentPoint );
-                    }
-                } else {
-                    _vertexPositions.Add( v.Key, new Point(0,0));
-                }
-            }
-        }
-
-        public bool NeedVertexSizes
-        {
-            get { return true; }
-        }
-
-        public System.Collections.Generic.IDictionary<YodiiGraphVertex, Point> VertexPositions
-        {
-            get { return _vertexPositions; }
-        }
-
-        public System.Collections.Generic.IDictionary<YodiiGraphVertex, Size> VertexSizes
-        {
-            get
-            {
-                return _vertexSizes;
-            }
-            set
-            {
-                _vertexSizes = value;
-            }
-        }
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -218,19 +153,19 @@ namespace Yodii.Lab
             }
             else if( e.RequestType == GraphGenerationRequestType.RegenerateGraph )
             {
-                try
-                {
+                //try
+                //{
                     this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-                }
-                catch( Exception ex )
-                {
-                    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
-                        "Error while generating graph",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error, MessageBoxResult.OK );
+                //}
+                //catch( Exception ex )
+                //{
+                //    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
+                //        "Error while generating graph",
+                //        MessageBoxButton.OK,
+                //        MessageBoxImage.Error, MessageBoxResult.OK );
 
-                    ResetGraphToDefaultState();
-                }
+                //    ResetGraphToDefaultState();
+                //}
             }
 
         }

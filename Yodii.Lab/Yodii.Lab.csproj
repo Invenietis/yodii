@@ -166,6 +166,7 @@
     <Compile Include="Utils\ViewModelBase.cs" />
     <Compile Include="VertexPropertiesTemplateSelector.cs" />
     <Compile Include="XmlSerializingUtils\LabXmlSerialization.cs" />
+    <Compile Include="YodiiLayout.cs" />
     <Page Include="AddPluginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
