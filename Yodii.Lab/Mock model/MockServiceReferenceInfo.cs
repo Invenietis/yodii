@@ -9,8 +9,11 @@ using Yodii.Model;
 
 namespace Yodii.Lab.Mocks
 {
+    /// <summary>
+    /// Mock IServiceReferenceInfo.
+    /// </summary>
     [DebuggerDisplay( "=> {Reference.ServiceFullName} ({Requirement})" )]
-    internal class MockServiceReferenceInfo : ViewModelBase, IServiceReferenceInfo
+    public class MockServiceReferenceInfo : ViewModelBase, IServiceReferenceInfo
     {
         readonly PluginInfo _owner;
         readonly ServiceInfo _reference;
@@ -32,11 +35,18 @@ namespace Yodii.Lab.Mocks
         {
             get { return _owner; }
         }
+
+        /// <summary>
+        /// Plugin owner.
+        /// </summary>
         public PluginInfo Owner
         {
             get { return _owner; }
         }
 
+        /// <summary>
+        /// Service ref.
+        /// </summary>
         public IServiceInfo Reference
         {
             get { return _reference; }
@@ -47,6 +57,9 @@ namespace Yodii.Lab.Mocks
             get { return _requirement; }
         }
 
+        /// <summary>
+        /// Requirement.
+        /// </summary>
         public DependencyRequirement Requirement
         {
             get { return _requirement; }
@@ -60,16 +73,25 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public string ConstructorParameterOrPropertyName
         {
             get { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public int ConstructorParameterIndex
         {
             get { throw new NotImplementedException(); }
         }
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public bool IsIServiceWrapped
         {
             get { throw new NotImplementedException(); }
@@ -78,6 +100,9 @@ namespace Yodii.Lab.Mocks
         #endregion
 
 
+        /// <summary>
+        /// Not implemented.
+        /// </summary>
         public string ConstructorParmeterOrPropertyName
         {
             get { throw new NotImplementedException(); }
