@@ -10,7 +10,7 @@
     xmlns:local="clr-namespace:Yodii.Lab"
     mc:Ignorable="d"
     x:Name="VertexControlRoot"
-    d:DesignHeight="2000"
+    d:DesignHeight="100"
     d:DesignWidth="200">
     <UserControl.Resources>
         <local:EnumToBooleanConverter
@@ -318,28 +318,28 @@
                         Value="RunningLocked">
                         <Setter
                             Property="Background"
-                            Value="#FF002200" />
+                            Value="#FF005500" />
                     </DataTrigger>
                     <DataTrigger
                         Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
                         Value="Running">
                         <Setter
                             Property="Background"
-                            Value="#FF002200" />
+                            Value="#FF005500" />
                     </DataTrigger>
                     <DataTrigger
                         Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
                         Value="Stopped">
                         <Setter
                             Property="Background"
-                            Value="#FF220000" />
+                            Value="#FF550000" />
                     </DataTrigger>
                     <DataTrigger
                         Binding="{Binding Path=LiveObject.RunningStatus, Mode=OneWay}"
                         Value="Disabled">
                         <Setter
                             Property="Background"
-                            Value="#FF220000" />
+                            Value="#FF550000" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
