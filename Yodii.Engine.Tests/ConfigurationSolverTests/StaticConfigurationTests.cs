@@ -1131,17 +1131,17 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
-        public void ValidRunnableTryStartReference()
+        public void UnvalidRunnableTryStartReference()
         {
             // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableTryStartReference.png
-            var e = CreateValidRunnableTryStartReference();
+            var e = CreateUnvalidRunnableTryStartReference();
             e.FullStaticResolutionOnly( res =>
             {
-                res.CheckSuccess();
+                Assert.That( res.StaticFailureResult, Is.Not.Null );
             } );
         }
 
-        internal static YodiiEngine CreateValidRunnableTryStartReference()
+        internal static YodiiEngine CreateUnvalidRunnableTryStartReference()
         {
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph008() );
