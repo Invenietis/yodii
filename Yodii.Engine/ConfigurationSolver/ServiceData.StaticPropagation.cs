@@ -54,7 +54,7 @@ namespace Yodii.Engine
                 else
                 {
                     StartDependencyImpact impact = Service.ConfigSolvedImpact;
-                    if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal; 
+                    Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 ); 
 
                     foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                     {
@@ -94,7 +94,8 @@ namespace Yodii.Engine
         {
             get 
             { 
-                return FinalConfigSolvedStatus <= ConfigurationStatus.Runnable 
+                return Disabled
+                        || ConfigSolvedStatus == ConfigurationStatus.Optional
                         || !Family.AllPluginsHaveBeenAdded 
                         || Family.RunningPlugin != null 
                         || (Family.RunningService != null && this.IsStrictGeneralizationOf( Family.RunningService )); 

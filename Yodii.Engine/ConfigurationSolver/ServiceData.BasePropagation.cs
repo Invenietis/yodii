@@ -14,16 +14,16 @@ namespace Yodii.Engine
     {
         internal abstract class BasePropagation
         {
-            readonly HashSet<ServiceData>[] _inclServices;
-            readonly HashSet<ServiceData>[] _exclServices;
+            readonly IEnumerable<ServiceData>[] _inclServices;
+            readonly IEnumerable<ServiceData>[] _exclServices;
             PluginData _theOnlyPlugin;
             int _nbAvailablePlugins;
 
             protected BasePropagation( ServiceData s )
             {
                 Service = s;
-                _inclServices = new HashSet<ServiceData>[10];
-                _exclServices = new HashSet<ServiceData>[5];
+                _inclServices = new IEnumerable<ServiceData>[10];
+                _exclServices = new IEnumerable<ServiceData>[5];
                 _nbAvailablePlugins = -1;
             }
 
@@ -36,11 +36,11 @@ namespace Yodii.Engine
                 _nbAvailablePlugins = -1;
             }
 
-            static void Copy( HashSet<ServiceData>[] source, HashSet<ServiceData>[] dest )
+            static void Copy( IEnumerable<ServiceData>[] source, IEnumerable<ServiceData>[] dest )
             {
                 for( int i = 0; i < source.Length; ++i )
                 {
-                    dest[i] = source[i] != null ? new HashSet<ServiceData>( source[i] ) : null;
+                    dest[i] = source[i] != null ? source[i].ToReadOnlyList() : null;
                 }
             }
 
@@ -102,9 +102,10 @@ namespace Yodii.Engine
             public IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact )
             {
                 if( _theOnlyPlugin != null ) return _theOnlyPlugin.GetExcludedServices( impact );
-                HashSet<ServiceData> excl = _exclServices[(int)impact - 1];
-                if( excl == null )
+                IEnumerable<ServiceData> exclExist = _exclServices[(int)impact - 1];
+                if( exclExist == null )
                 {
+                    HashSet<ServiceData> excl = null;
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
@@ -126,9 +127,9 @@ namespace Yodii.Engine
                         }
                         p = p.NextPluginForService;
                     }
-                    _exclServices[(int)impact - 1] = excl;
+                    _exclServices[(int)impact - 1] = exclExist = excl ?? Enumerable.Empty<ServiceData>();
                 }
-                return excl;
+                return exclExist;
             }
 
             public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
@@ -138,10 +139,11 @@ namespace Yodii.Engine
                 int iImpact = (int)impact;
                 if( forRunnableStatus ) iImpact *= 2;
                 --iImpact;
-                
-                HashSet<ServiceData> incl = _inclServices[iImpact];
-                if( incl == null )
+
+                IEnumerable<ServiceData> inclExist = _inclServices[iImpact];
+                if( inclExist == null )
                 {
+                    HashSet<ServiceData> incl = null;
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
@@ -163,9 +165,9 @@ namespace Yodii.Engine
                         }
                         p = p.NextPluginForService;
                     }
-                    _inclServices[iImpact] = incl;
+                    _inclServices[iImpact] = inclExist = incl ?? Service.InheritedServicesWithThis;
                 }
-                return incl;
+                return inclExist;
             }
         }        
     }

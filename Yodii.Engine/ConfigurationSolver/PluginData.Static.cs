@@ -66,13 +66,13 @@ namespace Yodii.Engine
                 if( sRef.Requirement >= DependencyRequirement.Runnable )
                 {
                     // If the required service is already disabled, we immediately disable this plugin.
-                    if( sRef.Reference.HasError )
+                    if( sRef.Reference.HasError && !Disabled )
                     {
                         SetDisabled( PluginDisabledReason.RunnableReferenceServiceIsOnError );
                         break;
                     }
                     ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                    if( sr.Disabled )
+                    if( sr.Disabled && !Disabled)
                     {
                         SetDisabled( PluginDisabledReason.RunnableReferenceIsDisabled );
                         break;
@@ -267,13 +267,7 @@ namespace Yodii.Engine
         {
             if( _runningIncludedServices == null )
             {
-                var running = new HashSet<ServiceData>();
-                var g = Service;
-                while( g != null )
-                {
-                    running.Add( g );
-                    g = g.Generalization;
-                }
+                var running = Service != null ? new HashSet<ServiceData>( Service.InheritedServicesWithThis ) : new HashSet<ServiceData>();
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
                     if( sRef.Requirement == DependencyRequirement.Running ) running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
