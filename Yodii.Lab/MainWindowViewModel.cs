@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -17,6 +18,10 @@ using Yodii.Lab.Mocks;
 using Yodii.Lab.Utils;
 using Yodii.Model;
 
+using System.Xml.Serialization;
+using System.Text.RegularExpressions;
+using System.Collections.Specialized;
+using System.Globalization;
 namespace Yodii.Lab
 {
     /// <summary>
@@ -29,10 +34,14 @@ namespace Yodii.Lab
         /// </summary>
         internal event EventHandler<NotificationEventArgs> NewNotification;
 
+        internal event EventHandler CloseBackstageRequest;
+
         #region Fields
 
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
+
+        readonly CKObservableSortedArrayList<RecentFile> _recentFiles;
 
         readonly ICommand _removeSelectedVertexCommand;
         readonly ICommand _toggleEngineCommand;
@@ -47,6 +56,7 @@ namespace Yodii.Lab
         readonly ICommand _revokeAllCommandsCommand;
 
         readonly ActivityMonitor _activityMonitor;
+        readonly DispatcherTimer _autosaveTimer;
 
         readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
@@ -70,6 +80,8 @@ namespace Yodii.Lab
         /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
         public MainWindowViewModel( bool loadDefaultState = false )
         {
+            _recentFiles = new CKObservableSortedArrayList<RecentFile>( ( a, b ) => DateTime.Compare( b.AccessTime, a.AccessTime ) );
+
             // Lab objects, live objects and static infos are managed in the LabStateManager.
             _labStateManager = new LabStateManager();
             _engine = _labStateManager.Engine;
@@ -102,17 +114,24 @@ namespace Yodii.Lab
             GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
             GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-            if( loadDefaultState ) LoadDefaultState();
+            LoadRecentFiles();
 
+            // Appication is only available on WPF context.
             if( Application.Current != null )
             {
-                DispatcherTimer autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
-
-                autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
-                autosaveTimer.Tick += AutosaveTick;
-
-                autosaveTimer.Start();
+                _autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
             }
+            else
+            {
+                _autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Dispatcher.CurrentDispatcher );
+            }
+
+            _autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
+            _autosaveTimer.Tick += AutosaveTick;
+
+            // Autosave timer is started from outside, using StartAutosaveTimer().
+
+            if( loadDefaultState ) LoadDefaultState();
         }
 
         private void LoadDefaultState()
@@ -122,6 +141,77 @@ namespace Yodii.Lab
 
             LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
             ChangedSinceLastSave = false;
+        }
+
+        private void LoadRecentFiles()
+        {
+            _recentFiles.Clear();
+
+            StringCollection files = Properties.Settings.Default.RecentFiles;
+            foreach( string f in files )
+            {
+                var m = Regex.Match( f, @"^(.*),(\d+)$" );
+
+                Debug.Assert( m.Success, "Recent file failed to match regex" );
+
+                FileInfo file = new FileInfo( m.Groups[1].Value );
+
+                DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
+
+                var recentFile = new RecentFile( file, accessTime );
+                _recentFiles.Add( recentFile );
+            }
+        }
+
+        private void SaveRecentFiles()
+        {
+            StringCollection coll = new StringCollection();
+
+            foreach( var f in _recentFiles )
+            {
+                string dateString = f.AccessTime.ToString( "yyyyMMddHHmmss" );
+
+                string serializedString = String.Format( "{0},{1}", f.File.FullName, dateString );
+                coll.Add( serializedString );
+            }
+
+            Properties.Settings.Default.RecentFiles = coll;
+
+            Properties.Settings.Default.Save();
+
+        }
+
+        private void SaveOpenedFileAsRecentFile()
+        {
+            if( OpenedFilePath == null ) return;
+
+            FileInfo f = new FileInfo( OpenedFilePath );
+            DateTime d = DateTime.Now;
+            RemoveFileFromRecentFiles( f.FullName );
+
+            _recentFiles.Add( new RecentFile( f, d ) );
+
+            TrimRecentFiles();
+            SaveRecentFiles();
+        }
+
+        private void TrimRecentFiles()
+        {
+            while( _recentFiles.Count > 5)
+            {
+                var lastFile = _recentFiles.Last();
+
+                _recentFiles.Remove( lastFile );
+            }
+        }
+
+        private void RemoveFileFromRecentFiles( string fileFullName )
+        {
+            var existingFiles = _recentFiles.Where( x => x.File.FullName == fileFullName ).ToList();
+            foreach( var file in existingFiles )
+            {
+                _recentFiles.Remove( file );
+            }
         }
 
         #endregion Constructor
@@ -484,22 +574,47 @@ namespace Yodii.Lab
 
         private void OpenFileExecute( object param )
         {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckFileExists = true;
-            dlg.CheckPathExists = true;
-
-            Nullable<bool> result = dlg.ShowDialog();
-
-            if( result == true )
+            if( param != null && param is string )
             {
-                string filePath = dlg.FileName;
-                var r = LoadState( filePath );
-                if( !r )
+                string fileName = (string)param;
+
+                if( !File.Exists( fileName ) )
                 {
-                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                    RemoveFileFromRecentFiles( fileName );
+                    MessageBox.Show(
+                        String.Format( "File does not exist:\n{0}", fileName ),
+                        "File not found",
+                        MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
+                }
+                else
+                {
+                    var r = LoadState( fileName );
+                    if( !r )
+                    {
+                        MessageBox.Show( r.Reason, "Couldn't open file" );
+                    }
+                }
+
+            }
+            else
+            {
+                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+                dlg.DefaultExt = ".xml";
+                dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+                dlg.CheckFileExists = true;
+                dlg.CheckPathExists = true;
+
+                Nullable<bool> result = dlg.ShowDialog();
+
+                if( result == true )
+                {
+                    string filePath = dlg.FileName;
+                    var r = LoadState( filePath );
+                    if( !r )
+                    {
+                        MessageBox.Show( r.Reason, "Couldn't open file" );
+                    }
                 }
             }
         }
@@ -570,6 +685,8 @@ namespace Yodii.Lab
                 LabState.ClearState();
                 ChangedSinceLastSave = true;
             }
+
+            RaiseCloseBackstageRequest();
         }
 
         private bool CanRevokeAllCommands( object obj )
@@ -806,6 +923,12 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Recent files.
+        /// </summary>
+        public CKObservableSortedArrayList<RecentFile> RecentFiles
+        { get { return _recentFiles; } }
+
+        /// <summary>
         /// Command to remove a vertex that was selected beforehand.
         /// </summary>
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
@@ -852,6 +975,23 @@ namespace Yodii.Lab
         #endregion Properties
 
         #region Public methods
+
+        /// <summary>
+        /// Starts the autosave timer.
+        /// </summary>
+        public void StartAutosaveTimer()
+        {
+            _autosaveTimer.Start();
+        }
+
+        /// <summary>
+        /// Stops the autosave timer.
+        /// </summary>
+        public void StopAutosaveTimer()
+        {
+            _autosaveTimer.Stop();
+        }
+
         /// <summary>
         /// Creates a new named service, which does not specialize another service.
         /// </summary>
@@ -1017,10 +1157,14 @@ namespace Yodii.Lab
 
                 ChangedSinceLastSave = false;
                 OpenedFilePath = filePath;
+
+                SaveOpenedFileAsRecentFile();
+                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( true );
             }
             catch( Exception ex )
             {
+                throw ex;
                 // TODO: Detailed exceptions
 
                 string reason = ex.ToString();
@@ -1032,7 +1176,7 @@ namespace Yodii.Lab
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
             }
-
+            RaiseCloseBackstageRequest();
             return new DetailedOperationResult( false );
         }
 
@@ -1064,8 +1208,11 @@ namespace Yodii.Lab
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {
+                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( false, e.Message );
             }
+
+            RaiseCloseBackstageRequest();
 
             RaiseNewNotification( new Notification() { Title = "Saved state", Message = filePath } );
             return new DetailedOperationResult( true );
@@ -1128,9 +1275,9 @@ namespace Yodii.Lab
                 OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
             }
 
-            using( StringReader sr = new StringReader(Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents))
+            using( StringReader sr = new StringReader( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents ) )
             {
-                using( XmlReader r = XmlReader.Create(sr))
+                using( XmlReader r = XmlReader.Create( sr ) )
                 {
                     try
                     {
@@ -1209,7 +1356,7 @@ namespace Yodii.Lab
             }
 
             Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = xmlString;
-            if( String.IsNullOrWhiteSpace(OpenedFilePath))
+            if( String.IsNullOrWhiteSpace( OpenedFilePath ) )
             {
                 Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
             }
@@ -1345,6 +1492,79 @@ namespace Yodii.Lab
             RaiseNewNotification( n );
         }
 
+        private void RaiseCloseBackstageRequest()
+        {
+            if( CloseBackstageRequest != null )
+            {
+                CloseBackstageRequest( this, new EventArgs() );
+            }
+        }
+
         #endregion Private methods
+    }
+
+    /// <summary>
+    /// Recent file. Used in ribbon backstage.
+    /// </summary>
+    [Serializable]
+    public class RecentFile
+    {
+        readonly DateTime _accessTime;
+        readonly FileInfo _file;
+
+        /// <summary>
+        /// Instanciates a new recent file.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="accessTime"></param>
+        public RecentFile( FileInfo info, DateTime accessTime )
+        {
+            _file = info;
+            _accessTime = accessTime;
+        }
+
+        /// <summary>
+        /// File name.
+        /// </summary>
+        public string FileName
+        {
+            get
+            {
+                return _file.Name;
+            }
+        }
+
+        /// <summary>
+        /// Directory.
+        /// </summary>
+        public string Directory
+        {
+            get
+            {
+                return _file.DirectoryName;
+            }
+        }
+
+        /// <summary>
+        /// Access time
+        /// </summary>
+        public DateTime AccessTime
+        {
+            get
+            {
+                return _accessTime;
+            }
+        }
+
+        /// <summary>
+        /// File info
+        /// </summary>
+        public FileInfo File
+        {
+            get
+            {
+                return _file;
+            }
+        }
     }
 }

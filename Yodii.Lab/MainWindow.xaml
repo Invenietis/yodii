@@ -5,12 +5,14 @@
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:GraphX="clr-namespace:GraphX;assembly=CK.GraphX"
     xmlns:gxc="clr-namespace:GraphX.Controls;assembly=CK.GraphX"
+    xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:local="clr-namespace:Yodii.Lab"
     xmlns:mocks="clr-namespace:Yodii.Lab.Mocks"
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     WindowStartupLocation="CenterScreen"
+    Icon="/Yodii.Lab;component/Icons/class_32xLG.png"
     x:Name="MainWindowRoot"
     Title="{Binding Path=WindowTitle, FallbackValue=Yodii.Lab}"
     Height="600"
@@ -56,43 +58,175 @@
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon
+            CanQuickAccessLocationChanging="False"
+            ShowQuickAccessToolBarAboveRibbon="True"
             DockPanel.Dock="Top">
             <Fluent:Ribbon.QuickAccessItems>
                 <Fluent:QuickAccessMenuItem
                     Header="Save"
-                    Command="{Binding Path=SaveAsFileCommand}" />
+                    Command="{Binding Path=SaveCommand}" />
             </Fluent:Ribbon.QuickAccessItems>
+            <!--Backstage-->
+            <Fluent:Ribbon.Menu>
+                <Fluent:Backstage
+                    x:Name="RibbonBackstage"
+                    Header="File">
+                    <Fluent:BackstageTabControl>
+                        <Fluent:BackstageTabItem
+                            Header="New">
+                            <Grid
+                                Margin="20"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top">
+                                <Button
+                                    Width="100pt"
+                                    Height="100pt"
+                                    Command="{Binding Path=NewFileCommand}">
+                                    <DockPanel>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">New file</TextBlock>
+                                        <Viewbox
+                                            Stretch="UniformToFill"
+                                            Child="{StaticResource NewFileIcon}" />
+                                    </DockPanel>
+                                </Button>
+                            </Grid>
+                        </Fluent:BackstageTabItem>
+                        <Fluent:BackstageTabItem
+                            Header="Open">
+                            <Grid
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition
+                                        Width="Auto" />
+                                    <ColumnDefinition
+                                        Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Left"
+                                    Margin="20"
+                                    Width="100pt"
+                                    Height="100pt"
+                                    Command="{Binding Path=OpenFileCommand}">
+                                    <DockPanel>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">Open file</TextBlock>
+                                        <Viewbox
+                                            Stretch="UniformToFill"
+                                            Child="{StaticResource FolderOpenIcon}" />
+                                    </DockPanel>
+                                </Button>
+                                <ScrollViewer
+                                    Grid.Column="1"
+                                    VerticalScrollBarVisibility="Auto">
+                                    <StackPanel
+                                        Margin="20">
+                                        <TextBlock
+                                            FontWeight="Bold"
+                                            Margin="0,0,0,5pt">Recently opened files</TextBlock>
+                                        <Rectangle
+                                            Fill="DarkGray"
+                                            Height="1pt"
+                                            Margin="0,0,0,5pt"
+                                            HorizontalAlignment="Stretch" />
+                                        <ItemsControl
+                                            ItemsSource="{Binding Path=RecentFiles}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        Padding="5pt"
+                                                        Margin="5pt"
+                                                        BorderBrush="Black"
+                                                        BorderThickness="1">
+                                                        <StackPanel>
+                                                            <TextBlock
+                                                                Foreground="Black"
+                                                                FontWeight="Bold"
+                                                                FontSize="12pt"
+                                                                Text="{Binding Path=FileName}" />
+                                                            <TextBlock
+                                                                Foreground="#FF111111"
+                                                                Text="{Binding Path=Directory}" />
+                                                        </StackPanel>
+
+                                                        <Border.Style>
+                                                            <Style
+                                                                TargetType="Border">
+                                                                <Setter
+                                                                    Property="Background"
+                                                                    Value="#FFDDDDDD" />
+
+                                                                <Style.Triggers>
+                                                                    <DataTrigger
+                                                                        Binding="{Binding Path=IsMouseOver, RelativeSource={RelativeSource Self}}"
+                                                                        Value="true">
+                                                                        <Setter
+                                                                            Property="Background"
+                                                                            Value="#FFEEEEEE" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <ei:Interaction.Triggers>
+                                                            <ei:EventTrigger
+                                                                EventName="MouseLeftButtonDown">
+                                                                <ei:InvokeCommandAction
+                                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.OpenFileCommand}"
+                                                                    CommandParameter="{Binding Path=File.FullName}" />
+                                                            </ei:EventTrigger>
+                                                        </ei:Interaction.Triggers>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Fluent:BackstageTabItem>
+                        <Fluent:BackstageTabItem
+                            Header="Save">
+                            <Grid
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Button
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Left"
+                                    Margin="20"
+                                    Width="100pt"
+                                    Height="100pt"
+                                    Command="{Binding Path=SaveAsFileCommand}">
+                                    <DockPanel>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">Save as...</TextBlock>
+                                        <Viewbox
+                                            Stretch="UniformToFill"
+                                            Child="{StaticResource DiskIcon}" />
+                                    </DockPanel>
+                                </Button>
+                            </Grid>
+                        </Fluent:BackstageTabItem>
+                    </Fluent:BackstageTabControl>
+                </Fluent:Backstage>
+            </Fluent:Ribbon.Menu>
             <!--Tabs-->
             <Fluent:RibbonTabItem
                 Header="Home">
                 <Fluent:RibbonGroupBox
                     Header="File">
                     <Fluent:Button
-                        Header="New"
-                        Command="{Binding Path=NewFileCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource NewFileIcon}" />
-                        </Fluent:Button.LargeIcon>
-                    </Fluent:Button>
-                    <Fluent:Button
-                        Header="Open"
-                        Command="{Binding Path=OpenFileCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource FolderOpenIcon}" />
-                        </Fluent:Button.LargeIcon>
-                    </Fluent:Button>
-                    <Fluent:Button
-                        Header="Save as"
-                        Command="{Binding Path=SaveAsFileCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource DiskIcon}" />
-                        </Fluent:Button.LargeIcon>
+                        Header="Save"
+                        Command="{Binding Path=SaveCommand}">
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
@@ -488,9 +622,10 @@
                             <Button
                                 DockPanel.Dock="Right"
                                 Command="{Binding Path=RevokeAllCommandsCommand}">Revoke all</Button>
-                            <TextBlock VerticalAlignment="Center"
-                                       HorizontalAlignment="Left"
-                                       TextTrimming="CharacterEllipsis">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                TextTrimming="CharacterEllipsis">
                                 <Run
                                     Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.
                             </TextBlock>

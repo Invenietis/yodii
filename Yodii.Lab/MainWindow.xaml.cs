@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Threading;
 using GraphX;
+using GraphX.GraphSharp.Algorithms.Layout;
 
 namespace Yodii.Lab
 {
@@ -16,10 +19,12 @@ namespace Yodii.Lab
         /// </summary>
         public MainWindow()
         {
-            _vm = new MainWindowViewModel(false);
+            _vm = new MainWindowViewModel( false );
             this.DataContext = _vm;
 
             _vm.NewNotification += _vm_NewNotification;
+            _vm.CloseBackstageRequest += _vm_CloseBackstageRequest;
+
             InitializeComponent();
 
             GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
@@ -40,18 +45,26 @@ namespace Yodii.Lab
             _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
 
-            GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
-            GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
+            //GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
+            //GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
+            GraphArea.ExternalLayoutAlgorithm = new YodiiLayout( GraphArea );
 
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
         }
 
+        void _vm_CloseBackstageRequest( object sender, EventArgs e )
+        {
+            if( RibbonBackstage != null ) RibbonBackstage.IsOpen = false;
+        }
+
         void MainWindow_Closing( object sender, System.ComponentModel.CancelEventArgs e )
         {
-            if( !_vm.SaveBeforeClosingFile())
+            _vm.StopAutosaveTimer();
+            if( !_vm.SaveBeforeClosingFile() )
             {
                 e.Cancel = true;
+                _vm.StartAutosaveTimer();
             }
             else
             {
@@ -90,6 +103,8 @@ namespace Yodii.Lab
                     _vm.ClearAutosave();
                 }
             }
+
+            _vm.StartAutosaveTimer();
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )
@@ -131,35 +146,37 @@ namespace Yodii.Lab
                 GraphArea.DefaultLayoutAlgorithmParams = e.AlgorithmParameters;
             }
 
-            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
+            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph )
             {
                 try
                 {
                     this.GraphArea.RelayoutGraph();
-                } catch( Exception ex )
+                }
+                catch( Exception ex )
                 {
-                    MessageBox.Show( String.Format("An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace),
+                    MessageBox.Show( String.Format( "An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
                         "Error while updating layout",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error, MessageBoxResult.OK );
 
                     ResetGraphToDefaultState();
                 }
-            } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
+            }
+            else if( e.RequestType == GraphGenerationRequestType.RegenerateGraph )
             {
-                try
-                {
-                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-                }
-                catch( Exception ex )
-                {
-                    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
-                        "Error while generating graph",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error, MessageBoxResult.OK );
+                //try
+                //{
+                this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                //}
+                //catch( Exception ex )
+                //{
+                //    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
+                //        "Error while generating graph",
+                //        MessageBoxButton.OK,
+                //        MessageBoxImage.Error, MessageBoxResult.OK );
 
-                    ResetGraphToDefaultState();
-                }
+                //    ResetGraphToDefaultState();
+                //}
             }
 
         }
