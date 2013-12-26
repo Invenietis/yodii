@@ -151,6 +151,7 @@
     <Compile Include="Utils\IntegerToBoolConverter.cs" />
     <Compile Include="Utils\IntegerToVisibilityConverter.cs" />
     <Compile Include="Utils\InverseBooleanConverter.cs" />
+    <Compile Include="Utils\NullToVisibilityValueConverter.cs" />
     <Compile Include="Utils\ServiceOrPluginIdToDescriptionConverter.cs" />
     <Compile Include="Utils\EnumToBooleanConverter.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />

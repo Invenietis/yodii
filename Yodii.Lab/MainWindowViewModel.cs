@@ -38,6 +38,16 @@ namespace Yodii.Lab
 
         #region Fields
 
+        /// <summary>
+        /// Image URI for Plugin Running notifications.
+        /// </summary>
+        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusRunning.png";
+
+        /// <summary>
+        /// Image URI for Plugin Stopped notifications.
+        /// </summary>
+        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusStopped.png";
+
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
 
@@ -67,7 +77,7 @@ namespace Yodii.Lab
         ConfigurationEditorWindow _activeConfEditorWindow = null;
         bool _hideNotifications = false;
 
-        bool _changedSinceLastSave = true;
+        bool _changedSinceLastSave;
         string _lastSavePath;
 
         #endregion
@@ -134,87 +144,6 @@ namespace Yodii.Lab
             if( loadDefaultState ) LoadDefaultState();
         }
 
-        private void LoadDefaultState()
-        {
-            _labStateManager.ClearState();
-            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
-
-            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
-            ChangedSinceLastSave = false;
-        }
-
-        private void LoadRecentFiles()
-        {
-            if( Application.Current == null ) return; // Settings are not available outside app context
-            _recentFiles.Clear();
-
-            StringCollection files = Properties.Settings.Default.RecentFiles;
-            foreach( string f in files )
-            {
-                var m = Regex.Match( f, @"^(.*),(\d+)$" );
-
-                Debug.Assert( m.Success, "Recent file failed to match regex" );
-
-                FileInfo file = new FileInfo( m.Groups[1].Value );
-
-                DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
-
-                var recentFile = new RecentFile( file, accessTime );
-                _recentFiles.Add( recentFile );
-            }
-        }
-
-        private void SaveRecentFiles()
-        {
-            StringCollection coll = new StringCollection();
-
-            foreach( var f in _recentFiles )
-            {
-                string dateString = f.AccessTime.ToString( "yyyyMMddHHmmss" );
-
-                string serializedString = String.Format( "{0},{1}", f.File.FullName, dateString );
-                coll.Add( serializedString );
-            }
-
-            Properties.Settings.Default.RecentFiles = coll;
-
-            Properties.Settings.Default.Save();
-
-        }
-
-        private void SaveOpenedFileAsRecentFile()
-        {
-            if( OpenedFilePath == null ) return;
-
-            FileInfo f = new FileInfo( OpenedFilePath );
-            DateTime d = DateTime.Now;
-            RemoveFileFromRecentFiles( f.FullName );
-
-            _recentFiles.Add( new RecentFile( f, d ) );
-
-            TrimRecentFiles();
-            SaveRecentFiles();
-        }
-
-        private void TrimRecentFiles()
-        {
-            while( _recentFiles.Count > 5)
-            {
-                var lastFile = _recentFiles.Last();
-
-                _recentFiles.Remove( lastFile );
-            }
-        }
-
-        private void RemoveFileFromRecentFiles( string fileFullName )
-        {
-            var existingFiles = _recentFiles.Where( x => x.File.FullName == fileFullName ).ToList();
-            foreach( var file in existingFiles )
-            {
-                _recentFiles.Remove( file );
-            }
-        }
-
         #endregion Constructor
 
         #region Event handlers
@@ -279,8 +208,9 @@ namespace Yodii.Lab
                     foreach( var i in e.NewItems )
                     {
                         IPluginInfo p = (IPluginInfo)i;
-                        RaiseNewNotification( "Plugin running",
-                            String.Format( "Plugin '{0}' is now running.", p.PluginFullName )
+                        RaiseNewNotification( @"Plugin running",
+                            String.Format( @"Plugin '{0}' is now running.", p.PluginFullName ),
+                            RUNNING_NOTIFICATION_IMAGE_URI
                             );
                     }
                     break;
@@ -288,8 +218,9 @@ namespace Yodii.Lab
                     foreach( var i in e.OldItems )
                     {
                         IPluginInfo p = (IPluginInfo)i;
-                        RaiseNewNotification( "Plugin stopped",
-                            String.Format( "Plugin '{0}' has been stopped.", p.PluginFullName )
+                        RaiseNewNotification( @"Plugin stopped",
+                            String.Format( @"Plugin '{0}' has been stopped.", p.PluginFullName ),
+                            STOPPED_NOTIFICATION_IMAGE_URI
                             );
                     }
                     break;
@@ -684,7 +615,7 @@ namespace Yodii.Lab
             {
                 OpenedFilePath = null;
                 LabState.ClearState();
-                ChangedSinceLastSave = true;
+                ChangedSinceLastSave = false;
             }
 
             RaiseCloseBackstageRequest();
@@ -977,6 +908,89 @@ namespace Yodii.Lab
 
         #region Public methods
 
+        public bool SaveBeforeClosingFile()
+        {
+            if( ChangedSinceLastSave )
+            {
+                var result = MessageBox.Show( "Save changes?\nUnsaved data will be lost if you press No.", "Save file", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel );
+                if( result == MessageBoxResult.Cancel ) return false;
+
+                if( result == MessageBoxResult.Yes )
+                {
+                    return Save();
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Whether the Lab has an auto-saved state.
+        /// </summary>
+        /// <returns>True if there is an auto-saved state.</returns>
+        public bool HasAutosave()
+        {
+            return !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents );
+        }
+
+        /// <summary>
+        /// Load autosaved state, if present.
+        /// </summary>
+        public void LoadAutosave()
+        {
+            if( !HasAutosave() ) return;
+            OpenedFilePath = null;
+            LabState.ClearState();
+
+            if( !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath ) )
+            {
+                OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
+            }
+
+            using( StringReader sr = new StringReader( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents ) )
+            {
+                using( XmlReader r = XmlReader.Create( sr ) )
+                {
+                    try
+                    {
+                        _hideNotifications = true;
+                        Graph.LockGraphUpdates = true;
+                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+                        Graph.LockGraphUpdates = false;
+                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                        _hideNotifications = false;
+                        RaiseNewNotification( "Autosave loaded", OpenedFilePath );
+                    }
+                    catch( Exception ex )
+                    {
+                        MessageBox.Show(
+                            String.Format( "Load from autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
+                            "Loading failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error,
+                            MessageBoxResult.OK
+                            );
+
+                    }
+                    finally
+                    {
+                        _hideNotifications = false;
+                        Graph.LockGraphUpdates = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove any existing autosave.
+        /// </summary>
+        public void ClearAutosave()
+        {
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = String.Empty;
+
+            Yodii.Lab.Properties.Settings.Default.Save();
+        }
+
         /// <summary>
         /// Starts the autosave timer.
         /// </summary>
@@ -1253,73 +1267,6 @@ namespace Yodii.Lab
 
         #region Private methods
 
-        /// <summary>
-        /// Whether the Lab has an auto-saved state.
-        /// </summary>
-        /// <returns>True if there is an auto-saved state.</returns>
-        public bool HasAutosave()
-        {
-            return !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents );
-        }
-
-        /// <summary>
-        /// Load autosaved state, if present.
-        /// </summary>
-        public void LoadAutosave()
-        {
-            if( !HasAutosave() ) return;
-            OpenedFilePath = null;
-            LabState.ClearState();
-
-            if( !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath ) )
-            {
-                OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
-            }
-
-            using( StringReader sr = new StringReader( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents ) )
-            {
-                using( XmlReader r = XmlReader.Create( sr ) )
-                {
-                    try
-                    {
-                        _hideNotifications = true;
-                        Graph.LockGraphUpdates = true;
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
-                        Graph.LockGraphUpdates = false;
-                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
-                        _hideNotifications = false;
-                        RaiseNewNotification( "Autosave loaded", OpenedFilePath );
-                    }
-                    catch( Exception ex )
-                    {
-                        MessageBox.Show(
-                            String.Format( "Load from autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
-                            "Loading failed",
-                            MessageBoxButton.OK, MessageBoxImage.Error,
-                            MessageBoxResult.OK
-                            );
-
-                    }
-                    finally
-                    {
-                        _hideNotifications = false;
-                        Graph.LockGraphUpdates = false;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Remove any existing autosave.
-        /// </summary>
-        public void ClearAutosave()
-        {
-            Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
-            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = String.Empty;
-
-            Yodii.Lab.Properties.Settings.Default.Save();
-        }
-
         private void AutosaveTick( object sender, EventArgs e )
         {
             Autosave();
@@ -1373,22 +1320,6 @@ namespace Yodii.Lab
         /// In case the file changed, attempts to save the last file.
         /// </summary>
         /// <returns>True if save was successful. False if save failed, or was cancelled.</returns>
-        public bool SaveBeforeClosingFile()
-        {
-            if( ChangedSinceLastSave )
-            {
-                var result = MessageBox.Show( "Save changes?\nUnsaved data will be lost if you press No.", "Save file", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel );
-                if( result == MessageBoxResult.Cancel ) return false;
-
-                if( result == MessageBoxResult.Yes )
-                {
-                    return Save();
-                }
-            }
-
-            return true;
-        }
-
         private bool Save()
         {
             if( !String.IsNullOrWhiteSpace( OpenedFilePath ) )
@@ -1482,12 +1413,13 @@ namespace Yodii.Lab
             }
         }
 
-        private void RaiseNewNotification( string title = "Notification", string message = "" )
+        private void RaiseNewNotification( string title = "Notification", string message = "", string imageUri = null )
         {
             Notification n = new Notification()
             {
                 Title = title,
-                Message = message
+                Message = message,
+                ImageUrl = imageUri
             };
 
             RaiseNewNotification( n );
@@ -1498,6 +1430,87 @@ namespace Yodii.Lab
             if( CloseBackstageRequest != null )
             {
                 CloseBackstageRequest( this, new EventArgs() );
+            }
+        }
+
+        private void LoadDefaultState()
+        {
+            _labStateManager.ClearState();
+            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
+
+            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+            ChangedSinceLastSave = false;
+        }
+
+        private void LoadRecentFiles()
+        {
+            if( Application.Current == null ) return; // Settings are not available outside app context
+            _recentFiles.Clear();
+
+            StringCollection files = Properties.Settings.Default.RecentFiles;
+            foreach( string f in files )
+            {
+                var m = Regex.Match( f, @"^(.*),(\d+)$" );
+
+                Debug.Assert( m.Success, "Recent file failed to match regex" );
+
+                FileInfo file = new FileInfo( m.Groups[1].Value );
+
+                DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
+
+                var recentFile = new RecentFile( file, accessTime );
+                _recentFiles.Add( recentFile );
+            }
+        }
+
+        private void SaveRecentFiles()
+        {
+            StringCollection coll = new StringCollection();
+
+            foreach( var f in _recentFiles )
+            {
+                string dateString = f.AccessTime.ToString( "yyyyMMddHHmmss" );
+
+                string serializedString = String.Format( "{0},{1}", f.File.FullName, dateString );
+                coll.Add( serializedString );
+            }
+
+            Properties.Settings.Default.RecentFiles = coll;
+
+            Properties.Settings.Default.Save();
+
+        }
+
+        private void SaveOpenedFileAsRecentFile()
+        {
+            if( OpenedFilePath == null ) return;
+
+            FileInfo f = new FileInfo( OpenedFilePath );
+            DateTime d = DateTime.Now;
+            RemoveFileFromRecentFiles( f.FullName );
+
+            _recentFiles.Add( new RecentFile( f, d ) );
+
+            TrimRecentFiles();
+            SaveRecentFiles();
+        }
+
+        private void TrimRecentFiles()
+        {
+            while( _recentFiles.Count > 5 )
+            {
+                var lastFile = _recentFiles.Last();
+
+                _recentFiles.Remove( lastFile );
+            }
+        }
+
+        private void RemoveFileFromRecentFiles( string fileFullName )
+        {
+            var existingFiles = _recentFiles.Where( x => x.File.FullName == fileFullName ).ToList();
+            foreach( var file in existingFiles )
+            {
+                _recentFiles.Remove( file );
             }
         }
 
