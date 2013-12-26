@@ -10,6 +10,7 @@ namespace Yodii.Engine
 {   
     internal partial class ServiceData
     {
+        ServiceData[] _inheritedServicesWithThis;
         ServiceData[] _directExcludedServices;
         ServiceDisabledReason _configDisabledReason;
         
@@ -25,7 +26,6 @@ namespace Yodii.Engine
             _backReferences = new List<BackReference>();
             ServiceInfo = s;
             ConfigOriginalStatus = serviceStatus;
-
             RawConfigSolvedImpact = ConfigOriginalImpact = impact;
             if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Generalization != null )
             {
@@ -47,6 +47,9 @@ namespace Yodii.Engine
             : this( s, serviceStatus, impact )
         {
             Family = generalization.Family;
+            _inheritedServicesWithThis = new ServiceData[generalization._inheritedServicesWithThis.Length];
+            generalization._inheritedServicesWithThis.CopyTo( _inheritedServicesWithThis, 0 );
+            _inheritedServicesWithThis[_inheritedServicesWithThis.Length - 1] = this;
             Generalization = generalization;
             NextSpecialization = Generalization.FirstSpecialization;
             Generalization.FirstSpecialization = this;
@@ -57,6 +60,7 @@ namespace Yodii.Engine
             : this( s, serviceStatus, impact )
         {
             Family = new ServiceFamily( solver, this );
+            _inheritedServicesWithThis = new ServiceData[] { this };
             Initialize();
         }
 
@@ -102,6 +106,14 @@ namespace Yodii.Engine
         public bool Disabled
         {
             get { return _configDisabledReason != ServiceDisabledReason.None; }
+        }
+
+        /// <summary>
+        /// Gets the inherited services including this one.
+        /// </summary>
+        public IEnumerable<ServiceData> InheritedServicesWithThis
+        {
+            get { return _inheritedServicesWithThis; }
         }
 
         /// <summary>
