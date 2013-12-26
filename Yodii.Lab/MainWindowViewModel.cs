@@ -145,6 +145,7 @@ namespace Yodii.Lab
 
         private void LoadRecentFiles()
         {
+            if( Application.Current == null ) return; // Settings are not available outside app context
             _recentFiles.Clear();
 
             StringCollection files = Properties.Settings.Default.RecentFiles;
