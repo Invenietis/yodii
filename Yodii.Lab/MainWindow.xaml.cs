@@ -23,6 +23,8 @@ namespace Yodii.Lab
             this.DataContext = _vm;
 
             _vm.NewNotification += _vm_NewNotification;
+            _vm.CloseBackstageRequest += _vm_CloseBackstageRequest;
+
             InitializeComponent();
 
             GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
@@ -51,11 +53,18 @@ namespace Yodii.Lab
             this.Closing += MainWindow_Closing;
         }
 
+        void _vm_CloseBackstageRequest( object sender, EventArgs e )
+        {
+            if( RibbonBackstage != null ) RibbonBackstage.IsOpen = false;
+        }
+
         void MainWindow_Closing( object sender, System.ComponentModel.CancelEventArgs e )
         {
-            if( !_vm.SaveBeforeClosingFile())
+            _vm.StopAutosaveTimer();
+            if( !_vm.SaveBeforeClosingFile() )
             {
                 e.Cancel = true;
+                _vm.StartAutosaveTimer();
             }
             else
             {
@@ -94,6 +103,8 @@ namespace Yodii.Lab
                     _vm.ClearAutosave();
                 }
             }
+
+            _vm.StartAutosaveTimer();
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )
@@ -155,7 +166,7 @@ namespace Yodii.Lab
             {
                 //try
                 //{
-                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
+                this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
                 //}
                 //catch( Exception ex )
                 //{

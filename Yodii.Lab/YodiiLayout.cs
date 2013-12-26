@@ -11,14 +11,31 @@ using CK.Core;
 
 namespace Yodii.Lab
 {
+    /// <summary>
+    /// Layout algorithm for Yodii's graph.
+    /// </summary>
     class YodiiLayout : IExternalLayout<YodiiGraphVertex>
     {
-        static readonly int HORIZONTAL_MARGIN_SIZE = 30;
-        static readonly int VERTICAL_MARGIN_SIZE = 30;
+        /// <summary>
+        /// Margin between two elements on a horizontal line.
+        /// </summary>
+        static readonly int HORIZONTAL_MARGIN_SIZE = 50;
+
+        /// <summary>
+        /// Margin between two elements on a vertical line.
+        /// </summary>
+        static readonly int VERTICAL_MARGIN_SIZE = 50;
 
         readonly YodiiGraphArea _graphArea;
 
+        /// <summary>
+        /// Output positions of the vertices.
+        /// </summary>
         readonly Dictionary<YodiiGraphVertex, Point> _vertexPositions;
+
+        /// <summary>
+        /// Input sizes of every vertex. Set by 
+        /// </summary>
         IDictionary<YodiiGraphVertex, Size> _vertexSizes;
 
         readonly CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo> _serviceVertices;
@@ -87,38 +104,27 @@ namespace Yodii.Lab
                 ComputeFamiliesSizes();
 
             } ) );
-
-            //foreach( var v in _vertexSizes )
-            //{
-            //    Point currentPoint;
-            //    if( d.TryGetValue( v.Key, out currentPoint ) )
-            //    { // Update by index: TODO
-            //        if( Double.IsNaN( currentPoint.X ) || Double.IsNaN( currentPoint.Y ) )
-            //        {
-            //            _vertexPositions.Add( v.Key, new Point( 0, 0 ) );
-            //        }
-            //        else
-            //        {
-            //            _vertexPositions.Add( v.Key, currentPoint );
-            //        }
-            //    }
-            //    else
-            //    {
-            //        _vertexPositions.Add( v.Key, new Point( 0, 0 ) );
-            //    }
-            //}
         }
 
+        /// <summary>
+        /// Whether this algorithm needs vertex sizes, and VertexSizes must be set before Compute() is called.
+        /// </summary>
         public bool NeedVertexSizes
         {
             get { return true; }
         }
 
+        /// <summary>
+        /// Output vertex positions, called after Compute() returns.
+        /// </summary>
         public System.Collections.Generic.IDictionary<YodiiGraphVertex, Point> VertexPositions
         {
             get { return _vertexPositions; }
         }
 
+        /// <summary>
+        /// Sizes of the vertices. Set before Compute() is called, when NeedVertexSizes is true.
+        /// </summary>
         public System.Collections.Generic.IDictionary<YodiiGraphVertex, Size> VertexSizes
         {
             get
@@ -131,6 +137,10 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// Splits all vertices between Plugin vertices and Service vertices,
+        /// and generate families for all services.
+        /// </summary>
         private void CreateServiceFamilies()
         {
             // Fill Static info => vertex dictionaries
@@ -167,18 +177,22 @@ namespace Yodii.Lab
             }
         }
 
+        /// <summary>
+        /// Computes sizes and positions for all service families,
+        /// after they've been filled by CreateServiceFamilies.
+        /// </summary>
         private void ComputeFamiliesSizes()
         {
-            // Start at 0, 0
+            // Positions to add the vertices on. Starts at 0,0.
             double currentX = 0;
             double currentY = 0;
 
             foreach( var family in _rootFamilies )
             {
-                // Add service family
+                // Set family at given point, set children positions, get total size
                 Size familySize = family.ComputeFamilyPosition( new Point( currentX, currentY ) );
 
-                // Next X: Size + Margin
+                // Next family will be added after a margin
                 currentX += familySize.Width + VERTICAL_MARGIN_SIZE;
             }
 
@@ -187,12 +201,19 @@ namespace Yodii.Lab
             {
                 Point pluginPoint = new Point( currentX, 0 );
 
+                // Set plugin output position
                 _vertexPositions.Add( plugin, new Point( currentX, 0 ) );
 
+                // Next orphan plugin added after a margin
                 currentX += _vertexSizes[plugin].Width + VERTICAL_MARGIN_SIZE;
             }
         }
 
+        /// <summary>
+        /// Fins or attempts to create a ServiceFamily in the local collection.
+        /// </summary>
+        /// <param name="s">Service to look up.</param>
+        /// <returns>Existing or new Service family.</returns>
         private ServiceFamily FindOrCreateServiceFamily( IServiceInfo s )
         {
             bool exists;
@@ -210,19 +231,45 @@ namespace Yodii.Lab
             return family;
         }
 
+        /// <summary>
+        /// Service family for a given service vertex.
+        /// Handles size, positioning, for itself and its children plugin/services.
+        /// </summary>
         class ServiceFamily
         {
+            // Root service info. Set in constructor.
             public readonly YodiiGraphVertex RootVertex;
             public readonly IServiceInfo RootService;
+
+            // Children plugins and services.
             public readonly Dictionary<IPluginInfo,YodiiGraphVertex> SubPlugins;
             public readonly Dictionary<IServiceInfo,ServiceFamily> SubServices;
+
+            /// <summary>
+            /// Size of the service vertex at the root of this family.
+            /// </summary>
             public readonly Size RootVertexSize;
+
+            /// <summary>
+            /// Service family of the service's Generalization, if applicable.
+            /// Can be null.
+            /// </summary>
             public readonly ServiceFamily ParentServiceFamily;
 
+            /// <summary>
+            /// Total size of the service family:
+            /// Includes the service vertex at its root, and the size of all its childrens
+            /// (in-between margins included)
+            /// </summary>
             public Size FamilySize;
 
             readonly YodiiLayout _parent;
 
+            /// <summary>
+            /// Creates a new service family, setting the given service vertex at its root.
+            /// </summary>
+            /// <param name="rootVertex">Root vertex. Must be a service vertex.</param>
+            /// <param name="parent">Parent layout. Used to query other vertice's sizes, among other things.</param>
             public ServiceFamily( YodiiGraphVertex rootVertex, YodiiLayout parent )
             {
                 SubPlugins = new Dictionary<IPluginInfo, YodiiGraphVertex>();
