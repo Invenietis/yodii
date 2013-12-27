@@ -228,7 +228,7 @@ namespace Yodii.Lab.Tests
         public void ViewModelRegistersAllChanges()
         {
             MainWindowViewModel emptyVm = new MainWindowViewModel();
-            Assert.That( emptyVm.ChangedSinceLastSave, Is.True );
+            Assert.That( emptyVm.ChangedSinceLastSave, Is.False );
             Assert.That( emptyVm.OpenedFilePath, Is.Null );
 
             MainWindowViewModel vm = CreateViewModelWithGraph001();
