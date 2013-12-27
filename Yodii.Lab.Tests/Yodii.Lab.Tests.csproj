@@ -37,7 +37,7 @@
       <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.GraphX">
-      <HintPath>..\packages\CK.GraphX.1.0.1\lib\net40\CK.GraphX.dll</HintPath>
+      <HintPath>..\packages\CK.GraphX.1.0.4\lib\net40\CK.GraphX.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>

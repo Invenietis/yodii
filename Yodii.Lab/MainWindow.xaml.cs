@@ -42,10 +42,7 @@ namespace Yodii.Lab
 
             _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
-
-            //GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
-            //GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
-            GraphArea.ExternalLayoutAlgorithm = new YodiiLayout( GraphArea );
+            GraphArea.LayoutAlgorithm = new YodiiLayout();
 
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
@@ -126,48 +123,14 @@ namespace Yodii.Lab
 
         void Graph_GraphUpdateRequested( object sender, GraphUpdateRequestEventArgs e )
         {
-            if( e.NewLayout != null )
-            {
-                GraphArea.DefaultLayoutAlgorithm = (GraphX.LayoutAlgorithmTypeEnum)e.NewLayout;
-            }
-            if( e.AlgorithmParameters != null )
-            {
-                GraphArea.DefaultLayoutAlgorithmParams = e.AlgorithmParameters;
-            }
-
             if( e.RequestType == GraphGenerationRequestType.RelayoutGraph )
             {
-                try
-                {
-                    this.GraphArea.RelayoutGraph();
-                }
-                catch( Exception ex )
-                {
-                    MessageBox.Show( String.Format( "An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
-                        "Error while updating layout",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error, MessageBoxResult.OK );
-
-                    ResetGraphToDefaultState();
-                }
+                GraphArea.RelayoutGraph();
             }
-            else if( e.RequestType == GraphGenerationRequestType.RegenerateGraph )
+            else
             {
-                //try
-                //{
-                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-                //}
-                //catch( Exception ex )
-                //{
-                //    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
-                //        "Error while generating graph",
-                //        MessageBoxButton.OK,
-                //        MessageBoxImage.Error, MessageBoxResult.OK );
-
-                //    ResetGraphToDefaultState();
-                //}
+                GraphArea.GenerateGraph( _vm.Graph, true, true, true );
             }
-
         }
 
         private void StackPanel_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
@@ -185,34 +148,9 @@ namespace Yodii.Lab
             _vm.SelectedVertex = null;
         }
 
-        private void ResetGraphToDefaultState()
-        {
-            this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
-            this.GraphArea.DefaultLayoutAlgorithmParams = null;
-
-            this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-        }
-
         private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
         {
-
-            this.GraphArea.ExportAsPNG( false );
-
-            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-
-            //dlg.DefaultExt = ".png";
-            //dlg.Filter = "PNG images (*.png)|*.png";
-            //dlg.CheckPathExists = true;
-            //dlg.OverwritePrompt = true;
-            //dlg.AddExtension = true;
-
-            //Nullable<bool> result = dlg.ShowDialog();
-
-            //if( result == true )
-            //{
-            //    string filePath = dlg.FileName;
-            //    this.GraphArea.ExportAsImage( ImageType.PNG, false, 96, 100 );
-            //}
+            GraphArea.ExportAsPNG( false );
         }
 
     }

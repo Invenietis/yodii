@@ -11,28 +11,19 @@ using CK.Core;
 
 namespace Yodii.Lab
 {
-    class YodiiLayout : IExternalLayout<YodiiGraphVertex>
+    class YodiiLayout : LayoutAlgorithmBase<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph>
     {
         static readonly int HORIZONTAL_MARGIN_SIZE = 30;
         static readonly int VERTICAL_MARGIN_SIZE = 30;
 
-        readonly YodiiGraphArea _graphArea;
+        CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo> _serviceVertices;
+        CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo> _pluginVertices;
+        CKSortedArrayList<ServiceFamily> _rootFamilies;
+        CKSortedArrayKeyList<ServiceFamily, IServiceInfo> _serviceFamilies;
+        CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo> _orphanPlugins;
 
-        readonly Dictionary<YodiiGraphVertex, Point> _vertexPositions;
-        IDictionary<YodiiGraphVertex, Size> _vertexSizes;
-
-        readonly CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo> _serviceVertices;
-        readonly CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo> _pluginVertices;
-
-        readonly CKSortedArrayList<ServiceFamily> _rootFamilies;
-
-        readonly CKSortedArrayKeyList<ServiceFamily, IServiceInfo> _serviceFamilies;
-        readonly CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo> _orphanPlugins;
-
-        public YodiiLayout( YodiiGraphArea graphArea )
+        protected override void InternalPreCompute()
         {
-            _graphArea = graphArea;
-
             _serviceVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo>(
                 s => s.LabServiceInfo.ServiceInfo,
                 ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
@@ -61,74 +52,23 @@ namespace Yodii.Lab
                 ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
                 false
                 );
-
-            _vertexPositions = new Dictionary<YodiiGraphVertex, Point>();
         }
 
-
-        public void Compute()
+        protected override void InternalCompute()
         {
-            Dictionary<YodiiGraphVertex,Point> d = null;
-            Application.Current.Dispatcher.Invoke( DispatcherPriority.Normal, new Action( () =>
-            {
-                d = _graphArea.GetVertexPositions();
+            CreateServiceFamilies();
+            ComputeFamiliesSizes();
+            //_rootFamilies = null;
+            //_serviceVertices = null;
+            //_pluginVertices = null;
 
-                _rootFamilies.Clear();
-
-                _serviceVertices.Clear();
-                _pluginVertices.Clear();
-
-                _serviceFamilies.Clear();
-                _orphanPlugins.Clear();
-                _vertexPositions.Clear();
-
-                CreateServiceFamilies();
-
-                ComputeFamiliesSizes();
-
-            } ) );
-
-            //foreach( var v in _vertexSizes )
-            //{
-            //    Point currentPoint;
-            //    if( d.TryGetValue( v.Key, out currentPoint ) )
-            //    { // Update by index: TODO
-            //        if( Double.IsNaN( currentPoint.X ) || Double.IsNaN( currentPoint.Y ) )
-            //        {
-            //            _vertexPositions.Add( v.Key, new Point( 0, 0 ) );
-            //        }
-            //        else
-            //        {
-            //            _vertexPositions.Add( v.Key, currentPoint );
-            //        }
-            //    }
-            //    else
-            //    {
-            //        _vertexPositions.Add( v.Key, new Point( 0, 0 ) );
-            //    }
-            //}
+            //_serviceFamilies = null;
+            //_orphanPlugins = null;
         }
 
-        public bool NeedVertexSizes
+        public override bool NeedOriginalVertexPosition
         {
             get { return true; }
-        }
-
-        public System.Collections.Generic.IDictionary<YodiiGraphVertex, Point> VertexPositions
-        {
-            get { return _vertexPositions; }
-        }
-
-        public System.Collections.Generic.IDictionary<YodiiGraphVertex, Size> VertexSizes
-        {
-            get
-            {
-                return _vertexSizes;
-            }
-            set
-            {
-                _vertexSizes = value;
-            }
         }
 
         private void CreateServiceFamilies()
@@ -187,9 +127,9 @@ namespace Yodii.Lab
             {
                 Point pluginPoint = new Point( currentX, 0 );
 
-                _vertexPositions.Add( plugin, new Point( currentX, 0 ) );
+                VertexPositions[ plugin ] = new Point( currentX, 0 );
 
-                currentX += _vertexSizes[plugin].Width + VERTICAL_MARGIN_SIZE;
+                currentX += VertexSizes[plugin].Width + VERTICAL_MARGIN_SIZE;
             }
         }
 
@@ -276,9 +216,9 @@ namespace Yodii.Lab
 
                 foreach( var plugin in SubPlugins.Values )
                 {
-                    _parent._vertexPositions.Add( plugin, new Point( currentX, currentY ) );
+                    _parent.VertexPositions[plugin] = new Point( currentX, currentY );
 
-                    Size pluginSize = _parent._vertexSizes[plugin];
+                    Size pluginSize = _parent.VertexSizes[plugin];
 
                     subWidth += pluginSize.Width;
                     if( pluginSize.Height > subHeight ) subHeight = pluginSize.Height;
@@ -302,7 +242,7 @@ namespace Yodii.Lab
 
                 Point position = new Point( x, rootPosition.Y );
 
-                _parent._vertexPositions.Add( RootVertex, position );
+                _parent.VertexPositions[ RootVertex ] = position;
 
                 return FamilySize;
             }
