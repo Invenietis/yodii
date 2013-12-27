@@ -410,7 +410,6 @@
                     <Fluent:SplitButton
                         Fluent:KeyTip.Keys="R"
                         Header="Reorder graph"
-                        ItemsSource="{Binding GraphLayoutAlgorithmTypes}"
                         Command="{Binding Path=ReorderGraphLayoutCommand}">
                         <Fluent:SplitButton.ToolTip>
                             <Fluent:ScreenTip
@@ -423,17 +422,6 @@
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
                         </Fluent:SplitButton.LargeIcon>
-                        <Fluent:SplitButton.ItemContainerStyle>
-                            <Style
-                                TargetType="{x:Type MenuItem}">
-                                <Setter
-                                    Property="Command"
-                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.ReorderGraphLayoutCommand}" />
-                                <Setter
-                                    Property="CommandParameter"
-                                    Value="{Binding}" />
-                            </Style>
-                        </Fluent:SplitButton.ItemContainerStyle>
                     </Fluent:SplitButton>
                     <Fluent:Button
                         Header="Export to PNG"
@@ -721,8 +709,7 @@
                 Grid.Column="0"
                 Grid.Row="0"
                 Grid.RowSpan="3">
-                <local:YodiiGraphArea
-                    x:Name="GraphArea" />
+                <local:YodiiGraphArea x:Name="GraphArea" />
             </gxc:ZoomControl>
 
             <!-- Right panel -->

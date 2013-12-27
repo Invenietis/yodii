@@ -47,7 +47,7 @@
       <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.GraphX">
-      <HintPath>..\packages\CK.GraphX.1.0.1\lib\net40\CK.GraphX.dll</HintPath>
+      <HintPath>..\packages\CK.GraphX.1.0.4\lib\net40\CK.GraphX.dll</HintPath>
     </Reference>
     <Reference Include="Fluent">
       <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\Fluent.dll</HintPath>
