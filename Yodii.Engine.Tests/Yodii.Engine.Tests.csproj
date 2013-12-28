@@ -88,6 +88,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestExtensions.cs" />
     <Compile Include="XmlDeserializationTests.cs" />
+    <Compile Include="TestHelper.cs" />
     <Compile Include="YodiiEngineTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +112,9 @@
     <Content Include="ConfigurationSolverTests\Graphs\ValidRunnableReferences.png" />
     <None Include="Resources\Graph005.xml" />
     <Resource Include="Resources\Valid001a.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TestData\" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

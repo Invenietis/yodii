@@ -59,5 +59,15 @@ namespace Yodii.Model
         /// <returns>Engine start result.</returns>
         IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
 
+        /// <summary>
+        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
+        /// </summary>
+        /// <returns>
+        /// The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an 
+        /// available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.
+        /// </returns>
+        IYodiiEngineStaticOnlyResult StaticResolutionOnly();
+
     }
 }

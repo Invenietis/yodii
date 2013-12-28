@@ -9,7 +9,7 @@ namespace Yodii.Model
     /// <summary>
     /// Live plugin or service info.
     /// </summary>
-    public interface ILiveYodiiItem : IDynamicYodiiItem, INotifyPropertyChanged
+    public interface ILiveYodiiItem : IDynamicSolvedYodiiItem, INotifyPropertyChanged
     {
         /// <summary>
         /// Whether this live Yodii item, plugin or status, is running.

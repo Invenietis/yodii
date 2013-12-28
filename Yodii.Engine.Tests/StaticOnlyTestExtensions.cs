@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using CK.Core;
 using NUnit.Framework;
 using Yodii.Model;
 
@@ -10,6 +11,21 @@ namespace Yodii.Engine.Tests
 {
     static class StaticOnlyTestExtensions
     {
+
+        public static void Trace( this IYodiiEngineStaticOnlyResult @this, IActivityMonitor m )
+        {
+            if( @this.Success )
+            {
+                m.Trace().Send( "Success!" );
+            }
+            else
+            {
+                m.Trace().Send( "Failed!" );
+                m.Trace().Send( "Blocking Plugins: {0}", String.Join( ", ", @this.StaticFailureResult.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName + " (" + p.WantedConfigSolvedStatus + "/" + p.DisabledReason + ")" ) ) );
+                m.Trace().Send( "Blocking Services: {0}", String.Join( ", ", @this.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName + " (" + s.WantedConfigSolvedStatus + "/" + s.DisabledReason + ")" ) ) );
+            }
+        }
+
 
         #region Plugins and Services
         public static void CheckAllDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )

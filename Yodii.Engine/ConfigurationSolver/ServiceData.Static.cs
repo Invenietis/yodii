@@ -80,6 +80,7 @@ namespace Yodii.Engine
             {
                 _configDisabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
             }
+
             if( Disabled )
             {
                 _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
@@ -87,6 +88,10 @@ namespace Yodii.Engine
             else if( ConfigOriginalStatus == ConfigurationStatus.Running )
             {
                 Family.SetRunningService( this, ServiceSolvedConfigStatusReason.Config );
+            }
+            else if( Family.RunningService != null && !Family.RunningService.IsStrictGeneralizationOf( this ) )
+            {
+                _configDisabledReason = ServiceDisabledReason.AnotherServiceIsRunningByConfig;
             }
         }
 
@@ -290,6 +295,16 @@ namespace Yodii.Engine
             {
                 PluginDisabledReason reason = backRef.PluginData.GetDisableReasonForDisabledReference( backRef.Requirement );
                 if( reason != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( reason );
+            }
+            if( Family.RunningService == this && Generalization != null )
+            {
+                ServiceData  g = Generalization;
+                do
+                {
+                    if( !g.Disabled ) g.SetDisabled( ServiceDisabledReason.RunningServiceDisabled );
+                    g = g.Generalization;
+                }
+                while( g != null );
             }
         }
 

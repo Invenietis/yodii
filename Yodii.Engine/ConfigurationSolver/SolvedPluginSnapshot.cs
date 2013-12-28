@@ -29,18 +29,20 @@ namespace Yodii.Engine
             _configSolvedImpact = plugin.RawConfigSolvedImpact;
         }
 
+        public string FullName { get { return _pluginInfo.PluginFullName; } }
+        
         public IPluginInfo PluginInfo { get { return _pluginInfo; } }
 
         public string DisabledReason { get { return _disabledReason == PluginDisabledReason.None ? null : _disabledReason.ToString(); } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
-        ConfigurationStatus IStaticSolvedPlugin.WantedConfigSolvedStatus 
+        ConfigurationStatus IStaticSolvedYodiiItem.WantedConfigSolvedStatus 
         { 
             get { return _configSolvedStatus; } 
         }
 
-        ConfigurationStatus IDynamicSolvedPlugin.ConfigSolvedStatus 
+        ConfigurationStatus IDynamicSolvedYodiiItem.ConfigSolvedStatus 
         { 
             get { return _configSolvedStatus; } 
         }
@@ -49,7 +51,7 @@ namespace Yodii.Engine
 
         public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
-        bool IStaticSolvedPlugin.IsBlocking 
+        bool IStaticSolvedYodiiItem.IsBlocking 
         { 
             get 
             { 
@@ -57,7 +59,7 @@ namespace Yodii.Engine
             } 
         }
 
-        RunningStatus IDynamicYodiiItem.RunningStatus
+        RunningStatus IDynamicSolvedYodiiItem.RunningStatus
         { 
             get 
             {

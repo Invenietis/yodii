@@ -16,15 +16,21 @@ namespace Yodii.Model
         IStaticSolvedConfiguration StaticSolvedConfiguration { get; }
 
         /// <summary>
-        /// Plugins that blocked the static resolution.
+        /// Plugins or Services that blocked the static resolution.
         /// Never null (but can be empty).
         /// </summary>
-        IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins { get; }
+        IReadOnlyList<IStaticSolvedYodiiItem> BlockingItems { get; }
 
         /// <summary>
         /// Services that blocked the static resolution.
         /// Never null (but can be empty).
         /// </summary>
         IReadOnlyList<IStaticSolvedService> BlockingServices { get; }
+
+        /// <summary>
+        /// Plugins that blocked the static resolution.
+        /// Never null (but can be empty).
+        /// </summary>
+        IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins { get; }
     }
 }
