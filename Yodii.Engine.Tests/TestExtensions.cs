@@ -4,27 +4,47 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using NUnit.Framework;
+using CK.Core;
 using Yodii.Model;
+using System.Runtime.CompilerServices;
 
 namespace Yodii.Engine.Tests
 {
     static class TestExtensions
     {
 
-        public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests )
+        public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests, [CallerMemberName]string callerName = null )
         {
+            IActivityMonitor m = TestHelper.ConsoleMonitor;
             IYodiiEngineStaticOnlyResult result;
-            result = @this.StaticResolutionOnly( true, false );
-            tests( result );
-            @this.Stop();
-            result = @this.StaticResolutionOnly( false, false );
-            tests( result );
-            @this.Stop();
-            result = @this.StaticResolutionOnly( false, true );
-            tests( result );
-            @this.Stop();
-            result = @this.StaticResolutionOnly( true, true );
-            tests( result );
+            using( m.OpenInfo().Send( "FullStaticResolutionOnly for {0}.", callerName ) )
+            {
+                using( m.OpenInfo().Send( "StaticResolutionOnly( revertServices )." ) )
+                {
+                    result = @this.StaticResolutionOnly( true, false );
+                    result.Trace( m );
+                    tests( result );
+                }
+                using( TestHelper.ConsoleMonitor.OpenInfo().Send( "StaticResolutionOnly()." ) )
+                {
+                    result = @this.StaticResolutionOnly( false, false );
+                    result.Trace( m );
+                    tests( result );
+                    @this.Stop();
+                }
+                using( TestHelper.ConsoleMonitor.OpenInfo().Send( "StaticResolutionOnly( revertPlugins )." ) )
+                {
+                    result = @this.StaticResolutionOnly( false, true );
+                    result.Trace( m );
+                    tests( result );
+                }
+                using( TestHelper.ConsoleMonitor.OpenInfo().Send( "StaticResolutionOnly( revertServices, revertPlugins )." ) )
+                {
+                    result = @this.StaticResolutionOnly( true, true );
+                    result.Trace( m );
+                    tests( result );
+                }
+            }
         }
 
         public static void CheckSuccess( this IYodiiEngineResult @this )

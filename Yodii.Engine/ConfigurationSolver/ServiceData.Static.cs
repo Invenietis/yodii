@@ -80,6 +80,7 @@ namespace Yodii.Engine
             {
                 _configDisabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
             }
+
             if( Disabled )
             {
                 _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
@@ -87,6 +88,10 @@ namespace Yodii.Engine
             else if( ConfigOriginalStatus == ConfigurationStatus.Running )
             {
                 Family.SetRunningService( this, ServiceSolvedConfigStatusReason.Config );
+            }
+            else if( Family.RunningService != null && !Family.RunningService.IsStrictGeneralizationOf( this ) )
+            {
+                _configDisabledReason = ServiceDisabledReason.AnotherServiceIsRunningByConfig;
             }
         }
 

@@ -99,7 +99,7 @@ namespace Yodii.Engine
                     // running service than the current one: if this service is not a specialization, we reject the change.
                     if( !_runningService.IsStrictGeneralizationOf( s ) )
                     {
-                        s.SetDisabled( ServiceDisabledReason.AnotherServiceRunningInFamily );
+                        s.SetDisabled( Solver.Step == ConfigurationSolverStep.RegisterServices ? ServiceDisabledReason.AnotherServiceIsRunningByConfig : ServiceDisabledReason.AnotherServiceRunningInFamily );
                         return false;
                     }
                 }
