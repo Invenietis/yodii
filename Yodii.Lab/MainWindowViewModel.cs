@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -10,13 +11,15 @@ using System.Xml;
 using CK.Core;
 using GraphX;
 using GraphX.GraphSharp.Algorithms.Layout;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Tree;
 using Yodii.Lab.ConfigurationEditor;
 using Yodii.Lab.Mocks;
 using Yodii.Lab.Utils;
 using Yodii.Model;
 
+using System.Xml.Serialization;
+using System.Text.RegularExpressions;
+using System.Collections.Specialized;
+using System.Globalization;
 namespace Yodii.Lab
 {
     /// <summary>
@@ -29,10 +32,24 @@ namespace Yodii.Lab
         /// </summary>
         internal event EventHandler<NotificationEventArgs> NewNotification;
 
+        internal event EventHandler CloseBackstageRequest;
+
         #region Fields
+
+        /// <summary>
+        /// Image URI for Plugin Running notifications.
+        /// </summary>
+        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusRunning.png";
+
+        /// <summary>
+        /// Image URI for Plugin Stopped notifications.
+        /// </summary>
+        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusStopped.png";
 
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
+
+        readonly CKObservableSortedArrayList<RecentFile> _recentFiles;
 
         readonly ICommand _removeSelectedVertexCommand;
         readonly ICommand _toggleEngineCommand;
@@ -47,17 +64,15 @@ namespace Yodii.Lab
         readonly ICommand _revokeAllCommandsCommand;
 
         readonly ActivityMonitor _activityMonitor;
+        readonly DispatcherTimer _autosaveTimer;
 
         readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
 
-        LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
-        ILayoutParameters _graphLayoutParameters;
-
         ConfigurationEditorWindow _activeConfEditorWindow = null;
         bool _hideNotifications = false;
 
-        bool _changedSinceLastSave = true;
+        bool _changedSinceLastSave;
         string _lastSavePath;
 
         #endregion
@@ -70,6 +85,8 @@ namespace Yodii.Lab
         /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
         public MainWindowViewModel( bool loadDefaultState = false )
         {
+            _recentFiles = new CKObservableSortedArrayList<RecentFile>( ( a, b ) => DateTime.Compare( b.AccessTime, a.AccessTime ) );
+
             // Lab objects, live objects and static infos are managed in the LabStateManager.
             _labStateManager = new LabStateManager();
             _engine = _labStateManager.Engine;
@@ -99,29 +116,24 @@ namespace Yodii.Lab
             _newFileCommand = new RelayCommand( NewFileExecute );
             _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
-            GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
+            LoadRecentFiles();
 
-            if( loadDefaultState ) LoadDefaultState();
-
+            // Appication is only available on WPF context.
             if( Application.Current != null )
             {
-                DispatcherTimer autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
-
-                autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
-                autosaveTimer.Tick += AutosaveTick;
-
-                autosaveTimer.Start();
+                _autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
             }
-        }
+            else
+            {
+                _autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Dispatcher.CurrentDispatcher );
+            }
 
-        private void LoadDefaultState()
-        {
-            _labStateManager.ClearState();
-            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
+            _autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
+            _autosaveTimer.Tick += AutosaveTick;
 
-            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
-            ChangedSinceLastSave = false;
+            // Autosave timer is started from outside, using StartAutosaveTimer().
+
+            if( loadDefaultState ) LoadDefaultState();
         }
 
         #endregion Constructor
@@ -188,8 +200,9 @@ namespace Yodii.Lab
                     foreach( var i in e.NewItems )
                     {
                         IPluginInfo p = (IPluginInfo)i;
-                        RaiseNewNotification( "Plugin running",
-                            String.Format( "Plugin '{0}' is now running.", p.PluginFullName )
+                        RaiseNewNotification( @"Plugin running",
+                            String.Format( @"Plugin '{0}' is now running.", p.PluginFullName ),
+                            RUNNING_NOTIFICATION_IMAGE_URI
                             );
                     }
                     break;
@@ -197,8 +210,9 @@ namespace Yodii.Lab
                     foreach( var i in e.OldItems )
                     {
                         IPluginInfo p = (IPluginInfo)i;
-                        RaiseNewNotification( "Plugin stopped",
-                            String.Format( "Plugin '{0}' has been stopped.", p.PluginFullName )
+                        RaiseNewNotification( @"Plugin stopped",
+                            String.Format( @"Plugin '{0}' has been stopped.", p.PluginFullName ),
+                            STOPPED_NOTIFICATION_IMAGE_URI
                             );
                     }
                     break;
@@ -375,11 +389,7 @@ namespace Yodii.Lab
             else
             {
                 RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
-                // Re-create graph with new layout and parameters.
-                GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
-                GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
-
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
             }
         }
 
@@ -484,22 +494,47 @@ namespace Yodii.Lab
 
         private void OpenFileExecute( object param )
         {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckFileExists = true;
-            dlg.CheckPathExists = true;
-
-            Nullable<bool> result = dlg.ShowDialog();
-
-            if( result == true )
+            if( param != null && param is string )
             {
-                string filePath = dlg.FileName;
-                var r = LoadState( filePath );
-                if( !r )
+                string fileName = (string)param;
+
+                if( !File.Exists( fileName ) )
                 {
-                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                    RemoveFileFromRecentFiles( fileName );
+                    MessageBox.Show(
+                        String.Format( "File does not exist:\n{0}", fileName ),
+                        "File not found",
+                        MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
+                }
+                else
+                {
+                    var r = LoadState( fileName );
+                    if( !r )
+                    {
+                        MessageBox.Show( r.Reason, "Couldn't open file" );
+                    }
+                }
+
+            }
+            else
+            {
+                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+                dlg.DefaultExt = ".xml";
+                dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+                dlg.CheckFileExists = true;
+                dlg.CheckPathExists = true;
+
+                Nullable<bool> result = dlg.ShowDialog();
+
+                if( result == true )
+                {
+                    string filePath = dlg.FileName;
+                    var r = LoadState( filePath );
+                    if( !r )
+                    {
+                        MessageBox.Show( r.Reason, "Couldn't open file" );
+                    }
                 }
             }
         }
@@ -568,8 +603,10 @@ namespace Yodii.Lab
             {
                 OpenedFilePath = null;
                 LabState.ClearState();
-                ChangedSinceLastSave = true;
+                ChangedSinceLastSave = false;
             }
+
+            RaiseCloseBackstageRequest();
         }
 
         private bool CanRevokeAllCommands( object obj )
@@ -723,55 +760,6 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// The current graph layout type.
-        /// </summary> parameters
-        public LayoutAlgorithmTypeEnum GraphLayoutAlgorithmType
-        {
-            get
-            {
-                return _graphLayoutAlgorithmType;
-            }
-            set
-            {
-                if( value != _graphLayoutAlgorithmType )
-                {
-                    _graphLayoutAlgorithmType = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// The current graph layout parameters.
-        /// </summary>
-        public ILayoutParameters GraphLayoutParameters
-        {
-            get
-            {
-                return _graphLayoutParameters;
-            }
-            set
-            {
-                if( value != _graphLayoutParameters )
-                {
-                    _graphLayoutParameters = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Available graph layout types.
-        /// </summary>
-        public IEnumerable<GraphX.LayoutAlgorithmTypeEnum> GraphLayoutAlgorithmTypes
-        {
-            get
-            {
-                return (IEnumerable<GraphX.LayoutAlgorithmTypeEnum>)Enum.GetValues( typeof( GraphX.LayoutAlgorithmTypeEnum ) );
-            }
-        }
-
-        /// <summary>
         /// Returns true if a vertex is selected.
         /// </summary>
         public bool HasSelection
@@ -804,6 +792,12 @@ namespace Yodii.Lab
                 }
             }
         }
+
+        /// <summary>
+        /// Recent files.
+        /// </summary>
+        public CKObservableSortedArrayList<RecentFile> RecentFiles
+        { get { return _recentFiles; } }
 
         /// <summary>
         /// Command to remove a vertex that was selected beforehand.
@@ -852,6 +846,106 @@ namespace Yodii.Lab
         #endregion Properties
 
         #region Public methods
+
+        public bool SaveBeforeClosingFile()
+        {
+            if( ChangedSinceLastSave )
+            {
+                var result = MessageBox.Show( "Save changes?\nUnsaved data will be lost if you press No.", "Save file", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel );
+                if( result == MessageBoxResult.Cancel ) return false;
+
+                if( result == MessageBoxResult.Yes )
+                {
+                    return Save();
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Whether the Lab has an auto-saved state.
+        /// </summary>
+        /// <returns>True if there is an auto-saved state.</returns>
+        public bool HasAutosave()
+        {
+            return !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents );
+        }
+
+        /// <summary>
+        /// Load autosaved state, if present.
+        /// </summary>
+        public void LoadAutosave()
+        {
+            if( !HasAutosave() ) return;
+            OpenedFilePath = null;
+            LabState.ClearState();
+
+            if( !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath ) )
+            {
+                OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
+            }
+
+            using( StringReader sr = new StringReader( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents ) )
+            {
+                using( XmlReader r = XmlReader.Create( sr ) )
+                {
+                    try
+                    {
+                        _hideNotifications = true;
+                        Graph.LockGraphUpdates = true;
+                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+                        Graph.LockGraphUpdates = false;
+                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                        _hideNotifications = false;
+                        RaiseNewNotification( "Autosave loaded", OpenedFilePath );
+                    }
+                    catch( Exception ex )
+                    {
+                        MessageBox.Show(
+                            String.Format( "Load from autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
+                            "Loading failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error,
+                            MessageBoxResult.OK
+                            );
+
+                    }
+                    finally
+                    {
+                        _hideNotifications = false;
+                        Graph.LockGraphUpdates = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove any existing autosave.
+        /// </summary>
+        public void ClearAutosave()
+        {
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = String.Empty;
+
+            Yodii.Lab.Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// Starts the autosave timer.
+        /// </summary>
+        public void StartAutosaveTimer()
+        {
+            _autosaveTimer.Start();
+        }
+
+        /// <summary>
+        /// Stops the autosave timer.
+        /// </summary>
+        public void StopAutosaveTimer()
+        {
+            _autosaveTimer.Stop();
+        }
+
         /// <summary>
         /// Creates a new named service, which does not specialize another service.
         /// </summary>
@@ -1017,10 +1111,14 @@ namespace Yodii.Lab
 
                 ChangedSinceLastSave = false;
                 OpenedFilePath = filePath;
+
+                SaveOpenedFileAsRecentFile();
+                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( true );
             }
             catch( Exception ex )
             {
+                throw ex;
                 // TODO: Detailed exceptions
 
                 string reason = ex.ToString();
@@ -1032,7 +1130,7 @@ namespace Yodii.Lab
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
             }
-
+            RaiseCloseBackstageRequest();
             return new DetailedOperationResult( false );
         }
 
@@ -1064,8 +1162,11 @@ namespace Yodii.Lab
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {
+                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( false, e.Message );
             }
+
+            RaiseCloseBackstageRequest();
 
             RaiseNewNotification( new Notification() { Title = "Saved state", Message = filePath } );
             return new DetailedOperationResult( true );
@@ -1105,73 +1206,6 @@ namespace Yodii.Lab
 
         #region Private methods
 
-        /// <summary>
-        /// Whether the Lab has an auto-saved state.
-        /// </summary>
-        /// <returns>True if there is an auto-saved state.</returns>
-        public bool HasAutosave()
-        {
-            return !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents );
-        }
-
-        /// <summary>
-        /// Load autosaved state, if present.
-        /// </summary>
-        public void LoadAutosave()
-        {
-            if( !HasAutosave() ) return;
-            OpenedFilePath = null;
-            LabState.ClearState();
-
-            if( !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath ) )
-            {
-                OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
-            }
-
-            using( StringReader sr = new StringReader(Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents))
-            {
-                using( XmlReader r = XmlReader.Create(sr))
-                {
-                    try
-                    {
-                        _hideNotifications = true;
-                        Graph.LockGraphUpdates = true;
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
-                        Graph.LockGraphUpdates = false;
-                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
-                        _hideNotifications = false;
-                        RaiseNewNotification( "Autosave loaded", OpenedFilePath );
-                    }
-                    catch( Exception ex )
-                    {
-                        MessageBox.Show(
-                            String.Format( "Load from autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
-                            "Loading failed",
-                            MessageBoxButton.OK, MessageBoxImage.Error,
-                            MessageBoxResult.OK
-                            );
-
-                    }
-                    finally
-                    {
-                        _hideNotifications = false;
-                        Graph.LockGraphUpdates = false;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Remove any existing autosave.
-        /// </summary>
-        public void ClearAutosave()
-        {
-            Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
-            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = String.Empty;
-
-            Yodii.Lab.Properties.Settings.Default.Save();
-        }
-
         private void AutosaveTick( object sender, EventArgs e )
         {
             Autosave();
@@ -1209,7 +1243,7 @@ namespace Yodii.Lab
             }
 
             Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = xmlString;
-            if( String.IsNullOrWhiteSpace(OpenedFilePath))
+            if( String.IsNullOrWhiteSpace( OpenedFilePath ) )
             {
                 Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
             }
@@ -1225,22 +1259,6 @@ namespace Yodii.Lab
         /// In case the file changed, attempts to save the last file.
         /// </summary>
         /// <returns>True if save was successful. False if save failed, or was cancelled.</returns>
-        public bool SaveBeforeClosingFile()
-        {
-            if( ChangedSinceLastSave )
-            {
-                var result = MessageBox.Show( "Save changes?\nUnsaved data will be lost if you press No.", "Save file", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel );
-                if( result == MessageBoxResult.Cancel ) return false;
-
-                if( result == MessageBoxResult.Yes )
-                {
-                    return Save();
-                }
-            }
-
-            return true;
-        }
-
         private bool Save()
         {
             if( !String.IsNullOrWhiteSpace( OpenedFilePath ) )
@@ -1300,30 +1318,6 @@ namespace Yodii.Lab
             }
         }
 
-        private static ILayoutParameters GetDefaultLayoutParameters( LayoutAlgorithmTypeEnum layoutType )
-        {
-            switch( layoutType )
-            {
-                case LayoutAlgorithmTypeEnum.EfficientSugiyama:
-                    EfficientSugiyamaLayoutParameters sugiyamaParams = new EfficientSugiyamaLayoutParameters();
-                    sugiyamaParams.VertexDistance = 70.0;
-                    sugiyamaParams.MinimizeEdgeLength = false;
-                    sugiyamaParams.PositionMode = 0;
-                    sugiyamaParams.EdgeRouting = SugiyamaEdgeRoutings.Orthogonal;
-                    sugiyamaParams.OptimizeWidth = false;
-                    return sugiyamaParams;
-                case LayoutAlgorithmTypeEnum.Tree:
-                    SimpleTreeLayoutParameters treeParams = new SimpleTreeLayoutParameters();
-                    treeParams.Direction = LayoutDirection.BottomToTop;
-                    //treeParams.VertexGap = 30.0;
-                    //treeParams.OptimizeWidthAndHeight = false;
-                    treeParams.SpanningTreeGeneration = SpanningTreeGeneration.BFS;
-                    return treeParams;
-                default:
-                    return null;
-            }
-        }
-
         private void RaiseNewNotification( Notification n )
         {
             if( _hideNotifications ) return;
@@ -1334,17 +1328,172 @@ namespace Yodii.Lab
             }
         }
 
-        private void RaiseNewNotification( string title = "Notification", string message = "" )
+        private void RaiseNewNotification( string title = "Notification", string message = "", string imageUri = null )
         {
             Notification n = new Notification()
             {
                 Title = title,
-                Message = message
+                Message = message,
+                ImageUrl = imageUri
             };
 
             RaiseNewNotification( n );
         }
 
+        private void RaiseCloseBackstageRequest()
+        {
+            if( CloseBackstageRequest != null )
+            {
+                CloseBackstageRequest( this, new EventArgs() );
+            }
+        }
+
+        private void LoadDefaultState()
+        {
+            _labStateManager.ClearState();
+            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
+
+            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+            ChangedSinceLastSave = false;
+        }
+
+        private void LoadRecentFiles()
+        {
+            if( Application.Current == null ) return; // Settings are not available outside app context
+            _recentFiles.Clear();
+
+            StringCollection files = Properties.Settings.Default.RecentFiles;
+            foreach( string f in files )
+            {
+                var m = Regex.Match( f, @"^(.*),(\d+)$" );
+
+                Debug.Assert( m.Success, "Recent file failed to match regex" );
+
+                FileInfo file = new FileInfo( m.Groups[1].Value );
+
+                DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
+
+                var recentFile = new RecentFile( file, accessTime );
+                _recentFiles.Add( recentFile );
+            }
+        }
+
+        private void SaveRecentFiles()
+        {
+            StringCollection coll = new StringCollection();
+
+            foreach( var f in _recentFiles )
+            {
+                string dateString = f.AccessTime.ToString( "yyyyMMddHHmmss" );
+
+                string serializedString = String.Format( "{0},{1}", f.File.FullName, dateString );
+                coll.Add( serializedString );
+            }
+
+            Properties.Settings.Default.RecentFiles = coll;
+
+            Properties.Settings.Default.Save();
+
+        }
+
+        private void SaveOpenedFileAsRecentFile()
+        {
+            if( OpenedFilePath == null ) return;
+
+            FileInfo f = new FileInfo( OpenedFilePath );
+            DateTime d = DateTime.Now;
+            RemoveFileFromRecentFiles( f.FullName );
+
+            _recentFiles.Add( new RecentFile( f, d ) );
+
+            TrimRecentFiles();
+            SaveRecentFiles();
+        }
+
+        private void TrimRecentFiles()
+        {
+            while( _recentFiles.Count > 5 )
+            {
+                var lastFile = _recentFiles.Last();
+
+                _recentFiles.Remove( lastFile );
+            }
+        }
+
+        private void RemoveFileFromRecentFiles( string fileFullName )
+        {
+            var existingFiles = _recentFiles.Where( x => x.File.FullName == fileFullName ).ToList();
+            foreach( var file in existingFiles )
+            {
+                _recentFiles.Remove( file );
+            }
+        }
+
         #endregion Private methods
+    }
+
+    /// <summary>
+    /// Recent file. Used in ribbon backstage.
+    /// </summary>
+    [Serializable]
+    public class RecentFile
+    {
+        readonly DateTime _accessTime;
+        readonly FileInfo _file;
+
+        /// <summary>
+        /// Instanciates a new recent file.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="accessTime"></param>
+        public RecentFile( FileInfo info, DateTime accessTime )
+        {
+            _file = info;
+            _accessTime = accessTime;
+        }
+
+        /// <summary>
+        /// File name.
+        /// </summary>
+        public string FileName
+        {
+            get
+            {
+                return _file.Name;
+            }
+        }
+
+        /// <summary>
+        /// Directory.
+        /// </summary>
+        public string Directory
+        {
+            get
+            {
+                return _file.DirectoryName;
+            }
+        }
+
+        /// <summary>
+        /// Access time
+        /// </summary>
+        public DateTime AccessTime
+        {
+            get
+            {
+                return _accessTime;
+            }
+        }
+
+        /// <summary>
+        /// File info
+        /// </summary>
+        public FileInfo File
+        {
+            get
+            {
+                return _file;
+            }
+        }
     }
 }

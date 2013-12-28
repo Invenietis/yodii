@@ -5,16 +5,62 @@
     xmlns:Fluent="clr-namespace:Fluent;assembly=Fluent"
     xmlns:GraphX="clr-namespace:GraphX;assembly=CK.GraphX"
     xmlns:gxc="clr-namespace:GraphX.Controls;assembly=CK.GraphX"
+    xmlns:ei="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
     xmlns:local="clr-namespace:Yodii.Lab"
     xmlns:mocks="clr-namespace:Yodii.Lab.Mocks"
     xmlns:ym="clr-namespace:Yodii.Model;assembly=Yodii.Model"
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     WindowStartupLocation="CenterScreen"
+    Icon="/Yodii.Lab;component/Icons/class_32xLG.png"
     x:Name="MainWindowRoot"
     Title="{Binding Path=WindowTitle, FallbackValue=Yodii.Lab}"
     Height="600"
     Width="800">
+
+    <Fluent:RibbonWindow.InputBindings>
+        <KeyBinding
+            Key="S"
+            Modifiers="Control"
+            Command="{Binding Path=SaveCommand}" />
+        <KeyBinding
+            Key="O"
+            Modifiers="Control"
+            Command="{Binding Path=OpenFileCommand}" />
+        <KeyBinding
+            Key="N"
+            Modifiers="Control"
+            Command="{Binding Path=NewFileCommand}" />
+        <KeyBinding
+            Key="E"
+            Modifiers="Control"
+            Command="{Binding Path=ToggleEngineCommand}" />
+        <KeyBinding
+            Key="R"
+            Modifiers="Control"
+            Command="{Binding Path=ReorderGraphLayoutCommand}" />
+        <KeyBinding
+            Key="F5"
+            Command="{Binding Path=ReorderGraphLayoutCommand}" />
+        <KeyBinding
+            Key="Delete"
+            Command="{Binding Path=RemoveSelectedVertexCommand}" />
+        <KeyBinding
+            Key="C"
+            Modifiers="Alt"
+            Command="{Binding Path=OpenConfigurationEditorCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+        <KeyBinding
+            Key="S"
+            Modifiers="Alt"
+            Command="{Binding Path=CreateServiceCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+        <KeyBinding
+            Key="P"
+            Modifiers="Alt"
+            Command="{Binding Path=CreatePluginCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+    </Fluent:RibbonWindow.InputBindings>
     <Fluent:RibbonWindow.Resources>
         <BooleanToVisibilityConverter
             x:Key="boolToVisibilityConverter" />
@@ -56,47 +102,242 @@
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon
+            CanQuickAccessLocationChanging="False"
+            ShowQuickAccessToolBarAboveRibbon="True"
             DockPanel.Dock="Top">
+            <!--Quick Access Toolbar Items-->
             <Fluent:Ribbon.QuickAccessItems>
+                <!--Use Content or Target Property to set QAT item-->
                 <Fluent:QuickAccessMenuItem
-                    Header="Save"
-                    Command="{Binding Path=SaveAsFileCommand}" />
+                    IsChecked="true"
+                    Target="{Binding ElementName=NewButton}" />
+                <Fluent:QuickAccessMenuItem
+                    IsChecked="true"
+                    Target="{Binding ElementName=SaveButton}" />
+                <Fluent:QuickAccessMenuItem
+                    IsChecked="true"
+                    Target="{Binding ElementName=OpenButton}" />
             </Fluent:Ribbon.QuickAccessItems>
+            <!--Backstage-->
+            <Fluent:Ribbon.Menu>
+                <Fluent:Backstage
+                    x:Name="RibbonBackstage"
+                    Header="File">
+                    <Fluent:BackstageTabControl>
+                        <Fluent:BackstageTabItem
+                            Header="New">
+                            <Grid
+                                Margin="15pt"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top">
+                                <Button
+                                    VerticalContentAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    Width="100pt"
+                                    Height="100pt"
+                                    Command="{Binding Path=NewFileCommand}">
+                                    <DockPanel>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">New file</TextBlock>
+                                        <Viewbox
+                                            Stretch="UniformToFill"
+                                            Child="{StaticResource NewFileIcon}" />
+                                    </DockPanel>
+                                </Button>
+                            </Grid>
+                        </Fluent:BackstageTabItem>
+                        <Fluent:BackstageTabItem
+                            Header="Open">
+                            <Grid
+                                Margin="15pt"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition
+                                        Width="Auto" />
+                                    <ColumnDefinition
+                                        Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Button
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Left"
+                                    VerticalContentAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    Width="100pt"
+                                    Height="100pt"
+                                    Command="{Binding Path=OpenFileCommand}">
+                                    <DockPanel>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">Open file</TextBlock>
+                                        <Viewbox
+                                            Stretch="UniformToFill"
+                                            Child="{StaticResource FolderOpenIcon}" />
+                                    </DockPanel>
+                                </Button>
+                                <ScrollViewer
+                                    Grid.Column="1"
+                                    VerticalScrollBarVisibility="Auto">
+                                    <StackPanel
+                                        Margin="20">
+                                        <TextBlock
+                                            FontWeight="Bold"
+                                            Margin="0,0,0,5pt">Recently opened files</TextBlock>
+                                        <Rectangle
+                                            Fill="DarkGray"
+                                            Height="1pt"
+                                            Margin="0,0,0,5pt"
+                                            HorizontalAlignment="Stretch" />
+                                        <ItemsControl
+                                            ItemsSource="{Binding Path=RecentFiles}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border
+                                                        Padding="5pt"
+                                                        Margin="5pt"
+                                                        BorderBrush="Black"
+                                                        BorderThickness="1">
+                                                        <StackPanel>
+                                                            <TextBlock
+                                                                Foreground="Black"
+                                                                FontWeight="Bold"
+                                                                FontSize="12pt"
+                                                                Text="{Binding Path=FileName}" />
+                                                            <TextBlock
+                                                                Foreground="#FF111111"
+                                                                Text="{Binding Path=Directory}" />
+                                                        </StackPanel>
+
+                                                        <Border.Style>
+                                                            <Style
+                                                                TargetType="Border">
+                                                                <Setter
+                                                                    Property="Background"
+                                                                    Value="#FFDDDDDD" />
+
+                                                                <Style.Triggers>
+                                                                    <DataTrigger
+                                                                        Binding="{Binding Path=IsMouseOver, RelativeSource={RelativeSource Self}}"
+                                                                        Value="true">
+                                                                        <Setter
+                                                                            Property="Background"
+                                                                            Value="#FFEEEEEE" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Border.Style>
+                                                        <ei:Interaction.Triggers>
+                                                            <ei:EventTrigger
+                                                                EventName="MouseLeftButtonDown">
+                                                                <ei:InvokeCommandAction
+                                                                    Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.OpenFileCommand}"
+                                                                    CommandParameter="{Binding Path=File.FullName}" />
+                                                            </ei:EventTrigger>
+                                                        </ei:Interaction.Triggers>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Fluent:BackstageTabItem>
+                        <Fluent:BackstageTabItem
+                            Header="Save">
+                            <Grid
+                                Margin="15pt"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <Button
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Top"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    Width="100pt"
+                                    Height="100pt"
+                                    Command="{Binding Path=SaveAsFileCommand}">
+                                    <DockPanel
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">Save as...</TextBlock>
+                                        <Grid>
+                                            <Grid.Background>
+                                                <VisualBrush
+                                                    AlignmentX="Center"
+                                                    AlignmentY="Center"
+                                                    Visual="{StaticResource DiskIconViewBox}"
+                                                    Stretch="UniformToFill" />
+                                            </Grid.Background>
+                                        </Grid>
+
+                                    </DockPanel>
+                                </Button>
+                            </Grid>
+                        </Fluent:BackstageTabItem>
+                    </Fluent:BackstageTabControl>
+                </Fluent:Backstage>
+            </Fluent:Ribbon.Menu>
             <!--Tabs-->
             <Fluent:RibbonTabItem
                 Header="Home">
                 <Fluent:RibbonGroupBox
                     Header="File">
                     <Fluent:Button
+                        Size="Small"
+                        x:Name="NewButton"
                         Header="New"
-                        Command="{Binding Path=NewFileCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource NewFileIcon}" />
-                        </Fluent:Button.LargeIcon>
+                        Fluent:KeyTip.Keys="N"
+                        Command="{Binding Path=NewFileCommand}"
+                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="New file (Ctrl+N)"
+                                Width="250"
+                                Text="Create an empty Yodii.Lab document." />
+                        </Fluent:Button.ToolTip>
                     </Fluent:Button>
                     <Fluent:Button
+                        Size="Small"
+                        x:Name="SaveButton"
+                        Header="Save"
+                        Fluent:KeyTip.Keys="S"
+                        Command="{Binding Path=SaveCommand}"
+                        LargeIcon="{StaticResource DiskIconViewBox}"
+                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Save file (Ctrl+S)"
+                                Width="250"
+                                Text="Save this Yodii.Lab document into a file." />
+                        </Fluent:Button.ToolTip>
+                    </Fluent:Button>
+                    <Fluent:Button
+                        Size="Small"
+                        x:Name="OpenButton"
                         Header="Open"
-                        Command="{Binding Path=OpenFileCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource FolderOpenIcon}" />
-                        </Fluent:Button.LargeIcon>
-                    </Fluent:Button>
-                    <Fluent:Button
-                        Header="Save as"
-                        Command="{Binding Path=SaveAsFileCommand}">
-                        <Fluent:Button.LargeIcon>
-                            <Viewbox
-                                Stretch="UniformToFill"
-                                Child="{StaticResource DiskIcon}" />
-                        </Fluent:Button.LargeIcon>
+                        Fluent:KeyTip.Keys="O"
+                        Command="{Binding Path=OpenFileCommand}"
+                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Open file (Ctrl+O)"
+                                Width="250"
+                                Text="Open an existing Yodii.Lab document from a file." />
+                        </Fluent:Button.ToolTip>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
+                        Fluent:KeyTip.Keys="S"
                         Header="Add service"
                         Command="{Binding Path=CreateServiceCommand}"
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
@@ -105,8 +346,15 @@
                                 Height="12pt"
                                 Source="/Yodii.Lab;component/Icons/interface_16xLG.png" />
                         </Fluent:Button.LargeIcon>
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Create a service (Alt+S)"
+                                Width="250"
+                                Text="Create a new service, and add it into this Yodii.Lab document." />
+                        </Fluent:Button.ToolTip>
                     </Fluent:Button>
                     <Fluent:Button
+                        Fluent:KeyTip.Keys="P"
                         Header="Add plugin"
                         Command="{Binding Path=CreatePluginCommand}"
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
@@ -115,8 +363,15 @@
                                 Height="12pt"
                                 Source="/Yodii.Lab;component/Icons/class_32xLG.png" />
                         </Fluent:Button.LargeIcon>
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Create a plugin (Alt+P)"
+                                Width="250"
+                                Text="Create a new plugin, and add it into this Yodii.Lab document." />
+                        </Fluent:Button.ToolTip>
                     </Fluent:Button>
                     <Fluent:Button
+                        Fluent:KeyTip.Keys="D"
                         Header="Delete selected"
                         Command="{Binding Path=RemoveSelectedVertexCommand}">
                         <Fluent:Button.LargeIcon>
@@ -124,10 +379,17 @@
                                 Stretch="UniformToFill"
                                 Child="{StaticResource DeleteIcon}" />
                         </Fluent:Button.LargeIcon>
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Delete selection (Del)"
+                                Width="250"
+                                Text="Delete the selected service or plugin, and remove it from the graph." />
+                        </Fluent:Button.ToolTip>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
+                        Fluent:KeyTip.Keys="C"
                         Header="Configuration editor"
                         Command="{Binding Path=OpenConfigurationEditorCommand}"
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
@@ -136,29 +398,30 @@
                                 Stretch="UniformToFill"
                                 Child="{StaticResource LayerIcon}" />
                         </Fluent:Button.LargeIcon>
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Open configuration editor (Alt+C)"
+                                Width="250"
+                                Text="Open the configuration editor, where you can change Yodii's configuration, and select which services and plugins must be run." />
+                        </Fluent:Button.ToolTip>
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:SplitButton
+                        Fluent:KeyTip.Keys="R"
                         Header="Reorder graph"
-                        ItemsSource="{Binding GraphLayoutAlgorithmTypes}"
                         Command="{Binding Path=ReorderGraphLayoutCommand}">
+                        <Fluent:SplitButton.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Reorder graph (F5, Ctrl+R)"
+                                Width="250"
+                                Text="Regenerates the graph, resetting items to their original positions." />
+                        </Fluent:SplitButton.ToolTip>
                         <Fluent:SplitButton.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
                         </Fluent:SplitButton.LargeIcon>
-                        <Fluent:SplitButton.ItemContainerStyle>
-                            <Style
-                                TargetType="{x:Type MenuItem}">
-                                <Setter
-                                    Property="Command"
-                                    Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=DataContext.ReorderGraphLayoutCommand}" />
-                                <Setter
-                                    Property="CommandParameter"
-                                    Value="{Binding}" />
-                            </Style>
-                        </Fluent:SplitButton.ItemContainerStyle>
                     </Fluent:SplitButton>
                     <Fluent:Button
                         Header="Export to PNG"
@@ -172,8 +435,16 @@
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
                     <Fluent:Button
+                        Fluent:KeyTip.Keys="E"
                         Header="{Binding Path=ToggleEngineText}"
                         Command="{Binding Path=ToggleEngineCommand}">
+                        <Fluent:Button.ToolTip>
+                            <Fluent:ScreenTip
+                                Title="Start/stop engine (Ctrl+E)"
+                                Width="250"
+                                Text="Start or stop Yodii's engine, causing it to start or stop configured plugins or services.
+                                While the engine is running, you can start or stop any items where it wouldn't conflict with Yodii's configuration." />
+                        </Fluent:Button.ToolTip>
                         <Fluent:Button.Style>
                             <Style>
                                 <Style.Triggers>
@@ -438,8 +709,7 @@
                 Grid.Column="0"
                 Grid.Row="0"
                 Grid.RowSpan="3">
-                <local:YodiiGraphArea
-                    x:Name="GraphArea" />
+                <local:YodiiGraphArea x:Name="GraphArea" />
             </gxc:ZoomControl>
 
             <!-- Right panel -->
@@ -488,9 +758,10 @@
                             <Button
                                 DockPanel.Dock="Right"
                                 Command="{Binding Path=RevokeAllCommandsCommand}">Revoke all</Button>
-                            <TextBlock VerticalAlignment="Center"
-                                       HorizontalAlignment="Left"
-                                       TextTrimming="CharacterEllipsis">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                TextTrimming="CharacterEllipsis">
                                 <Run
                                     Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.
                             </TextBlock>
