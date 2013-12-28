@@ -16,33 +16,80 @@ namespace Yodii.Engine.Tests
         public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests, [CallerMemberName]string callerName = null )
         {
             IActivityMonitor m = TestHelper.ConsoleMonitor;
-            IYodiiEngineStaticOnlyResult result;
+            IYodiiEngineStaticOnlyResult[] result = new IYodiiEngineStaticOnlyResult[4];
+            
             using( m.OpenInfo().Send( "FullStaticResolutionOnly for {0}.", callerName ) )
             {
+                using( m.OpenInfo().Send( "StaticResolutionOnly()." ) )
+                {
+                    result[0] = @this.StaticResolutionOnly( false, false );
+                    result[0].Trace( m );
+                }
                 using( m.OpenInfo().Send( "StaticResolutionOnly( revertServices )." ) )
                 {
-                    result = @this.StaticResolutionOnly( true, false );
-                    result.Trace( m );
-                    tests( result );
+                    result[1] = @this.StaticResolutionOnly( true, false );
+                    result[1].Trace( m );
                 }
-                using( TestHelper.ConsoleMonitor.OpenInfo().Send( "StaticResolutionOnly()." ) )
+                using( m.OpenInfo().Send( "StaticResolutionOnly( revertPlugins )." ) )
                 {
-                    result = @this.StaticResolutionOnly( false, false );
-                    result.Trace( m );
-                    tests( result );
-                    @this.Stop();
+                    result[2] = @this.StaticResolutionOnly( false, true );
+                    result[2].Trace( m );
                 }
-                using( TestHelper.ConsoleMonitor.OpenInfo().Send( "StaticResolutionOnly( revertPlugins )." ) )
+                using( m.OpenInfo().Send( "StaticResolutionOnly( revertServices, revertPlugins )." ) )
                 {
-                    result = @this.StaticResolutionOnly( false, true );
-                    result.Trace( m );
-                    tests( result );
+                    result[3] = @this.StaticResolutionOnly( true, true );
+                    result[3].Trace( m );
                 }
-                using( TestHelper.ConsoleMonitor.OpenInfo().Send( "StaticResolutionOnly( revertServices, revertPlugins )." ) )
+                int comparingErrorCount = 0;
+                int comparingWarningCount = 0;
+                using( m.CatchCounter( ( f, e, w ) => { comparingErrorCount = f + e; comparingWarningCount = w; } ) )
+                using( m.OpenInfo().Send( "Comparing results." ) )
                 {
-                    result = @this.StaticResolutionOnly( true, true );
-                    result.Trace( m );
-                    tests( result );
+                    if( result[0].Success )
+                    {
+                        if( !result[1].Success ) m.Error().Send( "revertServices has failed." );
+                        if( !result[2].Success ) m.Error().Send( "revertPlugins has failed." );
+                        if( !result[3].Success ) m.Error().Send( "revertPlugins & revertServices has failed." );
+                    }
+                    else
+                    {
+                        var refItems = String.Join( ", ", result[0].StaticFailureResult.BlockingItems.Select( i => i.FullName ).OrderBy( Util.FuncIdentity ) );
+                        if( result[1].Success ) m.Error().Send( "revertServices succeeded." );
+                        else
+                        {
+                            var items = String.Join( ", ", result[1].StaticFailureResult.BlockingItems.Select( i => i.FullName ).OrderBy( Util.FuncIdentity ) );
+                            if( items != refItems ) m.Warn().Send( "revertServices found blocking items: '{1}' where default found: {0}.", refItems, items );
+                        }
+                        if( result[2].Success ) m.Error().Send( "revertPlugins succeeded." );
+                        else
+                        {
+                            var items = String.Join( ", ", result[2].StaticFailureResult.BlockingItems.Select( i => i.FullName ).OrderBy( Util.FuncIdentity ) );
+                            if( items != refItems ) m.Warn().Send( "revertServices found blocking items: '{1}' where default found: {0}.", refItems, items );
+                        }
+                        if( result[3].Success ) m.Error().Send( "revertPlugins & revertServices succeeded." );
+                        else
+                        {
+                            var items = String.Join( ", ", result[3].StaticFailureResult.BlockingItems.Select( i => i.FullName ).OrderBy( Util.FuncIdentity ) );
+                            if( items != refItems ) m.Warn().Send( "revertPlugins & revertServices found blocking items: '{1}' where default found: {0}.", refItems, items );
+                        }
+                    }
+                }
+                using( m.OpenInfo().Send( "Executing tests predicates." ) )
+                {
+                    tests( result[0] );
+                    tests( result[1] );
+                    tests( result[2] );
+                    tests( result[3] );
+                }
+                if( comparingErrorCount == 0 )
+                {
+                    if( comparingWarningCount == 0 )
+                        m.CloseGroup( "No difference between plugin/service ordering." );
+                    else m.CloseGroup( "Plugin/service ordering leads to different blocking detection. See logs for details." );
+                }
+                else
+                {
+                    Assert.Fail( "Plugin/service ordering leads to different result! (See logs for details.)" );
                 }
             }
         }

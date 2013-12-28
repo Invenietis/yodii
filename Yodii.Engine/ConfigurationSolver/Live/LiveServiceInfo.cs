@@ -79,6 +79,11 @@ namespace Yodii.Engine
             notifier.Update( this, ref _runningPlugin, newRunningPlugin, () => RunningPlugin );
         }
 
+        public string FullName
+        {
+            get { return _serviceInfo.ServiceFullName; }
+        }
+        
         public YodiiEngine Engine { get { return _engine; } }
 
         public bool IsRunning { get { return _runningStatus >= RunningStatus.Running; } }
