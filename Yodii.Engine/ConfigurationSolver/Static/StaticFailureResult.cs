@@ -12,6 +12,7 @@ namespace Yodii.Engine
     {
         readonly IReadOnlyList<IStaticSolvedPlugin> _blockingPlugins;
         readonly IReadOnlyList<IStaticSolvedService> _blockingServices;
+        readonly IReadOnlyList<IStaticSolvedYodiiItem> _blockingItems;
         readonly IStaticSolvedConfiguration _solvedConfiguration;
 
         internal StaticFailureResult( IStaticSolvedConfiguration solvedConfiguration, IReadOnlyList<IStaticSolvedPlugin> blockedPlugins, IReadOnlyList<IStaticSolvedService> blockedServices )
@@ -19,6 +20,8 @@ namespace Yodii.Engine
             Debug.Assert( solvedConfiguration != null && blockedPlugins != null && blockedServices != null );
             _blockingPlugins = blockedPlugins;
             _blockingServices = blockedServices;
+            _blockingItems = _blockingServices.Cast<IStaticSolvedYodiiItem>().Concat( _blockingPlugins ).ToReadOnlyList();
+
             _solvedConfiguration = solvedConfiguration;
         }
 
@@ -35,6 +38,11 @@ namespace Yodii.Engine
         public IReadOnlyList<IStaticSolvedService> BlockingServices
         {
             get { return _blockingServices; }
+        }
+        
+        public IReadOnlyList<IStaticSolvedYodiiItem> BlockingItems
+        {
+            get { return _blockingItems; }
         }
     }
 }

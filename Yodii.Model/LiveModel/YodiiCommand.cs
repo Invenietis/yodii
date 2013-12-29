@@ -77,9 +77,15 @@ namespace Yodii.Model
             }
         }
 
+        /// <summary>
+        /// Describes the command.
+        /// </summary>
+        /// <returns>Explicit description of the command.</returns>
         public override string ToString()
         {
-            return String.Format( "{0} {1} ({2}) by {3}.", Start ? "Start" : "Stop", PluginFullName ?? ServiceFullName, Impact, CallerKey );
+            if( CallerKey.Length > 0 )
+                return String.Format( "{0} {1}, impact={2}, by {3}.", Start ? "Start" : "Stop", PluginFullName ?? ServiceFullName, Impact, CallerKey );
+            return String.Format( "{0} {1}, impact={2}.", Start ? "Start" : "Stop", PluginFullName ?? ServiceFullName, Impact );
         }
     }
 }

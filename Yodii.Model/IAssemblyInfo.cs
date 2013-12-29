@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Assembly information for Yodii plugins.
+    /// Assembly information for Yodii plugins and services.
     /// </summary>
     public interface IAssemblyInfo
     {

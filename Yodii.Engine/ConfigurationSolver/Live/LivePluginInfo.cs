@@ -56,6 +56,11 @@ namespace Yodii.Engine
             notifier.Update( this, ref _service, newService, () => Service ); 
         }
 
+        public string FullName
+        {
+            get { return _service.ServiceInfo.ServiceFullName; }
+        }
+
         public bool IsRunning
         {
             get { return _runningStatus >= RunningStatus.Running; }

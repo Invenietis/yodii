@@ -34,17 +34,6 @@ namespace Yodii.Engine
                 get { return Solver.Step > ConfigurationSolverStep.RegisterPlugins; } 
             }
 
-            public PluginData TheOnlyPlugin
-            {
-                get
-                {
-                    if( Root.Disabled ) return null;
-                    PluginData d = RunningPlugin;
-                    if( d != null ) return d;
-                    return Root._propagation != null ? Root._propagation.TheOnlyPlugin : null;
-                }
-            }
-
             public bool SetRunningPlugin( PluginData p )
             {
                 Debug.Assert( p.Service != null && p.Service.Family == this );
@@ -55,6 +44,7 @@ namespace Yodii.Engine
                 if( _runningPlugin != null )
                 {
                     p.SetDisabled( PluginDisabledReason.AnotherRunningPluginExistsInFamily );
+                    if( !_runningPlugin.Disabled ) _runningPlugin.SetDisabled( PluginDisabledReason.AnotherRunningPluginExistsInFamily );
                     return false;
                 }
 
@@ -99,7 +89,9 @@ namespace Yodii.Engine
                     // running service than the current one: if this service is not a specialization, we reject the change.
                     if( !_runningService.IsStrictGeneralizationOf( s ) )
                     {
-                        s.SetDisabled( ServiceDisabledReason.AnotherServiceRunningInFamily );
+                        ServiceDisabledReason r = Solver.Step == ConfigurationSolverStep.RegisterServices ? ServiceDisabledReason.AnotherServiceIsRunningByConfig : ServiceDisabledReason.AnotherServiceRunningInFamily;
+                        s.SetDisabled( r );
+                        if( !_runningService.Disabled ) _runningService.SetDisabled( r );
                         return false;
                     }
                 }

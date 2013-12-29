@@ -170,9 +170,22 @@ namespace Yodii.Engine
         /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
         /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
         /// </summary>
+        /// <returns>The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.</returns>
+        public IYodiiEngineStaticOnlyResult StaticResolutionOnly()
+        {
+            return StaticResolutionOnly( false, false );
+        }
+
+        /// <summary>
+        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
+        /// </summary>
         /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
         /// <param name="revertPlugins">True to revert the list of the plugins (based on their <see cref="IPluginInfo.PluginFullName"/>).</param>
-        /// <returns>The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.</returns>
+        /// <returns>
+        /// The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an 
+        /// available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.
+        /// </returns>
         public IYodiiEngineStaticOnlyResult StaticResolutionOnly( bool revertServices, bool revertPlugins )
         {
             var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, createStaticSolvedConfigOnSuccess:true );
