@@ -86,7 +86,7 @@ namespace Yodii.Engine
             if( errors != null && errors.Any() )
             {
                 IYodiiEngineResult result =  solver.CreateDynamicFailureResult( errors );
-                _liveInfo.UpdateRuntimeErrors( errors );
+                _liveInfo.UpdateRuntimeErrors( errors, solver.FindExistingPlugin );
                 return result;
             }
             // Success:
@@ -231,7 +231,10 @@ namespace Yodii.Engine
             return _successResult;
         }
 
-        public IObservableReadOnlyList<YodiiCommand> YodiiCommands
+        /// <summary>
+        /// YodiiCommands are exposed by LiveInfo, not by the IYodiiEngine itself.
+        /// </summary>
+        internal IObservableReadOnlyList<YodiiCommand> YodiiCommands
         {
             get { return _yodiiCommands; }
         }

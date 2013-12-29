@@ -10,7 +10,7 @@ namespace Yodii.Engine
 {
     internal class SolvedServiceSnapshot : IStaticSolvedService, IDynamicSolvedService
     {
-        readonly ServiceDisabledReason _serviceDisabledReason;
+        readonly string _serviceDisabledReason;
         readonly ConfigurationStatus _configSolvedStatus;
         readonly IServiceInfo _serviceInfo;
         readonly ConfigurationStatus _configurationStatus;
@@ -33,7 +33,7 @@ namespace Yodii.Engine
         
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 
-        public string DisabledReason { get { return _serviceDisabledReason == ServiceDisabledReason.None ? null : _serviceDisabledReason.ToString(); } }
+        public string DisabledReason { get { return _serviceDisabledReason; } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
@@ -54,7 +54,7 @@ namespace Yodii.Engine
 
         bool IStaticSolvedYodiiItem.IsBlocking 
         { 
-            get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
+            get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != null; } 
         }
 
         RunningStatus IDynamicSolvedYodiiItem.RunningStatus
