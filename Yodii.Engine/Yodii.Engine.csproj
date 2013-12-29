@@ -43,7 +43,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.Core">
-      <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.3.0.4-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -69,6 +69,9 @@
     <Compile Include="ConfigurationSolver\FinalConfigStartableStatus.cs" />
     <Compile Include="ConfigurationSolver\IConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\IServiceDependentObject.cs" />
+    <Compile Include="ConfigurationSolver\IYodiiItemData.cs" />
+    <Compile Include="ConfigurationSolver\Live\LiveYodiiItemInfo.cs" />
+    <Compile Include="ConfigurationSolver\Live\LiveRunCapability.cs" />
     <Compile Include="ConfigurationSolver\ServiceData.BasePropagation.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicFailureResult.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\DynamicSolvedConfiguration.cs" />
@@ -81,10 +84,10 @@
     <Compile Include="ConfigurationSolver\Live\LiveServiceInfo.cs" />
     <Compile Include="ConfigurationSolver\Static\StaticSolvedConfiguration.cs" />
     <Compile Include="ConfigurationSolver\SuccessYodiiEngineResult.cs" />
-    <Compile Include="PluginDisabledReason.cs" />
-    <Compile Include="PluginRunningStatusReason.cs" />
-    <Compile Include="ServiceDisabledReason.cs" />
-    <Compile Include="ServiceRunningStatusReason.cs" />
+    <Compile Include="ConfigurationSolver\PluginDisabledReason.cs" />
+    <Compile Include="ConfigurationSolver\PluginRunningStatusReason.cs" />
+    <Compile Include="ConfigurationSolver\ServiceDisabledReason.cs" />
+    <Compile Include="ConfigurationSolver\ServiceRunningStatusReason.cs" />
     <Compile Include="YodiiEngineResult.cs" />
     <Compile Include="ConfigurationSolver\PluginData.Static.cs" />
     <Compile Include="ConfigurationSolver\Dynamic\PluginData.Dynamic.cs" />

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="IDelivery">
+      <Generalization />
+    </Service>
+    <Service FullName="ISecureDelivery">
+      <Generalization>IDelivery</Generalization>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>Livr' Express</FullName>
+      <Service>IDelivery</Service>
+      <ServiceReferences />
+    </Plugin>
+  </Plugins>
+  <Configuration />
+</Yodii.Lab>

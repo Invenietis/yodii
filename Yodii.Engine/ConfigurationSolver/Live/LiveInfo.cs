@@ -23,12 +23,17 @@ namespace Yodii.Engine
             _services = new CKObservableSortedArrayKeyList<LiveServiceInfo, string>( l => l.ServiceInfo.ServiceFullName );
         }
 
-        public ICKObservableReadOnlyList<ILivePluginInfo> Plugins
+        public IObservableReadOnlyList<YodiiCommand> YodiiCommands 
+        {
+            get { return _engine.YodiiCommands; } 
+        }
+
+        public IObservableReadOnlyList<ILivePluginInfo> Plugins
         {
             get { return _plugins; }
         }
 
-        public ICKObservableReadOnlyList<ILiveServiceInfo> Services
+        public IObservableReadOnlyList<ILiveServiceInfo> Services
         {
             get { return _services; }
         }
@@ -51,11 +56,21 @@ namespace Yodii.Engine
 
         internal void UpdateFrom( IConfigurationSolver solver )
         {
+            // 1 - Removes existing items from live info that do not exist anymore in the new running context.
+            //     This raises Collection "item removed" events.
+            //
             _services.RemoveWhereAndReturnsRemoved( s => solver.FindService( s.ServiceInfo.ServiceFullName ) == null ).Count();
             _plugins.RemoveWhereAndReturnsRemoved( p => solver.FindPlugin( p.PluginInfo.PluginFullName ) == null ).Count();
 
             DelayedPropertyNotification notifier = new DelayedPropertyNotification();
 
+            // 2 - Builds two lists of new Services and new Plugins and for already existing ones,
+            //     updates them with the new information.
+            //     This update does not trigger any ProprtyChanged events and consider only 
+            //     direct properties of the object.
+            //     Changes to linked items (such as a Generalization reference for instance will be 
+            //     done later thanks to their Bind method.
+            //
             List<LiveServiceInfo> servicesToAdd = new List<LiveServiceInfo>();
             foreach( var s in solver.AllServices )
             {
@@ -65,13 +80,15 @@ namespace Yodii.Engine
             }
 
             List<LivePluginInfo> pluginsToAdd = new List<LivePluginInfo>();
-            foreach( var s in solver.AllPlugins )
+            foreach( var p in solver.AllPlugins )
             {
-                LivePluginInfo lp = _plugins.GetByKey( s.PluginInfo.PluginFullName );
-                if( lp == null ) pluginsToAdd.Add( new LivePluginInfo( s, _engine ) );
-                else lp.UpdateFrom( s, notifier );
+                LivePluginInfo lp = _plugins.GetByKey( p.PluginInfo.PluginFullName );
+                if( lp == null ) pluginsToAdd.Add( new LivePluginInfo( p, _engine ) );
+                else lp.UpdateFrom( p, notifier );
             }
 
+            // 3 - Intrinsic properties have been updated. We now consider the properties that reference other items.
+            //
             Func<string,LiveServiceInfo> serviceFinder = name => _services.GetByKey( name ) ?? servicesToAdd.First( ls => ls.ServiceInfo.ServiceFullName == name );
             Func<string,LivePluginInfo> pluginFinder = id => _plugins.GetByKey( id ) ?? pluginsToAdd.First( lp => lp.PluginInfo.PluginFullName == id );
 
@@ -87,19 +104,26 @@ namespace Yodii.Engine
             }
             foreach( var lp in _plugins ) lp.Bind( solver.FindExistingPlugin( lp.PluginInfo.PluginFullName ), serviceFinder, notifier );
 
+            // 4 - It is time to add the new comers: this raises Collection changed "item added" events.
             foreach( var ls in servicesToAdd ) _services.Add( ls );
             foreach( var lp in pluginsToAdd ) _plugins.Add( lp );
 
+            // 5 - Raises all PropertyChanged events for all objects.
             notifier.RaiseEvents();
         }
 
-        internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors, Func<string,PluginData> pluginDataFinderForNewPlugin )
         {
             foreach( var e in errors )
             {
                 LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginFullName );
-                Debug.Assert( pluginInfo != null, "The plugin cannot be not found in UpdateRuntimeErrors function" );
-                pluginInfo.CurrentError = e.Item2;
+                if( pluginInfo == null )
+                {
+                    pluginInfo = new LivePluginInfo( pluginDataFinderForNewPlugin( e.Item1.PluginFullName ), _engine );
+                    pluginInfo.CurrentError = e.Item2;
+                    _plugins.Add( pluginInfo );
+                }
+                else pluginInfo.CurrentError = e.Item2;
             }
         }
 

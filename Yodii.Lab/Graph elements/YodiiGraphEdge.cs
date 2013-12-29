@@ -25,7 +25,7 @@ namespace Yodii.Lab
         /// Used for GraphX serialization. Not implemented.
         /// </summary>
         public YodiiGraphEdge()
-            : base(null, null, 1)
+            : base(null, null)
         {
         }
 

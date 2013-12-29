@@ -41,9 +41,9 @@
     <AssemblyOriginatorKeyFile>SharedKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=3.0.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=3.0.4.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.3.0.4-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -71,7 +71,9 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
-    <Compile Include="LiveModel\IDynamicYodiiItem.cs" />
+    <Compile Include="LiveModel\ILiveRunCapability.cs" />
+    <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
+    <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />
     <Compile Include="YodiiModelExtension.cs" />
     <Compile Include="DiscoveredInfoExtension.cs" />
     <Compile Include="DependencyRequirement.cs" />
@@ -81,7 +83,6 @@
     <Compile Include="IDiscoveredInfo.cs" />
     <Compile Include="IAssemblyInfo.cs" />
     <Compile Include="IDiscoveredItem.cs" />
-    <Compile Include="IObservableReadOnlyList.cs" />
     <Compile Include="IPluginInfo.cs" />
     <Compile Include="IServiceInfo.cs" />
     <Compile Include="IServiceReferenceInfo.cs" />

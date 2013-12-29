@@ -11,8 +11,6 @@ using System.Xml;
 using CK.Core;
 using GraphX;
 using GraphX.GraphSharp.Algorithms.Layout;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Tree;
 using Yodii.Lab.ConfigurationEditor;
 using Yodii.Lab.Mocks;
 using Yodii.Lab.Utils;
@@ -71,9 +69,6 @@ namespace Yodii.Lab
         readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
 
-        LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
-        ILayoutParameters _graphLayoutParameters;
-
         ConfigurationEditorWindow _activeConfEditorWindow = null;
         bool _hideNotifications = false;
 
@@ -120,9 +115,6 @@ namespace Yodii.Lab
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
             _newFileCommand = new RelayCommand( NewFileExecute );
             _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
-
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
-            GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
             LoadRecentFiles();
 
@@ -397,11 +389,7 @@ namespace Yodii.Lab
             else
             {
                 RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
-                // Re-create graph with new layout and parameters.
-                GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
-                GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
-
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
+                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
             }
         }
 
@@ -623,14 +611,14 @@ namespace Yodii.Lab
 
         private bool CanRevokeAllCommands( object obj )
         {
-            return LabState.Engine.IsRunning && LabState.Engine.YodiiCommands.Count > 0;
+            return LabState.Engine.IsRunning && LabState.Engine.LiveInfo.YodiiCommands.Count > 0;
         }
 
         private void RevokeAllCommandsExecute( object obj )
         {
             if( !CanRevokeAllCommands( obj ) ) return;
 
-            IEnumerable<string> callers = LabState.Engine.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
+            IEnumerable<string> callers = LabState.Engine.LiveInfo.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
 
             foreach( string callerKey in callers )
             {
@@ -768,55 +756,6 @@ namespace Yodii.Lab
                     RaisePropertyChanged( "SelectedVertex" );
                     if( value != null ) value.IsSelected = true;
                 }
-            }
-        }
-
-        /// <summary>
-        /// The current graph layout type.
-        /// </summary> parameters
-        public LayoutAlgorithmTypeEnum GraphLayoutAlgorithmType
-        {
-            get
-            {
-                return _graphLayoutAlgorithmType;
-            }
-            set
-            {
-                if( value != _graphLayoutAlgorithmType )
-                {
-                    _graphLayoutAlgorithmType = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// The current graph layout parameters.
-        /// </summary>
-        public ILayoutParameters GraphLayoutParameters
-        {
-            get
-            {
-                return _graphLayoutParameters;
-            }
-            set
-            {
-                if( value != _graphLayoutParameters )
-                {
-                    _graphLayoutParameters = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Available graph layout types.
-        /// </summary>
-        public IEnumerable<GraphX.LayoutAlgorithmTypeEnum> GraphLayoutAlgorithmTypes
-        {
-            get
-            {
-                return (IEnumerable<GraphX.LayoutAlgorithmTypeEnum>)Enum.GetValues( typeof( GraphX.LayoutAlgorithmTypeEnum ) );
             }
         }
 
@@ -1376,30 +1315,6 @@ namespace Yodii.Lab
             else
             {
                 return null;
-            }
-        }
-
-        private static ILayoutParameters GetDefaultLayoutParameters( LayoutAlgorithmTypeEnum layoutType )
-        {
-            switch( layoutType )
-            {
-                case LayoutAlgorithmTypeEnum.EfficientSugiyama:
-                    EfficientSugiyamaLayoutParameters sugiyamaParams = new EfficientSugiyamaLayoutParameters();
-                    sugiyamaParams.VertexDistance = 70.0;
-                    sugiyamaParams.MinimizeEdgeLength = false;
-                    sugiyamaParams.PositionMode = 0;
-                    sugiyamaParams.EdgeRouting = SugiyamaEdgeRoutings.Orthogonal;
-                    sugiyamaParams.OptimizeWidth = false;
-                    return sugiyamaParams;
-                case LayoutAlgorithmTypeEnum.Tree:
-                    SimpleTreeLayoutParameters treeParams = new SimpleTreeLayoutParameters();
-                    treeParams.Direction = LayoutDirection.BottomToTop;
-                    //treeParams.VertexGap = 30.0;
-                    //treeParams.OptimizeWidthAndHeight = false;
-                    treeParams.SpanningTreeGeneration = SpanningTreeGeneration.BFS;
-                    return treeParams;
-                default:
-                    return null;
             }
         }
 
