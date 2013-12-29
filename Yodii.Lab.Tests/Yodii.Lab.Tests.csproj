@@ -36,8 +36,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CK.GraphX">
-      <HintPath>..\packages\CK.GraphX.1.0.4\lib\net40\CK.GraphX.dll</HintPath>
+    <Reference Include="CK.GraphX, Version=1.0.5.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.GraphX.1.0.5\lib\net40\CK.GraphX.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>

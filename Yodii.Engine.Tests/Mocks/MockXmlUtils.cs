@@ -69,7 +69,7 @@ namespace Yodii.Engine.Tests.Mocks
             return e;
         }
 
-        #region Deserialization
+        #region De-serialization
 
         private static void ReadConfigurationManager( IConfigurationManager manager, XmlReader r )
         {
@@ -291,6 +291,7 @@ namespace Yodii.Engine.Tests.Mocks
         }
 
         #endregion
+
         #region Serialization utility classes
         private class PendingServiceReference
         {
