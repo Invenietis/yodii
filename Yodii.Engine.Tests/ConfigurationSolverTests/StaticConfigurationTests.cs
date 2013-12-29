@@ -775,7 +775,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckAllBlockingServicesAre( "ServiceAx1|ServiceAx2" );
+                   res.CheckAllBlockingServicesAre( "ServiceAx1,ServiceAx2" );
                } );
         }
 
@@ -817,7 +817,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckAllBlockingServicesAre( "ServiceAx1|ServiceAx2" );
+                   res.CheckAllBlockingServicesAre( "ServiceA,ServiceAx1,ServiceAx2" );
                } );
         }
 
