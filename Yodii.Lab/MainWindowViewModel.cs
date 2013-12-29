@@ -380,17 +380,10 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
-            if( param == null )
-            {
-                RaiseNewNotification( new Notification() { Title = "Re-creating graph..." } );
-                // Refresh layout.
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
-            }
-            else
-            {
-                RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
-            }
+
+            RaiseNewNotification( new Notification() { Title = "Calling relayout..." } );
+            // Refresh layout.
+            Graph.RaiseGraphUpdateRequested();
         }
 
         private void CreateServiceExecute( object param )
@@ -896,7 +889,9 @@ namespace Yodii.Lab
                         Graph.LockGraphUpdates = true;
                         LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
                         Graph.LockGraphUpdates = false;
-                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+
+                        Graph.RaiseGraphUpdateRequested();
+
                         _hideNotifications = false;
                         RaiseNewNotification( "Autosave loaded", OpenedFilePath );
                     }
@@ -1105,7 +1100,7 @@ namespace Yodii.Lab
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
 
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                Graph.RaiseGraphUpdateRequested();
 
                 RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
 
@@ -1118,7 +1113,6 @@ namespace Yodii.Lab
             }
             catch( Exception ex )
             {
-                throw ex;
                 // TODO: Detailed exceptions
 
                 string reason = ex.ToString();

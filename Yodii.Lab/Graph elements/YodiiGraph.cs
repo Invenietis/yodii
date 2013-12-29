@@ -19,7 +19,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Fired when graph content changes, requesting a new layout update.
         /// </summary>
-        public event EventHandler<GraphUpdateRequestEventArgs> GraphUpdateRequested;
+        public event EventHandler<EventArgs> GraphUpdateRequested;
 
         readonly ICKObservableReadOnlyCollection<LabServiceInfo> _serviceInfos;
         readonly ICKObservableReadOnlyCollection<LabPluginInfo> _pluginInfos;
@@ -254,11 +254,11 @@ namespace Yodii.Lab
             this.RemoveVertexIf( v => v.IsService );
         }
 
-        internal void RaiseGraphUpdateRequested( GraphGenerationRequestType type = GraphGenerationRequestType.RelayoutGraph )
+        internal void RaiseGraphUpdateRequested()
         {
             if( this.GraphUpdateRequested != null && !LockGraphUpdates )
             {
-                this.GraphUpdateRequested( this, new GraphUpdateRequestEventArgs( type ) );
+                this.GraphUpdateRequested( this, new EventArgs() );
             }
         }
         #endregion Private methods
@@ -272,7 +272,7 @@ namespace Yodii.Lab
                 {
                     CreatePluginVertex( (LabPluginInfo)item );
                 }
-                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                RaiseGraphUpdateRequested();
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
             {
@@ -280,7 +280,7 @@ namespace Yodii.Lab
                 {
                     RemovePluginVertex( (LabPluginInfo)item );
                 }
-                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                RaiseGraphUpdateRequested();
             }
             else if( e.Action == NotifyCollectionChangedAction.Replace )
             {
@@ -289,7 +289,7 @@ namespace Yodii.Lab
             else if( e.Action == NotifyCollectionChangedAction.Reset )
             {
                 ClearPluginVertices();
-                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                RaiseGraphUpdateRequested();
             }
         }
 
@@ -300,7 +300,7 @@ namespace Yodii.Lab
                 foreach( var item in e.NewItems )
                 {
                     CreateServiceVertex( (LabServiceInfo)item );
-                    RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                    RaiseGraphUpdateRequested();
                 }
             }
             else if( e.Action == NotifyCollectionChangedAction.Remove )
@@ -308,7 +308,7 @@ namespace Yodii.Lab
                 foreach( var item in e.OldItems )
                 {
                     RemoveServiceVertex( (LabServiceInfo)e.OldItems[0] );
-                    RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                    RaiseGraphUpdateRequested();
                 }
             }
             else if( e.Action == NotifyCollectionChangedAction.Replace )
@@ -318,7 +318,7 @@ namespace Yodii.Lab
             else if( e.Action == NotifyCollectionChangedAction.Reset )
             {
                 ClearServiceVertices();
-                RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                RaiseGraphUpdateRequested();
             }
         }
 
@@ -343,7 +343,7 @@ namespace Yodii.Lab
                         e2.Source.IsPlugin && e2.Source.LabPluginInfo.PluginInfo == reference.Owner
                         && e2.Target.IsService && e2.Target.LabServiceInfo.ServiceInfo == reference.Reference );
             }
-            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+            RaiseGraphUpdateRequested();
         }
 
         void ServiceInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -366,7 +366,7 @@ namespace Yodii.Lab
                 }
 
             }
-            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+            RaiseGraphUpdateRequested();
         }
 
         void PluginInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -389,7 +389,7 @@ namespace Yodii.Lab
                     AddEdge( newEdge );
                 }
             }
-            RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+            RaiseGraphUpdateRequested();
         }
         #endregion Event handlers
     }

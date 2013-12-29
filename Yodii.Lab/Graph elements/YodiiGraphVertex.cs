@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Vertex from a Yodii graph. Represents either a lab service or a lab plugin.
     /// </summary>
+    [DebuggerDisplay("{Description}")]
     public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
@@ -176,6 +178,18 @@ namespace Yodii.Lab
                     _hasConfiguration = value;
                     RaisePropertyChanged( "HasConfiguration" );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Vertex description.
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                if( IsService ) return String.Format("Service vertex: {0}", LabServiceInfo.ServiceInfo.ServiceFullName);
+                else return String.Format( "Plugin vertex: {0}", LabPluginInfo.PluginInfo.PluginFullName );
             }
         }
 

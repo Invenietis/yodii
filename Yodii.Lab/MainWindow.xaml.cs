@@ -13,6 +13,7 @@ namespace Yodii.Lab
     public partial class MainWindow : Fluent.RibbonWindow
     {
         readonly MainWindowViewModel _vm;
+        readonly YodiiLayout _graphLayout;
 
         /// <summary>
         /// Creates the main window.
@@ -27,27 +28,48 @@ namespace Yodii.Lab
 
             InitializeComponent();
 
-            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
-            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
-            //GraphArea.SetVerticesDrag( true, true );
-            GraphArea.EnableParallelEdges = true;
-            GraphArea.EdgeShowSelfLooped = true;
-            GraphArea.EdgeCurvingEnabled = true;
-            GraphArea.UseNativeObjectArrange = false;
-            GraphArea.SideExpansionSize = new Size( 100, 100 );
-
             GraphArea.GenerateGraphFinished += GraphArea_GenerateGraphFinished;
             GraphArea.RelayoutFinished += GraphArea_RelayoutFinished;
 
             ZoomBox.IsAnimationDisabled = false;
             ZoomBox.MaxZoomDelta = 2;
+            GraphArea.UseNativeObjectArrange = false;
+            //GraphArea.SideExpansionSize = new Size( 100, 100 );
 
             _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
-            GraphArea.LayoutAlgorithm = new YodiiLayout();
+            _graphLayout = new YodiiLayout();
+            GraphArea.LayoutAlgorithm = _graphLayout;
+            GraphArea.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.None;
+            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.None;
 
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
+
+            _vm.Graph.VertexAdded += Graph_VertexAdded;
+            _vm.Graph.VertexRemoved += Graph_VertexRemoved;
+            _vm.Graph.EdgeAdded += Graph_EdgeAdded;
+            _vm.Graph.EdgeRemoved += Graph_EdgeRemoved;
+        }
+
+        void Graph_EdgeRemoved( YodiiGraphEdge e )
+        {
+            GraphArea.RemoveEdge( e );
+        }
+
+        void Graph_EdgeAdded( YodiiGraphEdge e )
+        {
+            GraphArea.AddEdge(e, new EdgeControl(GraphArea.VertexList[e.Source], GraphArea.VertexList[e.Target], e));
+        }
+
+        void Graph_VertexRemoved( YodiiGraphVertex vertex )
+        {
+            GraphArea.RemoveVertex( vertex );
+        }
+
+        void Graph_VertexAdded( YodiiGraphVertex vertex )
+        {
+            GraphArea.AddVertex( vertex, new VertexControl( vertex ) );
         }
 
         void _vm_CloseBackstageRequest( object sender, EventArgs e )
@@ -132,16 +154,9 @@ namespace Yodii.Lab
             GraphArea.InvalidateVisual();
         }
 
-        void Graph_GraphUpdateRequested( object sender, GraphUpdateRequestEventArgs e )
+        void Graph_GraphUpdateRequested( object sender, EventArgs e )
         {
-            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph )
-            {
-                GraphArea.RelayoutGraph();
-            }
-            else
-            {
-                GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-            }
+            GraphArea.RelayoutGraph();
         }
 
         private void StackPanel_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )

@@ -11,10 +11,19 @@ using CK.Core;
 
 namespace Yodii.Lab
 {
+    static class PointExtensions
+    {
+        public static bool IsValid( this Point @this)
+        {
+            return !Double.IsNaN(@this.X) && !Double.IsNaN(@this.Y);
+        }
+    }
     class YodiiLayout : LayoutAlgorithmBase<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph>
     {
         static readonly int HORIZONTAL_MARGIN_SIZE = 30;
         static readonly int VERTICAL_MARGIN_SIZE = 30;
+
+        public bool NextRecomputeForcesPositions = false;
 
         CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo> _serviceVertices;
         CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo> _pluginVertices;
@@ -24,46 +33,58 @@ namespace Yodii.Lab
 
         protected override void InternalPreCompute()
         {
-            _serviceVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo>(
-                s => s.LabServiceInfo.ServiceInfo,
-                ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
-                false
-                );
+            Application.Current.Dispatcher.Invoke( new Action( () =>
+            {
 
-            _pluginVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
-                s => s.LabPluginInfo.PluginInfo,
-                ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
-                false
-                );
+                _serviceVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo>(
+                    s => s.LabServiceInfo.ServiceInfo,
+                    ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
+                    false
+                    );
 
-            _rootFamilies = new CKSortedArrayList<ServiceFamily>(
-                ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
-                false
-                );
+                _pluginVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
+                    s => s.LabPluginInfo.PluginInfo,
+                    ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
+                    false
+                    );
 
-            _serviceFamilies = new CKSortedArrayKeyList<ServiceFamily, IServiceInfo>(
-                s => s.RootService,
-                ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
-                false
-                );
+                _rootFamilies = new CKSortedArrayList<ServiceFamily>(
+                    ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
+                    false
+                    );
 
-            _orphanPlugins = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
-                p => p.LabPluginInfo.PluginInfo,
-                ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
-                false
-                );
+                _serviceFamilies = new CKSortedArrayKeyList<ServiceFamily, IServiceInfo>(
+                    s => s.RootService,
+                    ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
+                    false
+                    );
+
+                _orphanPlugins = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
+                    p => p.LabPluginInfo.PluginInfo,
+                    ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
+                    false
+                    );
+
+                _rootFamilies = new CKSortedArrayList<ServiceFamily>(
+                    ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
+                    false
+                    );
+            } ) );
+        }
+
+        protected override Point OnOriginalPosition( YodiiGraphVertex v, Point p )
+        {
+            if( p.IsValid() ) return p;
+            return new Point( 0, 0 );
         }
 
         protected override void InternalCompute()
         {
-            CreateServiceFamilies();
-            ComputeFamiliesSizes();
-            //_rootFamilies = null;
-            //_serviceVertices = null;
-            //_pluginVertices = null;
-
-            //_serviceFamilies = null;
-            //_orphanPlugins = null;
+            if( NextRecomputeForcesPositions )
+            {
+                CreateServiceFamilies();
+                ComputeForcedPositions();
+            }
         }
 
         public override bool NeedOriginalVertexPosition
@@ -107,7 +128,7 @@ namespace Yodii.Lab
             }
         }
 
-        private void ComputeFamiliesSizes()
+        private void ComputeForcedPositions()
         {
             // Start at 0, 0
             double currentX = 0;
@@ -116,7 +137,7 @@ namespace Yodii.Lab
             foreach( var family in _rootFamilies )
             {
                 // Add service family
-                Size familySize = family.ComputeFamilyPosition( new Point( currentX, currentY ) );
+                Size familySize = family.RecomputeForcedFamilyPosition( new Point( currentX, currentY ) );
 
                 // Next X: Size + Margin
                 currentX += familySize.Width + VERTICAL_MARGIN_SIZE;
@@ -127,7 +148,7 @@ namespace Yodii.Lab
             {
                 Point pluginPoint = new Point( currentX, 0 );
 
-                VertexPositions[ plugin ] = new Point( currentX, 0 );
+                VertexPositions[plugin] = pluginPoint;
 
                 currentX += VertexSizes[plugin].Width + VERTICAL_MARGIN_SIZE;
             }
@@ -190,7 +211,7 @@ namespace Yodii.Lab
             /// </summary>
             /// <param name="rootPosition">Starting position of this family (top left).</param>
             /// <returns>Size of this family, including the root, and all children.</returns>
-            public Size ComputeFamilyPosition( Point rootPosition )
+            public Size RecomputeForcedFamilyPosition( Point rootPosition )
             {
                 double width = 0;
                 double height = 0;
@@ -206,7 +227,7 @@ namespace Yodii.Lab
                 foreach( var family in SubServices.Values )
                 {
                     // Add new family 
-                    Size familySize = family.ComputeFamilyPosition( new Point( currentX, currentY ) );
+                    Size familySize = family.RecomputeForcedFamilyPosition( new Point( currentX, currentY ) );
 
                     subWidth += familySize.Width;
                     currentX += familySize.Width + HORIZONTAL_MARGIN_SIZE;
@@ -216,7 +237,8 @@ namespace Yodii.Lab
 
                 foreach( var plugin in SubPlugins.Values )
                 {
-                    _parent.VertexPositions[plugin] = new Point( currentX, currentY );
+                    Point pluginPosition =  new Point( currentX, currentY );
+                    _parent.VertexPositions[plugin] = pluginPosition;
 
                     Size pluginSize = _parent.VertexSizes[plugin];
 
@@ -242,7 +264,7 @@ namespace Yodii.Lab
 
                 Point position = new Point( x, rootPosition.Y );
 
-                _parent.VertexPositions[ RootVertex ] = position;
+                _parent.VertexPositions[RootVertex] = position;
 
                 return FamilySize;
             }
