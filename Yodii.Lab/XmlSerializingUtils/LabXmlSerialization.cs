@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Xml;
 using CK.Core;
 using Yodii.Lab.Mocks;
@@ -132,6 +134,14 @@ namespace Yodii.Lab
 
             // That's pretty much all we need. Implementations will be guessed from the plugins themselves.
             // HasError, AssemblyInfo and others aren't supported at this time, but can be added here later on.
+
+            w.WriteStartElement( "X" );
+            if( si.PositionInGraph.IsValid() ) w.WriteValue( si.PositionInGraph.X.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
+
+            w.WriteStartElement( "Y" );
+            if( si.PositionInGraph.IsValid() ) w.WriteValue( si.PositionInGraph.Y.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
         }
 
         private static void SerializePluginInfoToXmlWriter( PluginInfo pi, XmlWriter w )
@@ -161,6 +171,14 @@ namespace Yodii.Lab
 
                 w.WriteEndElement();
             }
+            w.WriteEndElement();
+
+            w.WriteStartElement( "X" );
+            if( pi.PositionInGraph.IsValid() ) w.WriteValue( pi.PositionInGraph.X.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
+
+            w.WriteStartElement( "Y" );
+            if( pi.PositionInGraph.IsValid() ) w.WriteValue( pi.PositionInGraph.Y.ToString( CultureInfo.InvariantCulture ) );
             w.WriteEndElement();
         }
         #endregion
@@ -293,31 +311,53 @@ namespace Yodii.Lab
 
             ServiceInfo generalization = null;
 
+            Point pos = new Point();
+            pos.X = Double.NaN;
+            pos.Y = Double.NaN;
+
             while( r.Read() )
             {
                 if( r.IsStartElement() && !r.IsEmptyElement )
                 {
-                    if( r.Name == "Generalization" )
+                    switch( r.Name )
                     {
-                        if( r.Read() )
-                        {
-                            string generalizationName = r.Value;
-                            if( !String.IsNullOrEmpty( generalizationName ) )
+                        case "Generalization":
+                            if( r.Read() )
                             {
-                                if( loadedServices.Contains( generalizationName ) )
+                                string generalizationName = r.Value;
+                                if( !String.IsNullOrEmpty( generalizationName ) )
                                 {
-                                    generalization = loadedServices.GetByKey( generalizationName );
-                                    s.Generalization = generalization;
-                                }
-                                else
-                                {
-                                    pendingGeneralizations.Add( new PendingGeneralization( s, generalizationName ) );
+                                    if( loadedServices.Contains( generalizationName ) )
+                                    {
+                                        generalization = loadedServices.GetByKey( generalizationName );
+                                        s.Generalization = generalization;
+                                    }
+                                    else
+                                    {
+                                        pendingGeneralizations.Add( new PendingGeneralization( s, generalizationName ) );
+                                    }
                                 }
                             }
-                        }
+                            break;
+                        case "X":
+                            if( r.Read() )
+                            {
+                                double posX;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posX ) ) pos.X = posX;
+                            }
+                            break;
+                        case "Y":
+                            if( r.Read() )
+                            {
+                                double posY;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posY ) ) pos.Y = posY;
+                            }
+                            break;
                     }
                 }
             }
+
+            s.PositionInGraph = pos;
 
             // Fix pending references of this service
             foreach( var pg in pendingGeneralizations.Where( x => x.PendingServiceFullName == serviceFullName ).ToList() )
@@ -359,6 +399,10 @@ namespace Yodii.Lab
             PluginInfo p = new PluginInfo( null, AssemblyInfoHelper.ExecutingAssemblyInfo );
             loadedPlugins.Add( p );
 
+            Point pos = new Point();
+            pos.X = Double.NaN;
+            pos.Y = Double.NaN;
+
             while( r.Read() )
             {
                 if( r.IsStartElement() && !r.IsEmptyElement )
@@ -392,14 +436,15 @@ namespace Yodii.Lab
                             }
                             break;
                         case "ServiceReferences":
-                            while( r.Read() )
+                            var s = r.ReadSubtree();
+                            while( s.Read() )
                             {
-                                if( r.IsStartElement() && r.Name == "ServiceReference" )
+                                if( s.IsStartElement() && s.Name == "ServiceReference" )
                                 {
-                                    string serviceFullName2 = r.GetAttribute( "Service" );
+                                    string serviceFullName2 = s.GetAttribute( "Service" );
                                     if( !String.IsNullOrEmpty( serviceFullName2 ) )
                                     {
-                                        DependencyRequirement requirement = (DependencyRequirement)Enum.Parse( typeof( DependencyRequirement ), r.GetAttribute( "Requirement" ) );
+                                        DependencyRequirement requirement = (DependencyRequirement)Enum.Parse( typeof( DependencyRequirement ), s.GetAttribute( "Requirement" ) );
 
                                         if( loadedServices.Contains( serviceFullName2 ) )
                                         {
@@ -414,9 +459,25 @@ namespace Yodii.Lab
                                 }
                             }
                             break;
+                        case "X":
+                            if( r.Read() )
+                            {
+                                double posX;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posX) ) pos.X = posX;
+                            }
+                            break;
+                        case "Y":
+                            if( r.Read() )
+                            {
+                                double posY;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posY ) ) pos.Y = posY;
+                            }
+                            break;
                     }
                 }
             }
+
+            p.PositionInGraph = pos;
         }
 
         private void ApplyPersistedStateToLab()
