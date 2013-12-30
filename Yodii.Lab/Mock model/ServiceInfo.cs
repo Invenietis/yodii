@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CK.Core;
 using Yodii.Model;
 using System.Collections;
+using System.Windows;
 
 namespace Yodii.Lab.Mocks
 {
@@ -98,6 +99,16 @@ namespace Yodii.Lab.Mocks
         }
 
         #endregion
+
+        /// <summary>
+        /// Position of this PluginInfo in the Yodii graph.
+        /// This is not observable or synced, and only used for serialization.
+        /// </summary>
+        public Point PositionInGraph
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// True if service has error.

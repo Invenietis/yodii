@@ -12,7 +12,7 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     WindowStartupLocation="CenterScreen"
-    Icon="/Yodii.Lab;component/Icons/class_32xLG.png"
+    Icon="/Yodii.Lab;component/Assets/Icons/class_32xLG.png"
     x:Name="MainWindowRoot"
     Title="{Binding Path=WindowTitle, FallbackValue=Yodii.Lab}"
     Height="600"
@@ -38,7 +38,7 @@
         <KeyBinding
             Key="R"
             Modifiers="Control"
-            Command="{Binding Path=ReorderGraphLayoutCommand}" />
+            Command="{Binding Path=AutoPositionCommand}" />
         <KeyBinding
             Key="F5"
             Command="{Binding Path=ReorderGraphLayoutCommand}" />
@@ -297,7 +297,7 @@
                         Header="New"
                         Fluent:KeyTip.Keys="N"
                         Command="{Binding Path=NewFileCommand}"
-                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/NewDocument_32x32.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="New file (Ctrl+N)"
@@ -312,7 +312,7 @@
                         Fluent:KeyTip.Keys="S"
                         Command="{Binding Path=SaveCommand}"
                         LargeIcon="{StaticResource DiskIconViewBox}"
-                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/base_floppydisk_32.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="Save file (Ctrl+S)"
@@ -326,7 +326,7 @@
                         Header="Open"
                         Fluent:KeyTip.Keys="O"
                         Command="{Binding Path=OpenFileCommand}"
-                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/Folder.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="Open file (Ctrl+O)"
@@ -344,7 +344,7 @@
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
-                                Source="/Yodii.Lab;component/Icons/interface_16xLG.png" />
+                                Source="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png" />
                         </Fluent:Button.LargeIcon>
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
@@ -361,7 +361,7 @@
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
-                                Source="/Yodii.Lab;component/Icons/class_32xLG.png" />
+                                Source="/Yodii.Lab;component/Assets/Icons/class_32xLG.png" />
                         </Fluent:Button.LargeIcon>
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
@@ -407,22 +407,22 @@
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:SplitButton
+                    <Fluent:Button
                         Fluent:KeyTip.Keys="R"
-                        Header="Reorder graph"
-                        Command="{Binding Path=ReorderGraphLayoutCommand}">
-                        <Fluent:SplitButton.ToolTip>
+                        Header="Auto-position elements"
+                        Command="{Binding Path=AutoPositionCommand}">
+                        <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
-                                Title="Reorder graph (F5, Ctrl+R)"
+                                Title="Auto-position elements (Ctrl+R)"
                                 Width="250"
-                                Text="Regenerates the graph, resetting items to their original positions." />
-                        </Fluent:SplitButton.ToolTip>
-                        <Fluent:SplitButton.LargeIcon>
+                                Text="Attempt to automatically position all elements. This will overwrite every item position." />
+                        </Fluent:Button.ToolTip>
+                        <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
-                        </Fluent:SplitButton.LargeIcon>
-                    </Fluent:SplitButton>
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Export to PNG"
                         Click="ExportToPngButton_Click">
@@ -763,7 +763,7 @@
                                 HorizontalAlignment="Left"
                                 TextTrimming="CharacterEllipsis">
                                 <Run
-                                    Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.
+                                    Text="{Binding LabState.Engine.LiveInfo.YodiiCommands.Count, Mode=OneWay}" /> commands.
                             </TextBlock>
                         </DockPanel>
                         <ScrollViewer
@@ -773,7 +773,7 @@
                             <ItemsControl
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top"
-                                ItemsSource="{Binding LabState.Engine.YodiiCommands, Mode=OneWay}">
+                                ItemsSource="{Binding LabState.Engine.LiveInfo.YodiiCommands, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate
                                         DataType="ym:YodiiCommand">
@@ -798,14 +798,14 @@
                                                                     Value="true">
                                                                     <Setter
                                                                         Property="Source"
-                                                                        Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                                                        Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
                                                                 </DataTrigger>
                                                                 <DataTrigger
                                                                     Binding="{Binding Path=Start, Mode=OneWay}"
                                                                     Value="false">
                                                                     <Setter
                                                                         Property="Source"
-                                                                        Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                                                        Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>

@@ -16,6 +16,8 @@ namespace Yodii.Lab
         static readonly int HORIZONTAL_MARGIN_SIZE = 30;
         static readonly int VERTICAL_MARGIN_SIZE = 30;
 
+        public bool NextRecomputeForcesPositions = false;
+
         CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo> _serviceVertices;
         CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo> _pluginVertices;
         CKSortedArrayList<ServiceFamily> _rootFamilies;
@@ -24,6 +26,7 @@ namespace Yodii.Lab
 
         protected override void InternalPreCompute()
         {
+
             _serviceVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo>(
                 s => s.LabServiceInfo.ServiceInfo,
                 ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
@@ -52,18 +55,71 @@ namespace Yodii.Lab
                 ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
                 false
                 );
+
+            _rootFamilies = new CKSortedArrayList<ServiceFamily>(
+                ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
+                false
+                );
+
+        }
+
+        protected override Point OnOriginalPosition( YodiiGraphVertex v, Point p )
+        {
+            // Keep existing positions
+            if( p.IsValid() ) return p;
+
+            Point newPoint = new Point( 0, 0 );
+            if( VertexPositions == null ) return newPoint;
+            if( v.IsService )
+            {
+                if( v.LabServiceInfo.ServiceInfo.Generalization != null)
+                {
+                    // Find & get point of generalization
+                    var generalizationQuery = VertexPositions.Where( kvp => kvp.Key.IsService && kvp.Key.LabServiceInfo.ServiceInfo == v.LabServiceInfo.ServiceInfo.Generalization );
+
+                    if( generalizationQuery.Count() > 0 )
+                    {
+                        Point generalizationPoint = generalizationQuery.First().Value;
+                        if( generalizationPoint.IsValid() )
+                        {
+                            newPoint.X = generalizationPoint.X;
+                            newPoint.Y = generalizationPoint.Y + VERTICAL_MARGIN_SIZE;
+                        }
+                    }
+                    
+                }
+            } else if (v.IsPlugin)
+            {
+                if( v.LabPluginInfo.PluginInfo.Service != null )
+                {
+                    // Find & get point of service
+                    var serviceQuery = VertexPositions.Where( kvp => kvp.Key.IsService && kvp.Key.LabServiceInfo.ServiceInfo == v.LabPluginInfo.PluginInfo.Service );
+
+                    if( serviceQuery.Count() > 0 )
+                    {
+                        Point generalizationPoint = serviceQuery.First().Value;
+                        if( generalizationPoint.IsValid() )
+                        {
+                            newPoint.X = generalizationPoint.X;
+                            newPoint.Y = generalizationPoint.Y + VERTICAL_MARGIN_SIZE;
+                        }
+                    }
+
+                }
+            }
+
+            return newPoint;
         }
 
         protected override void InternalCompute()
         {
-            CreateServiceFamilies();
-            ComputeFamiliesSizes();
-            //_rootFamilies = null;
-            //_serviceVertices = null;
-            //_pluginVertices = null;
+            if( NextRecomputeForcesPositions )
+            {
+                CreateServiceFamilies();
+                ComputeForcedPositions();
 
-            //_serviceFamilies = null;
-            //_orphanPlugins = null;
+                NextRecomputeForcesPositions = false;
+            }
         }
 
         public override bool NeedOriginalVertexPosition
@@ -107,7 +163,7 @@ namespace Yodii.Lab
             }
         }
 
-        private void ComputeFamiliesSizes()
+        private void ComputeForcedPositions()
         {
             // Start at 0, 0
             double currentX = 0;
@@ -116,7 +172,7 @@ namespace Yodii.Lab
             foreach( var family in _rootFamilies )
             {
                 // Add service family
-                Size familySize = family.ComputeFamilyPosition( new Point( currentX, currentY ) );
+                Size familySize = family.RecomputeForcedFamilyPosition( new Point( currentX, currentY ) );
 
                 // Next X: Size + Margin
                 currentX += familySize.Width + VERTICAL_MARGIN_SIZE;
@@ -127,7 +183,7 @@ namespace Yodii.Lab
             {
                 Point pluginPoint = new Point( currentX, 0 );
 
-                VertexPositions[ plugin ] = new Point( currentX, 0 );
+                VertexPositions[plugin] = pluginPoint;
 
                 currentX += VertexSizes[plugin].Width + VERTICAL_MARGIN_SIZE;
             }
@@ -190,7 +246,7 @@ namespace Yodii.Lab
             /// </summary>
             /// <param name="rootPosition">Starting position of this family (top left).</param>
             /// <returns>Size of this family, including the root, and all children.</returns>
-            public Size ComputeFamilyPosition( Point rootPosition )
+            public Size RecomputeForcedFamilyPosition( Point rootPosition )
             {
                 double width = 0;
                 double height = 0;
@@ -206,7 +262,7 @@ namespace Yodii.Lab
                 foreach( var family in SubServices.Values )
                 {
                     // Add new family 
-                    Size familySize = family.ComputeFamilyPosition( new Point( currentX, currentY ) );
+                    Size familySize = family.RecomputeForcedFamilyPosition( new Point( currentX, currentY ) );
 
                     subWidth += familySize.Width;
                     currentX += familySize.Width + HORIZONTAL_MARGIN_SIZE;
@@ -216,7 +272,8 @@ namespace Yodii.Lab
 
                 foreach( var plugin in SubPlugins.Values )
                 {
-                    _parent.VertexPositions[plugin] = new Point( currentX, currentY );
+                    Point pluginPosition =  new Point( currentX, currentY );
+                    _parent.VertexPositions[plugin] = pluginPosition;
 
                     Size pluginSize = _parent.VertexSizes[plugin];
 
@@ -242,7 +299,7 @@ namespace Yodii.Lab
 
                 Point position = new Point( x, rootPosition.Y );
 
-                _parent.VertexPositions[ RootVertex ] = position;
+                _parent.VertexPositions[RootVertex] = position;
 
                 return FamilySize;
             }
@@ -262,4 +319,11 @@ namespace Yodii.Lab
         }
     }
 
+    static class PointExtensions
+    {
+        public static bool IsValid( this Point @this )
+        {
+            return !Double.IsNaN( @this.X ) && !Double.IsNaN( @this.Y );
+        }
+    }
 }

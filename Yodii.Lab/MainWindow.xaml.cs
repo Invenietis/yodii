@@ -13,6 +13,7 @@ namespace Yodii.Lab
     public partial class MainWindow : Fluent.RibbonWindow
     {
         readonly MainWindowViewModel _vm;
+        readonly YodiiLayout _graphLayout;
 
         /// <summary>
         /// Creates the main window.
@@ -24,30 +25,86 @@ namespace Yodii.Lab
 
             _vm.NewNotification += _vm_NewNotification;
             _vm.CloseBackstageRequest += _vm_CloseBackstageRequest;
+            _vm.VertexPositionRequest += _vm_VertexPositionRequest;
+            _vm.AutoPositionRequest += _vm_AutoPositionRequest;
+
+            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
             InitializeComponent();
-
-            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
-            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
-            //GraphArea.SetVerticesDrag( true, true );
-            GraphArea.EnableParallelEdges = true;
-            GraphArea.EdgeShowSelfLooped = true;
-            GraphArea.EdgeCurvingEnabled = true;
-            GraphArea.UseNativeObjectArrange = false;
-            GraphArea.SideExpansionSize = new Size( 100, 100 );
 
             GraphArea.GenerateGraphFinished += GraphArea_GenerateGraphFinished;
             GraphArea.RelayoutFinished += GraphArea_RelayoutFinished;
 
             ZoomBox.IsAnimationDisabled = false;
             ZoomBox.MaxZoomDelta = 2;
+            GraphArea.UseNativeObjectArrange = false;
+            //GraphArea.SideExpansionSize = new Size( 100, 100 );
 
-            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
-            GraphArea.LayoutAlgorithm = new YodiiLayout();
+            _graphLayout = new YodiiLayout();
+            GraphArea.LayoutAlgorithm = _graphLayout;
+            GraphArea.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.SimpleER;
+            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
 
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
+
+            _vm.Graph.VertexAdded += Graph_VertexAdded;
+            _vm.Graph.VertexRemoved += Graph_VertexRemoved;
+            _vm.Graph.EdgeAdded += Graph_EdgeAdded;
+            _vm.Graph.EdgeRemoved += Graph_EdgeRemoved;
+        }
+
+        void _vm_AutoPositionRequest( object sender, EventArgs e )
+        {
+            var result = MessageBox.Show(
+                "Automatically position all elements in the graph?\nThis will reset all their positions.",
+                "Auto-position elements",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No
+                );
+            if( result == MessageBoxResult.Yes )
+            {
+                _graphLayout.NextRecomputeForcesPositions = true;
+                GraphArea.RelayoutGraph();
+            }
+        }
+
+        void _vm_VertexPositionRequest( object sender, VertexPositionEventArgs e )
+        {
+            e.VertexPositions = GraphArea.GetVertexPositions();
+        }
+
+        void Graph_EdgeRemoved( YodiiGraphEdge e )
+        {
+            GraphArea.RemoveEdge( e );
+        }
+
+        void Graph_EdgeAdded( YodiiGraphEdge e )
+        {
+            GraphArea.AddEdge( e, new EdgeControl( GraphArea.VertexList[e.Source], GraphArea.VertexList[e.Target], e ) );
+        }
+
+        void Graph_VertexRemoved( YodiiGraphVertex vertex )
+        {
+            GraphArea.RemoveVertex( vertex );
+        }
+
+        void Graph_VertexAdded( YodiiGraphVertex vertex )
+        {
+            var control = new VertexControl( vertex );
+
+            if( vertex.IsService )
+            {
+                if( vertex.LabServiceInfo.ServiceInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabServiceInfo.ServiceInfo.PositionInGraph );
+            }
+            else if( vertex.IsPlugin )
+            {
+                if( vertex.LabPluginInfo.PluginInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabPluginInfo.PluginInfo.PositionInGraph );
+            }
+
+            GraphArea.AddVertex( vertex, control );
         }
 
         void _vm_CloseBackstageRequest( object sender, EventArgs e )
@@ -132,16 +189,9 @@ namespace Yodii.Lab
             GraphArea.InvalidateVisual();
         }
 
-        void Graph_GraphUpdateRequested( object sender, GraphUpdateRequestEventArgs e )
+        void Graph_GraphUpdateRequested( object sender, EventArgs e )
         {
-            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph )
-            {
-                GraphArea.RelayoutGraph();
-            }
-            else
-            {
-                GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-            }
+            GraphArea.RelayoutGraph();
         }
 
         private void StackPanel_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )

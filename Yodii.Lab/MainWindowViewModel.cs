@@ -20,6 +20,7 @@ using System.Xml.Serialization;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 using System.Globalization;
+using Microsoft.Win32;
 namespace Yodii.Lab
 {
     /// <summary>
@@ -34,17 +35,21 @@ namespace Yodii.Lab
 
         internal event EventHandler CloseBackstageRequest;
 
+        internal event EventHandler<VertexPositionEventArgs> VertexPositionRequest;
+
+        internal event EventHandler AutoPositionRequest;
+
         #region Fields
 
         /// <summary>
         /// Image URI for Plugin Running notifications.
         /// </summary>
-        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusRunning.png";
+        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png";
 
         /// <summary>
         /// Image URI for Plugin Stopped notifications.
         /// </summary>
-        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusStopped.png";
+        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png";
 
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
@@ -62,6 +67,7 @@ namespace Yodii.Lab
         readonly ICommand _openConfigurationEditorCommand;
         readonly ICommand _newFileCommand;
         readonly ICommand _revokeAllCommandsCommand;
+        readonly ICommand _autoPositionCommand;
 
         readonly ActivityMonitor _activityMonitor;
         readonly DispatcherTimer _autosaveTimer;
@@ -115,6 +121,7 @@ namespace Yodii.Lab
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
             _newFileCommand = new RelayCommand( NewFileExecute );
             _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
+            _autoPositionCommand = new RelayCommand( AutoPositionExecute );
 
             LoadRecentFiles();
 
@@ -380,17 +387,10 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
-            if( param == null )
-            {
-                RaiseNewNotification( new Notification() { Title = "Re-creating graph..." } );
-                // Refresh layout.
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
-            }
-            else
-            {
-                RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph );
-            }
+
+            RaiseNewNotification( new Notification() { Title = "Calling relayout..." } );
+            // Refresh layout.
+            Graph.RaiseGraphUpdateRequested();
         }
 
         private void CreateServiceExecute( object param )
@@ -638,6 +638,14 @@ namespace Yodii.Lab
             Save();
         }
 
+        private void AutoPositionExecute( object obj )
+        {
+            if( AutoPositionRequest != null )
+            {
+                AutoPositionRequest( this, new EventArgs() );
+            }
+        }
+
         #endregion Command handlers
 
         #region Properties
@@ -843,10 +851,18 @@ namespace Yodii.Lab
         /// Command to revoke all callers.
         /// </summary>
         public ICommand RevokeAllCommandsCommand { get { return _revokeAllCommandsCommand; } }
+        /// <summary>
+        /// Command to auto-position all elements.
+        /// </summary>
+        public ICommand AutoPositionCommand { get { return _autoPositionCommand; } }
         #endregion Properties
 
         #region Public methods
 
+        /// <summary>
+        /// Prompts the user to save before closing the file, if changes to the document were detected.
+        /// </summary>
+        /// <returns>True if the user did not cancel the operation. False if the user cancelled the operation.</returns>
         public bool SaveBeforeClosingFile()
         {
             if( ChangedSinceLastSave )
@@ -894,9 +910,11 @@ namespace Yodii.Lab
                     {
                         _hideNotifications = true;
                         Graph.LockGraphUpdates = true;
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+                        LabState.DeserializeAndResetStateFromXml( r );
                         Graph.LockGraphUpdates = false;
-                        Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+
+                        Graph.RaiseGraphUpdateRequested();
+
                         _hideNotifications = false;
                         RaiseNewNotification( "Autosave loaded", OpenedFilePath );
                     }
@@ -1092,33 +1110,32 @@ namespace Yodii.Lab
             Graph.LockGraphUpdates = true;
 
             XmlReaderSettings rs = new XmlReaderSettings();
-
             try
             {
-                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
+                FileInfo f = new FileInfo( filePath );
+                using( FileStream fs = f.OpenRead() )
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
+                        LabState.DeserializeAndResetStateFromXml( xr );
                     }
                 }
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
 
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                Graph.RaiseGraphUpdateRequested();
 
-                RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
+                RaiseNewNotification( new Notification() { Title = "Loaded file", Message = f.Name } );
 
                 ChangedSinceLastSave = false;
                 OpenedFilePath = filePath;
 
-                SaveOpenedFileAsRecentFile();
+                SaveOpenedFileAsRecentFile( f );
                 RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( true );
             }
             catch( Exception ex )
             {
-                throw ex;
                 // TODO: Detailed exceptions
 
                 string reason = ex.ToString();
@@ -1144,6 +1161,8 @@ namespace Yodii.Lab
             XmlWriterSettings ws = new XmlWriterSettings();
             ws.NewLineHandling = NewLineHandling.None;
             ws.Indent = true;
+
+            UpdateGraphPositions();
 
             try
             {
@@ -1193,6 +1212,33 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Requests vertices' positions from outside,
+        /// and updates them in the ServiceInfo/PluginInfo mocks.
+        /// </summary>
+        public void UpdateGraphPositions()
+        {
+            IDictionary<YodiiGraphVertex, Point> positions = RaisePositionRequest();
+
+            if( positions != null )
+            {
+                foreach( var kvp in positions )
+                {
+                    YodiiGraphVertex v = kvp.Key;
+                    Point p = kvp.Value;
+
+                    if( v.IsService )
+                    {
+                        v.LabServiceInfo.ServiceInfo.PositionInGraph = p;
+                    }
+                    else if( v.IsPlugin )
+                    {
+                        v.LabPluginInfo.PluginInfo.PositionInGraph = p;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Attempts to rename a service.
         /// </summary>
         /// <param name="serviceInfo">Service to rename</param>
@@ -1216,6 +1262,8 @@ namespace Yodii.Lab
             if( !ChangedSinceLastSave ) return;
 
             string xmlString;
+
+            UpdateGraphPositions();
 
             using( StringWriter sw = new StringWriter() )
             {
@@ -1258,7 +1306,7 @@ namespace Yodii.Lab
         /// <summary>
         /// In case the file changed, attempts to save the last file.
         /// </summary>
-        /// <returns>True if save was successful. False if save failed, or was cancelled.</returns>
+        /// <returns>True if save was successful. False if save failed, or was canceled.</returns>
         private bool Save()
         {
             if( !String.IsNullOrWhiteSpace( OpenedFilePath ) )
@@ -1297,35 +1345,22 @@ namespace Yodii.Lab
 
         private string SelectSaveFile()
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-
+            SaveFileDialog dlg = new SaveFileDialog();
             dlg.DefaultExt = ".xml";
             dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
             dlg.CheckPathExists = true;
             dlg.OverwritePrompt = true;
             dlg.AddExtension = true;
             dlg.FileName = OpenedFilePath;
-
-            Nullable<bool> result = dlg.ShowDialog();
-
-            if( result == true )
-            {
-                return dlg.FileName;
-            }
-            else
-            {
-                return null;
-            }
+            bool? result = dlg.ShowDialog();
+            return result == true ? dlg.FileName : null;
         }
 
         private void RaiseNewNotification( Notification n )
         {
             if( _hideNotifications ) return;
-
-            if( NewNotification != null )
-            {
-                NewNotification( this, new NotificationEventArgs( n ) );
-            }
+            var h = NewNotification;
+            if( h != null ) h( this, new NotificationEventArgs( n ) );
         }
 
         private void RaiseNewNotification( string title = "Notification", string message = "", string imageUri = null )
@@ -1340,84 +1375,70 @@ namespace Yodii.Lab
             RaiseNewNotification( n );
         }
 
-        private void RaiseCloseBackstageRequest()
+        void RaiseCloseBackstageRequest()
         {
-            if( CloseBackstageRequest != null )
+            var h = CloseBackstageRequest;
+            if( h != null ) h( this, new EventArgs() );
+        }
+
+        private IDictionary<YodiiGraphVertex,Point> RaisePositionRequest()
+        {
+            var v = VertexPositionRequest;
+            VertexPositionEventArgs args = new VertexPositionEventArgs();
+            if( v != null )
             {
-                CloseBackstageRequest( this, new EventArgs() );
+                v( this, args );
+            }
+
+            return args.VertexPositions;
+        }
+
+        void LoadDefaultState()
+        {
+            using( var reader = new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) )
+            {
+                XmlReader r = XmlReader.Create( reader );
+                LabXmlSerialization.DeserializeAndResetStateFromXml( _labStateManager, r );
+                ChangedSinceLastSave = false;
             }
         }
 
-        private void LoadDefaultState()
+        void LoadRecentFiles()
         {
-            _labStateManager.ClearState();
-            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
-
-            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
-            ChangedSinceLastSave = false;
-        }
-
-        private void LoadRecentFiles()
-        {
-            if( Application.Current == null ) return; // Settings are not available outside app context
+            // Settings are not available outside app context.
+            if( Application.Current == null ) return;
             _recentFiles.Clear();
 
             StringCollection files = Properties.Settings.Default.RecentFiles;
-            foreach( string f in files )
+            if( files != null )
             {
-                var m = Regex.Match( f, @"^(.*),(\d+)$" );
-
-                Debug.Assert( m.Success, "Recent file failed to match regex" );
-
-                FileInfo file = new FileInfo( m.Groups[1].Value );
-
-                DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
-
-                var recentFile = new RecentFile( file, accessTime );
-                _recentFiles.Add( recentFile );
+                foreach( string f in files )
+                {
+                    RecentFile r = RecentFile.TryParse( _activityMonitor, f );
+                    if( r != null ) _recentFiles.Add( r );
+                }
             }
         }
 
-        private void SaveRecentFiles()
+        void SaveRecentFiles()
         {
             StringCollection coll = new StringCollection();
-
-            foreach( var f in _recentFiles )
-            {
-                string dateString = f.AccessTime.ToString( "yyyyMMddHHmmss" );
-
-                string serializedString = String.Format( "{0},{1}", f.File.FullName, dateString );
-                coll.Add( serializedString );
-            }
-
+            foreach( var f in _recentFiles ) coll.Add( f.ToString() );
             Properties.Settings.Default.RecentFiles = coll;
-
             Properties.Settings.Default.Save();
-
         }
 
-        private void SaveOpenedFileAsRecentFile()
+        private void SaveOpenedFileAsRecentFile( FileInfo f )
         {
-            if( OpenedFilePath == null ) return;
-
-            FileInfo f = new FileInfo( OpenedFilePath );
-            DateTime d = DateTime.Now;
             RemoveFileFromRecentFiles( f.FullName );
-
-            _recentFiles.Add( new RecentFile( f, d ) );
-
+            _recentFiles.Add( new RecentFile( f, DateTime.UtcNow ) );
             TrimRecentFiles();
             SaveRecentFiles();
         }
 
         private void TrimRecentFiles()
         {
-            while( _recentFiles.Count > 5 )
-            {
-                var lastFile = _recentFiles.Last();
-
-                _recentFiles.Remove( lastFile );
-            }
+            while( _recentFiles.Count > 10 ) _recentFiles.RemoveAt( _recentFiles.Count-1 );
         }
 
         private void RemoveFileFromRecentFiles( string fileFullName )
@@ -1432,68 +1453,13 @@ namespace Yodii.Lab
         #endregion Private methods
     }
 
-    /// <summary>
-    /// Recent file. Used in ribbon backstage.
-    /// </summary>
-    [Serializable]
-    public class RecentFile
+    class VertexPositionEventArgs : EventArgs
     {
-        readonly DateTime _accessTime;
-        readonly FileInfo _file;
-
-        /// <summary>
-        /// Instanciates a new recent file.
-        /// </summary>
-        /// <param name="info"></param>
-        /// <param name="accessTime"></param>
-        public RecentFile( FileInfo info, DateTime accessTime )
+        public IDictionary<YodiiGraphVertex, Point> VertexPositions
         {
-            _file = info;
-            _accessTime = accessTime;
-        }
-
-        /// <summary>
-        /// File name.
-        /// </summary>
-        public string FileName
-        {
-            get
-            {
-                return _file.Name;
-            }
-        }
-
-        /// <summary>
-        /// Directory.
-        /// </summary>
-        public string Directory
-        {
-            get
-            {
-                return _file.DirectoryName;
-            }
-        }
-
-        /// <summary>
-        /// Access time
-        /// </summary>
-        public DateTime AccessTime
-        {
-            get
-            {
-                return _accessTime;
-            }
-        }
-
-        /// <summary>
-        /// File info
-        /// </summary>
-        public FileInfo File
-        {
-            get
-            {
-                return _file;
-            }
+            get;
+            set;
         }
     }
+
 }

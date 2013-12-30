@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Xml;
 using CK.Core;
 using Yodii.Lab.Mocks;
@@ -10,7 +12,7 @@ using Yodii.Model;
 
 namespace Yodii.Lab
 {
-    class LabXmlSerialization
+    static class LabXmlSerialization
     {
         public static void SerializeToXml( LabStateManager state, XmlWriter w )
         {
@@ -43,112 +45,25 @@ namespace Yodii.Lab
             w.WriteEndElement();
         }
 
-        public static void DeserializeAndResetStateFromXml( LabStateManager state, XmlReader r )
+        public static void DeserializeAndResetStateFromXml( this LabStateManager state, XmlReader r )
         {
-            PersistedLabState deserializedState = new PersistedLabState();
-
-            // Used to index reference links between plugins and services.
-            List<PendingGeneralization> pendingGeneralizations = new List<PendingGeneralization>();
-            List<PendingPluginService> pendingPluginServices = new List<PendingPluginService>();
-            List<PendingServiceReference> pendingServiceReferences = new List<PendingServiceReference>();
-
-            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins;
-            CKSortedArrayKeyList<ServiceInfo, string> loadedServices;
-            loadedServices = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
-            loadedPlugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, false );
-
-            if( state.Engine.IsRunning )
-            {
-                state.Engine.Stop();
-            }
-
-            while( r.Read() )
-            {
-                // Load services
-                if( r.IsStartElement() && r.Name == "Services" )
-                {
-                    ReadServices( r.ReadSubtree(), loadedServices, loadedPlugins, pendingGeneralizations, pendingPluginServices, pendingServiceReferences );
-                }
-
-                // Load plugins
-                if( r.IsStartElement() && r.Name == "Plugins" )
-                {
-                    ReadPlugins( r.ReadSubtree(), loadedServices, loadedPlugins, pendingPluginServices, pendingServiceReferences );
-                }
-
-                // Read configuration manager
-                if( r.IsStartElement() && r.Name == "Configuration" )
-                {
-                    ReadConfigurationManager( deserializedState, r.ReadSubtree() );
-                }
-            }
-
-            foreach( var s in loadedServices )
-            {
-                deserializedState.Services.Add( s );
-            }
-            foreach( var p in loadedPlugins )
-            {
-                deserializedState.Plugins.Add( p );
-            }
-
-            ApplyPersistedStateToLab( deserializedState, state );
+            LabXmlDeserializer helper = new LabXmlDeserializer( state, r );
+            helper.Deserialize();
         }
 
         #region Conversion & application of persisted classes
-        private static void ApplyPersistedStateToLab(PersistedLabState persistentState, LabStateManager labState)
-        {
-            // Stop running engine
-            if( labState.Engine.IsRunning )
-            {
-                labState.Engine.Stop();
-            }
-
-            // Clear configuration manager
-            foreach( var l in labState.Engine.Configuration.Layers.ToList() )
-            {
-                var result = labState.Engine.Configuration.Layers.Remove( l );
-                Debug.Assert( result.Success );
-            }
-
-            // Clear services and plugins
-            labState.ClearState();
-
-            // Add services and plugins
-            foreach( ServiceInfo s in persistentState.Services )
-            {
-                labState.LoadServiceInfo( s );
-            }
-            foreach( PluginInfo p in persistentState.Plugins )
-            {
-                labState.LoadPluginInfo( p );
-            }
-
-            // Load configuration manager data
-            foreach( PersistedConfigurationLayer l in persistentState.ConfigurationLayers )
-            {
-                IConfigurationLayer newLayer = labState.Engine.Configuration.Layers.Create( l.LayerName );
-
-                foreach( PersistedConfigurationItem item in l.Items )
-                {
-                    var result = newLayer.Items.Add( item.ServiceOrPluginId, item.Status, item.StatusReason );
-                    Debug.Assert( result.Success );
-                }
-            }
-        }
-
         private static PersistedLabState CreatePersistentObject( LabStateManager runningState )
         {
             PersistedLabState persistedState = new PersistedLabState();
 
             // Persist layer
-            foreach( IConfigurationLayer l in runningState.Engine.Configuration.Layers)
+            foreach( IConfigurationLayer l in runningState.Engine.Configuration.Layers )
             {
                 PersistedConfigurationLayer persistedLayer = new PersistedConfigurationLayer();
                 persistedState.ConfigurationLayers.Add( persistedLayer );
 
                 persistedLayer.LayerName = l.LayerName;
-                foreach(IConfigurationItem i in l.Items)
+                foreach( IConfigurationItem i in l.Items )
                 {
                     PersistedConfigurationItem persistedItem = new PersistedConfigurationItem();
                     persistedItem.ServiceOrPluginId = i.ServiceOrPluginFullName;
@@ -164,9 +79,9 @@ namespace Yodii.Lab
             {
                 persistedState.Services.Add( s );
             }
-            foreach(PluginInfo p in runningState.PluginInfos )
+            foreach( PluginInfo p in runningState.PluginInfos )
             {
-                persistedState.Plugins.Add(p);
+                persistedState.Plugins.Add( p );
             }
 
             return persistedState;
@@ -219,6 +134,14 @@ namespace Yodii.Lab
 
             // That's pretty much all we need. Implementations will be guessed from the plugins themselves.
             // HasError, AssemblyInfo and others aren't supported at this time, but can be added here later on.
+
+            w.WriteStartElement( "X" );
+            if( si.PositionInGraph.IsValid() ) w.WriteValue( si.PositionInGraph.X.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
+
+            w.WriteStartElement( "Y" );
+            if( si.PositionInGraph.IsValid() ) w.WriteValue( si.PositionInGraph.Y.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
         }
 
         private static void SerializePluginInfoToXmlWriter( PluginInfo pi, XmlWriter w )
@@ -249,12 +172,86 @@ namespace Yodii.Lab
                 w.WriteEndElement();
             }
             w.WriteEndElement();
+
+            w.WriteStartElement( "X" );
+            if( pi.PositionInGraph.IsValid() ) w.WriteValue( pi.PositionInGraph.X.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
+
+            w.WriteStartElement( "Y" );
+            if( pi.PositionInGraph.IsValid() ) w.WriteValue( pi.PositionInGraph.Y.ToString( CultureInfo.InvariantCulture ) );
+            w.WriteEndElement();
         }
         #endregion
 
-        #region Deserialization
+    }
 
-        private static void ReadConfigurationManager( PersistedLabState deserializedState, XmlReader r )
+    class LabXmlDeserializer
+    {
+        CKSortedArrayKeyList<ServiceInfo, string> loadedServices;
+        CKSortedArrayKeyList<PluginInfo, string> loadedPlugins;
+        List<PendingGeneralization> pendingGeneralizations;
+        List<PendingPluginService> pendingPluginServices;
+        List<PendingServiceReference> pendingServiceReferences;
+        LabStateManager state;
+        PersistedLabState deserializedState;
+        XmlReader r;
+
+
+        internal LabXmlDeserializer( LabStateManager state, XmlReader r )
+        {
+            this.state = state;
+            this.r = r;
+            deserializedState = new PersistedLabState();
+            // Used to index reference links between plugins and services.
+            pendingGeneralizations = new List<PendingGeneralization>();
+            pendingPluginServices = new List<PendingPluginService>();
+            pendingServiceReferences = new List<PendingServiceReference>();
+
+            loadedServices = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, false );
+            loadedPlugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, false );
+        }
+
+        internal void Deserialize()
+        {
+            if( state.Engine.IsRunning )
+            {
+                state.Engine.Stop();
+            }
+
+            while( r.Read() )
+            {
+                // Load services
+                if( r.IsStartElement() && r.Name == "Services" )
+                {
+                    ReadServices( r.ReadSubtree() );
+                }
+
+                // Load plugins
+                if( r.IsStartElement() && r.Name == "Plugins" )
+                {
+                    ReadPlugins( r.ReadSubtree() );
+                }
+
+                // Read configuration manager
+                if( r.IsStartElement() && r.Name == "Configuration" )
+                {
+                    ReadConfigurationManager( r.ReadSubtree() );
+                }
+            }
+
+            foreach( var s in loadedServices )
+            {
+                deserializedState.Services.Add( s );
+            }
+            foreach( var p in loadedPlugins )
+            {
+                deserializedState.Plugins.Add( p );
+            }
+
+            ApplyPersistedStateToLab();
+        }
+
+        private void ReadConfigurationManager( XmlReader r )
         {
             // We're already inside a Configuration Element.
 
@@ -268,7 +265,7 @@ namespace Yodii.Lab
             }
         }
 
-        private static PersistedConfigurationLayer DeserializeConfigurationLayer( XmlReader r )
+        private PersistedConfigurationLayer DeserializeConfigurationLayer( XmlReader r )
         {
             PersistedConfigurationLayer newLayer = new PersistedConfigurationLayer();
 
@@ -292,30 +289,18 @@ namespace Yodii.Lab
             return newLayer;
         }
 
-        private static void ReadServices( XmlReader r,
-            CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
-            List<PendingGeneralization> pendingGeneralizations,
-            List<PendingPluginService> pendingPluginServices,
-            List<PendingServiceReference> pendingServiceReferences
-            )
+        private void ReadServices( XmlReader r )
         {
             while( r.Read() )
             {
                 if( r.IsStartElement() && r.Name == "Service" )
                 {
-                    ReadService( r.ReadSubtree(), loadedServices, loadedPlugins, pendingGeneralizations, pendingPluginServices, pendingServiceReferences );
+                    ReadService( r.ReadSubtree() );
                 }
             }
         }
 
-        private static void ReadService( XmlReader r,
-            CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
-            List<PendingGeneralization> pendingGeneralizations,
-            List<PendingPluginService> pendingPluginServices,
-            List<PendingServiceReference> pendingServiceReferences
-            )
+        private void ReadService( XmlReader r )
         {
             r.Read();
             string serviceFullName = r.GetAttribute( "FullName" );
@@ -326,31 +311,53 @@ namespace Yodii.Lab
 
             ServiceInfo generalization = null;
 
+            Point pos = new Point();
+            pos.X = Double.NaN;
+            pos.Y = Double.NaN;
+
             while( r.Read() )
             {
                 if( r.IsStartElement() && !r.IsEmptyElement )
                 {
-                    if( r.Name == "Generalization" )
+                    switch( r.Name )
                     {
-                        if( r.Read() )
-                        {
-                            string generalizationName = r.Value;
-                            if( !String.IsNullOrEmpty( generalizationName ) )
+                        case "Generalization":
+                            if( r.Read() )
                             {
-                                if( loadedServices.Contains( generalizationName ) )
+                                string generalizationName = r.Value;
+                                if( !String.IsNullOrEmpty( generalizationName ) )
                                 {
-                                    generalization = loadedServices.GetByKey( generalizationName );
-                                    s.Generalization = generalization;
-                                }
-                                else
-                                {
-                                    pendingGeneralizations.Add( new PendingGeneralization( s, generalizationName ) );
+                                    if( loadedServices.Contains( generalizationName ) )
+                                    {
+                                        generalization = loadedServices.GetByKey( generalizationName );
+                                        s.Generalization = generalization;
+                                    }
+                                    else
+                                    {
+                                        pendingGeneralizations.Add( new PendingGeneralization( s, generalizationName ) );
+                                    }
                                 }
                             }
-                        }
+                            break;
+                        case "X":
+                            if( r.Read() )
+                            {
+                                double posX;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posX ) ) pos.X = posX;
+                            }
+                            break;
+                        case "Y":
+                            if( r.Read() )
+                            {
+                                double posY;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posY ) ) pos.Y = posY;
+                            }
+                            break;
                     }
                 }
             }
+
+            s.PositionInGraph = pos;
 
             // Fix pending references of this service
             foreach( var pg in pendingGeneralizations.Where( x => x.PendingServiceFullName == serviceFullName ).ToList() )
@@ -374,34 +381,27 @@ namespace Yodii.Lab
             }
         }
 
-        private static void ReadPlugins( XmlReader r,
-            CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
-            List<PendingPluginService> pendingPluginServices,
-            List<PendingServiceReference> pendingServiceReferences )
+        private void ReadPlugins( XmlReader r )
         {
             while( r.Read() )
             {
                 if( r.IsStartElement() && r.Name == "Plugin" )
                 {
-                    ReadPlugin( r.ReadSubtree(), loadedServices, loadedPlugins, pendingPluginServices, pendingServiceReferences );
+                    ReadPlugin( r.ReadSubtree() );
                 }
             }
         }
 
-
-
-        private static void ReadPlugin( XmlReader r,
-            CKSortedArrayKeyList<ServiceInfo, string> loadedServices,
-            CKSortedArrayKeyList<PluginInfo, string> loadedPlugins,
-            List<PendingPluginService> pendingPluginServices,
-            List<PendingServiceReference> pendingServiceReferences
-            )
+        private void ReadPlugin( XmlReader r )
         {
             r.Read();
 
             PluginInfo p = new PluginInfo( null, AssemblyInfoHelper.ExecutingAssemblyInfo );
             loadedPlugins.Add( p );
+
+            Point pos = new Point();
+            pos.X = Double.NaN;
+            pos.Y = Double.NaN;
 
             while( r.Read() )
             {
@@ -436,14 +436,15 @@ namespace Yodii.Lab
                             }
                             break;
                         case "ServiceReferences":
-                            while( r.Read() )
+                            var s = r.ReadSubtree();
+                            while( s.Read() )
                             {
-                                if( r.IsStartElement() && r.Name == "ServiceReference" )
+                                if( s.IsStartElement() && s.Name == "ServiceReference" )
                                 {
-                                    string serviceFullName2 = r.GetAttribute( "Service" );
+                                    string serviceFullName2 = s.GetAttribute( "Service" );
                                     if( !String.IsNullOrEmpty( serviceFullName2 ) )
                                     {
-                                        DependencyRequirement requirement = (DependencyRequirement)Enum.Parse( typeof( DependencyRequirement ), r.GetAttribute( "Requirement" ) );
+                                        DependencyRequirement requirement = (DependencyRequirement)Enum.Parse( typeof( DependencyRequirement ), s.GetAttribute( "Requirement" ) );
 
                                         if( loadedServices.Contains( serviceFullName2 ) )
                                         {
@@ -458,97 +459,154 @@ namespace Yodii.Lab
                                 }
                             }
                             break;
+                        case "X":
+                            if( r.Read() )
+                            {
+                                double posX;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posX) ) pos.X = posX;
+                            }
+                            break;
+                        case "Y":
+                            if( r.Read() )
+                            {
+                                double posY;
+                                if( Double.TryParse( r.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out posY ) ) pos.Y = posY;
+                            }
+                            break;
                     }
+                }
+            }
+
+            p.PositionInGraph = pos;
+        }
+
+        private void ApplyPersistedStateToLab()
+        {
+            // Stop running engine
+            if( state.Engine.IsRunning )
+            {
+                state.Engine.Stop();
+            }
+
+            // Clear configuration manager
+            foreach( var l in state.Engine.Configuration.Layers.ToList() )
+            {
+                var result = state.Engine.Configuration.Layers.Remove( l );
+                Debug.Assert( result.Success );
+            }
+
+            // Clear services and plugins
+            state.ClearState();
+
+            // Add services and plugins
+            foreach( ServiceInfo s in deserializedState.Services )
+            {
+                state.LoadServiceInfo( s );
+            }
+            foreach( PluginInfo p in deserializedState.Plugins )
+            {
+                state.LoadPluginInfo( p );
+            }
+
+            // Load configuration manager data
+            foreach( PersistedConfigurationLayer l in deserializedState.ConfigurationLayers )
+            {
+                IConfigurationLayer newLayer = state.Engine.Configuration.Layers.Create( l.LayerName );
+
+                foreach( PersistedConfigurationItem item in l.Items )
+                {
+                    var result = newLayer.Items.Add( item.ServiceOrPluginId, item.Status, item.StatusReason );
+                    Debug.Assert( result.Success );
                 }
             }
         }
 
-        #endregion
-
-        #region Persistent state classes
-        class PersistedLabState
-        {
-            public List<PersistedConfigurationLayer> ConfigurationLayers { get; private set; }
-            public List<ServiceInfo> Services { get; private set; }
-            public List<PluginInfo> Plugins { get; private set; }
-
-            public PersistedLabState()
-            {
-                ConfigurationLayers = new List<PersistedConfigurationLayer>();
-                Services = new List<ServiceInfo>();
-                Plugins = new List<PluginInfo>();
-            }
-        }
-
-        class PersistedConfigurationLayer
-        {
-            public string LayerName { get; set; }
-            public List<PersistedConfigurationItem> Items { get; private set; }
-
-            internal PersistedConfigurationLayer()
-            {
-                Items = new List<PersistedConfigurationItem>();
-            }
-        }
-
-        class PersistedConfigurationItem
-        {
-            public string ServiceOrPluginId { get; set; }
-            public ConfigurationStatus Status { get; set; }
-            public string StatusReason { get; set; }
-        }
-        #endregion
-
-        #region Serialization utility classes
-        private class PendingServiceReference
-        {
-            public readonly PluginInfo Plugin;
-            public readonly string PendingServiceFullName;
-            public readonly DependencyRequirement Requirement;
-
-            internal PendingServiceReference( PluginInfo plugin, string pendingServiceFullName, DependencyRequirement requirement )
-            {
-                Plugin = plugin;
-                PendingServiceFullName = pendingServiceFullName;
-                Requirement = requirement;
-            }
-        }
-
-        private class PendingGeneralization
-        {
-            public readonly ServiceInfo Service;
-            public readonly string PendingServiceFullName;
-
-            internal PendingGeneralization( ServiceInfo service, string pendingServiceFullName )
-            {
-                Service = service;
-                PendingServiceFullName = pendingServiceFullName;
-            }
-        }
-
-        private class PendingPluginService
-        {
-            public readonly PluginInfo Plugin;
-            public readonly string PendingServiceFullName;
-
-            internal PendingPluginService( PluginInfo plugin, string pendingServiceFullName )
-            {
-                Plugin = plugin;
-                PendingServiceFullName = pendingServiceFullName;
-            }
-        }
-
-        public class PluginServiceInfoState
-        {
-            public readonly IEnumerable<ServiceInfo> ServiceInfos;
-            public readonly IEnumerable<PluginInfo> PluginInfos;
-
-            internal PluginServiceInfoState( IEnumerable<ServiceInfo> services, IEnumerable<PluginInfo> plugins )
-            {
-                ServiceInfos = services;
-                PluginInfos = plugins;
-            }
-        }
-        #endregion
     }
+
+    #region Persistent state classes
+
+    class PersistedLabState
+    {
+        public List<PersistedConfigurationLayer> ConfigurationLayers { get; private set; }
+        public List<ServiceInfo> Services { get; private set; }
+        public List<PluginInfo> Plugins { get; private set; }
+
+        public PersistedLabState()
+        {
+            ConfigurationLayers = new List<PersistedConfigurationLayer>();
+            Services = new List<ServiceInfo>();
+            Plugins = new List<PluginInfo>();
+        }
+    }
+
+    class PersistedConfigurationLayer
+    {
+        public string LayerName { get; set; }
+        public List<PersistedConfigurationItem> Items { get; private set; }
+
+        internal PersistedConfigurationLayer()
+        {
+            Items = new List<PersistedConfigurationItem>();
+        }
+    }
+
+    class PersistedConfigurationItem
+    {
+        public string ServiceOrPluginId { get; set; }
+        public ConfigurationStatus Status { get; set; }
+        public string StatusReason { get; set; }
+    }
+    #endregion
+
+    #region Serialization utility classes
+    class PendingServiceReference
+    {
+        public readonly PluginInfo Plugin;
+        public readonly string PendingServiceFullName;
+        public readonly DependencyRequirement Requirement;
+
+        internal PendingServiceReference( PluginInfo plugin, string pendingServiceFullName, DependencyRequirement requirement )
+        {
+            Plugin = plugin;
+            PendingServiceFullName = pendingServiceFullName;
+            Requirement = requirement;
+        }
+    }
+
+    class PendingGeneralization
+    {
+        public readonly ServiceInfo Service;
+        public readonly string PendingServiceFullName;
+
+        internal PendingGeneralization( ServiceInfo service, string pendingServiceFullName )
+        {
+            Service = service;
+            PendingServiceFullName = pendingServiceFullName;
+        }
+    }
+
+    class PendingPluginService
+    {
+        public readonly PluginInfo Plugin;
+        public readonly string PendingServiceFullName;
+
+        internal PendingPluginService( PluginInfo plugin, string pendingServiceFullName )
+        {
+            Plugin = plugin;
+            PendingServiceFullName = pendingServiceFullName;
+        }
+    }
+
+    class PluginServiceInfoState
+    {
+        public readonly IEnumerable<ServiceInfo> ServiceInfos;
+        public readonly IEnumerable<PluginInfo> PluginInfos;
+
+        internal PluginServiceInfoState( IEnumerable<ServiceInfo> services, IEnumerable<PluginInfo> plugins )
+        {
+            ServiceInfos = services;
+            PluginInfos = plugins;
+        }
+    }
+    #endregion
 }
