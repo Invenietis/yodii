@@ -297,7 +297,7 @@
                         Header="New"
                         Fluent:KeyTip.Keys="N"
                         Command="{Binding Path=NewFileCommand}"
-                        Icon="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/NewDocument_32x32.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="New file (Ctrl+N)"
@@ -312,7 +312,7 @@
                         Fluent:KeyTip.Keys="S"
                         Command="{Binding Path=SaveCommand}"
                         LargeIcon="{StaticResource DiskIconViewBox}"
-                        Icon="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/base_floppydisk_32.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="Save file (Ctrl+S)"
@@ -326,7 +326,7 @@
                         Header="Open"
                         Fluent:KeyTip.Keys="O"
                         Command="{Binding Path=OpenFileCommand}"
-                        Icon="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/Folder.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="Open file (Ctrl+O)"
