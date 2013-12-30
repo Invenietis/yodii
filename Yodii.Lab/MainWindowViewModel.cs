@@ -840,6 +840,10 @@ namespace Yodii.Lab
 
         #region Public methods
 
+        /// <summary>
+        /// Prompts the user to save before closing the file, if changes to the document were detected.
+        /// </summary>
+        /// <returns>True if the user did not cancel the operation. False if the user cancelled the operation.</returns>
         public bool SaveBeforeClosingFile()
         {
             if( ChangedSinceLastSave )
@@ -887,7 +891,7 @@ namespace Yodii.Lab
                     {
                         _hideNotifications = true;
                         Graph.LockGraphUpdates = true;
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+                        LabState.DeserializeAndResetStateFromXml( r );
                         Graph.LockGraphUpdates = false;
 
                         Graph.RaiseGraphUpdateRequested();
@@ -1094,7 +1098,7 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
+                        LabState.DeserializeAndResetStateFromXml( xr );
                     }
                 }
                 _hideNotifications = false;
@@ -1347,7 +1351,7 @@ namespace Yodii.Lab
             _labStateManager.ClearState();
             XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
 
-            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+            LabState.DeserializeAndResetStateFromXml( r );
             ChangedSinceLastSave = false;
         }
 

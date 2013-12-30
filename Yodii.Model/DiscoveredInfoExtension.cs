@@ -87,8 +87,9 @@ namespace Yodii.Model
         /// <summary>
         /// Gets whether this plugin can reference the given service.
         /// </summary>
-        /// <param name="service"></param>
-        /// <returns></returns>
+        /// <param name="this">This plugin.</param>
+        /// <param name="service">Service to reference.</param>
+        /// <returns>True if this plugin can have a reference to the service.</returns>
         public static bool CanReference( this IPluginInfo @this, IServiceInfo service )
         {
             var thisPluginRoot = @this.GetServiceFamilyRoot();
