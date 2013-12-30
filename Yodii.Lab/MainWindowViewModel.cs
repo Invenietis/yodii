@@ -40,12 +40,12 @@ namespace Yodii.Lab
         /// <summary>
         /// Image URI for Plugin Running notifications.
         /// </summary>
-        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusRunning.png";
+        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png";
 
         /// <summary>
         /// Image URI for Plugin Stopped notifications.
         /// </summary>
-        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusStopped.png";
+        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png";
 
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
@@ -841,6 +841,10 @@ namespace Yodii.Lab
 
         #region Public methods
 
+        /// <summary>
+        /// Prompts the user to save before closing the file, if changes to the document were detected.
+        /// </summary>
+        /// <returns>True if the user did not cancel the operation. False if the user cancelled the operation.</returns>
         public bool SaveBeforeClosingFile()
         {
             if( ChangedSinceLastSave )
@@ -888,7 +892,7 @@ namespace Yodii.Lab
                     {
                         _hideNotifications = true;
                         Graph.LockGraphUpdates = true;
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
+                        LabState.DeserializeAndResetStateFromXml( r );
                         Graph.LockGraphUpdates = false;
 
                         Graph.RaiseGraphUpdateRequested();
@@ -1095,7 +1099,7 @@ namespace Yodii.Lab
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
+                        LabState.DeserializeAndResetStateFromXml( xr );
                     }
                 }
                 _hideNotifications = false;
@@ -1343,6 +1347,7 @@ namespace Yodii.Lab
             // Settings are not available outside app context.
             if( Application.Current == null ) return;
             _recentFiles.Clear();
+
             StringCollection files = Properties.Settings.Default.RecentFiles;
             if( files != null )
             {
@@ -1350,6 +1355,7 @@ namespace Yodii.Lab
                 {
                     RecentFile r = RecentFile.TryParse( _activityMonitor, f );
                     if( r != null ) _recentFiles.Add( r );
+                }
                 }
             }
         }

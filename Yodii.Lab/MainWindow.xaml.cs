@@ -40,8 +40,8 @@ namespace Yodii.Lab
 
             _graphLayout = new YodiiLayout();
             GraphArea.LayoutAlgorithm = _graphLayout;
-            GraphArea.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.None;
-            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.None;
+            GraphArea.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.SimpleER;
+            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
 
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
