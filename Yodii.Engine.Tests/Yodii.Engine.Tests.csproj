@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ConfigurationSolverTests\Graphs\ValidRunnableReferences.png" />
+    <None Include="Resources\BaseGraph4.xml" />
     <None Include="Resources\Graph005.xml" />
     <Resource Include="Resources\Valid001a.xml" />
   </ItemGroup>
