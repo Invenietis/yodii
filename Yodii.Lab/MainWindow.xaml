@@ -763,7 +763,7 @@
                                 HorizontalAlignment="Left"
                                 TextTrimming="CharacterEllipsis">
                                 <Run
-                                    Text="{Binding LabState.Engine.YodiiCommands.Count, Mode=OneWay}" /> commands.
+                                    Text="{Binding LabState.Engine.LiveInfo.YodiiCommands.Count, Mode=OneWay}" /> commands.
                             </TextBlock>
                         </DockPanel>
                         <ScrollViewer
@@ -773,7 +773,7 @@
                             <ItemsControl
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top"
-                                ItemsSource="{Binding LabState.Engine.YodiiCommands, Mode=OneWay}">
+                                ItemsSource="{Binding LabState.Engine.LiveInfo.YodiiCommands, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate
                                         DataType="ym:YodiiCommand">
