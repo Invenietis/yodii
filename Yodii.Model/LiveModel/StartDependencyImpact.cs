@@ -6,7 +6,7 @@ using System.Text;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Impact of a plugin start on its dependencies.
+    /// Impact of a plugin or service start on its dependencies.
     /// </summary>
     /// <remarks>
     /// Defines whether the plugin starting will also attempt to start everything it has references to,
@@ -81,6 +81,5 @@ namespace Yodii.Model
         /// and <see cref="DependencyRequirement.Runnable"/>).
         /// </summary>
         TryFullStart = FullStart | IsTryOnly
-
     }
 }

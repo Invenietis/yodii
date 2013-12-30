@@ -17,6 +17,11 @@ namespace Yodii.Model
         StatusChanged,
 
         /// <summary>
+        /// The impact of an item changed.
+        /// </summary>
+        ImpactChanged,
+
+        /// <summary>
         /// An item was added in a layer.
         /// </summary>
         ItemAdded,

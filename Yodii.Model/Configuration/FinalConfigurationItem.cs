@@ -14,6 +14,7 @@ namespace Yodii.Model
     {
         readonly string _serviceOrPluginFullName;
         readonly ConfigurationStatus _status;
+        readonly StartDependencyImpact _impact;
 
         /// <summary>
         /// Service or plugin ID.
@@ -31,12 +32,21 @@ namespace Yodii.Model
             get { return _status; }
         }
 
-        internal FinalConfigurationItem( string serviceOrPluginFullName, ConfigurationStatus status )
+        /// <summary>
+        /// Required configuration impact.
+        /// </summary>
+        public StartDependencyImpact Impact
+        {
+            get { return _impact; }
+        }
+
+        internal FinalConfigurationItem( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
             Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
 
             _serviceOrPluginFullName = serviceOrPluginFullName;
             _status = status;
+            _impact = impact;
         }
     }
 }

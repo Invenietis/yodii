@@ -16,17 +16,22 @@ namespace Yodii.Engine
         readonly ConfigurationLayer _owner;
         
         ConfigurationStatus _status;
+        StartDependencyImpact _impact;
         string _statusReason;
+        string _impactReason;
 
-        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, string initialStatusReason = "" )
+        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason = "", string initialImpactReason = "" )
         {
             Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
             Debug.Assert( configurationLayer != null );
             Debug.Assert( initialStatusReason != null );
+
             _owner = configurationLayer;
             _serviceOrPluginFullName = serviceOrPluginFullName;
             _status = initialStatus;
+            _impact = initialImpact;
             _statusReason = initialStatusReason;
+            _impactReason = initialImpactReason;
         }
 
         public string ServiceOrPluginFullName
@@ -43,9 +48,13 @@ namespace Yodii.Engine
         {
             get { return _status; }
         }
+        public StartDependencyImpact Impact
+        {
+            get { return _impact; }
+        }
 
         /// <summary>
-        /// Gets or sets an optional reason for this configuration.
+        /// Gets or sets an optional reason for this configuration status.
         /// Null when <see cref="Layer"/> is null (this item does no more belong to its layer).
         /// </summary>
         public string StatusReason
@@ -53,8 +62,23 @@ namespace Yodii.Engine
             get { return _statusReason; }
             set
             {
-                if( _statusReason == null ) throw new InvalidOperationException();
+                if ( _statusReason == null ) throw new InvalidOperationException();
                 _statusReason = value ?? String.Empty;
+                NotifyPropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets an optional reason for this configuration impact.
+        /// Null when <see cref="Layer"/> is null (this item does no more belong to its layer).
+        /// </summary>
+        public string ImpactReason
+        {
+            get { return _impactReason; }
+            set
+            {
+                if ( _impactReason == null ) throw new InvalidOperationException();
+                _impactReason = value ?? String.Empty;
                 NotifyPropertyChanged();
             }
         }
@@ -62,7 +86,7 @@ namespace Yodii.Engine
         public IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, newStatus ); 
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new Pair<ConfigurationStatus, StartDependencyImpact>( newStatus, Impact ) ); 
             if( result.Success )
             {
                 _status = newStatus;
@@ -73,11 +97,27 @@ namespace Yodii.Engine
             return result;
         }
 
+        public IYodiiEngineResult SetImpact( StartDependencyImpact newImpact, string impactReason = "" )
+        {
+            if( _impactReason == null ) throw new InvalidOperationException();
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new Pair<ConfigurationStatus, StartDependencyImpact>( Status, newImpact ) );
+            if( result.Success )
+            {
+                _impact = newImpact;
+                NotifyPropertyChanged( "Impact" );
+                if( ImpactReason != impactReason ) ImpactReason = impactReason;
+                if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
+            }
+            return result;
+        }
+
         internal void OnRemoved()
         {
             Debug.Assert( _statusReason != null );
             _statusReason = null;
+            _impactReason = null;
             _status = ConfigurationStatus.Optional;
+            _impact = StartDependencyImpact.Unknown;
         }
 
         #region INotifyPropertyChanged
@@ -90,6 +130,6 @@ namespace Yodii.Engine
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
-        #endregion INotifyPropertyChanged
+        #endregion INotifyPropertyChanged 
     }
 }

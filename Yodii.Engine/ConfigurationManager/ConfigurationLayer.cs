@@ -72,12 +72,12 @@ namespace Yodii.Engine
 
         #endregion properties
 
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, Pair<ConfigurationStatus, StartDependencyImpact> data )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
             if( _owner == null ) return SuccessYodiiEngineResult.NullEngineSuccessResult;
-            return _owner.OnConfigurationItemChanging( item, newStatus );
+            return _owner.OnConfigurationItemChanging( item, data );
         }
 
         #region INotifyPropertyChanged
@@ -120,14 +120,19 @@ namespace Yodii.Engine
                 FirePropertyChanged( e );
             }
 
-            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "" )
+            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string statusReason = "", string impactReason = "" )
             {
                 if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
                 ConfigurationItem existing = _items.GetByKey( serviceOrPluginFullName );
-                if( existing != null ) return existing.SetStatus( status );
+                if( existing != null )
+                {
+                    IYodiiEngineResult res = existing.SetStatus( status );
+                    if( res.Success ) return existing.SetImpact(impact);
+                    return res;
+                }
 
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, statusReason );
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, impact, statusReason, impactReason );
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );
