@@ -1437,14 +1437,13 @@ namespace Yodii.Lab
         #endregion Private methods
     }
 
-
-        }
-    }
-
     class VertexPositionEventArgs : EventArgs
     {
         public IDictionary<YodiiGraphVertex, Point> VertexPositions
         {
             get;
             set;
+        }
+    }
+
 }

@@ -68,7 +68,7 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Creates a new instance of ConfigurationChangingEventArgs for a <see cref="IConfigurationManager.Clear"/>.
+        /// Creates a new instance of ConfigurationChangingEventArgs for a <see cref="IConfigurationLayerCollection.Clear"/>.
         /// </summary>
         /// <param name="finalConfiguration">New empty FinalConfiguration. Must be empty otherwise an exception is thrown.</param>
         public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration )
