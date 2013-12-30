@@ -1356,7 +1356,6 @@ namespace Yodii.Lab
                     RecentFile r = RecentFile.TryParse( _activityMonitor, f );
                     if( r != null ) _recentFiles.Add( r );
                 }
-                }
             }
         }
 

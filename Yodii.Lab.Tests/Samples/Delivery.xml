@@ -10,8 +10,18 @@
   </Services>
   <Plugins>
     <Plugin>
+      <FullName>La Poste</FullName>
+      <Service>ISecureDelivery</Service>
+      <ServiceReferences />
+    </Plugin>
+    <Plugin>
       <FullName>Livr' Express</FullName>
       <Service>IDelivery</Service>
+      <ServiceReferences />
+    </Plugin>
+    <Plugin>
+      <FullName>UPS</FullName>
+      <Service>ISecureDelivery</Service>
       <ServiceReferences />
     </Plugin>
   </Plugins>
