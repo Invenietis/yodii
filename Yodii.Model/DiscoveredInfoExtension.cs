@@ -60,8 +60,8 @@ namespace Yodii.Model
                     {
                         return false; // This service is contained in its generalization tree.
                     }
-                    g = g.Generalization;
                     visitedServices.Add( g );
+                    g = g.Generalization;
                 }
             }
 
