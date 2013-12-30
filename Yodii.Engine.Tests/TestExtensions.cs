@@ -13,6 +13,25 @@ namespace Yodii.Engine.Tests
     static class TestExtensions
     {
 
+        public static void Trace( this IYodiiEngineResult @this, IActivityMonitor m )
+        {
+            if( @this.Success )
+            {
+                m.Trace().Send( "Success!" );
+            }
+            else
+            {
+                m.Trace().Send( "Failed!" );
+                if( @this.StaticFailureResult != null ) @this.StaticFailureResult.Trace( m );
+            }
+        }
+
+        public static void Trace( this IStaticFailureResult @this, IActivityMonitor m )
+        {
+            m.Trace().Send( "Blocking Plugins: {0}", String.Join( ", ", @this.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName + " (" + p.WantedConfigSolvedStatus + "/" + p.DisabledReason + ")" ) ) );
+            m.Trace().Send( "Blocking Services: {0}", String.Join( ", ", @this.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName + " (" + s.WantedConfigSolvedStatus + "/" + s.DisabledReason + ")" ) ) );
+        }
+
         public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests, [CallerMemberName]string callerName = null )
         {
             IActivityMonitor m = TestHelper.ConsoleMonitor;

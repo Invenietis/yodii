@@ -113,7 +113,7 @@ namespace Yodii.Engine
         {
             if( Family.Solver.Step == ConfigurationSolverStep.InitializeFinalStartableStatus )
             {
-                if( Disabled || FinalConfigSolvedStatus == ConfigurationStatus.Running ) return null;
+                if( Disabled ) return null;
             }
             else if( PropagationIsUseless ) return null;
             if( _propagation == null ) _propagation = new StaticPropagation( this );

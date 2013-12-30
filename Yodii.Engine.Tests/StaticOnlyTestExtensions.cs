@@ -21,11 +21,9 @@ namespace Yodii.Engine.Tests
             else
             {
                 m.Trace().Send( "Failed!" );
-                m.Trace().Send( "Blocking Plugins: {0}", String.Join( ", ", @this.StaticFailureResult.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName + " (" + p.WantedConfigSolvedStatus + "/" + p.DisabledReason + ")" ) ) );
-                m.Trace().Send( "Blocking Services: {0}", String.Join( ", ", @this.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName + " (" + s.WantedConfigSolvedStatus + "/" + s.DisabledReason + ")" ) ) );
+                @this.StaticFailureResult.Trace( m );
             }
         }
-
 
         #region Plugins and Services
         public static void CheckAllDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )

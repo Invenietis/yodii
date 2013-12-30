@@ -7,8 +7,8 @@ using Yodii.Model;
 using CK.Core;
 
 namespace Yodii.Engine
-{   
-    internal partial class ServiceData
+{
+    internal partial class ServiceData : IYodiiItemData
     {
         ServiceData[] _inheritedServicesWithThis;
         ServiceData[] _directExcludedServices;
@@ -236,9 +236,9 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the first reason why this service is disabled. 
         /// </summary>
-        public ServiceDisabledReason DisabledReason
+        public string DisabledReason
         {
-            get { return _configDisabledReason; }
+            get { return _configDisabledReason == ServiceDisabledReason.None ? null : _configDisabledReason.ToString(); }
         }
 
         /// <summary>
@@ -422,10 +422,14 @@ namespace Yodii.Engine
             }
         }
 
+        internal FinalConfigStartableStatus FinalStartableStatus
+        {
+            get { return _finalConfigStartableStatus; }
+        }
+        
         internal void InitializeFinalStartableStatus()
         {
-            ConfigurationStatus final = FinalConfigSolvedStatus;
-            if( final == ConfigurationStatus.Optional || final == ConfigurationStatus.Runnable )
+            if( !Disabled )
             {
                 _finalConfigStartableStatus = new FinalConfigStartableStatus( GetUsefulPropagationInfo() );
             }
@@ -478,5 +482,35 @@ namespace Yodii.Engine
                 spec = spec.NextSpecialization;
             }
         }
+
+        #region IYodiiItemData explicit implementation of properties
+
+        ConfigurationStatus IYodiiItemData.ConfigOriginalStatus
+        {
+            get { return ConfigOriginalStatus; }
+        }
+
+        string IYodiiItemData.DisabledReason
+        {
+            get { return DisabledReason; }
+        }
+
+        FinalConfigStartableStatus IYodiiItemData.FinalStartableStatus
+        {
+            get { return FinalStartableStatus; }
+        }
+
+        StartDependencyImpact IYodiiItemData.ConfigOriginalImpact
+        {
+            get { return ConfigOriginalImpact; }
+        }
+
+        StartDependencyImpact IYodiiItemData.RawConfigSolvedImpact
+        {
+            get { return RawConfigSolvedImpact; }
+        }
+
+        #endregion
+
     }
 }
