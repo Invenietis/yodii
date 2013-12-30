@@ -25,6 +25,7 @@ namespace Yodii.Lab
 
             _vm.NewNotification += _vm_NewNotification;
             _vm.CloseBackstageRequest += _vm_CloseBackstageRequest;
+            _vm.VertexPositionRequest += _vm_VertexPositionRequest;
 
             InitializeComponent();
 
@@ -52,6 +53,11 @@ namespace Yodii.Lab
             _vm.Graph.EdgeRemoved += Graph_EdgeRemoved;
         }
 
+        void _vm_VertexPositionRequest( object sender, VertexPositionEventArgs e )
+        {
+            e.VertexPositions = GraphArea.GetVertexPositions();
+        }
+
         void Graph_EdgeRemoved( YodiiGraphEdge e )
         {
             GraphArea.RemoveEdge( e );
@@ -69,7 +75,17 @@ namespace Yodii.Lab
 
         void Graph_VertexAdded( YodiiGraphVertex vertex )
         {
-            GraphArea.AddVertex( vertex, new VertexControl( vertex ) );
+            var control = new VertexControl( vertex );
+
+            if( vertex.IsService )
+            {
+                if( vertex.LabServiceInfo.ServiceInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabServiceInfo.ServiceInfo.PositionInGraph );
+            } else if (vertex.IsPlugin)
+            {
+                if( vertex.LabPluginInfo.PluginInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabPluginInfo.PluginInfo.PositionInGraph );
+            }
+
+            GraphArea.AddVertex( vertex, control );
         }
 
         void _vm_CloseBackstageRequest( object sender, EventArgs e )

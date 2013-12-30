@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using CK.Core;
 using Yodii.Model;
 
@@ -54,6 +55,16 @@ namespace Yodii.Lab.Mocks
             {
                 return PluginFullName;
             }
+        }
+
+        /// <summary>
+        /// Position of this PluginInfo in the Yodii graph.
+        /// This is not observable or synced, and only used for serialization.
+        /// </summary>
+        public Point PositionInGraph
+        {
+            get;
+            set;
         }
 
         #region IPluginInfo Members

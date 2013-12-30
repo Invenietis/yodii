@@ -34,6 +34,8 @@ namespace Yodii.Lab
 
         internal event EventHandler CloseBackstageRequest;
 
+        internal event EventHandler<VertexPositionEventArgs> VertexPositionRequest;
+
         #region Fields
 
         /// <summary>
@@ -1143,6 +1145,8 @@ namespace Yodii.Lab
             ws.NewLineHandling = NewLineHandling.None;
             ws.Indent = true;
 
+            UpdateGraphPositions();
+
             try
             {
                 using( FileStream fs = File.Open( filePath, FileMode.Create ) )
@@ -1191,6 +1195,33 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Requests vertices' positions from outside,
+        /// and updates them in the ServiceInfo/PluginInfo mocks.
+        /// </summary>
+        public void UpdateGraphPositions()
+        {
+            IDictionary<YodiiGraphVertex, Point> positions = RaisePositionRequest();
+
+            if( positions != null )
+            {
+                foreach( var kvp in positions )
+                {
+                    YodiiGraphVertex v = kvp.Key;
+                    Point p = kvp.Value;
+
+                    if( v.IsService )
+                    {
+                        v.LabServiceInfo.ServiceInfo.PositionInGraph = p;
+                    }
+                    else if( v.IsPlugin )
+                    {
+                        v.LabPluginInfo.PluginInfo.PositionInGraph = p;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Attempts to rename a service.
         /// </summary>
         /// <param name="serviceInfo">Service to rename</param>
@@ -1214,6 +1245,8 @@ namespace Yodii.Lab
             if( !ChangedSinceLastSave ) return;
 
             string xmlString;
+
+            UpdateGraphPositions();
 
             using( StringWriter sw = new StringWriter() )
             {
@@ -1344,6 +1377,18 @@ namespace Yodii.Lab
             {
                 CloseBackstageRequest( this, new EventArgs() );
             }
+        }
+
+        private IDictionary<YodiiGraphVertex,Point> RaisePositionRequest()
+        {
+            var v = VertexPositionRequest;
+            VertexPositionEventArgs args = new VertexPositionEventArgs();
+            if( v != null )
+            {
+                v( this, args );
+            }
+
+            return args.VertexPositions;
         }
 
         private void LoadDefaultState()
@@ -1495,6 +1540,15 @@ namespace Yodii.Lab
             {
                 return _file;
             }
+        }
+    }
+
+    class VertexPositionEventArgs : EventArgs
+    {
+        public IDictionary<YodiiGraphVertex, Point> VertexPositions
+        {
+            get;
+            set;
         }
     }
 }
