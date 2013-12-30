@@ -89,7 +89,8 @@ namespace Yodii.Engine
         PropagationFailed,
         PropagationToSinglePluginFailed,
         PropagationToCommonPluginReferencesFailed,
-        RunningServiceDisabled
+        RunningServiceDisabled,
+        PropagationToSingleSpecializationFailed
     }
 
 }
