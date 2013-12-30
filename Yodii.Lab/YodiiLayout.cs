@@ -11,13 +11,6 @@ using CK.Core;
 
 namespace Yodii.Lab
 {
-    static class PointExtensions
-    {
-        public static bool IsValid( this Point @this)
-        {
-            return !Double.IsNaN(@this.X) && !Double.IsNaN(@this.Y);
-        }
-    }
     class YodiiLayout : LayoutAlgorithmBase<YodiiGraphVertex, YodiiGraphEdge, YodiiGraph>
     {
         static readonly int HORIZONTAL_MARGIN_SIZE = 30;
@@ -33,49 +26,89 @@ namespace Yodii.Lab
 
         protected override void InternalPreCompute()
         {
-            Application.Current.Dispatcher.Invoke( new Action( () =>
-            {
 
-                _serviceVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo>(
-                    s => s.LabServiceInfo.ServiceInfo,
-                    ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
-                    false
-                    );
+            _serviceVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IServiceInfo>(
+                s => s.LabServiceInfo.ServiceInfo,
+                ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
+                false
+                );
 
-                _pluginVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
-                    s => s.LabPluginInfo.PluginInfo,
-                    ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
-                    false
-                    );
+            _pluginVertices = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
+                s => s.LabPluginInfo.PluginInfo,
+                ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
+                false
+                );
 
-                _rootFamilies = new CKSortedArrayList<ServiceFamily>(
-                    ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
-                    false
-                    );
+            _rootFamilies = new CKSortedArrayList<ServiceFamily>(
+                ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
+                false
+                );
 
-                _serviceFamilies = new CKSortedArrayKeyList<ServiceFamily, IServiceInfo>(
-                    s => s.RootService,
-                    ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
-                    false
-                    );
+            _serviceFamilies = new CKSortedArrayKeyList<ServiceFamily, IServiceInfo>(
+                s => s.RootService,
+                ( a, b ) => String.Compare( a.ServiceFullName, b.ServiceFullName ),
+                false
+                );
 
-                _orphanPlugins = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
-                    p => p.LabPluginInfo.PluginInfo,
-                    ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
-                    false
-                    );
+            _orphanPlugins = new CKSortedArrayKeyList<YodiiGraphVertex, IPluginInfo>(
+                p => p.LabPluginInfo.PluginInfo,
+                ( a, b ) => String.Compare( a.PluginFullName, b.PluginFullName ),
+                false
+                );
 
-                _rootFamilies = new CKSortedArrayList<ServiceFamily>(
-                    ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
-                    false
-                    );
-            } ) );
+            _rootFamilies = new CKSortedArrayList<ServiceFamily>(
+                ( a, b ) => String.Compare( a.RootService.ServiceFullName, b.RootService.ServiceFullName ),
+                false
+                );
+
         }
 
         protected override Point OnOriginalPosition( YodiiGraphVertex v, Point p )
         {
+            // Keep existing positions
             if( p.IsValid() ) return p;
-            return new Point( 0, 0 );
+
+            Point newPoint = new Point( 0, 0 );
+            if( VertexPositions == null ) return newPoint;
+            if( v.IsService )
+            {
+                if( v.LabServiceInfo.ServiceInfo.Generalization != null)
+                {
+                    // Find & get point of generalization
+                    var generalizationQuery = VertexPositions.Where( kvp => kvp.Key.IsService && kvp.Key.LabServiceInfo.ServiceInfo == v.LabServiceInfo.ServiceInfo.Generalization );
+
+                    if( generalizationQuery.Count() > 0 )
+                    {
+                        Point generalizationPoint = generalizationQuery.First().Value;
+                        if( generalizationPoint.IsValid() )
+                        {
+                            newPoint.X = generalizationPoint.X;
+                            newPoint.Y = generalizationPoint.Y + VERTICAL_MARGIN_SIZE;
+                        }
+                    }
+                    
+                }
+            } else if (v.IsPlugin)
+            {
+                if( v.LabPluginInfo.PluginInfo.Service != null )
+                {
+                    // Find & get point of service
+                    var serviceQuery = VertexPositions.Where( kvp => kvp.Key.IsService && kvp.Key.LabServiceInfo.ServiceInfo == v.LabPluginInfo.PluginInfo.Service );
+
+                    if( serviceQuery.Count() > 0 )
+                    {
+                        Point generalizationPoint = serviceQuery.First().Value;
+                        if( generalizationPoint.IsValid() )
+                        {
+                            newPoint.X = generalizationPoint.X;
+                            newPoint.Y = generalizationPoint.Y + VERTICAL_MARGIN_SIZE;
+                        }
+                    }
+
+                }
+            }
+
+            return newPoint;
         }
 
         protected override void InternalCompute()
@@ -284,4 +317,11 @@ namespace Yodii.Lab
         }
     }
 
+    static class PointExtensions
+    {
+        public static bool IsValid( this Point @this )
+        {
+            return !Double.IsNaN( @this.X ) && !Double.IsNaN( @this.Y );
+        }
+    }
 }
