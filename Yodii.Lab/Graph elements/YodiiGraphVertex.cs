@@ -44,7 +44,10 @@ namespace Yodii.Lab
             if( LiveObject == null ) return false;
             if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Running ) return false;
 
-            return true;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+
+            return LiveObject.Capability.CanStartWith( impact );
         }
 
         private bool CanStopLiveItem( object obj )
@@ -61,7 +64,10 @@ namespace Yodii.Lab
 
             if( LiveObject.RunningStatus == RunningStatus.Stopped )
             {
-                LiveObject.Start();
+                StartDependencyImpact impact = StartDependencyImpact.Unknown;
+                if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+
+                LiveObject.Start(impact);
             }
         }
 
