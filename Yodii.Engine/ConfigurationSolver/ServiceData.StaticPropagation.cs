@@ -21,7 +21,7 @@ namespace Yodii.Engine
 
             public override void Refresh()
             {
-                Refresh( Service.TotalAvailablePluginCount );
+                Refresh( Service.TotalAvailablePluginCount, Service.AvailablePluginCount, Service.AvailableServiceCount );
             }
 
             protected override bool IsValidPlugin( PluginData p )
@@ -51,10 +51,19 @@ namespace Yodii.Engine
                         return false;
                     }
                 }
+                else if( TheOnlyService != null )
+                {
+                    if( !TheOnlyService.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromServiceToSingleSpecialization ) )
+                    {
+                        if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToSingleSpecializationFailed );
+                        else Service._configDisabledReason = ServiceDisabledReason.PropagationToSingleSpecializationFailed;
+                        return false;
+                    }
+                }
                 else
                 {
                     StartDependencyImpact impact = Service.ConfigSolvedImpact;
-                    Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 ); 
+                    Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 );
 
                     foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                     {

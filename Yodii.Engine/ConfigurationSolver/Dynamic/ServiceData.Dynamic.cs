@@ -11,7 +11,9 @@ namespace Yodii.Engine
     {
         RunningStatus? _dynamicStatus;
         ServiceRunningStatusReason _dynamicReason;
-        int _nbAllAvailablePlugins;
+        int _dynamicTotalAvailablePluginsCount;
+        int _dynamicAvailablePluginsCount;
+        int _dynamicAvailableServicesCount;
 
         public RunningStatus? DynamicStatus { get { return _dynamicStatus; } }
 
@@ -21,7 +23,9 @@ namespace Yodii.Engine
         public void DynamicResetState()
         {
             _dynPropagation = null;
-            _nbAllAvailablePlugins = 0;
+            _dynamicTotalAvailablePluginsCount = TotalAvailablePluginCount;
+            _dynamicAvailablePluginsCount = AvailablePluginCount;
+            _dynamicAvailableServicesCount = AvailableServiceCount;
             switch( FinalConfigSolvedStatus )
             {
                 case ConfigurationStatus.Disabled:
@@ -51,15 +55,6 @@ namespace Yodii.Engine
             }
         }
 
-        /// <summary>
-        /// Called by plugin.DynamicResetState when a plugin is in an undetermined state.
-        /// </summary>
-        internal void OnPluginAvailable()
-        {
-            ++_nbAllAvailablePlugins;
-            if( Generalization != null ) Generalization.OnPluginAvailable();
-        }
-
         public void OnAllPluginsDynamicStateInitialized()
         {
             // Iterate across all services (even disabled ones).
@@ -75,13 +70,13 @@ namespace Yodii.Engine
             {
                 case ConfigurationStatus.Disabled:
                     {
-                        Debug.Assert( _nbAllAvailablePlugins == 0 );
+                        Debug.Assert( _dynamicTotalAvailablePluginsCount == 0 );
                         Debug.Assert( _dynamicStatus == RunningStatus.Disabled );
                         break;
                     }
                 case ConfigurationStatus.Running:
                     {
-                        if( _nbAllAvailablePlugins == 0 )
+                        if( _dynamicTotalAvailablePluginsCount == 0 )
                         {
                             if( Family.DynRunningPlugin != null )
                             {
@@ -99,7 +94,7 @@ namespace Yodii.Engine
                     }
                 default:
                     {
-                        Debug.Assert( _nbAllAvailablePlugins > 0 );
+                        Debug.Assert( _dynamicTotalAvailablePluginsCount > 0 );
                         Debug.Assert( _dynamicStatus == null );
                         break;
                     }
@@ -128,7 +123,7 @@ namespace Yodii.Engine
         internal bool DynamicCanStart( StartDependencyImpact impact )
         {
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-            Debug.Assert( _nbAllAvailablePlugins != 0 );
+            Debug.Assert( _dynamicTotalAvailablePluginsCount != 0 );
             if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
             return DynTestCanStart( impact );
         } 
@@ -240,8 +235,10 @@ namespace Yodii.Engine
 
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = reason;
+            for( int i = 0; i < _inheritedServicesWithThis.Length - 1; ++i )
+                --_inheritedServicesWithThis[i]._dynamicAvailableServicesCount;
 
-            if( _nbAllAvailablePlugins > 0 )
+            if( _dynamicTotalAvailablePluginsCount > 0 )
             {
                 // Stops the specialized services.
                 ServiceData child = FirstSpecialization;
@@ -259,7 +256,7 @@ namespace Yodii.Engine
                     if( p.DynamicStatus == null ) p.DynamicStopBy( PluginRunningStatusReason.StoppedByStoppedService );
                     p = p.NextPluginForService;
                 }
-                Debug.Assert( _nbAllAvailablePlugins == 0 );
+                Debug.Assert( _dynamicTotalAvailablePluginsCount == 0 );
             }
             foreach( var backRef in _backReferences )
             {
@@ -275,16 +272,17 @@ namespace Yodii.Engine
             }
         }
 
-        internal void OnPluginStopped()
+        internal void OnPluginStopped( bool direct )
         {
-            if( Generalization != null ) Generalization.OnPluginStopped();
-            Debug.Assert( _nbAllAvailablePlugins > 0 );
-            --_nbAllAvailablePlugins;
+            if( Generalization != null ) Generalization.OnPluginStopped( false );
+            Debug.Assert( _dynamicTotalAvailablePluginsCount > 0 );
+            --_dynamicTotalAvailablePluginsCount;
+            if( direct ) --_dynamicAvailablePluginsCount;
         }
 
         internal void OnPostPluginStopped()
         {
-            if( _nbAllAvailablePlugins == 0 ) 
+            if( _dynamicTotalAvailablePluginsCount == 0 ) 
             {
                 Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value <= RunningStatus.Stopped );
                 if( _dynamicStatus == null ) DynamicStopBy( ServiceRunningStatusReason.StoppedByPluginStopped );

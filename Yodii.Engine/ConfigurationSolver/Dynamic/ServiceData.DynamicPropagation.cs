@@ -21,7 +21,7 @@ namespace Yodii.Engine
 
             public override void Refresh()
             {
-                Refresh( Service._nbAllAvailablePlugins );
+                Refresh( Service._dynamicTotalAvailablePluginsCount, Service._dynamicAvailablePluginsCount, Service._dynamicAvailableServicesCount );
             }
 
             protected override bool IsValidPlugin( PluginData p )
@@ -71,6 +71,10 @@ namespace Yodii.Engine
                 if( TheOnlyPlugin != null )
                 {
                     TheOnlyPlugin.DynamicStartBy( impact, PluginRunningStatusReason.StartedByRunningService );
+                }
+                else if( TheOnlyService != null )
+                {
+                    TheOnlyService.DynamicStartBy( ServiceRunningStatusReason.StartedByPropagation );
                 }
                 else
                 {

@@ -1,29 +1,86 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Yodii.Lab>
   <Services>
-    <Service FullName="IDelivery">
+    <Service FullName="Je gère des intérimaires">
       <Generalization />
+      <X>639.314173456267</X>
+      <Y>129.852247999927</Y>
     </Service>
-    <Service FullName="ISecureDelivery">
-      <Generalization>IDelivery</Generalization>
+    <Service FullName="Je livre des colis">
+      <Generalization />
+      <X>-116.681969890238</X>
+      <Y>-87.0583298456258</Y>
+    </Service>
+    <Service FullName="Je livre des colis (avec des garanties)">
+      <Generalization>Je livre des colis</Generalization>
+      <X>20.2217964088358</X>
+      <Y>181.410202587578</Y>
+    </Service>
+    <Service FullName="Je répare les véhicules">
+      <Generalization />
+      <X>491.443891413897</X>
+      <Y>-103.310479050093</Y>
     </Service>
   </Services>
   <Plugins>
     <Plugin>
-      <FullName>La Poste</FullName>
-      <Service>ISecureDelivery</Service>
+      <FullName>Garage de l'Ouest</FullName>
+      <Service>Je répare les véhicules</Service>
       <ServiceReferences />
+      <X>658.659975876505</X>
+      <Y>6.48124489973689</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>La Poste</FullName>
+      <Service>Je livre des colis (avec des garanties)</Service>
+      <ServiceReferences />
+      <X>34.5616325648005</X>
+      <Y>354.568833959241</Y>
     </Plugin>
     <Plugin>
       <FullName>Livr' Express</FullName>
-      <Service>IDelivery</Service>
-      <ServiceReferences />
+      <Service>Je livre des colis</Service>
+      <ServiceReferences>
+        <ServiceReference Service="Je gère des intérimaires" Requirement="Running" />
+        <ServiceReference Service="Je répare les véhicules" Requirement="Runnable" />
+      </ServiceReferences>
+      <X>205.774943116113</X>
+      <Y>84.911488365327</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Ma petite entreprise</FullName>
+      <Service />
+      <ServiceReferences>
+        <ServiceReference Service="Je livre des colis" Requirement="Running" />
+        <ServiceReference Service="Je livre des colis (avec des garanties)" Requirement="OptionalTryStart" />
+      </ServiceReferences>
+      <X>-236.698714634642</X>
+      <Y>316.900489224127</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>ManPower</FullName>
+      <Service>Je gère des intérimaires</Service>
+      <ServiceReferences>
+        <ServiceReference Service="Je livre des colis (avec des garanties)" Requirement="Running" />
+      </ServiceReferences>
+      <X>621.098949161985</X>
+      <Y>290.263600549934</Y>
     </Plugin>
     <Plugin>
       <FullName>UPS</FullName>
-      <Service>ISecureDelivery</Service>
+      <Service>Je livre des colis (avec des garanties)</Service>
       <ServiceReferences />
+      <X>183.879069845543</X>
+      <Y>363.377230381989</Y>
     </Plugin>
   </Plugins>
-  <Configuration />
+  <Configuration>
+    <ConfigurationLayer Name="DefaultLayer">
+      <ConfigurationItem ServiceOrPluginId="Garage de l'Ouest" Status="Running" Reason="Right-click change" />
+      <ConfigurationItem ServiceOrPluginId="Livr' Express" Status="Runnable" Reason="Right-click change" />
+      <ConfigurationItem ServiceOrPluginId="Ma petite entreprise" Status="Running" Reason="Right-click change" />
+      <ConfigurationItem ServiceOrPluginId="Ma petite entrprise" Status="Running" Reason="Right-click change" />
+      <ConfigurationItem ServiceOrPluginId="My Little Company" Status="Running" Reason="Right-click change" />
+    </ConfigurationLayer>
+  </Configuration>
 </Yodii.Lab>

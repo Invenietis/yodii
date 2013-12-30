@@ -39,7 +39,6 @@ namespace Yodii.Engine
                         Debug.Assert( Service == null || !Service.Disabled );
                         _dynamicReason = PluginRunningStatusReason.None;
                         _dynamicStatus = null;
-                        if( Service != null ) Service.OnPluginAvailable();
                         break;
                     }
             }
@@ -125,7 +124,7 @@ namespace Yodii.Engine
             _dynamicReason = reason;
             if( Service != null )
             {
-                Service.OnPluginStopped();
+                Service.OnPluginStopped( true );
                 Service.OnPostPluginStopped();
             }
         }

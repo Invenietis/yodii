@@ -47,13 +47,16 @@ namespace Yodii.Engine
             : this( s, serviceStatus, impact )
         {
             Family = generalization.Family;
-            _inheritedServicesWithThis = new ServiceData[generalization._inheritedServicesWithThis.Length];
+            _inheritedServicesWithThis = new ServiceData[generalization._inheritedServicesWithThis.Length + 1];
             generalization._inheritedServicesWithThis.CopyTo( _inheritedServicesWithThis, 0 );
             _inheritedServicesWithThis[_inheritedServicesWithThis.Length - 1] = this;
             Generalization = generalization;
             NextSpecialization = Generalization.FirstSpecialization;
             Generalization.FirstSpecialization = this;
             Initialize();
+            if( !Disabled ) 
+                for( int i = 0; i < _inheritedServicesWithThis.Length - 1; ++i ) 
+                    ++_inheritedServicesWithThis[i].AvailableServiceCount;
         }
 
         internal ServiceData( IConfigurationSolver solver, IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
@@ -164,6 +167,11 @@ namespace Yodii.Engine
         {
             get { return _configSolvedImpact; }
         }
+
+        /// <summary>
+        /// Number of direct specialization that are not disabled.
+        /// </summary>
+        public int AvailableServiceCount;
 
         /// <summary>
         /// Number of plugins for this exact service.
@@ -280,6 +288,8 @@ namespace Yodii.Engine
             Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
             _configDisabledReason = r;
             ServiceData spec = FirstSpecialization;
+            for( int i = 0; i < _inheritedServicesWithThis.Length - 1; ++i )
+                --_inheritedServicesWithThis[i].AvailableServiceCount;
             while( spec != null )
             {
                 if( !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.GeneralizationIsDisabled );
