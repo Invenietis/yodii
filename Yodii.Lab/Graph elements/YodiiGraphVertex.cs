@@ -20,7 +20,8 @@ namespace Yodii.Lab
         readonly LabServiceInfo _liveService;
         readonly LabPluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
-        readonly ICommand _toggleItemCommand;
+        readonly ICommand _startItemCommand;
+        readonly ICommand _stopItemCommand;
 
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
@@ -34,26 +35,41 @@ namespace Yodii.Lab
         /// </summary>
         private YodiiGraphVertex()
         {
-            _toggleItemCommand = new RelayCommand( ToggleLiveItemExecute, CanToggleLiveItemExecute );
+            _startItemCommand = new RelayCommand( StartLiveItemExecute, CanStartLiveItem );
+            _stopItemCommand = new RelayCommand( StopLiveItemExecute, CanStopLiveItem );
         }
 
-        private bool CanToggleLiveItemExecute( object obj )
+        private bool CanStartLiveItem( object obj )
         {
             if( LiveObject == null ) return false;
-            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Running ) return false;
 
             return true;
         }
 
-        private void ToggleLiveItemExecute( object obj )
+        private bool CanStopLiveItem( object obj )
         {
-            if( !CanToggleLiveItemExecute( obj ) ) return;
+            if( LiveObject == null ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Stopped ) return false;
+
+            return true;
+        }
+
+        private void StartLiveItemExecute( object obj )
+        {
+            if( !CanStartLiveItem( obj ) ) return;
 
             if( LiveObject.RunningStatus == RunningStatus.Stopped )
             {
                 LiveObject.Start();
             }
-            else
+        }
+
+        private void StopLiveItemExecute( object obj )
+        {
+            if( !CanStopLiveItem( obj ) ) return;
+
+            if( LiveObject.RunningStatus == RunningStatus.Running )
             {
                 LiveObject.Stop();
             }
@@ -194,9 +210,14 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Command to toggle (Start or Stop) this live item.
+        /// Command to toggle stop this live item.
         /// </summary>
-        public ICommand ToggleItemCommand { get { return _toggleItemCommand; } }
+        public ICommand StopItemCommand { get { return _stopItemCommand; } }
+
+        /// <summary>
+        /// Command to start this live item.
+        /// </summary>
+        public ICommand StartItemCommand { get { return _startItemCommand; } }
 
         /// <summary>
         /// The configuration status for this element, from the ConfigurationManager.
