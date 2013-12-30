@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using Yodii.Engine.Tests.Mocks;
 using Yodii.Model;
 
 namespace Yodii.Engine.Tests.ConfigurationSolverTests
@@ -484,5 +485,20 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         //        }
         //    } );
         //}
+
+        [Test]
+        public void RuntimeAssertionTest()
+        {
+            IYodiiEngine engine = MockXmlUtils.CreateEngineFromXmlResource( "BaseGraph4" );
+
+            engine.Start();
+
+            var rootIService2 = engine.LiveInfo.Services.Where( s => s.FullName == "IService2" ).First();
+
+            var layer = engine.Configuration.Layers.Create( "DefautLayer" );
+            var result = layer.Items.Add( "IService2", ConfigurationStatus.Disabled );
+
+            Assert.That( result.Success == false );
+        }
     }
 }
