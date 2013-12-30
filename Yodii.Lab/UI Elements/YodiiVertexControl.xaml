@@ -60,6 +60,7 @@
                 Orientation="Vertical"
                 Margin="1pt">
                 <DockPanel>
+                    <!-- Plugin.Service icon -->
                     <Image
                         DockPanel.Dock="Left"
                         x:Name="VertexIcon"
@@ -90,6 +91,7 @@
                             </Style>
                         </Image.Style>
                     </Image>
+                    <!-- RunningStatus icon -->
                     <Image
                         Margin="3pt,0,0,0"
                         HorizontalAlignment="Center"
@@ -135,6 +137,85 @@
                             </Style>
                         </Image.Style>
                     </Image>
+                    <!-- Start button -->
+                    <local:DropDownButton
+                        Margin="3pt,0,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Height="12pt"
+                        Width="12pt"
+                        DockPanel.Dock="Right"
+                        FontFamily="Webdings">
+                        <local:DropDownButton.Style>
+                            <Style
+                                TargetType="{x:Type local:DropDownButton}">
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
+                                        Value="Stopped">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </local:DropDownButton.Style>
+                        <Image
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            SnapsToDevicePixels="True"
+                            Source="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png">
+                        </Image>
+                        <local:DropDownButton.DropDown>
+                            <ContextMenu>
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.Minimal}"
+                                    Header="Minimal" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.FullStart}"
+                                    Header="FullStart" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.FullStop}"
+                                    Header="FullStop" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.StopOptionalAndRunnable}"
+                                    Header="StopOptionalAndRunnable" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.StartRecommended}"
+                                    Header="StartRecommended" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.IsTryOnly}"
+                                    Header="IsTryOnly" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryFullStop}"
+                                    Header="TryFullStop" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryStopOptionalAndRunnable}"
+                                    Header="TryStopOptionalAndRunnable" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryStartRecommended}"
+                                    Header="TryStartRecommended" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryFullStart}"
+                                    Header="TryFullStart" />
+                            </ContextMenu>
+                        </local:DropDownButton.DropDown>
+                        
+                    </local:DropDownButton>
+                    <!-- Stop button -->
                     <Button
                         Margin="3pt,0,0,0"
                         HorizontalAlignment="Center"
@@ -142,44 +223,19 @@
                         Height="12pt"
                         Width="12pt"
                         DockPanel.Dock="Right"
-                        Command="{Binding Path=ToggleItemCommand}"
+                        Command="{Binding Path=StopItemCommand}"
                         FontFamily="Webdings">
                         <Button.Style>
                             <Style
                                 TargetType="{x:Type Button}"
                                 BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger
-                                        Binding="{Binding Path=IsLive, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                                        Value="false">
-                                        <Setter
-                                            Property="Visibility"
-                                            Value="Collapsed" />
-                                    </DataTrigger>
-                                    <DataTrigger
-                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                                        Value="Disabled">
-                                        <Setter
-                                            Property="Visibility"
-                                            Value="Collapsed" />
-                                    </DataTrigger>
-                                    <DataTrigger
-                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                                        Value="RunningLocked">
-                                        <Setter
-                                            Property="Visibility"
-                                            Value="Collapsed" />
-                                    </DataTrigger>
                                     <DataTrigger
                                         Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                         Value="Running">
-                                        <Setter
-                                            Property="Visibility"
-                                            Value="Visible" />
-                                    </DataTrigger>
-                                    <DataTrigger
-                                        Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                                        Value="Stopped">
                                         <Setter
                                             Property="Visibility"
                                             Value="Visible" />
@@ -190,30 +246,8 @@
                         <Image
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            SnapsToDevicePixels="True">
-
-                            <Image.Style>
-                                <Style
-                                    TargetType="{x:Type Image}">
-                                    <Style.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                                            Value="Running">
-                                            <Setter
-                                                Property="Source"
-                                                Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
-                                        </DataTrigger>
-                                        <DataTrigger
-                                            Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
-                                            Value="Stopped">
-                                            <Setter
-                                                Property="Source"
-                                                Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Image.Style>
-
+                            SnapsToDevicePixels="True"
+                            Source="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png">
                         </Image>
                     </Button>
                     <TextBlock
