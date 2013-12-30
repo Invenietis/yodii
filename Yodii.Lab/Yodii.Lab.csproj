@@ -43,7 +43,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.Core">
-      <HintPath>..\packages\CK.Core.3.0.4-develop\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\packages\CK.Core.3.0.5-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="CK.GraphX, Version=1.0.5.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -135,6 +135,7 @@
     <Compile Include="NotificationsHolder\NotificationsContainerUserControl.xaml.cs">
       <DependentUpon>NotificationsContainerUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RecentFile.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

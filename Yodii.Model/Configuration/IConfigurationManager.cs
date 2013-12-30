@@ -5,7 +5,7 @@ namespace Yodii.Model
     /// <summary>
     /// Configuration manager interface. Contains a collection of <see cref="IConfigurationLayer"/>,
     /// each having a collection of <see cref="IConfigurationItem"/>.
-    /// Adding and removing layers triggers configuration resolution, and formats everything into a single <see cref="FinalConfiguration"/>,
+    /// Adding and removing layers triggers configuration resolution, and project the whole configuration into a single <see cref="FinalConfiguration"/>,
     /// which is essentially a single, read-only <see cref="IConfigurationLayer"/>.
     /// </summary>
     public interface IConfigurationManager : INotifyPropertyChanged
@@ -24,7 +24,8 @@ namespace Yodii.Model
         /// Read-only collection container of read-only configuration items.
         /// </summary>
         /// <remarks>
-        /// Changes when an engine change was not canceled through <see cref="IConfigurationManager.ConfigurationChanging"/>.
+        /// This final configuration is automatically maintained.
+        /// Any change to the configuration can be canceled thanks to <see cref="IConfigurationManager.ConfigurationChanging"/>.
         /// </remarks>
         FinalConfiguration FinalConfiguration { get; }
 
@@ -32,5 +33,7 @@ namespace Yodii.Model
         /// Layers contained in this manager.
         /// </summary>
         IConfigurationLayerCollection Layers { get; }
+
+
     }
 }

@@ -5,8 +5,7 @@ using System.Collections.Generic;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Collection of configuration layers.
-    /// <seealso cref="IConfigurationManager"/>
+    /// Collection of configuration layers contained in a <see cref="IConfigurationManager"/>.
     /// </summary>
     public interface IConfigurationLayerCollection : ICKObservableReadOnlyList<IConfigurationLayer>
     {
@@ -25,10 +24,17 @@ namespace Yodii.Model
         IYodiiEngineResult Remove( IConfigurationLayer layer );
 
         /// <summary>
-        /// Accesses an item of this collection.
+        /// Gets layers by their name.
         /// </summary>
         /// <param name="layerName">Layer display name</param>
-        /// <returns>Layer item</returns>
+        /// <returns>Zero, one or more layers.</returns>
         IReadOnlyCollection<IConfigurationLayer> this[string layerName] { get; }
+
+        /// <summary>
+        /// Clears any existing configuration (removes any existing layers).
+        /// </summary>
+        /// <returns>Yodii engine change result.</returns>
+        IYodiiEngineResult Clear();
+
     }
 }

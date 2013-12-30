@@ -66,9 +66,20 @@ namespace Yodii.Model
         {
             get { return _externalReasons != null ? _externalReasons.AsReadOnlyList() : CKReadOnlyListEmpty<string>.Empty; }
         }
-        
+
         /// <summary>
-        /// Creates a new instance of ConfigurationChangingEventArgs, provoked by a ConfigurationItem.
+        /// Creates a new instance of ConfigurationChangingEventArgs for a <see cref="IConfigurationManager.Clear"/>.
+        /// </summary>
+        /// <param name="finalConfiguration">New empty FinalConfiguration. Must be empty otherwise an exception is thrown.</param>
+        public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration )
+        {
+            if( finalConfiguration == null || finalConfiguration.Items.Count > 0 ) throw new ArgumentException( "Must be not null and empty.", "finalConfiguration" );
+            _finalConfiguration = finalConfiguration;
+            _finalConfigurationChange = FinalConfigurationChange.Cleared;
+        }
+
+        /// <summary>
+        /// Creates a new instance of ConfigurationChangingEventArgs when change is triggered by a ConfigurationItem.
         /// </summary>
         /// <param name="finalConfiguration">New FinalConfiguration</param>
         /// <param name="finalConfigurationChanged">Details of changes in the new FinalConfiguration</param>
@@ -81,7 +92,7 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Creates a new instance of ConfigurationChangingEventArgs, provoked by a ConfigurationLayer.
+        /// Creates a new instance of ConfigurationChangingEventArgs when change is triggered by a ConfigurationLayer.
         /// </summary>
         /// <param name="finalConfiguration">New FinalConfiguration</param>
         /// <param name="finalConfigurationChanged">Details of changes in the new FinalConfiguration</param>
@@ -96,7 +107,7 @@ namespace Yodii.Model
         /// <summary>
         /// Cancel this change with a reason.
         /// </summary>
-        /// <param name="reason">Why this change is cancelled.</param>
+        /// <param name="reason">Why this change is canceled.</param>
         public void CancelForExternalReason( string reason )
         {
             if( String.IsNullOrWhiteSpace( reason ) ) throw new ArgumentException();

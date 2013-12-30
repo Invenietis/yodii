@@ -463,6 +463,7 @@ namespace Yodii.Lab
     }
 
     #region Persistent state classes
+
     class PersistedLabState
     {
         public List<PersistedConfigurationLayer> ConfigurationLayers { get; private set; }

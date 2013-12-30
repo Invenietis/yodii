@@ -132,7 +132,7 @@ namespace Yodii.Engine
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.LayerRemoved, layer ) );
         }
 
-        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration,ConfigurationChangingEventArgs> createChangingEvent )
+        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration, ConfigurationChangingEventArgs> createChangingEvent )
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
             if( Engine.IsRunning )
@@ -147,6 +147,12 @@ namespace Yodii.Engine
                 return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.OnConfigurationChanging( t.Item2 );
             }
             return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.SuccessResult;
+        }
+
+        IYodiiEngineResult OnConfigurationClearing()
+        {
+            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf ) );
         }
 
         IYodiiEngineResult OnConfigurationChangingForExternalWorld( ConfigurationChangingEventArgs eventChanging )
@@ -215,16 +221,16 @@ namespace Yodii.Engine
                 _parent = parent;
                 _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.LayerName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: true );
 
-                _layers.PropertyChanged += RetrievePropertyEvent;
-                _layers.CollectionChanged += RetrieveCollectionEvent;
+                _layers.PropertyChanged += RelayPropertyEvent;
+                _layers.CollectionChanged += RelayCollectionEvent;
             }
 
-            private void RetrieveCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
+            private void RelayCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
             {
                 FireCollectionChanged( e );
             }
 
-            private void RetrievePropertyEvent( object sender, PropertyChangedEventArgs e )
+            private void RelayPropertyEvent( object sender, PropertyChangedEventArgs e )
             {
                 FirePropertyChanged( e );
             }
@@ -251,6 +257,18 @@ namespace Yodii.Engine
                 {
                     _layers.Remove( l );
                     l.SetConfigurationManager( null );
+                    _parent.OnConfigurationChanged();
+                }
+                return result;
+            }
+
+            public IYodiiEngineResult Clear()
+            {
+                if( _layers.Count == 0 ) return _parent.Engine.SuccessResult;
+                IYodiiEngineResult result = _parent.OnConfigurationClearing();
+                if( result.Success )
+                {
+                    _layers.Clear();
                     _parent.OnConfigurationChanged();
                 }
                 return result;

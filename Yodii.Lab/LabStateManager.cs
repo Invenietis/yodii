@@ -362,10 +362,7 @@ namespace Yodii.Lab
         /// </summary>
         internal void ClearState()
         {
-            if( _engine.IsRunning )
-            {
-                _engine.Stop();
-            }
+            if( _engine.IsRunning ) _engine.Stop();
 
             _labPluginInfos.Clear();
             _labServiceInfos.Clear();
