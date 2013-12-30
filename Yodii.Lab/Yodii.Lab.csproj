@@ -135,6 +135,11 @@
     <Compile Include="NotificationsHolder\NotificationsContainerUserControl.xaml.cs">
       <DependentUpon>NotificationsContainerUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="UI Elements\PluginPropertyPanel.xaml.cs">
       <DependentUpon>PluginPropertyPanel.xaml</DependentUpon>
     </Compile>
@@ -228,11 +233,6 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -252,13 +252,13 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\column_32xLG.png" />
+    <Resource Include="Assets\Icons\column_32xLG.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\database_32xLG.png" />
+    <Resource Include="Assets\Icons\database_32xLG.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\Symbols_Critical_32xLG.png" />
+    <Resource Include="Assets\Icons\Symbols_Critical_32xLG.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
@@ -274,14 +274,14 @@
     <Resource Include="Assets\ModernUiLicense.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\PropertyIcon.png" />
+    <Resource Include="Assets\Icons\PropertyIcon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\action_add_16xLG.png" />
+    <Resource Include="Assets\Icons\action_add_16xLG.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\class_32xLG.png" />
-    <Resource Include="Icons\interface_16xLG.png" />
+    <Resource Include="Assets\Icons\class_32xLG.png" />
+    <Resource Include="Assets\Icons\interface_16xLG.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="DefaultState\DefaultState.xml" />
@@ -290,10 +290,10 @@
     <Folder Include="DesignModel\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\RunningStatusDisabled.png" />
-    <Resource Include="Assets\RunningStatusRunning.png" />
-    <Resource Include="Assets\RunningStatusRunningLocked.png" />
-    <Resource Include="Assets\RunningStatusStopped.png" />
+    <Resource Include="Assets\Icons\RunningStatusDisabled.png" />
+    <Resource Include="Assets\Icons\RunningStatusRunning.png" />
+    <Resource Include="Assets\Icons\RunningStatusRunningLocked.png" />
+    <Resource Include="Assets\Icons\RunningStatusStopped.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" />

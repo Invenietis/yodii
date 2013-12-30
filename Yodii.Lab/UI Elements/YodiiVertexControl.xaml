@@ -76,7 +76,7 @@
                                         Value="true">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Icons/interface_16xLG.png" />
+                                            Value="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png" />
                                     </DataTrigger>
                                     <!-- Plugin styling -->
                                     <DataTrigger
@@ -84,7 +84,7 @@
                                         Value="true">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Icons/class_32xLG.png" />
+                                            Value="/Yodii.Lab;component/Assets/Icons/class_32xLG.png" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -108,28 +108,28 @@
                                         Value="Disabled">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Assets/RunningStatusDisabled.png" />
+                                            Value="/Yodii.Lab;component/Assets/Icons/RunningStatusDisabled.png" />
                                     </DataTrigger>
                                     <DataTrigger
                                         Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                         Value="Stopped">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                            Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
                                     </DataTrigger>
                                     <DataTrigger
                                         Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                         Value="Running">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                            Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
                                     </DataTrigger>
                                     <DataTrigger
                                         Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                         Value="RunningLocked">
                                         <Setter
                                             Property="Source"
-                                            Value="/Yodii.Lab;component/Assets/RunningStatusRunningLocked.png" />
+                                            Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunningLocked.png" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -201,14 +201,14 @@
                                             Value="Running">
                                             <Setter
                                                 Property="Source"
-                                                Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                                Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
                                         </DataTrigger>
                                         <DataTrigger
                                             Binding="{Binding Path=LiveObject.RunningStatus, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}"
                                             Value="Stopped">
                                             <Setter
                                                 Property="Source"
-                                                Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                                Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -245,7 +245,7 @@
                         VerticalAlignment="Center"
                         Stretch="Uniform"
                         SnapsToDevicePixels="True"
-                        Source="/Yodii.Lab;component/Icons/PropertyIcon.png" />
+                        Source="/Yodii.Lab;component/Assets/Icons/PropertyIcon.png" />
                     <TextBlock
                         VerticalAlignment="Center"
                         Text="{Binding Path=ConfigurationStatus, FallbackValue=(ConfigurationStatus)}">

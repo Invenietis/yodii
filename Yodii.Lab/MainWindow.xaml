@@ -12,7 +12,7 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     WindowStartupLocation="CenterScreen"
-    Icon="/Yodii.Lab;component/Icons/class_32xLG.png"
+    Icon="/Yodii.Lab;component/Assets/Icons/class_32xLG.png"
     x:Name="MainWindowRoot"
     Title="{Binding Path=WindowTitle, FallbackValue=Yodii.Lab}"
     Height="600"
@@ -297,7 +297,7 @@
                         Header="New"
                         Fluent:KeyTip.Keys="N"
                         Command="{Binding Path=NewFileCommand}"
-                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="New file (Ctrl+N)"
@@ -312,7 +312,7 @@
                         Fluent:KeyTip.Keys="S"
                         Command="{Binding Path=SaveCommand}"
                         LargeIcon="{StaticResource DiskIconViewBox}"
-                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="Save file (Ctrl+S)"
@@ -326,7 +326,7 @@
                         Header="Open"
                         Fluent:KeyTip.Keys="O"
                         Command="{Binding Path=OpenFileCommand}"
-                        Icon="/Yodii.Lab;component/Icons/interface_16xLG.png">
+                        Icon="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png">
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
                                 Title="Open file (Ctrl+O)"
@@ -344,7 +344,7 @@
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
-                                Source="/Yodii.Lab;component/Icons/interface_16xLG.png" />
+                                Source="/Yodii.Lab;component/Assets/Icons/interface_16xLG.png" />
                         </Fluent:Button.LargeIcon>
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
@@ -361,7 +361,7 @@
                         <Fluent:Button.LargeIcon>
                             <Image
                                 Height="12pt"
-                                Source="/Yodii.Lab;component/Icons/class_32xLG.png" />
+                                Source="/Yodii.Lab;component/Assets/Icons/class_32xLG.png" />
                         </Fluent:Button.LargeIcon>
                         <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
@@ -798,14 +798,14 @@
                                                                     Value="true">
                                                                     <Setter
                                                                         Property="Source"
-                                                                        Value="/Yodii.Lab;component/Assets/RunningStatusRunning.png" />
+                                                                        Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
                                                                 </DataTrigger>
                                                                 <DataTrigger
                                                                     Binding="{Binding Path=Start, Mode=OneWay}"
                                                                     Value="false">
                                                                     <Setter
                                                                         Property="Source"
-                                                                        Value="/Yodii.Lab;component/Assets/RunningStatusStopped.png" />
+                                                                        Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>

@@ -39,12 +39,12 @@ namespace Yodii.Lab
         /// <summary>
         /// Image URI for Plugin Running notifications.
         /// </summary>
-        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusRunning.png";
+        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png";
 
         /// <summary>
         /// Image URI for Plugin Stopped notifications.
         /// </summary>
-        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/RunningStatusStopped.png";
+        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png";
 
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
