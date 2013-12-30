@@ -117,6 +117,8 @@ namespace Yodii.Lab
             {
                 CreateServiceFamilies();
                 ComputeForcedPositions();
+
+                NextRecomputeForcesPositions = false;
             }
         }
 

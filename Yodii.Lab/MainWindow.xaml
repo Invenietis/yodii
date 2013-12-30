@@ -38,7 +38,7 @@
         <KeyBinding
             Key="R"
             Modifiers="Control"
-            Command="{Binding Path=ReorderGraphLayoutCommand}" />
+            Command="{Binding Path=AutoPositionCommand}" />
         <KeyBinding
             Key="F5"
             Command="{Binding Path=ReorderGraphLayoutCommand}" />
@@ -407,22 +407,22 @@
                     </Fluent:Button>
                 </Fluent:RibbonGroupBox>
                 <Fluent:RibbonGroupBox>
-                    <Fluent:SplitButton
+                    <Fluent:Button
                         Fluent:KeyTip.Keys="R"
-                        Header="Reorder graph"
-                        Command="{Binding Path=ReorderGraphLayoutCommand}">
-                        <Fluent:SplitButton.ToolTip>
+                        Header="Auto-position elements"
+                        Command="{Binding Path=AutoPositionCommand}">
+                        <Fluent:Button.ToolTip>
                             <Fluent:ScreenTip
-                                Title="Reorder graph (F5, Ctrl+R)"
+                                Title="Auto-position elements (Ctrl+R)"
                                 Width="250"
-                                Text="Regenerates the graph, resetting items to their original positions." />
-                        </Fluent:SplitButton.ToolTip>
-                        <Fluent:SplitButton.LargeIcon>
+                                Text="Attempt to automatically position all elements. This will overwrite every item position." />
+                        </Fluent:Button.ToolTip>
+                        <Fluent:Button.LargeIcon>
                             <Viewbox
                                 Stretch="UniformToFill"
                                 Child="{StaticResource RefreshIcon}" />
-                        </Fluent:SplitButton.LargeIcon>
-                    </Fluent:SplitButton>
+                        </Fluent:Button.LargeIcon>
+                    </Fluent:Button>
                     <Fluent:Button
                         Header="Export to PNG"
                         Click="ExportToPngButton_Click">

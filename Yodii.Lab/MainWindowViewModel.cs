@@ -37,6 +37,8 @@ namespace Yodii.Lab
 
         internal event EventHandler<VertexPositionEventArgs> VertexPositionRequest;
 
+        internal event EventHandler AutoPositionRequest;
+
         #region Fields
 
         /// <summary>
@@ -65,6 +67,7 @@ namespace Yodii.Lab
         readonly ICommand _openConfigurationEditorCommand;
         readonly ICommand _newFileCommand;
         readonly ICommand _revokeAllCommandsCommand;
+        readonly ICommand _autoPositionCommand;
 
         readonly ActivityMonitor _activityMonitor;
         readonly DispatcherTimer _autosaveTimer;
@@ -118,6 +121,7 @@ namespace Yodii.Lab
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
             _newFileCommand = new RelayCommand( NewFileExecute );
             _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
+            _autoPositionCommand = new RelayCommand( AutoPositionExecute );
 
             LoadRecentFiles();
 
@@ -634,6 +638,14 @@ namespace Yodii.Lab
             Save();
         }
 
+        private void AutoPositionExecute( object obj )
+        {
+            if( AutoPositionRequest != null )
+            {
+                AutoPositionRequest( this, new EventArgs() );
+            }
+        }
+
         #endregion Command handlers
 
         #region Properties
@@ -839,6 +851,10 @@ namespace Yodii.Lab
         /// Command to revoke all callers.
         /// </summary>
         public ICommand RevokeAllCommandsCommand { get { return _revokeAllCommandsCommand; } }
+        /// <summary>
+        /// Command to auto-position all elements.
+        /// </summary>
+        public ICommand AutoPositionCommand { get { return _autoPositionCommand; } }
         #endregion Properties
 
         #region Public methods

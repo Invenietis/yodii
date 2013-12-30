@@ -26,6 +26,9 @@ namespace Yodii.Lab
             _vm.NewNotification += _vm_NewNotification;
             _vm.CloseBackstageRequest += _vm_CloseBackstageRequest;
             _vm.VertexPositionRequest += _vm_VertexPositionRequest;
+            _vm.AutoPositionRequest += _vm_AutoPositionRequest;
+
+            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
             InitializeComponent();
 
@@ -37,7 +40,6 @@ namespace Yodii.Lab
             GraphArea.UseNativeObjectArrange = false;
             //GraphArea.SideExpansionSize = new Size( 100, 100 );
 
-            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
             _graphLayout = new YodiiLayout();
             GraphArea.LayoutAlgorithm = _graphLayout;
@@ -53,6 +55,22 @@ namespace Yodii.Lab
             _vm.Graph.EdgeRemoved += Graph_EdgeRemoved;
         }
 
+        void _vm_AutoPositionRequest( object sender, EventArgs e )
+        {
+            var result = MessageBox.Show(
+                "Automatically position all elements in the graph?\nThis will reset all their positions.",
+                "Auto-position elements",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No
+                );
+            if( result == MessageBoxResult.Yes )
+            {
+                _graphLayout.NextRecomputeForcesPositions = true;
+                GraphArea.RelayoutGraph();
+            }
+        }
+
         void _vm_VertexPositionRequest( object sender, VertexPositionEventArgs e )
         {
             e.VertexPositions = GraphArea.GetVertexPositions();
@@ -65,7 +83,7 @@ namespace Yodii.Lab
 
         void Graph_EdgeAdded( YodiiGraphEdge e )
         {
-            GraphArea.AddEdge(e, new EdgeControl(GraphArea.VertexList[e.Source], GraphArea.VertexList[e.Target], e));
+            GraphArea.AddEdge( e, new EdgeControl( GraphArea.VertexList[e.Source], GraphArea.VertexList[e.Target], e ) );
         }
 
         void Graph_VertexRemoved( YodiiGraphVertex vertex )
@@ -80,7 +98,8 @@ namespace Yodii.Lab
             if( vertex.IsService )
             {
                 if( vertex.LabServiceInfo.ServiceInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabServiceInfo.ServiceInfo.PositionInGraph );
-            } else if (vertex.IsPlugin)
+            }
+            else if( vertex.IsPlugin )
             {
                 if( vertex.LabPluginInfo.PluginInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabPluginInfo.PluginInfo.PositionInGraph );
             }
