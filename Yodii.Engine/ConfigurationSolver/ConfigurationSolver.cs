@@ -46,21 +46,41 @@ namespace Yodii.Engine
 
         public ConfigurationSolverStep Step { get; private set; }
 
+        /// <summary>
+        /// Finds a service by its name that must exist (otherwise an exception is thrown).
+        /// </summary>
+        /// <param name="serviceFullName">The service name.</param>
+        /// <returns>The ServiceData.</returns>
         public ServiceData FindExistingService( string serviceFullName )
         {
             return _services[serviceFullName];
         }
 
+        /// <summary>
+        /// Finds a plugin by its name that must exist (otherwise an exception is thrown).
+        /// </summary>
+        /// <param name="pluginFullName">The plugin name.</param>
+        /// <returns>The PluginData.</returns>
         public PluginData FindExistingPlugin( string pluginFullName )
         {
             return _plugins[pluginFullName];
         }
 
+        /// <summary>
+        /// Finds a service by its name. Returns null if it does not exist.
+        /// </summary>
+        /// <param name="serviceFullName">The service name.</param>
+        /// <returns>Null if not found.</returns>
         public ServiceData FindService( string serviceFullName )
         {
             return _services.GetValueWithDefault( serviceFullName, null );
         }
 
+        /// <summary>
+        /// Finds a plugin by its name. Returns null if it does not exist.
+        /// </summary>
+        /// <param name="pluginFullName">The plugin name.</param>
+        /// <returns>Null if not found.</returns>
         public PluginData FindPlugin( string pluginFullName )
         {
             return _plugins.GetValueWithDefault( pluginFullName, null );

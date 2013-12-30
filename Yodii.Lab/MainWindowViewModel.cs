@@ -604,14 +604,14 @@ namespace Yodii.Lab
 
         private bool CanRevokeAllCommands( object obj )
         {
-            return LabState.Engine.IsRunning && LabState.Engine.YodiiCommands.Count > 0;
+            return LabState.Engine.IsRunning && LabState.Engine.LiveInfo.YodiiCommands.Count > 0;
         }
 
         private void RevokeAllCommandsExecute( object obj )
         {
             if( !CanRevokeAllCommands( obj ) ) return;
 
-            IEnumerable<string> callers = LabState.Engine.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
+            IEnumerable<string> callers = LabState.Engine.LiveInfo.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
 
             foreach( string callerKey in callers )
             {

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Text;
+using CK.Core;
 using NUnit.Framework;
 using Yodii.Model;
 
@@ -10,20 +12,42 @@ namespace Yodii.Engine.Tests
 {
     static class DynamicTestExtensions
     {
-        public static void FullStart( this YodiiEngine @this, Action<YodiiEngine,IYodiiEngineResult> tests )
+        public static void FullStart( this YodiiEngine @this, Action<YodiiEngine,IYodiiEngineResult> tests, [CallerMemberName]string callerName = null )
         {
+            IActivityMonitor m = TestHelper.ConsoleMonitor;
             IYodiiEngineResult result;
-            result = @this.Start( true, true );
-            tests( @this, result );
-            @this.Stop();
-            result = @this.Start( false, false );
-            tests( @this, result );
-            @this.Stop();
-            result = @this.Start( true, false );
-            tests( @this, result );
-            @this.Stop();
-            result = @this.Start( false, true );
-            tests( @this, result );
+
+            using( m.OpenInfo().Send( "FullStart for {0}.", callerName ) )
+            {
+                using( m.OpenInfo().Send( "FullStart()." ) )
+                {
+                    result = @this.Start( false, false );
+                    result.Trace( m );
+                    tests( @this, result );
+                    @this.Stop();
+                }
+                using( m.OpenInfo().Send( "FullStart( revertServices )." ) )
+                {
+                    result = @this.Start( true, false );
+                    result.Trace( m );
+                    tests( @this, result );
+                    @this.Stop();
+                }
+                using( m.OpenInfo().Send( "FullStart( revertPlugins )." ) )
+                {
+                    result = @this.Start( false, true );
+                    result.Trace( m );
+                    tests( @this, result );
+                    @this.Stop();
+                }
+                using( m.OpenInfo().Send( "FullStart( revertServices, revertPlugins )." ) )
+                {
+                    result = @this.Start( true, true );
+                    result.Trace( m );
+                    tests( @this, result );
+                    @this.Stop();
+                }
+            }
         }
 
         #region Plugins and Services

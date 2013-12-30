@@ -10,6 +10,7 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Live information of a running engine.
+    /// This is the observable façade to the whole <see cref="IYodiiEngine"/>.
     /// </summary>
     /// <remarks>
     /// Gives information about which services and plugins were successfully resolved and started.
@@ -17,14 +18,24 @@ namespace Yodii.Model
     public interface ILiveInfo
     {
         /// <summary>
-        /// List of plugins which were successfully resolved and started.
+        /// Gets an observable list of currently available plugins.
         /// </summary>
-        ICKObservableReadOnlyList<ILivePluginInfo> Plugins { get; }
+        IObservableReadOnlyList<ILivePluginInfo> Plugins { get; }
         
         /// <summary>
-        /// List of services which were successfully resolved and started.
+        /// Gets an observable list of currently available services.
         /// </summary>
-        ICKObservableReadOnlyList<ILiveServiceInfo> Services { get; }
+        IObservableReadOnlyList<ILiveServiceInfo> Services { get; }
+        
+        /// <summary>
+        /// Currently active <see cref="YodiiCommand"/>.
+        /// </summary>
+        /// <remarks>
+        /// Commands are are used to dynamically reconfigure the system.
+        /// They are memorized from the newest one to the latest one and are automatically optimized: only 
+        /// commands that are actually used to preserve the integrity of the system state are kept.
+        /// </remarks>
+        IObservableReadOnlyList<YodiiCommand> YodiiCommands { get; }
         
         /// <summary>
         /// Find a live service by its full name.

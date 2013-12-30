@@ -336,42 +336,27 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *      |           |Running |                            
             *      |           +---+----+                            
             *      |               |                                 
-            *      |               |                                 
-            *      |               |                                 
             *  +---+-----+         |                                 
             *  |Plugin1  |     +---+-----+                           
             *  |Optional |     |Plugin2  |                           
             *  +----+----+     |Optional |-----------------------+ 
             *       |          +---------+                       |
             *       |                                            |
-            *       |                                            |
-            *       |                                            |
-            *       |                                            |
             *       |Optional                                    |
-             *      |                                            |
-            *       |                                            |
-             *      |                                            |
             *       |                              +---------+   |          
             *       |                              |Service2 |<--+         
             *       |       +----------------------|Optional |             
             *       |       |                       +---+----+               
-            *       |       |                          |                       
             *       |       |                          |                   
             *       |   +---+-------+             +----+------+            
             *       |   |Service2.1 |             |Service2.2 |        
             *       +-->|Optional   |             |Optional   |        
             *           +-----------+             +-----+-----+            
             *               |                           |            
-            *               |                           |            
-            *               |                         +--+-----+
-            *               |                         |Plugin4 |
-            *            +--+-----+                   |Optional|
-            *            |Plugin3 |                   +--------+
-            *            |Optional|          
-            *            +--------+          
-            *                           
-            *                           
-            *                                                        
+            *            +--+-----+                  +--+-----+
+            *            |Plugin3 |                  |Plugin4 |
+            *            |Optional|                  |Optional|
+            *            +--------+                  +--------+
             */
             #endregion
             StaticConfigurationTests.CreateValidOptionalReferences().FullStart( ( engine, res ) =>
@@ -383,7 +368,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.LiveInfo.FindPlugin( "Plugin3" ).Start();
 
                 engine.CheckAllPluginsRunning( "Plugin1, Plugin3" );
-                engine.CheckPluginsStopped( "Plugin2, Plugin4" );
+                engine.CheckAllPluginsStopped( "Plugin2, Plugin4" );
                 engine.CheckAllServicesRunning("Service2.1, Service2");
                 engine.CheckAllServicesStopped( "Service2.2" );
 

@@ -37,21 +37,13 @@ namespace Yodii.Engine
                     return;
                 }
 
-                if( !YodiiCommandEquals( this[0], newCommands[0] ) ) this.InsertItem( 0, newCommands[0] );
+                if( this[0] != newCommands[0] ) this.InsertItem( 0, newCommands[0] );
                 for( int i = 1; i < newCommands.Count; i++ )
                 {
-                    if( !YodiiCommandEquals( newCommands[i], this[i] ) ) this.RemoveAt( i-- );
+                    if( newCommands[i] != this[i] ) this.RemoveAt( i-- );
                 }
                 while( this.Count > newCommands.Count ) this.RemoveAt( Count - 1 );
                 Debug.Assert( this.Count == newCommands.Count );
-            }
-
-            bool YodiiCommandEquals( YodiiCommand a, YodiiCommand b )
-            {
-                return ( (a.PluginFullName != null && b.PluginFullName != null) && (a.PluginFullName == b.PluginFullName)
-                    || (a.ServiceFullName != null && b.ServiceFullName != null) && (a.ServiceFullName == b.ServiceFullName) ) 
-                    && a.Start == b.Start
-                    && a.Impact == b.Impact; 
             }
         }
 
@@ -86,7 +78,7 @@ namespace Yodii.Engine
             if( errors != null && errors.Any() )
             {
                 IYodiiEngineResult result =  solver.CreateDynamicFailureResult( errors );
-                _liveInfo.UpdateRuntimeErrors( errors );
+                _liveInfo.UpdateRuntimeErrors( errors, solver.FindExistingPlugin );
                 return result;
             }
             // Success:
@@ -231,7 +223,10 @@ namespace Yodii.Engine
             return _successResult;
         }
 
-        public IObservableReadOnlyList<YodiiCommand> YodiiCommands
+        /// <summary>
+        /// YodiiCommands are exposed by LiveInfo, not by the IYodiiEngine itself.
+        /// </summary>
+        internal IObservableReadOnlyList<YodiiCommand> YodiiCommands
         {
             get { return _yodiiCommands; }
         }
