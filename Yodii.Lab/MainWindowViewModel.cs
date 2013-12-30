@@ -1361,18 +1361,21 @@ namespace Yodii.Lab
             _recentFiles.Clear();
 
             StringCollection files = Properties.Settings.Default.RecentFiles;
-            foreach( string f in files )
+            if( files != null )
             {
-                var m = Regex.Match( f, @"^(.*),(\d+)$" );
+                foreach( string f in files )
+                {
+                    var m = Regex.Match( f, @"^(.*),(\d+)$" );
 
-                Debug.Assert( m.Success, "Recent file failed to match regex" );
+                    Debug.Assert( m.Success, "Recent file failed to match regex" );
 
-                FileInfo file = new FileInfo( m.Groups[1].Value );
+                    FileInfo file = new FileInfo( m.Groups[1].Value );
 
-                DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
+                    DateTime accessTime = DateTime.ParseExact( m.Groups[2].Value, "yyyyMMddHHmmss", CultureInfo.CurrentCulture );
 
-                var recentFile = new RecentFile( file, accessTime );
-                _recentFiles.Add( recentFile );
+                    var recentFile = new RecentFile( file, accessTime );
+                    _recentFiles.Add( recentFile );
+                }
             }
         }
 
