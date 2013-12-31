@@ -14,11 +14,13 @@ namespace Yodii.Engine
         {
             ServiceData _runningService;
             PluginData _runningPlugin;
+            readonly HashSet<ServiceData> _availableServices;
 
             public ServiceFamily( IConfigurationSolver solver, ServiceData root )
             {
                 Solver = solver;
                 Root = root;
+                _availableServices = new HashSet<ServiceData>();
             }
 
             public readonly IConfigurationSolver Solver;
@@ -29,9 +31,9 @@ namespace Yodii.Engine
 
             public PluginData RunningPlugin { get { return _runningPlugin; } }
 
-            public bool AllPluginsHaveBeenAdded
-            { 
-                get { return Solver.Step > ConfigurationSolverStep.RegisterPlugins; } 
+            public ISet<ServiceData> AvailableServices
+            {
+                get { return _availableServices; }
             }
 
             public bool SetRunningPlugin( PluginData p )
@@ -91,7 +93,7 @@ namespace Yodii.Engine
                     {
                         ServiceDisabledReason r = Solver.Step == ConfigurationSolverStep.RegisterServices ? ServiceDisabledReason.AnotherServiceIsRunningByConfig : ServiceDisabledReason.AnotherServiceRunningInFamily;
                         s.SetDisabled( r );
-                        if( !_runningService.Disabled ) _runningService.SetDisabled( r );
+                        if( !Root.Disabled ) Root.SetDisabled( ServiceDisabledReason.AtLeastTwoSpecializationsMustRun );
                         return false;
                     }
                 }
@@ -148,7 +150,11 @@ namespace Yodii.Engine
 
             internal void OnAllPluginsAdded()
             {
-                if( !Root.Disabled ) Root.OnAllPluginsAdded();
+                if( !Root.Disabled )
+                {
+                    Root.OnAllPluginsAdded( s => _availableServices.Add( s ) );
+                    Debug.Assert( Root.Disabled == (_availableServices.Count == 0) );
+                }
             }
 
             public override string ToString()

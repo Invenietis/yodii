@@ -94,6 +94,7 @@ namespace Yodii.Engine
                             if( IsValidSpecialization( spec ) )
                             {
                                 BasePropagation propSpec = GetPropagationInfo( spec );
+                                Debug.Assert( propSpec != null );
                                 if( propSpec.TheOnlyPlugin != null )
                                 {
                                     Debug.Assert( _theOnlyPlugin == null );

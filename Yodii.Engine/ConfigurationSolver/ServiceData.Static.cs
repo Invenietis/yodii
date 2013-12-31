@@ -11,7 +11,6 @@ namespace Yodii.Engine
     internal partial class ServiceData : IYodiiItemData
     {
         ServiceData[] _inheritedServicesWithThis;
-        ServiceData[] _directExcludedServices;
         ServiceDisabledReason _configDisabledReason;
         
         ConfigurationStatus _configSolvedStatus;
@@ -22,7 +21,6 @@ namespace Yodii.Engine
         
         ServiceData( IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact )
         {
-            _directExcludedServices = Util.EmptyArray<ServiceData>.Empty;
             _backReferences = new List<BackReference>();
             ServiceInfo = s;
             ConfigOriginalStatus = serviceStatus;
@@ -215,7 +213,7 @@ namespace Yodii.Engine
         /// </summary>
         internal IEnumerable<ServiceData> DirectExcludedServices
         {
-            get { return _directExcludedServices; }
+            get { return Family.AvailableServices.Where( s => !s.IsGeneralizationOf( this ) && !this.IsStrictGeneralizationOf( s ) ); }
         }
 
         /// <summary>
@@ -287,9 +285,16 @@ namespace Yodii.Engine
             Debug.Assert( r != ServiceDisabledReason.None );
             Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
             _configDisabledReason = r;
-            ServiceData spec = FirstSpecialization;
+
             for( int i = 0; i < _inheritedServicesWithThis.Length - 1; ++i )
                 --_inheritedServicesWithThis[i].AvailableServiceCount;
+
+            if( Family.Solver.Step > ConfigurationSolverStep.OnAllPluginsAdded )
+            {
+                Debug.Assert( Family.AvailableServices.Contains( this ) );
+                Family.AvailableServices.Remove( this );
+            }
+            ServiceData spec = FirstSpecialization;
             while( spec != null )
             {
                 if( !spec.Disabled ) spec.SetDisabled( ServiceDisabledReason.GeneralizationIsDisabled );
@@ -370,7 +375,7 @@ namespace Yodii.Engine
             while( g != null );
         }
 
-        internal void OnAllPluginsAdded()
+        internal void OnAllPluginsAdded( Action<ServiceData> availableServiceCollector )
         {
             Debug.Assert( !Disabled, "Must NOT be called on already disabled service." );
 
@@ -386,31 +391,13 @@ namespace Yodii.Engine
 
             if( !Disabled )
             {
-                // Build the directly excluded services before calling OnAllPluginsAdded on specializations.
-                List<ServiceData> excl = null;
-                if( Generalization != null )
-                {
-                    if( Generalization._directExcludedServices.Length > 0 ) excl = new List<ServiceData>( Generalization._directExcludedServices.Where( s => !s.Disabled ) );
-                    ServiceData sibling = Generalization.FirstSpecialization;
-                    while( sibling != null )
-                    {
-                        if( sibling != this && !sibling.Disabled )
-                        {
-                            if( excl == null ) excl = new List<ServiceData>();
-                            excl.Add( sibling );
-                        }
-                        sibling = sibling.NextSpecialization;
-                    }
-                    if( excl != null ) _directExcludedServices = excl.Where( s => !s.Disabled ).ToArray();
-                }
-
+                availableServiceCollector( this );
                 ServiceData spec = FirstSpecialization;
                 while( spec != null )
                 {
-                    if( !spec.Disabled ) spec.OnAllPluginsAdded();
+                    if( !spec.Disabled ) spec.OnAllPluginsAdded( availableServiceCollector );
                     spec = spec.NextSpecialization;
                 }
-
                 Debug.Assert( !Disabled );
                 Family.Solver.DeferPropagation( this );
             }
@@ -422,7 +409,7 @@ namespace Yodii.Engine
             if( p.Service == this ) ++DisabledPluginCount;
             ++TotalDisabledPluginCount;
             if( Generalization != null ) Generalization.OnPluginDisabled( p );
-            if( !Disabled && Family.AllPluginsHaveBeenAdded )
+            if( !Disabled && Family.Solver.Step >= ConfigurationSolverStep.OnAllPluginsAdded )
             {
                 if( TotalAvailablePluginCount == 0 )
                 {

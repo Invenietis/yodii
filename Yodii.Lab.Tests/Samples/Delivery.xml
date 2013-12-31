@@ -8,8 +8,8 @@
     </Service>
     <Service FullName="Je livre des colis">
       <Generalization />
-      <X>-116.681969890238</X>
-      <Y>-87.0583298456258</Y>
+      <X>-31.7201566666612</X>
+      <Y>-71.2324253420682</Y>
     </Service>
     <Service FullName="Je livre des colis (avec des garanties)">
       <Generalization>Je livre des colis</Generalization>
@@ -42,10 +42,10 @@
       <Service>Je livre des colis</Service>
       <ServiceReferences>
         <ServiceReference Service="Je gère des intérimaires" Requirement="Running" />
-        <ServiceReference Service="Je répare les véhicules" Requirement="Runnable" />
+        <ServiceReference Service="Je répare les véhicules" Requirement="Running" />
       </ServiceReferences>
-      <X>205.774943116113</X>
-      <Y>84.911488365327</Y>
+      <X>257.740971188066</X>
+      <Y>44.2352287305978</Y>
     </Plugin>
     <Plugin>
       <FullName>Ma petite entreprise</FullName>
@@ -61,10 +61,10 @@
       <FullName>ManPower</FullName>
       <Service>Je gère des intérimaires</Service>
       <ServiceReferences>
-        <ServiceReference Service="Je livre des colis (avec des garanties)" Requirement="Running" />
+        <ServiceReference Service="Je livre des colis" Requirement="Running" />
       </ServiceReferences>
-      <X>621.098949161985</X>
-      <Y>290.263600549934</Y>
+      <X>488.253128771288</X>
+      <Y>425.446250156493</Y>
     </Plugin>
     <Plugin>
       <FullName>UPS</FullName>
@@ -76,8 +76,6 @@
   </Plugins>
   <Configuration>
     <ConfigurationLayer Name="DefaultLayer">
-      <ConfigurationItem ServiceOrPluginId="Garage de l'Ouest" Status="Running" Reason="Right-click change" />
-      <ConfigurationItem ServiceOrPluginId="Livr' Express" Status="Runnable" Reason="Right-click change" />
       <ConfigurationItem ServiceOrPluginId="Ma petite entreprise" Status="Running" Reason="Right-click change" />
       <ConfigurationItem ServiceOrPluginId="Ma petite entrprise" Status="Running" Reason="Right-click change" />
       <ConfigurationItem ServiceOrPluginId="My Little Company" Status="Running" Reason="Right-click change" />

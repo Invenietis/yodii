@@ -104,17 +104,18 @@ namespace Yodii.Engine
             get 
             { 
                 return Disabled
-                        || ConfigSolvedStatus == ConfigurationStatus.Optional
-                        || !Family.AllPluginsHaveBeenAdded 
-                        || Family.RunningPlugin != null 
-                        || (Family.RunningService != null && this.IsStrictGeneralizationOf( Family.RunningService )); 
+                        || Family.Solver.Step < ConfigurationSolverStep.OnAllPluginsAdded 
+                        || Family.RunningPlugin != null; 
             }
         }
 
         public bool PropagateSolvedStatus()
         {
-            var p = GetUsefulPropagationInfo();
-            if( p != null ) return p.PropagateSolvedStatus();
+            if( ConfigSolvedStatus >= ConfigurationStatus.Runnable )
+            {
+                var p = GetUsefulPropagationInfo();
+                if( p != null ) return p.PropagateSolvedStatus();
+            }
             return true;
         }
 
