@@ -76,10 +76,24 @@ namespace Yodii.Lab
 
             _runningPlugins = new ObservableCollection<IPluginInfo>();
 
-            _serviceInfos.CollectionChanged += _staticInfos_CollectionChanged;
+            _serviceInfos.CollectionChanged += _serviceInfos_CollectionChanged;
             _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
 
             UpdateEngineInfos();
+        }
+
+        void _serviceInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            _staticInfos_CollectionChanged( sender, e );
+            if( e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add )
+            {
+                foreach( var i in e.NewItems )
+                {
+                    ServiceInfo s = (ServiceInfo)i;
+
+                    s.PropertyChanged += serviceInfo_PropertyChanged;
+                }
+            }
         }
 
         void _pluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -89,13 +103,40 @@ namespace Yodii.Lab
             {
                 foreach( var i in e.NewItems )
                 {
-                    PluginInfo s = (PluginInfo)i;
-                    s.InternalServiceReferences.CollectionChanged += _staticInfos_CollectionChanged;
-                    foreach( var serviceRef in s.InternalServiceReferences )
+                    PluginInfo p = (PluginInfo)i;
+
+                    p.InternalServiceReferences.CollectionChanged += _staticInfos_CollectionChanged;
+                    p.PropertyChanged += pluginInfo_PropertyChanged;
+
+                    foreach( var serviceRef in p.InternalServiceReferences )
                     {
                         serviceRef.PropertyChanged += staticInfo_PropertyChanged;
                     }
                 }
+            }
+        }
+
+        void serviceInfo_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "ServiceFullName" )
+            {
+                ServiceInfo s = sender as ServiceInfo;
+
+                int movedItem = _labServiceInfos.IndexOf( s2 => s2.ServiceInfo.ServiceFullName == s.ServiceFullName );
+
+                _labServiceInfos.CheckPosition( movedItem );
+            }
+        }
+
+        void pluginInfo_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "PluginFullName" )
+            {
+                PluginInfo p = sender as PluginInfo;
+
+                int movedItem = _labPluginInfos.IndexOf( p2 => p2.PluginInfo.PluginFullName == p.PluginFullName );
+
+                _labPluginInfos.CheckPosition( movedItem );
             }
         }
 
