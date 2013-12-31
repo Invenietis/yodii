@@ -625,6 +625,7 @@
                     </Style.Resources>
 
                     <Style.Triggers>
+                        <!-- Specialization -->
                         <DataTrigger
                             Binding="{Binding Path=IsSpecialization}"
                             Value="true">
@@ -635,6 +636,7 @@
                                 Property="StrokeThickness"
                                 Value="5" />
                         </DataTrigger>
+                        <!-- Implementation -->
                         <DataTrigger
                             Binding="{Binding Path=IsImplementation}"
                             Value="true">
@@ -645,9 +647,66 @@
                                 Property="StrokeThickness"
                                 Value="3" />
                         </DataTrigger>
+                        <!-- Ref. Optional -->
                         <DataTrigger
-                            Binding="{Binding Path=IsServiceReference}"
-                            Value="true">
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="Optional">
+                            <Setter
+                                Property="Foreground"
+                                Value="MidnightBlue" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dot" />
+                        </DataTrigger>
+                        <!-- Ref. OptionalTryStart -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="OptionalTryStart">
+                            <Setter
+                                Property="Foreground"
+                                Value="MidnightBlue" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dash" />
+                        </DataTrigger>
+                        <!-- Ref. Runnable -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="Runnable">
+                            <Setter
+                                Property="Foreground"
+                                Value="Yellow" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dot" />
+                        </DataTrigger>
+                        <!-- Ref. RunnableTryStart -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="RunnableTryStart">
+                            <Setter
+                                Property="Foreground"
+                                Value="Yellow" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dash" />
+                        </DataTrigger>
+                        <!-- Ref. Running -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="Running">
                             <Setter
                                 Property="Foreground"
                                 Value="#00FF00" />

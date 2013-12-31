@@ -73,7 +73,7 @@
                         Grid.Column="1"
                         Grid.Row="0">
                         <TextBox
-                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanConverter}}"
                             Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
                     </Border>
                     <Border

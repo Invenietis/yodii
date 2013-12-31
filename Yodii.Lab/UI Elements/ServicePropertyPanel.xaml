@@ -53,7 +53,7 @@
                             Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}"
                             LostFocus="ServiceNamePropertyTextBox_LostFocus"
                             KeyDown="ServiceNamePropertyTextBox_KeyDown"
-                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanConverter}}" />
                     </Border>
                     <Border
                         Style="{StaticResource PropertyBorderStyle}"
