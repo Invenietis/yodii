@@ -71,7 +71,6 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
-    <Compile Include="Configuration\Pair.cs" />
     <Compile Include="LiveModel\ILiveRunCapability.cs" />
     <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
     <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />

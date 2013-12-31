@@ -57,30 +57,30 @@ namespace Yodii.Engine
             _configurationLayerCollection.CheckPosition( layer );
         }
 
-        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> final, Func<ConfigurationItem, bool> filter = null )
+        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, FinalConfigurationItem> final, Func<ConfigurationItem, bool> filter = null )
         {
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
-                Pair<ConfigurationStatus, StartDependencyImpact> data;
+                FinalConfigurationItem data;
                 foreach( ConfigurationItem item in layer.Items )
                 {
                     if( filter == null || filter( item ) )
                     {
                         if( final.TryGetValue( item.ServiceOrPluginFullName, out data ) )
                         {
-                            if( data.Item1 == ConfigurationStatus.Optional || ( data.Item1 == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running ) )
+                            if( data.Status == ConfigurationStatus.Optional || ( data.Status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running ) )
                             {
-                                final[item.ServiceOrPluginFullName].Item1 = item.Status;
-                                if( data.Item2 != item.Impact ) final[item.ServiceOrPluginFullName].Item2 = item.Impact;
+                                final.Remove(item.ServiceOrPluginFullName);
+                                final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
                             }
-                            else if( data.Item1 != item.Status )
+                            else if( data.Status != item.Status )
                             {
                                 return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginFullName, item.Status, data ) );
                             }
                         }
                         else
                         {
-                            final.Add( item.ServiceOrPluginFullName, new Pair<ConfigurationStatus, StartDependencyImpact>( item.Status, item.Impact ) );
+                            final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
                         }
                     }
                 }
@@ -88,13 +88,13 @@ namespace Yodii.Engine
             return new ConfigurationFailureResult();
         }
 
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, Pair<ConfigurationStatus, StartDependencyImpact> data )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, FinalConfigurationItem data )
         {
             Debug.Assert( item != null && _finalConfiguration != null && _configurationLayerCollection.Count != 0 );
             if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
 
-            Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> final = new Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>>();
-            final.Add( item.ServiceOrPluginFullName, new Pair<ConfigurationStatus, StartDependencyImpact>( data.Item1, data.Item2 ) );
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
+            final.Add( item.ServiceOrPluginFullName, data );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine);
@@ -104,8 +104,8 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationItemAdding( ConfigurationItem newItem )
         {
-            Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> final = new Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>>();
-            final.Add( newItem.ServiceOrPluginFullName, new Pair<ConfigurationStatus, StartDependencyImpact> (newItem.Status, newItem.Impact ));
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
+            final.Add( newItem.ServiceOrPluginFullName, new FinalConfigurationItem(newItem.ServiceOrPluginFullName, newItem.Status, newItem.Impact ));
           
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine );
@@ -115,7 +115,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationItemRemoving( ConfigurationItem item )
         {
-            Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> final = new Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>>();
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c != item );
             Debug.Assert( internalResult.Success, "Removing a configuration item can not lead to an impossibility." );
@@ -125,7 +125,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationLayerRemoving( ConfigurationLayer layer )
         {
-            Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> final = new Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>>();
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c.Layer != layer );
             Debug.Assert( internalResult.Success, "Removing a configuration layer can not lead to an impossibility." );
@@ -133,7 +133,7 @@ namespace Yodii.Engine
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.LayerRemoved, layer ) );
         }
 
-        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> final, Func<FinalConfiguration, ConfigurationChangingEventArgs> createChangingEvent )
+        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, FinalConfigurationItem> final, Func<FinalConfiguration, ConfigurationChangingEventArgs> createChangingEvent )
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
             if( Engine.IsRunning )

@@ -48,10 +48,10 @@ namespace Yodii.Model
         /// Creates a new instance of FinalConfiguration, using given statuses.
         /// </summary>
         /// <param name="finalStatusAndImpact">Statuses to set.</param>
-        public FinalConfiguration( Dictionary<string, Pair<ConfigurationStatus, StartDependencyImpact>> finalStatusAndImpact )
+        public FinalConfiguration( Dictionary<string, FinalConfigurationItem> finalStatusAndImpact )
             : this()
         {
-            foreach( var item in finalStatusAndImpact ) _items.Add( new FinalConfigurationItem( item.Key, item.Value.Item1, item.Value.Item2) );
+            foreach( var item in finalStatusAndImpact ) _items.Add( new FinalConfigurationItem(item.Key, item.Value.Status, item.Value.Impact) );
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ namespace Yodii.Model
         /// <param name="newImpact">New impact for this item.</param>
         /// <param name="impactReason">Optional reason for this impact.</param>
         /// <returns>Engine change result.</returns>
-        IYodiiEngineResult SetImpact( StartDependencyImpact newImpact, string impactReason = "" );
+        IYodiiEngineResult SetImpact( StartDependencyImpact newImpact );
 
         /// <summary>
         /// Required configuration status for this item.
@@ -47,10 +47,5 @@ namespace Yodii.Model
         /// Description of last status change reason.
         /// </summary>
         string StatusReason { get; set; }
-
-        /// <summary>
-        /// Description of last impact change reason.
-        /// </summary>
-        string ImpactReason { get; set; }
     }
 }

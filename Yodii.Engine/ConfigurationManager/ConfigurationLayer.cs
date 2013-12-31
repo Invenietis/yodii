@@ -72,7 +72,7 @@ namespace Yodii.Engine
 
         #endregion properties
 
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, Pair<ConfigurationStatus, StartDependencyImpact> data )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, FinalConfigurationItem data )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
@@ -120,7 +120,7 @@ namespace Yodii.Engine
                 FirePropertyChanged( e );
             }
 
-            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string statusReason = "", string impactReason = "" )
+            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string statusReason = "" )
             {
                 if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
@@ -132,7 +132,7 @@ namespace Yodii.Engine
                     return res;
                 }
 
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, impact, statusReason, impactReason );
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, impact, statusReason );
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );

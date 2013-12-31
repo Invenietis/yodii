@@ -18,9 +18,8 @@ namespace Yodii.Engine
         ConfigurationStatus _status;
         StartDependencyImpact _impact;
         string _statusReason;
-        string _impactReason;
 
-        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason = "", string initialImpactReason = "" )
+        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason = "")
         {
             Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
             Debug.Assert( configurationLayer != null );
@@ -31,7 +30,6 @@ namespace Yodii.Engine
             _status = initialStatus;
             _impact = initialImpact;
             _statusReason = initialStatusReason;
-            _impactReason = initialImpactReason;
         }
 
         public string ServiceOrPluginFullName
@@ -68,25 +66,10 @@ namespace Yodii.Engine
             }
         }
 
-        /// <summary>
-        /// Gets or sets an optional reason for this configuration impact.
-        /// Null when <see cref="Layer"/> is null (this item does no more belong to its layer).
-        /// </summary>
-        public string ImpactReason
-        {
-            get { return _impactReason; }
-            set
-            {
-                if ( _impactReason == null ) throw new InvalidOperationException();
-                _impactReason = value ?? String.Empty;
-                NotifyPropertyChanged();
-            }
-        }
-
         public IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new Pair<ConfigurationStatus, StartDependencyImpact>( newStatus, Impact ) ); 
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem(_serviceOrPluginFullName, _status, _impact ) ); 
             if( result.Success )
             {
                 _status = newStatus;
@@ -97,15 +80,13 @@ namespace Yodii.Engine
             return result;
         }
 
-        public IYodiiEngineResult SetImpact( StartDependencyImpact newImpact, string impactReason = "" )
+        public IYodiiEngineResult SetImpact( StartDependencyImpact newImpact )
         {
-            if( _impactReason == null ) throw new InvalidOperationException();
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new Pair<ConfigurationStatus, StartDependencyImpact>( Status, newImpact ) );
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, _status, _impact ) );
             if( result.Success )
             {
                 _impact = newImpact;
                 NotifyPropertyChanged( "Impact" );
-                if( ImpactReason != impactReason ) ImpactReason = impactReason;
                 if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
             }
             return result;
@@ -115,7 +96,6 @@ namespace Yodii.Engine
         {
             Debug.Assert( _statusReason != null );
             _statusReason = null;
-            _impactReason = null;
             _status = ConfigurationStatus.Optional;
             _impact = StartDependencyImpact.Unknown;
         }
