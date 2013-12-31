@@ -25,13 +25,12 @@
         <StackPanel
             DataContext="{Binding Path=LabServiceInfo}">
             <TextBlock
-                FontWeight="Bold">
+                Style="{StaticResource PropertyPanelTitleStyle}">
                         Service properties
             </TextBlock>
-            <Grid>
+            <Grid
+                Style="{StaticResource PropertyGridStyle}">
                 <Grid.RowDefinitions>
-                    <RowDefinition
-                        Height="Auto" />
                     <RowDefinition
                         Height="Auto" />
                     <RowDefinition
@@ -45,64 +44,72 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
+                    Style="{StaticResource PropertyNameStyle}"
                     Grid.Row="0">Name</TextBlock>
                 <TextBlock
-                    Grid.Row="1">Specialized service</TextBlock>
-                <TextBlock
-                    Grid.Row="2">Implementations</TextBlock>
+                    Style="{StaticResource PropertyNameStyle}"
+                    Grid.Row="1">Generalization</TextBlock>
 
-                <TextBox
+                <Border
+                    Style="{StaticResource PropertyBorderStyle}"
                     Grid.Column="1"
-                    Grid.Row="0"
-                    Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}"
-                    LostFocus="ServiceNamePropertyTextBox_LostFocus"
-                    KeyDown="ServiceNamePropertyTextBox_KeyDown"
-                    IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}" />
-                <DockPanel
+                    Grid.Row="0">
+                    <TextBox
+                        Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}"
+                        LostFocus="ServiceNamePropertyTextBox_LostFocus"
+                        KeyDown="ServiceNamePropertyTextBox_KeyDown"
+                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}" />
+                </Border>
+                <Border
+                    Style="{StaticResource PropertyBorderStyle}"
                     Grid.Column="1"
                     Grid.Row="1">
-                    <Button
-                        Style="{StaticResource RemoveButtonStyle}"
-                        DockPanel.Dock="Right"
-                        ToolTip="Clear service"
-                        Margin="5,0,0,0"
-                        Click="ClearGeneralizationButton_Click">
-                        <Button.IsEnabled>
+                    <DockPanel>
+                        <Button
+                            Style="{StaticResource RemoveButtonStyle}"
+                            DockPanel.Dock="Right"
+                            ToolTip="Clear service"
+                            Margin="5,0,0,0"
+                            Click="ClearGeneralizationButton_Click">
+                            <Button.IsEnabled>
                                 <Binding
                                     Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
                                     ConverterParameter="true"
                                     Path="ServiceInfo.Generalization" />
-                        </Button.IsEnabled>
-                    </Button>
-                    <ComboBox
-                        x:Name="GeneralizationComboBox"
-                        SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=OneWay}"
-                        SelectionChanged="GeneralizationComboBox_SelectionChanged"
-                        ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </DockPanel>
-                <StackPanel
-                    Grid.Column="1"
-                    Grid.Row="2">
-                    <ItemsControl
-                        ItemsSource="{Binding Path=ServiceInfo.Implementations, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock>
-                                        <Run
-                                        Text="{Binding Path=PluginFullName, Mode=OneWay}" />
-                                </TextBlock>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                            </Button.IsEnabled>
+                        </Button>
+                        <ComboBox
+                            x:Name="GeneralizationComboBox"
+                            SelectedValue="{Binding Path=ServiceInfo.Generalization, Mode=OneWay}"
+                            SelectionChanged="GeneralizationComboBox_SelectionChanged"
+                            ItemsSource="{Binding Path=ServiceInfoManager.ServiceInfos, ElementName=servicePropertyControl, Mode=OneWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </DockPanel>
+                </Border>
             </Grid>
+            <TextBlock
+                Visibility="{Binding Path=ServiceInfo.Implementations.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}"
+                Style="{StaticResource PropertyPanelTitleStyle}">Implementations</TextBlock>
+            <StackPanel
+                Visibility="{Binding Path=ServiceInfo.Implementations.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}">
+                <ItemsControl
+                    ItemsSource="{Binding Path=ServiceInfo.Implementations, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                        - <Run
+                                    Text="{Binding Path=PluginFullName, Mode=OneWay}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </StackPanel>
     </Border>
 </UserControl>

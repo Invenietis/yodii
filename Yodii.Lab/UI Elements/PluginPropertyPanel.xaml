@@ -48,15 +48,11 @@
         <StackPanel
             DataContext="{Binding Path=LabPluginInfo}">
             <TextBlock
-                FontWeight="Bold">
+                Style="{StaticResource PropertyPanelTitleStyle}">
                         Plugin properties
             </TextBlock>
-            <Grid>
+            <Grid Style="{StaticResource PropertyGridStyle}">
                 <Grid.RowDefinitions>
-                    <RowDefinition
-                        Height="Auto" />
-                    <RowDefinition
-                        Height="Auto" />
                     <RowDefinition
                         Height="Auto" />
                     <RowDefinition
@@ -70,25 +66,28 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock
+                    Style="{StaticResource PropertyNameStyle}"
                     Grid.Row="0">Name</TextBlock>
                 <TextBlock
+                    Style="{StaticResource PropertyNameStyle}"
                     Grid.Row="1">Service</TextBlock>
-                <TextBlock
-                    Grid.Row="2">References</TextBlock>
-
+                <Border
+                    Style="{StaticResource PropertyBorderStyle}"
+                    Grid.Column="1"
+                    Grid.Row="0">
                 <TextBox
                     IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
-                    Grid.Column="1"
-                    Grid.Row="0"
-                    Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
-                <DockPanel
+                        Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
+                </Border>
+                <Border
+                    Style="{StaticResource PropertyBorderStyle}"
                     Grid.Column="1"
                     Grid.Row="1">
+                <DockPanel>
                     <Button
                         Style="{StaticResource RemoveButtonStyle}"
                         DockPanel.Dock="Right"
                         ToolTip="Clear service"
-                        Margin="0,0,5,0"
                         Click="ClearServiceButton_Click">
                         <Button.IsEnabled>
                             <Binding
@@ -98,84 +97,100 @@
                         </Button.IsEnabled>
                     </Button>
                     <ComboBox
+                        Height="Auto"
                         x:Name="PluginServiceComboBox"
-                        Margin="5,0"
+                        Margin="0,0,5pt,0"
                         ItemTemplate="{StaticResource serviceFullNameTemplate}"
                         SelectedValue="{Binding Path=PluginInfo.Service}"
                         ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
                     </ComboBox>
-                </DockPanel>
-                <StackPanel
-                    Grid.Column="1"
-                    Grid.Row="2">
-                    <ItemsControl
-                        ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate
-                                DataType="mocks:MockServiceReferenceInfo">
-                                <!-- Template: Existing service references for plugin -->
-                                <DockPanel
-                                    Margin="0,3">
-                                    <Button
-                                        IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
-                                        Style="{StaticResource RemoveButtonStyle}"
-                                        DockPanel.Dock="Right"
-                                        ToolTip="Remove reference"
-                                        Margin="5,0"
-                                        Click="DeleteReferenceButton_Click" />
-                                    <ComboBox
-                                        IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
-                                        x:Name="ReferenceRequirementComboBox"
-                                        DockPanel.Dock="Right"
-                                        SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
-                                        ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                                        SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
-                                        Width="70pt" />
-
-                                    <TextBlock
-                                        Text="{Binding Path=Reference.ServiceFullName}"
-                                        Margin="5,0" />
-                                </DockPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- Add new reference panel below references -->
-                    <DockPanel
-                        Margin="0,3">
-                        <Button
-                            DockPanel.Dock="Right"
-                            Margin="5,0"
-                            Click="CreateReferenceButton_Click">
-                            <Image
-                                Width="12pt"
-                                Source="/Yodii.Lab;component/Icons/action_add_16xLG.png" />
-                        </Button>
-                        <ComboBox
-                            x:Name="NewReferenceRequirementComboBox"
-                            DockPanel.Dock="Right"
-                            SelectedIndex="0"
-                            ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                            Width="70pt" />
-
-                        <ComboBox
-                            x:Name="NewReferenceServiceComboBox"
-                            SelectedIndex="0"
-                            Margin="5,0"
-                            ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate
-                                    DataType="mocks:ServiceInfo">
-                                    <TextBlock>
-                                        <TextBlock
-                                            Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
                     </DockPanel>
-                </StackPanel>
+                </Border>
             </Grid>
+            <TextBlock
+                Style="{StaticResource PropertyPanelTitleStyle}">
+                        Service references
+            </TextBlock>
+            <DockPanel>
+                <TextBlock
+                    DockPanel.Dock="Left"
+                    Style="{StaticResource PropertyNameStyle}">
+                    New
+                </TextBlock>
+                <Button
+                    DockPanel.Dock="Right"
+                    Margin="5pt,0,0,0"
+                    Click="CreateReferenceButton_Click">
+                    <Image
+                        Width="12pt"
+                        Source="/Yodii.Lab;component/Assets/Icons/action_add_16xLG.png" />
+                </Button>
+                <ComboBox
+                    x:Name="NewReferenceRequirementComboBox"
+                    DockPanel.Dock="Right"
+                    SelectedIndex="0"
+                    ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
+                    Width="70pt" />
+
+                <ComboBox
+                    x:Name="NewReferenceServiceComboBox"
+                    SelectedIndex="0"
+                    Margin="5,0"
+                    ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate
+                            DataType="mocks:ServiceInfo">
+                            <TextBlock>
+                                        <TextBlock
+                                    Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
+                                    </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </DockPanel>
+            <Rectangle
+                Style="{StaticResource RectangleHorizontalSeparatorStyle}"
+                Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}" />
+            <StackPanel
+                Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}">
+                <ItemsControl
+                    ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate
+                            DataType="mocks:MockServiceReferenceInfo">
+                            <!-- Template: Existing service reference for plugin -->
+                            <DockPanel
+                                Margin="0,2pt">
+                                <Button
+                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
+                                    Style="{StaticResource RemoveButtonStyle}"
+                                    DockPanel.Dock="Right"
+                                    ToolTip="Remove reference"
+                                    VerticalAlignment="Center"
+                                    Margin="5pt,0,0,0"
+                                    Click="DeleteReferenceButton_Click" />
+                                <ComboBox
+                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
+                                    x:Name="ReferenceRequirementComboBox"
+                                    VerticalAlignment="Center"
+                                    DockPanel.Dock="Right"
+                                    SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
+                                    ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
+                                    SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
+                                    Width="70pt" />
+
+                                <TextBlock
+                                    Text="{Binding Path=Reference.ServiceFullName}"
+                                    VerticalAlignment="Center"
+                                    />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+            <Rectangle
+                Style="{StaticResource RectangleHorizontalSeparatorStyle}"
+                Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}" />
         </StackPanel>
     </Border>
 </UserControl>
