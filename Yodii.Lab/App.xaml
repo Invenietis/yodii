@@ -116,6 +116,9 @@
                 <Setter
                     Property="FontWeight"
                     Value="Bold" />
+                <Setter
+                    Property="Margin"
+                    Value="0,5pt,0,0" />
             </Style>
             <!-- Property panel - property name -->
             <Style
@@ -130,6 +133,14 @@
                 <Setter
                     Property="Margin"
                     Value="0,0,5pt,0" />
+            </Style>
+            <!-- Property panel - property value (not editable) -->
+            <Style
+                x:Key="PropertyValueStyle"
+                TargetType="TextBlock">
+                <Setter
+                    Property="VerticalAlignment"
+                    Value="Center" />
             </Style>
             <!-- Property panel - horizontal separator -->
             <Style

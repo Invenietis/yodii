@@ -477,10 +477,43 @@
             <Grid.RowDefinitions>
                 <RowDefinition
                     Height="*" />
-                <RowDefinition
-                    Height="3pt" />
-                <RowDefinition
-                    Height="*" />
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style TargetType="RowDefinition">
+                            <Setter
+                                Property="Height"
+                                Value="3pt" />
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                    Value="false">
+                                    <Setter
+                                        Property="Height"
+                                        Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style
+                            TargetType="RowDefinition">
+                            <Setter
+                                Property="Height"
+                                Value="*" />
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                    Value="false">
+                                    <Setter
+                                        Property="Height"
+                                        Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition

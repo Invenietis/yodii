@@ -37,154 +37,272 @@
             </TextBlock>
         </DataTemplate>
     </UserControl.Resources>
-    <Border
-        Padding="5pt">
-        <StackPanel
-            DataContext="{Binding Path=LabPluginInfo}">
-            <TextBlock
-                Style="{StaticResource PropertyPanelTitleStyle}">
+    <ScrollViewer
+        VerticalScrollBarVisibility="Auto">
+        <Border
+            Padding="5pt,0">
+            <StackPanel
+                DataContext="{Binding Path=LabPluginInfo}">
+                <TextBlock
+                    Style="{StaticResource PropertyPanelTitleStyle}">
                         Plugin properties
-            </TextBlock>
-            <Grid Style="{StaticResource PropertyGridStyle}">
-                <Grid.RowDefinitions>
-                    <RowDefinition
-                        Height="Auto" />
-                    <RowDefinition
-                        Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition
-                        Width="Auto" />
-                    <ColumnDefinition
-                        Width="*" />
-                </Grid.ColumnDefinitions>
+                </TextBlock>
+                <Grid
+                    Style="{StaticResource PropertyGridStyle}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition
+                            Height="Auto" />
+                        <RowDefinition
+                            Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition
+                            Width="Auto" />
+                        <ColumnDefinition
+                            Width="*" />
+                    </Grid.ColumnDefinitions>
 
+                    <TextBlock
+                        Style="{StaticResource PropertyNameStyle}"
+                        Grid.Row="0">Name</TextBlock>
+                    <TextBlock
+                        Style="{StaticResource PropertyNameStyle}"
+                        Grid.Row="1">Service</TextBlock>
+                    <Border
+                        Style="{StaticResource PropertyBorderStyle}"
+                        Grid.Column="1"
+                        Grid.Row="0">
+                        <TextBox
+                            IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                            Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
+                    </Border>
+                    <Border
+                        Style="{StaticResource PropertyBorderStyle}"
+                        Grid.Column="1"
+                        Grid.Row="1">
+                        <DockPanel>
+                            <Button
+                                Style="{StaticResource RemoveButtonStyle}"
+                                DockPanel.Dock="Right"
+                                ToolTip="Clear service"
+                                Click="ClearServiceButton_Click">
+                                <Button.IsEnabled>
+                                    <Binding
+                                        Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
+                                        ConverterParameter="true"
+                                        Path="PluginInfo.Service" />
+                                </Button.IsEnabled>
+                            </Button>
+                            <ComboBox
+                                Height="Auto"
+                                x:Name="PluginServiceComboBox"
+                                Margin="0,0,5pt,0"
+                                ItemTemplate="{StaticResource serviceFullNameTemplate}"
+                                SelectedValue="{Binding Path=PluginInfo.Service}"
+                                ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
+                            </ComboBox>
+                        </DockPanel>
+                    </Border>
+                </Grid>
+                <!-- Service references -->
                 <TextBlock
-                    Style="{StaticResource PropertyNameStyle}"
-                    Grid.Row="0">Name</TextBlock>
-                <TextBlock
-                    Style="{StaticResource PropertyNameStyle}"
-                    Grid.Row="1">Service</TextBlock>
-                <Border
-                    Style="{StaticResource PropertyBorderStyle}"
-                    Grid.Column="1"
-                    Grid.Row="0">
-                <TextBox
-                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                        Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
-                </Border>
-                <Border
-                    Style="{StaticResource PropertyBorderStyle}"
-                    Grid.Column="1"
-                    Grid.Row="1">
+                    Style="{StaticResource PropertyPanelTitleStyle}">
+                        Service references
+                </TextBlock>
                 <DockPanel>
+                    <TextBlock
+                        DockPanel.Dock="Left"
+                        Style="{StaticResource PropertyNameStyle}">
+                    New
+                    </TextBlock>
                     <Button
-                        Style="{StaticResource RemoveButtonStyle}"
                         DockPanel.Dock="Right"
-                        ToolTip="Clear service"
-                        Click="ClearServiceButton_Click">
-                        <Button.IsEnabled>
-                            <Binding
-                                Converter="{StaticResource ResourceKey=NullToBoolValueConverter}"
-                                ConverterParameter="true"
-                                Path="PluginInfo.Service" />
-                        </Button.IsEnabled>
+                        Margin="5pt,0,0,0"
+                        Click="CreateReferenceButton_Click">
+                        <Image
+                            Width="12pt"
+                            Source="/Yodii.Lab;component/Assets/Icons/action_add_16xLG.png" />
                     </Button>
                     <ComboBox
-                        Height="Auto"
-                        x:Name="PluginServiceComboBox"
-                        Margin="0,0,5pt,0"
-                        ItemTemplate="{StaticResource serviceFullNameTemplate}"
-                        SelectedValue="{Binding Path=PluginInfo.Service}"
+                        x:Name="NewReferenceRequirementComboBox"
+                        DockPanel.Dock="Right"
+                        SelectedIndex="0"
+                        ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
+                        Width="70pt" />
+
+                    <ComboBox
+                        x:Name="NewReferenceServiceComboBox"
+                        SelectedIndex="0"
+                        Margin="5,0"
                         ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
-                    </ComboBox>
-                    </DockPanel>
-                </Border>
-            </Grid>
-            <TextBlock
-                Style="{StaticResource PropertyPanelTitleStyle}">
-                        Service references
-            </TextBlock>
-            <DockPanel>
-                <TextBlock
-                    DockPanel.Dock="Left"
-                    Style="{StaticResource PropertyNameStyle}">
-                    New
-                </TextBlock>
-                <Button
-                    DockPanel.Dock="Right"
-                    Margin="5pt,0,0,0"
-                    Click="CreateReferenceButton_Click">
-                    <Image
-                        Width="12pt"
-                        Source="/Yodii.Lab;component/Assets/Icons/action_add_16xLG.png" />
-                </Button>
-                <ComboBox
-                    x:Name="NewReferenceRequirementComboBox"
-                    DockPanel.Dock="Right"
-                    SelectedIndex="0"
-                    ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                    Width="70pt" />
-
-                <ComboBox
-                    x:Name="NewReferenceServiceComboBox"
-                    SelectedIndex="0"
-                    Margin="5,0"
-                    ItemsSource="{Binding Path=ServiceInfos, ElementName=propertyControl, Mode=OneWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate
-                            DataType="mocks:ServiceInfo">
-                            <TextBlock>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate
+                                DataType="mocks:ServiceInfo">
+                                <TextBlock>
                                         <TextBlock
-                                    Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
+                                        Text="{Binding Path=ServiceFullName, Mode=OneWay}" />
                                     </TextBlock>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </DockPanel>
-            <Rectangle
-                Style="{StaticResource RectangleHorizontalSeparatorStyle}"
-                Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}" />
-            <StackPanel
-                Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}">
-                <ItemsControl
-                    ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate
-                            DataType="mocks:MockServiceReferenceInfo">
-                            <!-- Template: Existing service reference for plugin -->
-                            <DockPanel
-                                Margin="0,2pt">
-                                <Button
-                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                    Style="{StaticResource RemoveButtonStyle}"
-                                    DockPanel.Dock="Right"
-                                    ToolTip="Remove reference"
-                                    VerticalAlignment="Center"
-                                    Margin="5pt,0,0,0"
-                                    Click="DeleteReferenceButton_Click" />
-                                <ComboBox
-                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                                    x:Name="ReferenceRequirementComboBox"
-                                    VerticalAlignment="Center"
-                                    DockPanel.Dock="Right"
-                                    SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
-                                    ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
-                                    SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
-                                    Width="70pt" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </DockPanel>
+                <Rectangle
+                    Style="{StaticResource RectangleHorizontalSeparatorStyle}"
+                    Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}" />
+                <StackPanel
+                    Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}">
+                    <ItemsControl
+                        ItemsSource="{Binding Path=PluginInfo.ServiceReferences, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate
+                                DataType="mocks:MockServiceReferenceInfo">
+                                <!-- Template: Existing service reference for plugin -->
+                                <DockPanel
+                                    Margin="0,2pt">
+                                    <Button
+                                        IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                        Style="{StaticResource RemoveButtonStyle}"
+                                        DockPanel.Dock="Right"
+                                        ToolTip="Remove reference"
+                                        VerticalAlignment="Center"
+                                        Margin="5pt,0,0,0"
+                                        Click="DeleteReferenceButton_Click" />
+                                    <ComboBox
+                                        IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                        x:Name="ReferenceRequirementComboBox"
+                                        VerticalAlignment="Center"
+                                        DockPanel.Dock="Right"
+                                        SelectedItem="{Binding Path=Requirement, Mode=OneWay}"
+                                        ItemsSource="{Binding Source={StaticResource RunningRequirements}}"
+                                        SelectionChanged="ReferenceRequirementComboBox_SelectionChanged"
+                                        Width="70pt" />
 
-                                <TextBlock
-                                    Text="{Binding Path=Reference.ServiceFullName}"
-                                    VerticalAlignment="Center"
-                                    />
-                            </DockPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                    <TextBlock
+                                        Text="{Binding Path=Reference.ServiceFullName}"
+                                        VerticalAlignment="Center" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <Rectangle
+                    Style="{StaticResource RectangleHorizontalSeparatorStyle}"
+                    Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}" />
+                <!-- Live info -->
+                <TextBlock
+                    Style="{StaticResource PropertyPanelTitleStyle}"
+                    Visibility="{Binding Path=IsLive, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        Live information
+                </TextBlock>
+                <Grid
+                    Style="{StaticResource PropertyGridStyle}"
+                    Visibility="{Binding Path=IsLive, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition
+                            Height="Auto" />
+                        <RowDefinition
+                            Height="Auto" />
+                        <RowDefinition
+                            Height="Auto" />
+                        <RowDefinition
+                            Height="Auto" />
+                        <RowDefinition
+                            Height="Auto" />
+                        <RowDefinition
+                            Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition
+                            Width="Auto" />
+                        <ColumnDefinition
+                            Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        Style="{StaticResource PropertyNameStyle}">
+                    RunningStatus
+                    </TextBlock>
+                    <Border
+                        Grid.Column="1"
+                        Grid.Row="0"
+                        Style="{StaticResource PropertyBorderStyle}">
+                        <TextBlock
+                            Style="{StaticResource PropertyValueStyle}"
+                            Text="{Binding Path=LivePluginInfo.RunningStatus, Mode=OneWay}" />
+                    </Border>
+
+                    <TextBlock
+                        Grid.Row="1"
+                        Style="{StaticResource PropertyNameStyle}">
+                    DisabledReason
+                    </TextBlock>
+                    <Border
+                        Grid.Column="1"
+                        Grid.Row="1"
+                        Style="{StaticResource PropertyBorderStyle}">
+                        <TextBlock
+                            Style="{StaticResource PropertyValueStyle}"
+                            Text="{Binding Path=LivePluginInfo.DisabledReason, Mode=OneWay}" />
+                    </Border>
+
+                    <TextBlock
+                        Grid.Row="2"
+                        Style="{StaticResource PropertyNameStyle}">
+                    ConfigOriginalStatus
+                    </TextBlock>
+                    <Border
+                        Grid.Column="1"
+                        Grid.Row="2"
+                        Style="{StaticResource PropertyBorderStyle}">
+                        <TextBlock
+                            Style="{StaticResource PropertyValueStyle}"
+                            Text="{Binding Path=LivePluginInfo.ConfigOriginalStatus, Mode=OneWay}" />
+                    </Border>
+
+                    <TextBlock
+                        Grid.Row="3"
+                        Style="{StaticResource PropertyNameStyle}">
+                    ConfigSolvedStatus
+                    </TextBlock>
+                    <Border
+                        Grid.Column="1"
+                        Grid.Row="3"
+                        Style="{StaticResource PropertyBorderStyle}">
+                        <TextBlock
+                            Style="{StaticResource PropertyValueStyle}"
+                            Text="{Binding Path=LivePluginInfo.ConfigSolvedStatus, Mode=OneWay}" />
+                    </Border>
+
+                    <TextBlock
+                        Grid.Row="4"
+                        Style="{StaticResource PropertyNameStyle}">
+                    ConfigOriginalImpact
+                    </TextBlock>
+                    <Border
+                        Grid.Column="1"
+                        Grid.Row="4"
+                        Style="{StaticResource PropertyBorderStyle}">
+                        <TextBlock
+                            Style="{StaticResource PropertyValueStyle}"
+                            Text="{Binding Path=LivePluginInfo.ConfigOriginalImpact, Mode=OneWay}" />
+                    </Border>
+
+                    <TextBlock
+                        Grid.Row="5"
+                        Style="{StaticResource PropertyNameStyle}">
+                    ConfigSolvedImpact
+                    </TextBlock>
+                    <Border
+                        Grid.Column="1"
+                        Grid.Row="5"
+                        Style="{StaticResource PropertyBorderStyle}">
+                        <TextBlock
+                            Style="{StaticResource PropertyValueStyle}"
+                            Text="{Binding Path=LivePluginInfo.ConfigSolvedImpact, Mode=OneWay}" />
+                    </Border>
+                </Grid>
             </StackPanel>
-            <Rectangle
-                Style="{StaticResource RectangleHorizontalSeparatorStyle}"
-                Visibility="{Binding Path=PluginInfo.ServiceReferences.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}" />
-        </StackPanel>
-    </Border>
+        </Border>
+    </ScrollViewer>
 </UserControl>
