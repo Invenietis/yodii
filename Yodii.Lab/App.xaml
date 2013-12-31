@@ -14,11 +14,53 @@
                 <ResourceDictionary
                     Source="Assets/ModernUiIconsDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            
             <!-- Converters -->
-
+            
+            <!-- For multibinding : returns the AND result of all child bindings. -->
+            <local:BooleanAndConverter
+                x:Key="BooleanAndConverter" />
+            
+            <!-- Returns Visible if 0, and Collapsed if not 0.
+            Setting any ConverterParameter reverses this behavior. -->
             <local:IntegerToVisibilityConverter
                 x:Key="IntegerToVisibilityConverter" />
             
+            <!-- Returns the boolean inverse: false if true, true if false.-->
+            <local:InverseBooleanConverter
+                x:Key="InverseBooleanConverter" />
+            
+            <!-- Returns true if null, false if not null.
+            Setting any ConverterParameter reverses this behavior. -->
+            <local:NullToBoolValueConverter
+                x:Key="NullToBoolValueConverter" />
+
+            <!-- Returns true if value equals parameter, for any Enum value. -->
+            <local:EnumToBooleanConverter
+                x:Key="EnumToBooleanConverter" />
+
+            <!-- Returns Visible if value is true, and Collapsed if value is false. -->
+            <local:BooleanToVisibilityConverter
+                x:Key="BooleanToVisibilityConverter"
+                True="Visible"
+                False="Collapsed" />
+
+            <!-- Returns Collapsed if value is true, and Visible if value is false. -->
+            <local:BooleanToVisibilityConverter
+                x:Key="InverseBooleanToVisibilityConverter"
+                True="Collapsed"
+                False="Visible" />
+
+            <!-- Returns false if value is 0, and true if value is not 0.
+            Setting any ConverterParameter reverses this behavior. -->
+            <local:IntegerToBoolConverter
+                x:Key="IntegerToBoolConverter" />
+
+            <!-- Returns Visible if value is null, and Collapsed if value is not null.
+            Setting any ConverterParameter reverses this behavior. -->
+            <local:NullToVisibilityValueConverter
+                x:Key="NullToVisibilityValueConverter" />
+
             <!-- Remove/clear button -->
             <Style
                 x:Key="RemoveButtonStyle"

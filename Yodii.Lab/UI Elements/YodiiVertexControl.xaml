@@ -13,14 +13,6 @@
     d:DesignHeight="100"
     d:DesignWidth="200">
     <UserControl.Resources>
-        <local:EnumToBooleanConverter
-            x:Key="EnumToBooleanConv" />
-        <BooleanToVisibilityConverter
-            x:Key="BoolToVisibilityConv" />
-        <local:BooleanToVisibilityConverter
-            x:Key="InverseBooleanToVisibilityConverter"
-            True="Collapsed"
-            False="Visible" />
 
         <ObjectDataProvider
             MethodName="GetValues"
@@ -100,7 +92,7 @@
                         Height="16px"
                         Width="16px"
                         SnapsToDevicePixels="True"
-                        Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
+                        Visibility="{Binding Path=IsLive, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <Image.Style>
                             <Style
                                 TargetType="Image">

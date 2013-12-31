@@ -14,12 +14,6 @@
     d:DesignHeight="300"
     d:DesignWidth="300">
     <UserControl.Resources>
-        <local:InverseBooleanConverter
-            x:Key="InverseBoolConverter" />
-        <local:BooleanAndConverter
-            x:Key="BooleanAndConverter" />
-        <local:NullToBoolValueConverter
-            x:Key="NullToBoolValueConverter" />
 
         <!-- Enum content for RunningRequirements -->
         <ObjectDataProvider
@@ -76,7 +70,7 @@
                     Grid.Column="1"
                     Grid.Row="0">
                 <TextBox
-                    IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}"
+                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                         Text="{Binding Path=PluginInfo.PluginFullName, UpdateSourceTrigger=PropertyChanged}" />
                 </Border>
                 <Border
@@ -162,7 +156,7 @@
                             <DockPanel
                                 Margin="0,2pt">
                                 <Button
-                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
+                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                     Style="{StaticResource RemoveButtonStyle}"
                                     DockPanel.Dock="Right"
                                     ToolTip="Remove reference"
@@ -170,7 +164,7 @@
                                     Margin="5pt,0,0,0"
                                     Click="DeleteReferenceButton_Click" />
                                 <ComboBox
-                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBoolConverter}}"
+                                    IsEnabled="{Binding Path=LivePluginInfo.IsLive, ElementName=propertyControl, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                     x:Name="ReferenceRequirementComboBox"
                                     VerticalAlignment="Center"
                                     DockPanel.Dock="Right"

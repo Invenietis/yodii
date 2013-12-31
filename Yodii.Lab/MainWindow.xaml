@@ -62,13 +62,6 @@
             CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
     </Fluent:RibbonWindow.InputBindings>
     <Fluent:RibbonWindow.Resources>
-        <BooleanToVisibilityConverter
-            x:Key="boolToVisibilityConverter" />
-        <local:EnumToBooleanConverter
-            x:Key="EnumToBooleanConv" />
-        <local:NullToBoolValueConverter
-            x:Key="NullToBoolConverter" />
-
         <ObjectDataProvider
             MethodName="GetValues"
             ObjectType="{x:Type sys:Enum}"
@@ -830,7 +823,7 @@
                                                             TargetType="TextBlock">
                                                             <Style.Triggers>
                                                                 <DataTrigger
-                                                                    Binding="{Binding Path=PluginFullName, Converter={StaticResource NullToBoolConverter}, Mode=OneWay}"
+                                                                    Binding="{Binding Path=PluginFullName, Converter={StaticResource NullToBoolValueConverter}, Mode=OneWay}"
                                                                     Value="false">
                                                                     <Setter
                                                                         Property="Text">
@@ -845,7 +838,7 @@
                                                                         Value="Blue" />
                                                                 </DataTrigger>
                                                                 <DataTrigger
-                                                                    Binding="{Binding Path=ServiceFullName, Converter={StaticResource NullToBoolConverter}, Mode=OneWay}"
+                                                                    Binding="{Binding Path=ServiceFullName, Converter={StaticResource NullToBoolValueConverter}, Mode=OneWay}"
                                                                     Value="false">
                                                                     <Setter
                                                                         Property="Text">

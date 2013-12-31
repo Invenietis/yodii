@@ -12,14 +12,6 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300">
-    <UserControl.Resources>
-        <local:NullToBoolValueConverter
-            x:Key="NullToBoolValueConverter" />
-        <local:InverseBooleanConverter
-            x:Key="InverseBoolConverter" />
-        <local:BooleanAndConverter
-            x:Key="BooleanAndConverter" />
-    </UserControl.Resources>
     <Border
         Padding="5pt">
         <StackPanel
@@ -58,7 +50,7 @@
                         Text="{Binding Path=ServiceInfo.ServiceFullName, Mode=OneWay}"
                         LostFocus="ServiceNamePropertyTextBox_LostFocus"
                         KeyDown="ServiceNamePropertyTextBox_KeyDown"
-                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBoolConverter}}" />
+                        IsEnabled="{Binding Path=IsLive, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                 </Border>
                 <Border
                     Style="{StaticResource PropertyBorderStyle}"
@@ -93,6 +85,7 @@
                     </DockPanel>
                 </Border>
             </Grid>
+            <!-- Implementations -->
             <TextBlock
                 Visibility="{Binding Path=ServiceInfo.Implementations.Count, Mode=OneWay, Converter={StaticResource IntegerToVisibilityConverter}, ConverterParameter=true}"
                 Style="{StaticResource PropertyPanelTitleStyle}">Implementations</TextBlock>

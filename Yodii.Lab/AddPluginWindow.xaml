@@ -11,10 +11,6 @@
     Width="250pt"
     MinHeight="130pt"
     MinWidth="200pt">
-    <Window.Resources>
-        <local:IntegerToBoolConverter
-            x:Key="IntToBoolConverter" />
-    </Window.Resources>
     <DockPanel
         Margin="5">
         <Border
@@ -77,7 +73,7 @@
                     IsEnabled="{Binding Path=HasService}"
                     Click="ClearServiceButton_Click">r</Button>
                 <ComboBox
-                    IsEnabled="{Binding Path=AvailableServices.Count, Converter={StaticResource IntToBoolConverter}}"
+                    IsEnabled="{Binding Path=AvailableServices.Count, Converter={StaticResource IntegerToBoolConverter}}"
                     Margin="3"
                     ItemsSource="{Binding Path=AvailableServices}"
                     SelectedItem="{Binding Path=SelectedService}">
