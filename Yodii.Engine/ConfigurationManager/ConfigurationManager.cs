@@ -62,22 +62,29 @@ namespace Yodii.Engine
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
                 FinalConfigurationItem data;
+                ConfigurationStatus combinedStatus;
+                StartDependencyImpact combinedImpact;
+                string invalidCombination;
+
                 foreach( ConfigurationItem item in layer.Items )
                 {
                     if( filter == null || filter( item ) )
                     {
                         if( final.TryGetValue( item.ServiceOrPluginFullName, out data ) )
                         {
-                            if( data.Status == ConfigurationStatus.Optional || ( data.Status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running ) )
+                            combinedStatus = FinalConfigurationItem.Combine( item.Status, data.Status, out invalidCombination );
+                            if( string.IsNullOrEmpty( invalidCombination ) )
                             {
-                                final.Remove(item.ServiceOrPluginFullName);
-                                final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
+                                combinedImpact = FinalConfigurationItem.Combine( item.Impact, data.Impact, out invalidCombination );
+                                if( string.IsNullOrEmpty( invalidCombination ) )
+                                {
+                                    final.Remove( item.ServiceOrPluginFullName );
+                                    final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact ) );
+                                }
+                                else return new ConfigurationFailureResult( invalidCombination );
                             }
-                            else if( data.Status != item.Status )
-                            {
-                                return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginFullName, item.Status, data ) );
-                            }
-                        }
+                            else return new ConfigurationFailureResult( invalidCombination );                  
+                        }            
                         else
                         {
                             final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
@@ -99,7 +106,8 @@ namespace Yodii.Engine
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine);
 
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
+            if(item.Status != data.Status) return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
+            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ImpactChanged, item ) );
         }
 
         internal IYodiiEngineResult OnConfigurationItemAdding( ConfigurationItem newItem )
@@ -169,7 +177,8 @@ namespace Yodii.Engine
             FinalConfiguration = _currentEventArgs.FinalConfiguration;
             if( _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.StatusChanged
                 || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemAdded
-                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved )
+                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved
+                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ImpactChanged)
             {
                 RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationItemChanged ) );
             }

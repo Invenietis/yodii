@@ -49,6 +49,27 @@ namespace Yodii.Model
             _impact = impact;
         }
 
+        public static ConfigurationStatus Combine( ConfigurationStatus s1, ConfigurationStatus s2, out string invalidCombination )
+        {
+            invalidCombination = "";
+            if( s1 == s2 ) return s1;
+
+            if( s1 == ConfigurationStatus.Optional || ( s1 == ConfigurationStatus.Runnable && s2 == ConfigurationStatus.Running ) )
+            {
+                return s2;
+            }
+            else if( s1 != s2 )
+            {
+                invalidCombination = string.Format( "Conflict for statuses {0} and {1}", s1, s2 );
+                return s1;
+            }
+            else
+            {
+                invalidCombination = string.Format( "Something went terribly, terribly wrong..." );
+                return s1;
+            }
+        }
+
         public static StartDependencyImpact Combine( StartDependencyImpact i1, StartDependencyImpact i2, out string invalidCombination ) 
         {
             invalidCombination = "";
@@ -151,11 +172,5 @@ namespace Yodii.Model
             }
             return StartDependencyImpact.Unknown;
         }
-
-        //public static ConfigurationStatus Combine( ConfigurationStatus s1, ConfigurationStatus s2, out string invalidCombination ) 
-        //{
-        //    invalidCombination = "";
-        //    if( s1 == s2 ) return s1;
-        //}
     }
 }
