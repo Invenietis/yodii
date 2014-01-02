@@ -35,6 +35,7 @@ namespace Yodii.Model
         /// IDiscoveredInfo constraints checked here :
         /// - IServiceInfo and IPluginInfo names are unique, in both collections (A service cannot have a plugin name, and vice-versa).
         /// - IServiceInfo generalizations do not specialize this IServiceInfo (Generalization loop).
+        /// - IPluginInfo contains valid service references (cannot reference a service of its own family, outside its own tree).
         /// </remarks>
         public static bool IsValid( this IDiscoveredInfo @this )
         {
@@ -59,8 +60,8 @@ namespace Yodii.Model
                     {
                         return false; // This service is contained in its generalization tree.
                     }
-                    g = g.Generalization;
                     visitedServices.Add( g );
+                    g = g.Generalization;
                 }
             }
 
@@ -70,9 +71,77 @@ namespace Yodii.Model
                 {
                     return false; // Plugin name is already used.
                 }
+
+                foreach( var serviceRef in plugin.ServiceReferences )
+                {
+                    if( !plugin.CanReference( serviceRef.Reference ) )
+                    {
+                        return false; // Service reference points to a service that cannot be run (same family, different branch).
+                    }
+                }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets whether this plugin can reference the given service.
+        /// </summary>
+        /// <param name="this">This plugin.</param>
+        /// <param name="service">Service to reference.</param>
+        /// <returns>True if this plugin can have a reference to the service.</returns>
+        public static bool CanReference( this IPluginInfo @this, IServiceInfo service )
+        {
+            var thisPluginRoot = @this.GetServiceFamilyRoot();
+            var referenceRoot = service.GetServiceFamilyRoot();
+
+            return thisPluginRoot != referenceRoot || @this.AllServices().Contains( service );
+        }
+
+        /// <summary>
+        /// Gets the service root, at the top of the service family of a given plugin.
+        /// </summary>
+        /// <param name="this">This plugin.</param>
+        /// <returns>ServiceRoot, or null if plugin has no Service.</returns>
+        public static IServiceInfo GetServiceFamilyRoot( this IPluginInfo @this )
+        {
+            IServiceInfo s = @this.Service;
+            while( s != null )
+            {
+                if( s.Generalization != null )
+                {
+                    s = s.Generalization;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return s;
+        }
+
+        /// <summary>
+        /// Gets the service root, at the top of the service family of a given service.
+        /// </summary>
+        /// <param name="this">This service.</param>
+        /// <returns>Service root. Can be this service.</returns>
+        public static IServiceInfo GetServiceFamilyRoot( this IServiceInfo @this )
+        {
+            IServiceInfo s = @this;
+            while( s != null )
+            {
+                if( s.Generalization != null )
+                {
+                    s = s.Generalization;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return s;
         }
 
     }

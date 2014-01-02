@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Threading;
 using GraphX;
+using GraphX.GraphSharp.Algorithms.Layout;
 
 namespace Yodii.Lab
 {
@@ -10,39 +13,117 @@ namespace Yodii.Lab
     public partial class MainWindow : Fluent.RibbonWindow
     {
         readonly MainWindowViewModel _vm;
+        readonly YodiiLayout _graphLayout;
 
         /// <summary>
         /// Creates the main window.
         /// </summary>
         public MainWindow()
         {
-            _vm = new MainWindowViewModel(false);
+            _vm = new MainWindowViewModel( false );
             this.DataContext = _vm;
-            _vm.NewNotification += _vm_NewNotification;
-            InitializeComponent();
 
-            GraphArea.DefaultEdgeRoutingAlgorithm = GraphX.EdgeRoutingAlgorithmTypeEnum.SimpleER;
-            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
-            //GraphArea.SetVerticesDrag( true, true );
-            GraphArea.EnableParallelEdges = true;
-            GraphArea.EdgeShowSelfLooped = true;
-            GraphArea.EdgeCurvingEnabled = true;
-            GraphArea.UseNativeObjectArrange = false;
-            GraphArea.SideExpansionSize = new Size( 100, 100 );
+            _vm.NewNotification += _vm_NewNotification;
+            _vm.CloseBackstageRequest += _vm_CloseBackstageRequest;
+            _vm.VertexPositionRequest += _vm_VertexPositionRequest;
+            _vm.AutoPositionRequest += _vm_AutoPositionRequest;
+
+            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
+
+            InitializeComponent();
 
             GraphArea.GenerateGraphFinished += GraphArea_GenerateGraphFinished;
             GraphArea.RelayoutFinished += GraphArea_RelayoutFinished;
 
             ZoomBox.IsAnimationDisabled = false;
             ZoomBox.MaxZoomDelta = 2;
+            GraphArea.UseNativeObjectArrange = false;
+            //GraphArea.SideExpansionSize = new Size( 100, 100 );
 
-            _vm.Graph.GraphUpdateRequested += Graph_GraphUpdateRequested;
 
-
-            GraphArea.DefaultLayoutAlgorithm = _vm.GraphLayoutAlgorithmType;
-            GraphArea.DefaultLayoutAlgorithmParams = _vm.GraphLayoutParameters;
+            _graphLayout = new YodiiLayout();
+            GraphArea.LayoutAlgorithm = _graphLayout;
+            GraphArea.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.SimpleER;
+            GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
 
             this.Loaded += MainWindow_Loaded;
+            this.Closing += MainWindow_Closing;
+
+            _vm.Graph.VertexAdded += Graph_VertexAdded;
+            _vm.Graph.VertexRemoved += Graph_VertexRemoved;
+            _vm.Graph.EdgeAdded += Graph_EdgeAdded;
+            _vm.Graph.EdgeRemoved += Graph_EdgeRemoved;
+        }
+
+        void _vm_AutoPositionRequest( object sender, EventArgs e )
+        {
+            var result = MessageBox.Show(
+                "Automatically position all elements in the graph?\nThis will reset all their positions.",
+                "Auto-position elements",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No
+                );
+            if( result == MessageBoxResult.Yes )
+            {
+                _graphLayout.NextRecomputeForcesPositions = true;
+                GraphArea.RelayoutGraph();
+            }
+        }
+
+        void _vm_VertexPositionRequest( object sender, VertexPositionEventArgs e )
+        {
+            e.VertexPositions = GraphArea.GetVertexPositions();
+        }
+
+        void Graph_EdgeRemoved( YodiiGraphEdge e )
+        {
+            GraphArea.RemoveEdge( e );
+        }
+
+        void Graph_EdgeAdded( YodiiGraphEdge e )
+        {
+            GraphArea.AddEdge( e, new EdgeControl( GraphArea.VertexList[e.Source], GraphArea.VertexList[e.Target], e ) );
+        }
+
+        void Graph_VertexRemoved( YodiiGraphVertex vertex )
+        {
+            GraphArea.RemoveVertex( vertex );
+        }
+
+        void Graph_VertexAdded( YodiiGraphVertex vertex )
+        {
+            var control = new VertexControl( vertex );
+
+            if( vertex.IsService )
+            {
+                if( vertex.LabServiceInfo.ServiceInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabServiceInfo.ServiceInfo.PositionInGraph );
+            }
+            else if( vertex.IsPlugin )
+            {
+                if( vertex.LabPluginInfo.PluginInfo.PositionInGraph.IsValid() ) control.SetPosition( vertex.LabPluginInfo.PluginInfo.PositionInGraph );
+            }
+
+            GraphArea.AddVertex( vertex, control );
+        }
+
+        void _vm_CloseBackstageRequest( object sender, EventArgs e )
+        {
+            if( RibbonBackstage != null ) RibbonBackstage.IsOpen = false;
+        }
+
+        void MainWindow_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            _vm.StopAutosaveTimer();
+            if( !_vm.SaveBeforeClosingFile() )
+            {
+                e.Cancel = true;
+                _vm.StartAutosaveTimer();
+            }
+            else
+            {
+                _vm.ClearAutosave();
+            }
         }
 
         void _vm_NewNotification( object sender, NotificationEventArgs e )
@@ -56,6 +137,28 @@ namespace Yodii.Lab
         void MainWindow_Loaded( object sender, RoutedEventArgs e )
         {
             GraphArea.GenerateGraph( _vm.Graph );
+
+            if( _vm.HasAutosave() )
+            {
+                var result = MessageBox.Show(
+                    "Program did not properly close last time.\nDo you wish to load the last automatic save?\nPressing No will discard the save.",
+                    "Auto-save available",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Exclamation,
+                    MessageBoxResult.Yes
+                    );
+
+                if( result == MessageBoxResult.Yes )
+                {
+                    _vm.LoadAutosave();
+                }
+                else
+                {
+                    _vm.ClearAutosave();
+                }
+            }
+
+            _vm.StartAutosaveTimer();
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )
@@ -86,48 +189,9 @@ namespace Yodii.Lab
             GraphArea.InvalidateVisual();
         }
 
-        void Graph_GraphUpdateRequested( object sender, GraphUpdateRequestEventArgs e )
+        void Graph_GraphUpdateRequested( object sender, EventArgs e )
         {
-            if( e.NewLayout != null )
-            {
-                GraphArea.DefaultLayoutAlgorithm = (GraphX.LayoutAlgorithmTypeEnum)e.NewLayout;
-            }
-            if( e.AlgorithmParameters != null )
-            {
-                GraphArea.DefaultLayoutAlgorithmParams = e.AlgorithmParameters;
-            }
-
-            if( e.RequestType == GraphGenerationRequestType.RelayoutGraph)
-            {
-                try
-                {
-                    this.GraphArea.RelayoutGraph();
-                } catch( Exception ex )
-                {
-                    MessageBox.Show( String.Format("An error was encountered while updating the layout:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace),
-                        "Error while updating layout",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error, MessageBoxResult.OK );
-
-                    ResetGraphToDefaultState();
-                }
-            } else if (e.RequestType == GraphGenerationRequestType.RegenerateGraph)
-            {
-                try
-                {
-                    this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-                }
-                catch( Exception ex )
-                {
-                    MessageBox.Show( String.Format( "An error was encountered while generating the graph:\n\n- {0}\n\nStack trace:\n{1}", ex.Message, ex.StackTrace ),
-                        "Error while generating graph",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error, MessageBoxResult.OK );
-
-                    ResetGraphToDefaultState();
-                }
-            }
-
+            GraphArea.RelayoutGraph();
         }
 
         private void StackPanel_MouseDown( object sender, System.Windows.Input.MouseButtonEventArgs e )
@@ -145,34 +209,9 @@ namespace Yodii.Lab
             _vm.SelectedVertex = null;
         }
 
-        private void ResetGraphToDefaultState()
-        {
-            this.GraphArea.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.CompoundFDP;
-            this.GraphArea.DefaultLayoutAlgorithmParams = null;
-
-            this.GraphArea.GenerateGraph( _vm.Graph, true, true, true );
-        }
-
         private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
         {
-
-            this.GraphArea.ExportAsPNG( false );
-
-            //Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-
-            //dlg.DefaultExt = ".png";
-            //dlg.Filter = "PNG images (*.png)|*.png";
-            //dlg.CheckPathExists = true;
-            //dlg.OverwritePrompt = true;
-            //dlg.AddExtension = true;
-
-            //Nullable<bool> result = dlg.ShowDialog();
-
-            //if( result == true )
-            //{
-            //    string filePath = dlg.FileName;
-            //    this.GraphArea.ExportAsImage( ImageType.PNG, false, 96, 100 );
-            //}
+            GraphArea.ExportAsPNG( false );
         }
 
     }

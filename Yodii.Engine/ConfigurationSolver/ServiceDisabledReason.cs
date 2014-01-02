@@ -88,7 +88,10 @@ namespace Yodii.Engine
         AnotherServiceRunningInFamily,
         PropagationFailed,
         PropagationToSinglePluginFailed,
-        PropagationToCommonPluginReferencesFailed
+        PropagationToCommonPluginReferencesFailed,
+        RunningServiceDisabled,
+        PropagationToSingleSpecializationFailed,
+        AtLeastTwoSpecializationsMustRun
     }
 
 }

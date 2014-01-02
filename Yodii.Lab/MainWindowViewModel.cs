@@ -3,19 +3,24 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using System.Xml;
 using CK.Core;
 using GraphX;
 using GraphX.GraphSharp.Algorithms.Layout;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Hierarchical;
-using GraphX.GraphSharp.Algorithms.Layout.Simple.Tree;
 using Yodii.Lab.ConfigurationEditor;
 using Yodii.Lab.Mocks;
 using Yodii.Lab.Utils;
 using Yodii.Model;
 
+using System.Xml.Serialization;
+using System.Text.RegularExpressions;
+using System.Collections.Specialized;
+using System.Globalization;
+using Microsoft.Win32;
 namespace Yodii.Lab
 {
     /// <summary>
@@ -28,32 +33,53 @@ namespace Yodii.Lab
         /// </summary>
         internal event EventHandler<NotificationEventArgs> NewNotification;
 
+        internal event EventHandler CloseBackstageRequest;
+
+        internal event EventHandler<VertexPositionEventArgs> VertexPositionRequest;
+
+        internal event EventHandler AutoPositionRequest;
+
         #region Fields
+
+        /// <summary>
+        /// Image URI for Plugin Running notifications.
+        /// </summary>
+        public static readonly string RUNNING_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png";
+
+        /// <summary>
+        /// Image URI for Plugin Stopped notifications.
+        /// </summary>
+        public static readonly string STOPPED_NOTIFICATION_IMAGE_URI = @"/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png";
 
         readonly YodiiGraph _graph;
         readonly LabStateManager _labStateManager;
+
+        readonly CKObservableSortedArrayList<RecentFile> _recentFiles;
 
         readonly ICommand _removeSelectedVertexCommand;
         readonly ICommand _toggleEngineCommand;
         readonly ICommand _openFileCommand;
         readonly ICommand _saveAsFileCommand;
+        readonly ICommand _saveCommand;
         readonly ICommand _reorderGraphLayoutCommand;
         readonly ICommand _createServiceCommand;
         readonly ICommand _createPluginCommand;
         readonly ICommand _openConfigurationEditorCommand;
-        readonly ICommand _clearAllCommand;
+        readonly ICommand _newFileCommand;
         readonly ICommand _revokeAllCommandsCommand;
+        readonly ICommand _autoPositionCommand;
 
         readonly ActivityMonitor _activityMonitor;
+        readonly DispatcherTimer _autosaveTimer;
 
         readonly IYodiiEngine _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
 
-        LayoutAlgorithmTypeEnum _graphLayoutAlgorithmType;
-        ILayoutParameters _graphLayoutParameters;
-
         ConfigurationEditorWindow _activeConfEditorWindow = null;
         bool _hideNotifications = false;
+
+        bool _changedSinceLastSave;
+        string _lastSavePath;
 
         #endregion
 
@@ -65,6 +91,8 @@ namespace Yodii.Lab
         /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
         public MainWindowViewModel( bool loadDefaultState = false )
         {
+            _recentFiles = new CKObservableSortedArrayList<RecentFile>( ( a, b ) => DateTime.Compare( b.AccessTime, a.AccessTime ) );
+
             // Lab objects, live objects and static infos are managed in the LabStateManager.
             _labStateManager = new LabStateManager();
             _engine = _labStateManager.Engine;
@@ -73,6 +101,8 @@ namespace Yodii.Lab
             _labStateManager.ServiceInfos.CollectionChanged += ServiceInfos_CollectionChanged;
             _labStateManager.PluginInfos.CollectionChanged += PluginInfos_CollectionChanged;
             _labStateManager.RunningPlugins.CollectionChanged += RunningPlugins_CollectionChanged;
+
+            _engine.Configuration.Layers.CollectionChanged += Layers_CollectionChanged;
 
             _activityMonitor = new ActivityMonitor();
 
@@ -84,55 +114,91 @@ namespace Yodii.Lab
             _toggleEngineCommand = new RelayCommand( ToggleEngineExecute );
             _openFileCommand = new RelayCommand( OpenFileExecute );
             _saveAsFileCommand = new RelayCommand( SaveAsFileExecute );
+            _saveCommand = new RelayCommand( SaveExecute ); // Save is always available.e
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
             _createPluginCommand = new RelayCommand( CreatePluginExecute, CanEditItems );
             _createServiceCommand = new RelayCommand( CreateServiceExecute, CanEditItems );
             _openConfigurationEditorCommand = new RelayCommand( OpenConfigurationEditorExecute );
-            _clearAllCommand = new RelayCommand( ClearAllExecute );
+            _newFileCommand = new RelayCommand( NewFileExecute );
             _revokeAllCommandsCommand = new RelayCommand( RevokeAllCommandsExecute, CanRevokeAllCommands );
+            _autoPositionCommand = new RelayCommand( AutoPositionExecute );
 
-            GraphLayoutAlgorithmType = LayoutAlgorithmTypeEnum.CompoundFDP;
-            GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
+            LoadRecentFiles();
 
+            // Appication is only available on WPF context.
+            if( Application.Current != null )
+            {
+                _autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Application.Current.Dispatcher );
+            }
+            else
+            {
+                _autosaveTimer = new DispatcherTimer( DispatcherPriority.Background, Dispatcher.CurrentDispatcher );
+            }
+
+            _autosaveTimer.Interval = new TimeSpan( 0, 0, 5 );
+            _autosaveTimer.Tick += AutosaveTick;
+
+            // Autosave timer is started from outside, using StartAutosaveTimer().
 
             if( loadDefaultState ) LoadDefaultState();
-        }
-
-        private bool CanRevokeAllCommands( object obj )
-        {
-            return LabState.Engine.IsRunning && LabState.Engine.YodiiCommands.Count > 0;
-        }
-
-        private void RevokeAllCommandsExecute( object obj )
-        {
-            if( !CanRevokeAllCommands( obj ) ) return;
-
-            IEnumerable<string> callers = LabState.Engine.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
-
-            foreach( string callerKey in callers )
-            {
-                var result = LabState.Engine.LiveInfo.RevokeCaller( callerKey );
-
-                if( !result.Success )
-                {
-                    MessageBox.Show(
-                        String.Format( "Couldn't revoke caller key '{0}' as it would raise this error:\n\n{1}", callerKey, result.Describe() ),
-                        "Command revoke failed", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
-                }
-            }
-        }
-
-        private void LoadDefaultState()
-        {
-            _labStateManager.ClearState();
-            XmlReader r = XmlReader.Create( new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) );
-
-            LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, r );
         }
 
         #endregion Constructor
 
         #region Event handlers
+
+        void Layers_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IConfigurationLayer layer = (IConfigurationLayer)i;
+                        layer.PropertyChanged += staticInfo_PropertyChanged;
+                        layer.Items.CollectionChanged += Items_CollectionChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IConfigurationLayer layer = (IConfigurationLayer)i;
+                        layer.PropertyChanged -= staticInfo_PropertyChanged;
+                        layer.Items.CollectionChanged -= Items_CollectionChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            ChangedSinceLastSave = true;
+        }
+
+        void Items_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        IConfigurationItem item = (IConfigurationItem)i;
+                        item.PropertyChanged += staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        IConfigurationItem item = (IConfigurationItem)i;
+                        item.PropertyChanged -= staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            ChangedSinceLastSave = true;
+        }
+
         void RunningPlugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
         {
             switch( e.Action )
@@ -141,8 +207,9 @@ namespace Yodii.Lab
                     foreach( var i in e.NewItems )
                     {
                         IPluginInfo p = (IPluginInfo)i;
-                        RaiseNewNotification( "Plugin running",
-                            String.Format( "Plugin '{0}' is now running.", p.PluginFullName )
+                        RaiseNewNotification( @"Plugin running",
+                            String.Format( @"Plugin '{0}' is now running.", p.PluginFullName ),
+                            RUNNING_NOTIFICATION_IMAGE_URI
                             );
                     }
                     break;
@@ -150,8 +217,9 @@ namespace Yodii.Lab
                     foreach( var i in e.OldItems )
                     {
                         IPluginInfo p = (IPluginInfo)i;
-                        RaiseNewNotification( "Plugin stopped",
-                            String.Format( "Plugin '{0}' has been stopped.", p.PluginFullName )
+                        RaiseNewNotification( @"Plugin stopped",
+                            String.Format( @"Plugin '{0}' has been stopped.", p.PluginFullName ),
+                            STOPPED_NOTIFICATION_IMAGE_URI
                             );
                     }
                     break;
@@ -192,7 +260,11 @@ namespace Yodii.Lab
                             SelectedVertex = null;
                         }
 
-                        IPluginInfo newPlugin = (IPluginInfo)i;
+                        PluginInfo newPlugin = (PluginInfo)i;
+
+                        newPlugin.PropertyChanged += staticInfo_PropertyChanged;
+                        newPlugin.InternalServiceReferences.CollectionChanged += InternalServiceReferences_CollectionChanged;
+
                         RaiseNewNotification( "Plugin added",
                             String.Format( "Added new plugin: '{0}'", newPlugin.PluginFullName )
                             );
@@ -207,7 +279,11 @@ namespace Yodii.Lab
                             SelectedVertex = null;
                         }
 
-                        IPluginInfo oldPlugin = (IPluginInfo)i;
+                        PluginInfo oldPlugin = (PluginInfo)i;
+
+                        oldPlugin.PropertyChanged -= staticInfo_PropertyChanged;
+                        oldPlugin.InternalServiceReferences.CollectionChanged += InternalServiceReferences_CollectionChanged;
+
                         RaiseNewNotification( "Plugin removed",
                             String.Format( "Removed plugin: '{0}'", oldPlugin.PluginFullName )
                             );
@@ -217,6 +293,32 @@ namespace Yodii.Lab
                     RaiseNewNotification( "Plugins reset", "Removed all plugins." );
                     break;
             }
+            ChangedSinceLastSave = true;
+        }
+
+        void InternalServiceReferences_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            switch( e.Action )
+            {
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    foreach( var i in e.NewItems )
+                    {
+                        MockServiceReferenceInfo serviceRef = (MockServiceReferenceInfo)i;
+                        serviceRef.PropertyChanged += staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
+                    foreach( var i in e.OldItems )
+                    {
+                        MockServiceReferenceInfo serviceRef = (MockServiceReferenceInfo)i;
+                        serviceRef.PropertyChanged -= staticInfo_PropertyChanged;
+                    }
+                    break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+
+            ChangedSinceLastSave = true;
         }
 
         void ServiceInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -226,16 +328,20 @@ namespace Yodii.Lab
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach( var i in e.NewItems )
                     {
-                        IServiceInfo newService = (IServiceInfo)i;
+                        ServiceInfo newService = (ServiceInfo)i;
+                        newService.PropertyChanged += staticInfo_PropertyChanged;
+
                         RaiseNewNotification( "Service added",
                             String.Format( "Added new service: '{0}'", newService.ServiceFullName )
                             );
+
                     }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     foreach( var i in e.OldItems )
                     {
-                        IServiceInfo oldService = (IServiceInfo)i;
+                        ServiceInfo oldService = (ServiceInfo)i;
+                        oldService.PropertyChanged -= staticInfo_PropertyChanged;
                         RaiseNewNotification( "Service removed",
                             String.Format( "Removed service: '{0}'", oldService.ServiceFullName )
                             );
@@ -251,6 +357,12 @@ namespace Yodii.Lab
                     SelectedVertex = null;
                     break;
             }
+            ChangedSinceLastSave = true;
+        }
+
+        void staticInfo_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            ChangedSinceLastSave = true;
         }
         #endregion
 
@@ -275,21 +387,10 @@ namespace Yodii.Lab
 
         private void ReorderGraphLayoutExecute( object param )
         {
-            if( param == null )
-            {
-                RaiseNewNotification( new Notification() { Title = "Re-creating graph..." } );
-                // Refresh layout.
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
-            }
-            else
-            {
-                RaiseNewNotification( new Notification() { Title = "Reordering graph..." } );
-                // Re-create graph with new layout and parameters.
-                GraphLayoutAlgorithmType = (GraphX.LayoutAlgorithmTypeEnum)param;
-                GraphLayoutParameters = GetDefaultLayoutParameters( GraphLayoutAlgorithmType );
 
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RelayoutGraph, GraphLayoutAlgorithmType, GraphLayoutParameters );
-            }
+            RaiseNewNotification( new Notification() { Title = "Calling relayout..." } );
+            // Refresh layout.
+            Graph.RaiseGraphUpdateRequested();
         }
 
         private void CreateServiceExecute( object param )
@@ -393,47 +494,54 @@ namespace Yodii.Lab
 
         private void OpenFileExecute( object param )
         {
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckFileExists = true;
-            dlg.CheckPathExists = true;
-
-            Nullable<bool> result = dlg.ShowDialog();
-
-            if( result == true )
+            if( param != null && param is string )
             {
-                string filePath = dlg.FileName;
-                var r = LoadState( filePath );
-                if( !r )
+                string fileName = (string)param;
+
+                if( !File.Exists( fileName ) )
                 {
-                    MessageBox.Show( r.Reason, "Couldn't open file" );
+                    RemoveFileFromRecentFiles( fileName );
+                    MessageBox.Show(
+                        String.Format( "File does not exist:\n{0}", fileName ),
+                        "File not found",
+                        MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK );
+                }
+                else
+                {
+                    var r = LoadState( fileName );
+                    if( !r )
+                    {
+                        MessageBox.Show( r.Reason, "Couldn't open file" );
+                    }
+                }
+
+            }
+            else
+            {
+                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+                dlg.DefaultExt = ".xml";
+                dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+                dlg.CheckFileExists = true;
+                dlg.CheckPathExists = true;
+
+                Nullable<bool> result = dlg.ShowDialog();
+
+                if( result == true )
+                {
+                    string filePath = dlg.FileName;
+                    var r = LoadState( filePath );
+                    if( !r )
+                    {
+                        MessageBox.Show( r.Reason, "Couldn't open file" );
+                    }
                 }
             }
         }
 
         private void SaveAsFileExecute( object param )
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-
-            dlg.DefaultExt = ".xml";
-            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
-            dlg.CheckPathExists = true;
-            dlg.OverwritePrompt = true;
-            dlg.AddExtension = true;
-
-            Nullable<bool> result = dlg.ShowDialog();
-
-            if( result == true )
-            {
-                string filePath = dlg.FileName;
-                var r = SaveState( filePath );
-                if( !r )
-                {
-                    MessageBox.Show( r.Reason, "Couldn't save file" );
-                }
-            }
+            SaveAs();
         }
 
         private void ToggleEngineExecute( object obj )
@@ -489,14 +597,73 @@ namespace Yodii.Lab
             SelectedVertex = null;
         }
 
-        private void ClearAllExecute( object obj )
+        private void NewFileExecute( object obj )
         {
-            LabState.ClearState();
+            if( SaveBeforeClosingFile() )
+            {
+                OpenedFilePath = null;
+                LabState.ClearState();
+                ChangedSinceLastSave = false;
+            }
+
+            RaiseCloseBackstageRequest();
+        }
+
+        private bool CanRevokeAllCommands( object obj )
+        {
+            return LabState.Engine.IsRunning && LabState.Engine.LiveInfo.YodiiCommands.Count > 0;
+        }
+
+        private void RevokeAllCommandsExecute( object obj )
+        {
+            if( !CanRevokeAllCommands( obj ) ) return;
+
+            IEnumerable<string> callers = LabState.Engine.LiveInfo.YodiiCommands.Select( x => x.CallerKey ).Distinct().ToList();
+
+            foreach( string callerKey in callers )
+            {
+                var result = LabState.Engine.LiveInfo.RevokeCaller( callerKey );
+
+                if( !result.Success )
+                {
+                    MessageBox.Show(
+                        String.Format( "Couldn't revoke caller key '{0}' as it would raise this error:\n\n{1}", callerKey, result.Describe() ),
+                        "Command revoke failed", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
+                }
+            }
+        }
+
+        private void SaveExecute( object obj )
+        {
+            Save();
+        }
+
+        private void AutoPositionExecute( object obj )
+        {
+            if( AutoPositionRequest != null )
+            {
+                AutoPositionRequest( this, new EventArgs() );
+            }
         }
 
         #endregion Command handlers
 
         #region Properties
+
+        /// <summary>
+        /// Window title.
+        /// </summary>
+        public string WindowTitle
+        {
+            get
+            {
+                return String.Format(
+                    "Yodii.Lab - {0}{1}",
+                    OpenedFilePath != null ? Path.GetFileName( OpenedFilePath ) : "(New file)",
+                    ChangedSinceLastSave == true ? " *" : String.Empty
+                    );
+            }
+        }
 
         /// <summary>
         /// Services created in this Lab.
@@ -522,6 +689,46 @@ namespace Yodii.Lab
             get
             {
                 return _graph;
+            }
+        }
+
+        /// <summary>
+        /// State changed since it was last saved/loaded.
+        /// </summary>
+        public bool ChangedSinceLastSave
+        {
+            get
+            {
+                return _changedSinceLastSave;
+            }
+            private set
+            {
+                if( value != _changedSinceLastSave )
+                {
+                    _changedSinceLastSave = value;
+                    RaisePropertyChanged();
+                    RaisePropertyChanged( "WindowTitle" );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Last path loaded/saved.
+        /// </summary>
+        public string OpenedFilePath
+        {
+            get
+            {
+                return _lastSavePath;
+            }
+            private set
+            {
+                if( value != _lastSavePath )
+                {
+                    _lastSavePath = value;
+                    RaisePropertyChanged();
+                    RaisePropertyChanged( "WindowTitle" );
+                }
             }
         }
 
@@ -561,55 +768,6 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// The current graph layout type.
-        /// </summary> parameters
-        public LayoutAlgorithmTypeEnum GraphLayoutAlgorithmType
-        {
-            get
-            {
-                return _graphLayoutAlgorithmType;
-            }
-            set
-            {
-                if( value != _graphLayoutAlgorithmType )
-                {
-                    _graphLayoutAlgorithmType = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// The current graph layout parameters.
-        /// </summary>
-        public ILayoutParameters GraphLayoutParameters
-        {
-            get
-            {
-                return _graphLayoutParameters;
-            }
-            set
-            {
-                if( value != _graphLayoutParameters )
-                {
-                    _graphLayoutParameters = value;
-                    RaisePropertyChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Available graph layout types.
-        /// </summary>
-        public IEnumerable<GraphX.LayoutAlgorithmTypeEnum> GraphLayoutAlgorithmTypes
-        {
-            get
-            {
-                return (IEnumerable<GraphX.LayoutAlgorithmTypeEnum>)Enum.GetValues( typeof( GraphX.LayoutAlgorithmTypeEnum ) );
-            }
-        }
-
-        /// <summary>
         /// Returns true if a vertex is selected.
         /// </summary>
         public bool HasSelection
@@ -644,6 +802,12 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Recent files.
+        /// </summary>
+        public CKObservableSortedArrayList<RecentFile> RecentFiles
+        { get { return _recentFiles; } }
+
+        /// <summary>
         /// Command to remove a vertex that was selected beforehand.
         /// </summary>
         public ICommand RemoveSelectedVertexCommand { get { return _removeSelectedVertexCommand; } }
@@ -664,6 +828,10 @@ namespace Yodii.Lab
         /// </summary>
         public ICommand SaveAsFileCommand { get { return _saveAsFileCommand; } }
         /// <summary>
+        /// Command to save the opened file, or define a new file to save to.
+        /// </summary>
+        public ICommand SaveCommand { get { return _saveCommand; } }
+        /// <summary>
         /// Command to reorder the graph, or to change the graph's layout.
         /// </summary>
         public ICommand ReorderGraphLayoutCommand { get { return _reorderGraphLayoutCommand; } }
@@ -676,16 +844,126 @@ namespace Yodii.Lab
         /// </summary>
         public ICommand CreateServiceCommand { get { return _createServiceCommand; } }
         /// <summary>
-        /// Command to open a window allowing creation of a new service.
+        /// Command to create a new file.
         /// </summary>
-        public ICommand ClearAllCommand { get { return _clearAllCommand; } }
+        public ICommand NewFileCommand { get { return _newFileCommand; } }
         /// <summary>
         /// Command to revoke all callers.
         /// </summary>
         public ICommand RevokeAllCommandsCommand { get { return _revokeAllCommandsCommand; } }
+        /// <summary>
+        /// Command to auto-position all elements.
+        /// </summary>
+        public ICommand AutoPositionCommand { get { return _autoPositionCommand; } }
         #endregion Properties
 
         #region Public methods
+
+        /// <summary>
+        /// Prompts the user to save before closing the file, if changes to the document were detected.
+        /// </summary>
+        /// <returns>True if the user did not cancel the operation. False if the user cancelled the operation.</returns>
+        public bool SaveBeforeClosingFile()
+        {
+            if( ChangedSinceLastSave )
+            {
+                var result = MessageBox.Show( "Save changes?\nUnsaved data will be lost if you press No.", "Save file", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation, MessageBoxResult.Cancel );
+                if( result == MessageBoxResult.Cancel ) return false;
+
+                if( result == MessageBoxResult.Yes )
+                {
+                    return Save();
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Whether the Lab has an auto-saved state.
+        /// </summary>
+        /// <returns>True if there is an auto-saved state.</returns>
+        public bool HasAutosave()
+        {
+            return !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents );
+        }
+
+        /// <summary>
+        /// Load autosaved state, if present.
+        /// </summary>
+        public void LoadAutosave()
+        {
+            if( !HasAutosave() ) return;
+            OpenedFilePath = null;
+            LabState.ClearState();
+
+            if( !String.IsNullOrWhiteSpace( Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath ) )
+            {
+                OpenedFilePath = Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath;
+            }
+
+            using( StringReader sr = new StringReader( Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents ) )
+            {
+                using( XmlReader r = XmlReader.Create( sr ) )
+                {
+                    try
+                    {
+                        _hideNotifications = true;
+                        Graph.LockGraphUpdates = true;
+                        LabState.DeserializeAndResetStateFromXml( r );
+                        Graph.LockGraphUpdates = false;
+
+                        Graph.RaiseGraphUpdateRequested();
+
+                        _hideNotifications = false;
+                        RaiseNewNotification( "Autosave loaded", OpenedFilePath );
+                    }
+                    catch( Exception ex )
+                    {
+                        MessageBox.Show(
+                            String.Format( "Load from autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
+                            "Loading failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error,
+                            MessageBoxResult.OK
+                            );
+
+                    }
+                    finally
+                    {
+                        _hideNotifications = false;
+                        Graph.LockGraphUpdates = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove any existing autosave.
+        /// </summary>
+        public void ClearAutosave()
+        {
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = String.Empty;
+
+            Yodii.Lab.Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// Starts the autosave timer.
+        /// </summary>
+        public void StartAutosaveTimer()
+        {
+            _autosaveTimer.Start();
+        }
+
+        /// <summary>
+        /// Stops the autosave timer.
+        /// </summary>
+        public void StopAutosaveTimer()
+        {
+            _autosaveTimer.Stop();
+        }
+
         /// <summary>
         /// Creates a new named service, which does not specialize another service.
         /// </summary>
@@ -758,6 +1036,22 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Removes an existing dependency from a plugin to a service.
+        /// </summary>
+        /// <param name="plugin">Plugin owner.</param>
+        /// <param name="service">Service reference.</param>
+        public void RemovePluginDependency( IPluginInfo plugin, IServiceInfo service )
+        {
+            if( plugin == null ) throw new ArgumentNullException( "plugin" );
+            if( service == null ) throw new ArgumentNullException( "service" );
+
+            if( !ServiceInfos.Contains( (ServiceInfo)service ) ) throw new InvalidOperationException( "Service does not exist in this Lab" );
+            if( !PluginInfos.Contains( (PluginInfo)plugin ) ) throw new InvalidOperationException( "Plugin does not exist in this Lab" );
+
+            _labStateManager.RemovePluginDependency( (PluginInfo)plugin, (ServiceInfo)service );
+        }
+
+        /// <summary>
         /// Removes and deletes a plugin.
         /// </summary>
         /// <param name="pluginInfo">Plugin to remove</param>
@@ -816,22 +1110,28 @@ namespace Yodii.Lab
             Graph.LockGraphUpdates = true;
 
             XmlReaderSettings rs = new XmlReaderSettings();
-
             try
             {
-                using( FileStream fs = File.Open( filePath, FileMode.Open ) )
+                FileInfo f = new FileInfo( filePath );
+                using( FileStream fs = f.OpenRead() )
                 {
                     using( XmlReader xr = XmlReader.Create( fs, rs ) )
                     {
-                        LabXmlSerialization.DeserializeAndResetStateFromXml( LabState, xr );
+                        LabState.DeserializeAndResetStateFromXml( xr );
                     }
                 }
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
 
-                Graph.RaiseGraphUpdateRequested( GraphGenerationRequestType.RegenerateGraph );
+                Graph.RaiseGraphUpdateRequested();
 
-                RaiseNewNotification( new Notification() { Title = "Loaded file", Message = filePath } );
+                RaiseNewNotification( new Notification() { Title = "Loaded file", Message = f.Name } );
+
+                ChangedSinceLastSave = false;
+                OpenedFilePath = filePath;
+
+                SaveOpenedFileAsRecentFile( f );
+                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( true );
             }
             catch( Exception ex )
@@ -847,7 +1147,7 @@ namespace Yodii.Lab
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
             }
-
+            RaiseCloseBackstageRequest();
             return new DetailedOperationResult( false );
         }
 
@@ -862,6 +1162,8 @@ namespace Yodii.Lab
             ws.NewLineHandling = NewLineHandling.None;
             ws.Indent = true;
 
+            UpdateGraphPositions();
+
             try
             {
                 using( FileStream fs = File.Open( filePath, FileMode.Create ) )
@@ -873,11 +1175,17 @@ namespace Yodii.Lab
                         xw.WriteEndDocument();
                     }
                 }
+                ChangedSinceLastSave = false;
+                OpenedFilePath = filePath;
+                ClearAutosave();
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {
+                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( false, e.Message );
             }
+
+            RaiseCloseBackstageRequest();
 
             RaiseNewNotification( new Notification() { Title = "Saved state", Message = filePath } );
             return new DetailedOperationResult( true );
@@ -904,6 +1212,33 @@ namespace Yodii.Lab
         }
 
         /// <summary>
+        /// Requests vertices' positions from outside,
+        /// and updates them in the ServiceInfo/PluginInfo mocks.
+        /// </summary>
+        public void UpdateGraphPositions()
+        {
+            IDictionary<YodiiGraphVertex, Point> positions = RaisePositionRequest();
+
+            if( positions != null )
+            {
+                foreach( var kvp in positions )
+                {
+                    YodiiGraphVertex v = kvp.Key;
+                    Point p = kvp.Value;
+
+                    if( v.IsService )
+                    {
+                        v.LabServiceInfo.ServiceInfo.PositionInGraph = p;
+                    }
+                    else if( v.IsPlugin )
+                    {
+                        v.LabPluginInfo.PluginInfo.PositionInGraph = p;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Attempts to rename a service.
         /// </summary>
         /// <param name="serviceInfo">Service to rename</param>
@@ -917,51 +1252,214 @@ namespace Yodii.Lab
 
         #region Private methods
 
-        private static ILayoutParameters GetDefaultLayoutParameters( LayoutAlgorithmTypeEnum layoutType )
+        private void AutosaveTick( object sender, EventArgs e )
         {
-            switch( layoutType )
+            Autosave();
+        }
+
+        private void Autosave()
+        {
+            if( !ChangedSinceLastSave ) return;
+
+            string xmlString;
+
+            UpdateGraphPositions();
+
+            using( StringWriter sw = new StringWriter() )
             {
-                case LayoutAlgorithmTypeEnum.EfficientSugiyama:
-                    EfficientSugiyamaLayoutParameters sugiyamaParams = new EfficientSugiyamaLayoutParameters();
-                    sugiyamaParams.VertexDistance = 70.0;
-                    sugiyamaParams.MinimizeEdgeLength = false;
-                    sugiyamaParams.PositionMode = 0;
-                    sugiyamaParams.EdgeRouting = SugiyamaEdgeRoutings.Orthogonal;
-                    sugiyamaParams.OptimizeWidth = false;
-                    return sugiyamaParams;
-                case LayoutAlgorithmTypeEnum.Tree:
-                    SimpleTreeLayoutParameters treeParams = new SimpleTreeLayoutParameters();
-                    treeParams.Direction = LayoutDirection.BottomToTop;
-                    //treeParams.VertexGap = 30.0;
-                    //treeParams.OptimizeWidthAndHeight = false;
-                    treeParams.SpanningTreeGeneration = SpanningTreeGeneration.BFS;
-                    return treeParams;
-                default:
-                    return null;
+                using( XmlWriter xw = XmlWriter.Create( sw ) )
+                {
+                    try
+                    {
+                        xw.WriteStartDocument( true );
+                        LabXmlSerialization.SerializeToXml( LabState, xw );
+                        xw.WriteEndDocument();
+                    }
+                    catch( Exception ex )
+                    {
+                        MessageBox.Show(
+                            String.Format( "Autosave failed:\n{0}\n\n{1}", ex.Message, ex.StackTrace ),
+                            "Autosave failed",
+                            MessageBoxButton.OK, MessageBoxImage.Error,
+                            MessageBoxResult.OK
+                            );
+
+                    }
+                }
+
+                xmlString = sw.ToString();
             }
+
+            Yodii.Lab.Properties.Settings.Default.LastAutosaveFileContents = xmlString;
+            if( String.IsNullOrWhiteSpace( OpenedFilePath ) )
+            {
+                Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = String.Empty;
+            }
+            else
+            {
+                Yodii.Lab.Properties.Settings.Default.LastAutosaveFilePath = OpenedFilePath;
+            }
+
+            Yodii.Lab.Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// In case the file changed, attempts to save the last file.
+        /// </summary>
+        /// <returns>True if save was successful. False if save failed, or was canceled.</returns>
+        private bool Save()
+        {
+            if( !String.IsNullOrWhiteSpace( OpenedFilePath ) )
+            {
+                var r = SaveState( OpenedFilePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+                return r.IsSuccessful;
+            }
+            else
+            {
+                return SaveAs();
+            }
+        }
+
+        private bool SaveAs()
+        {
+            string saveFilePath = SelectSaveFile();
+
+            if( saveFilePath != null )
+            {
+                var r = SaveState( saveFilePath );
+                if( !r )
+                {
+                    MessageBox.Show( r.Reason, "Couldn't save file" );
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private string SelectSaveFile()
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.DefaultExt = ".xml";
+            dlg.Filter = "Yodii.Lab XML Files (*.xml)|*.xml";
+            dlg.CheckPathExists = true;
+            dlg.OverwritePrompt = true;
+            dlg.AddExtension = true;
+            dlg.FileName = OpenedFilePath;
+            bool? result = dlg.ShowDialog();
+            return result == true ? dlg.FileName : null;
         }
 
         private void RaiseNewNotification( Notification n )
         {
             if( _hideNotifications ) return;
-
-            if( NewNotification != null )
-            {
-                NewNotification( this, new NotificationEventArgs( n ) );
-            }
+            var h = NewNotification;
+            if( h != null ) h( this, new NotificationEventArgs( n ) );
         }
 
-        private void RaiseNewNotification( string title = "Notification", string message = "" )
+        private void RaiseNewNotification( string title = "Notification", string message = "", string imageUri = null )
         {
             Notification n = new Notification()
             {
                 Title = title,
-                Message = message
+                Message = message,
+                ImageUrl = imageUri
             };
 
             RaiseNewNotification( n );
         }
 
+        void RaiseCloseBackstageRequest()
+        {
+            var h = CloseBackstageRequest;
+            if( h != null ) h( this, new EventArgs() );
+        }
+
+        private IDictionary<YodiiGraphVertex,Point> RaisePositionRequest()
+        {
+            var v = VertexPositionRequest;
+            VertexPositionEventArgs args = new VertexPositionEventArgs();
+            if( v != null )
+            {
+                v( this, args );
+            }
+
+            return args.VertexPositions;
+        }
+
+        void LoadDefaultState()
+        {
+            using( var reader = new StringReader( Yodii.Lab.Properties.Resources.DefaultState ) )
+            {
+                XmlReader r = XmlReader.Create( reader );
+                LabXmlSerialization.DeserializeAndResetStateFromXml( _labStateManager, r );
+                ChangedSinceLastSave = false;
+            }
+        }
+
+        void LoadRecentFiles()
+        {
+            // Settings are not available outside app context.
+            if( Application.Current == null ) return;
+            _recentFiles.Clear();
+
+            StringCollection files = Properties.Settings.Default.RecentFiles;
+            if( files != null )
+            {
+                foreach( string f in files )
+                {
+                    RecentFile r = RecentFile.TryParse( _activityMonitor, f );
+                    if( r != null ) _recentFiles.Add( r );
+                }
+            }
+        }
+
+        void SaveRecentFiles()
+        {
+            StringCollection coll = new StringCollection();
+            foreach( var f in _recentFiles ) coll.Add( f.ToString() );
+            Properties.Settings.Default.RecentFiles = coll;
+            Properties.Settings.Default.Save();
+        }
+
+        private void SaveOpenedFileAsRecentFile( FileInfo f )
+        {
+            RemoveFileFromRecentFiles( f.FullName );
+            _recentFiles.Add( new RecentFile( f, DateTime.UtcNow ) );
+            TrimRecentFiles();
+            SaveRecentFiles();
+        }
+
+        private void TrimRecentFiles()
+        {
+            while( _recentFiles.Count > 10 ) _recentFiles.RemoveAt( _recentFiles.Count-1 );
+        }
+
+        private void RemoveFileFromRecentFiles( string fileFullName )
+        {
+            var existingFiles = _recentFiles.Where( x => x.File.FullName == fileFullName ).ToList();
+            foreach( var file in existingFiles )
+            {
+                _recentFiles.Remove( file );
+            }
+        }
+
         #endregion Private methods
     }
+
+    class VertexPositionEventArgs : EventArgs
+    {
+        public IDictionary<YodiiGraphVertex, Point> VertexPositions
+        {
+            get;
+            set;
+        }
+    }
+
 }

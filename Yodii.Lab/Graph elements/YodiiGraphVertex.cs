@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ namespace Yodii.Lab
     /// <summary>
     /// Vertex from a Yodii graph. Represents either a lab service or a lab plugin.
     /// </summary>
+    [DebuggerDisplay("{Description}")]
     public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
@@ -18,7 +20,8 @@ namespace Yodii.Lab
         readonly LabServiceInfo _liveService;
         readonly LabPluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
-        readonly ICommand _toggleItemCommand;
+        readonly ICommand _startItemCommand;
+        readonly ICommand _stopItemCommand;
 
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
@@ -32,26 +35,47 @@ namespace Yodii.Lab
         /// </summary>
         private YodiiGraphVertex()
         {
-            _toggleItemCommand = new RelayCommand( ToggleLiveItemExecute, CanToggleLiveItemExecute );
+            _startItemCommand = new RelayCommand( StartLiveItemExecute, CanStartLiveItem );
+            _stopItemCommand = new RelayCommand( StopLiveItemExecute, CanStopLiveItem );
         }
 
-        private bool CanToggleLiveItemExecute( object obj )
+        private bool CanStartLiveItem( object obj )
         {
             if( LiveObject == null ) return false;
-            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Running ) return false;
+
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+
+            return LiveObject.Capability.CanStartWith( impact );
+        }
+
+        private bool CanStopLiveItem( object obj )
+        {
+            if( LiveObject == null ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Stopped ) return false;
 
             return true;
         }
 
-        private void ToggleLiveItemExecute( object obj )
+        private void StartLiveItemExecute( object obj )
         {
-            if( !CanToggleLiveItemExecute( obj ) ) return;
+            if( !CanStartLiveItem( obj ) ) return;
 
             if( LiveObject.RunningStatus == RunningStatus.Stopped )
             {
-                LiveObject.Start();
+                StartDependencyImpact impact = StartDependencyImpact.Unknown;
+                if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+
+                LiveObject.Start(impact);
             }
-            else
+        }
+
+        private void StopLiveItemExecute( object obj )
+        {
+            if( !CanStopLiveItem( obj ) ) return;
+
+            if( LiveObject.RunningStatus == RunningStatus.Running )
             {
                 LiveObject.Stop();
             }
@@ -180,9 +204,26 @@ namespace Yodii.Lab
         }
 
         /// <summary>
-        /// Command to toggle (Start or Stop) this live item.
+        /// Vertex description.
         /// </summary>
-        public ICommand ToggleItemCommand { get { return _toggleItemCommand; } }
+        public string Description
+        {
+            get
+            {
+                if( IsService ) return String.Format("Service vertex: {0}", LabServiceInfo.ServiceInfo.ServiceFullName);
+                else return String.Format( "Plugin vertex: {0}", LabPluginInfo.PluginInfo.PluginFullName );
+            }
+        }
+
+        /// <summary>
+        /// Command to toggle stop this live item.
+        /// </summary>
+        public ICommand StopItemCommand { get { return _stopItemCommand; } }
+
+        /// <summary>
+        /// Command to start this live item.
+        /// </summary>
+        public ICommand StartItemCommand { get { return _startItemCommand; } }
 
         /// <summary>
         /// The configuration status for this element, from the ConfigurationManager.

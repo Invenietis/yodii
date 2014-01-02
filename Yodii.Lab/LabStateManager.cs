@@ -76,10 +76,24 @@ namespace Yodii.Lab
 
             _runningPlugins = new ObservableCollection<IPluginInfo>();
 
-            _serviceInfos.CollectionChanged += _staticInfos_CollectionChanged;
+            _serviceInfos.CollectionChanged += _serviceInfos_CollectionChanged;
             _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
 
             UpdateEngineInfos();
+        }
+
+        void _serviceInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            _staticInfos_CollectionChanged( sender, e );
+            if( e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add )
+            {
+                foreach( var i in e.NewItems )
+                {
+                    ServiceInfo s = (ServiceInfo)i;
+
+                    s.PropertyChanged += serviceInfo_PropertyChanged;
+                }
+            }
         }
 
         void _pluginInfos_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -89,13 +103,40 @@ namespace Yodii.Lab
             {
                 foreach( var i in e.NewItems )
                 {
-                    PluginInfo s = (PluginInfo)i;
-                    s.InternalServiceReferences.CollectionChanged += _staticInfos_CollectionChanged;
-                    foreach( var serviceRef in s.InternalServiceReferences )
+                    PluginInfo p = (PluginInfo)i;
+
+                    p.InternalServiceReferences.CollectionChanged += _staticInfos_CollectionChanged;
+                    p.PropertyChanged += pluginInfo_PropertyChanged;
+
+                    foreach( var serviceRef in p.InternalServiceReferences )
                     {
                         serviceRef.PropertyChanged += staticInfo_PropertyChanged;
                     }
                 }
+            }
+        }
+
+        void serviceInfo_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "ServiceFullName" )
+            {
+                ServiceInfo s = sender as ServiceInfo;
+
+                int movedItem = _labServiceInfos.IndexOf( s2 => s2.ServiceInfo.ServiceFullName == s.ServiceFullName );
+
+                _labServiceInfos.CheckPosition( movedItem );
+            }
+        }
+
+        void pluginInfo_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "PluginFullName" )
+            {
+                PluginInfo p = sender as PluginInfo;
+
+                int movedItem = _labPluginInfos.IndexOf( p2 => p2.PluginInfo.PluginFullName == p.PluginFullName );
+
+                _labPluginInfos.CheckPosition( movedItem );
             }
         }
 
@@ -119,7 +160,16 @@ namespace Yodii.Lab
 
         internal void UpdateEngineInfos()
         {
-            var result = _engine.SetDiscoveredInfo( new DiscoveredInfoClone( ServiceInfos, PluginInfos ) );
+            var newInfo = new DiscoveredInfoClone( ServiceInfos, PluginInfos );
+
+            if( !newInfo.IsValid() )
+            {
+                Engine.Stop();
+                MessageBox.Show( "DiscoveredInfo failed sanity check." );
+                return;
+            }
+
+            var result = _engine.SetDiscoveredInfo( newInfo );
 
             if( !result.Success )
             {
@@ -353,10 +403,7 @@ namespace Yodii.Lab
         /// </summary>
         internal void ClearState()
         {
-            if( _engine.IsRunning )
-            {
-                _engine.Stop();
-            }
+            if( _engine.IsRunning ) _engine.Stop();
 
             _labPluginInfos.Clear();
             _labServiceInfos.Clear();
@@ -432,18 +479,30 @@ namespace Yodii.Lab
         /// <param name="runningRequirement">How the plugin depends on the service</param>
         internal void SetPluginDependency( PluginInfo plugin, ServiceInfo service, DependencyRequirement runningRequirement )
         {
-            if( _engine.IsRunning )
-            {
-                throw new InvalidOperationException( "Cannot create reference while Engine is running." );
-            }
             Debug.Assert( plugin != null );
             Debug.Assert( service != null );
             Debug.Assert( ServiceInfos.Contains( service ) );
             Debug.Assert( PluginInfos.Contains( plugin ) );
 
-            MockServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, DependencyRequirement.Running );
+            MockServiceReferenceInfo reference = new MockServiceReferenceInfo( plugin, service, runningRequirement );
             plugin.InternalServiceReferences.Add( reference );
 
+        }
+
+        /// <summary>
+        /// Removes an existing plugin dependency.
+        /// </summary>
+        /// <param name="plugin">Plugin owner.</param>
+        /// <param name="service">Service reference</param>
+        internal void RemovePluginDependency( PluginInfo plugin, ServiceInfo service )
+        {
+            Debug.Assert( plugin != null );
+            Debug.Assert( service != null );
+            Debug.Assert( ServiceInfos.Contains( service ) );
+            Debug.Assert( PluginInfos.Contains( plugin ) );
+
+            MockServiceReferenceInfo reference = plugin.InternalServiceReferences.First( x => x.Reference == service );
+            if( reference != null ) plugin.InternalServiceReferences.Remove( reference );
         }
 
         /// <summary>
@@ -671,6 +730,7 @@ namespace Yodii.Lab
             if( exists ) labPlugin.LivePluginInfo = null;
         }
         #endregion
+
 
     }
 

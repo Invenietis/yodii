@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Yodii.Model;
+using CK.Core;
 using Yodii.Engine.Tests.Mocks;
 
 namespace Yodii.Engine.Tests.ConfigurationSolverTests
@@ -774,7 +775,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckAllBlockingServicesAre( "ServiceAx1|ServiceAx2" );
+                   res.CheckAllBlockingServicesAre( "ServiceAx1,ServiceAx2" );
                } );
         }
 
@@ -816,7 +817,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             engine.FullStaticResolutionOnly( res =>
                {
-                   res.CheckAllBlockingServicesAre( "ServiceAx1|ServiceAx2" );
+                   res.CheckAllBlockingServicesAre( "ServiceA,ServiceAx1,ServiceAx2" );
                } );
         }
 
@@ -1127,6 +1128,185 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
 
+            return engine;
+        }
+
+        [Test]
+        public void InvalidRunnableTryStartReference()
+        {
+            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\InvalidRunnableTryStartReference.png
+            var e = CreateInvalidRunnableTryStartReference();
+            e.FullStaticResolutionOnly( res =>
+            {
+                Assert.That( res.StaticFailureResult, Is.Not.Null );
+                //res.CheckAllBlockingPluginsAre("Plugin1, Plugin17, Plugin19, Plugin20, Plugin8");
+                //res.CheckAllBlockingServicesAre( "Service1.2" );
+            } );
+        }
+
+        internal static YodiiEngine CreateInvalidRunnableTryStartReference()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph008() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Plugin1", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin3", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin4", ConfigurationStatus.Running );
+            cl.Items.Add( "Plugin6", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin8", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin9", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin10", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin14", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Plugin17", ConfigurationStatus.Running );
+            cl.Items.Add( "Plugin19", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin20", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Plugin24", ConfigurationStatus.Disabled );
+
+            cl.Items.Add( "Service2", ConfigurationStatus.Disabled );
+            cl.Items.Add( "Service2.1", ConfigurationStatus.Running );
+            cl.Items.Add( "Service1.1", ConfigurationStatus.Running );
+            cl.Items.Add( "Service1.2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Service1.1.2", ConfigurationStatus.Runnable );
+            cl.Items.Add( "Service1.1.3", ConfigurationStatus.Runnable );
+
+            return engine;
+        }
+
+        [Test]
+        public void ValidOptionalReferences()
+        {
+            #region graph
+            /*
+            *                  +--------+                            
+            *      +-----------|Service1+                            
+            *      |           |Running |                            
+            *      |           +---+----+                            
+            *      |               |                                 
+            *      |               |                                 
+            *      |               |                                 
+            *  +---+-----+         |                                 
+            *  |Plugin1  |     +---+-----+                           
+            *  |Optional |     |Plugin2  |                           
+            *  +----+----+     |Optional |-----------------------+ 
+            *       |          +---------+                       |
+            *       |                                            |
+            *       |                                            |
+            *       |                                            |
+            *       |                                            |
+            *       |Optional                                    |
+             *      |                                            |
+            *       |                                            |
+             *      |                                            |
+            *       |                              +---------+   |          
+            *       |                              |Service2 |<--+         
+            *       |       +----------------------|Optional |             
+            *       |       |                       +---+----+               
+            *       |       |                          |                       
+            *       |       |                          |                   
+            *       |   +---+-------+             +----+------+            
+            *       |   |Service2.1 |             |Service2.2 |        
+            *       +-->|Optional   |             |Optional   |        
+            *           +-----------+             +-----+-----+            
+            *               |                           |            
+            *               |                           |            
+            *               |                         +--+-----+
+            *               |                         |Plugin4 |
+            *            +--+-----+                   |Optional|
+            *            |Plugin3 |                   +--------+
+            *            |Optional|          
+            *            +--------+          
+            *                           
+            *                           
+            *                                                        
+            */
+            #endregion
+
+            var e = CreateValidOptionalReferences();
+            e.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+            } );
+        }
+
+        internal static YodiiEngine CreateValidOptionalReferences()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005e() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+
+            return engine;
+        }
+
+        [Test]
+        public void ValidOptionalTryStartReferences()
+        {
+            #region graph
+            /*
+            *                  +--------+                            +--------+
+            *      +-----------|Service1+                            |Service2|---------------+
+            *      |           |Running |                            |Running |               |      
+            *      |           +---+----+                            +----+---+               |      
+            *      |               |                                      |                   |      
+            *      |               |                                      |                   |      
+            *      |               |                                      |                   |      
+            *  +---+-----+         |                                      |                   |      
+            *  |Plugin1  |     +---+-----+                            +---+-----+         +---+-----+
+            *  |Optional |     |Plugin2  |                            |Plugin3  |         |Plugin4  +--------------------+
+            *  +----+----+     |Optional |------------------------+   |Optional |         |Optional |                    | 
+            *       |          +---------+                        |   +---------+         +---------+                    | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+             *      |                   |                         |       |                                              | 
+            *       |                   |                         |       |                                              | 
+            *       |                   |           +--------+    |       |                                              |          
+            *       |                   |           |Service3+    |       |                   +--------+                 |          
+            *       |       +-----------|-----------|Optional|    |       |                   |Service4+                 |          
+            *       |       |           |           +---+----+    |       |       +-----------|Optional|-------+         |            
+            *       |       |           |               |         |       |       |           +---+----+       |         |               
+            *       |       |           |               |         |       |       |                            |         |           
+            *       |   +---+-------+   |          +----+------+  |       |       |                            |         |           
+            *       |   |Service3.1 |   |          |Service3.2 |  |       |    +--+--------+             +-----+-----+   |       
+            *       +-->|Optional   |   |          |Optional   |  +-------|--->|Service4.1 |             |Service4.2 |   |       
+             *          +-----------+   |          +-----+-----+          |    |Optional   |             |Optional   |<--+       
+             *              |           |                |                |    +-----------+             +-----+-----+     
+             *              |           |                |                |        |                           |           
+             *          +---+-------+   +--------->+-----+-----+          |        |                           |
+             *          |Service3.3 |              |Service3.4 |          | +---+-------+              +----+------+  
+             *          |Optional   |              |Optional   |          +>|Service4.3 |              |Service4.4 |  
+             *          +--+--------+              +-----------+            |Optional   |              |Optional   |  
+             *             |                            |                   +--+--------+              +-----------+ 
+             *             |                            |                      |                            |
+             *             |                            |                      |                            |
+             *          +--+-----+                  +---+----+                 |                            |
+             *          |Plugin5 |                  |Plugin6 |              +--+-----+                  +---+----+
+             *          |Optional|                  |Optional|              |Plugin7 |                  |Plugin8 |
+             *          +--------+                  +--------+              |Optional|                  |Optional|
+             *                                                              +--------+                  +--------+
+            */
+            #endregion
+
+            YodiiEngine engine = CreateValidOptionalTryStartReferences();
+
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();               
+            } );
+        }
+
+        internal static YodiiEngine CreateValidOptionalTryStartReferences()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005f() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+            cl.Items.Add( "Service2", ConfigurationStatus.Running );
             return engine;
         }
     }

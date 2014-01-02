@@ -51,6 +51,9 @@ namespace Yodii.Model
         /// </summary>
         FullStart = 5, 
 
+        /// <summary>
+        /// Flags "Try Only" impacts.
+        /// </summary>
         IsTryOnly = 8,
 
         /// <summary>

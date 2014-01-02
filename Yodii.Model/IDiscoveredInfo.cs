@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Interface containing all ServiceInfos discovered on a system.
+    /// Container for Plugins and Services discovered on a system.
     /// </summary>
     public interface IDiscoveredInfo
     {

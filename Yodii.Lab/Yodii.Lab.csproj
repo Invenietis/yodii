@@ -42,12 +42,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=3.0.2.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core">
+      <HintPath>..\packages\CK.Core.3.0.5-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CK.GraphX">
-      <HintPath>..\packages\CK.GraphX.1.0.1\lib\net40\CK.GraphX.dll</HintPath>
+    <Reference Include="CK.GraphX, Version=1.0.5.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.GraphX.1.0.5\lib\net40\CK.GraphX.dll</HintPath>
     </Reference>
     <Reference Include="Fluent">
       <HintPath>..\packages\Fluent.Ribbon.2.0.2\lib\net40\Fluent.dll</HintPath>
@@ -121,7 +121,6 @@
       <DependentUpon>CreateConfigurationLayerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="DebugExtensions\DebugExtensions.cs" />
-    <Compile Include="Graph elements\GraphUpdateRequestEventArgs.cs" />
     <Compile Include="Graph elements\YodiiGraph.cs" />
     <Compile Include="Graph elements\YodiiGraphEdge.cs" />
     <Compile Include="Graph elements\YodiiGraphEdgeType.cs" />
@@ -135,6 +134,12 @@
     <Compile Include="NotificationsHolder\Notification.cs" />
     <Compile Include="NotificationsHolder\NotificationsContainerUserControl.xaml.cs">
       <DependentUpon>NotificationsContainerUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RecentFile.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="UI Elements\PluginPropertyPanel.xaml.cs">
       <DependentUpon>PluginPropertyPanel.xaml</DependentUpon>
@@ -151,6 +156,7 @@
     <Compile Include="Utils\IntegerToBoolConverter.cs" />
     <Compile Include="Utils\IntegerToVisibilityConverter.cs" />
     <Compile Include="Utils\InverseBooleanConverter.cs" />
+    <Compile Include="Utils\NullToVisibilityValueConverter.cs" />
     <Compile Include="Utils\ServiceOrPluginIdToDescriptionConverter.cs" />
     <Compile Include="Utils\EnumToBooleanConverter.cs" />
     <Compile Include="Utils\NullToBoolValueConverter.cs" />
@@ -166,6 +172,7 @@
     <Compile Include="Utils\ViewModelBase.cs" />
     <Compile Include="VertexPropertiesTemplateSelector.cs" />
     <Compile Include="XmlSerializingUtils\LabXmlSerialization.cs" />
+    <Compile Include="YodiiLayout.cs" />
     <Page Include="AddPluginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -227,11 +234,6 @@
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
@@ -241,7 +243,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.config" />
     <None Include="app.manifest" />
+    <None Include="Assets\Icons\Visual Studio 2012 Image Library EULA.docx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -250,13 +254,13 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\column_32xLG.png" />
+    <Resource Include="Assets\Icons\column_32xLG.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\database_32xLG.png" />
+    <Resource Include="Assets\Icons\database_32xLG.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\Symbols_Critical_32xLG.png" />
+    <Resource Include="Assets\Icons\Symbols_Critical_32xLG.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
@@ -272,14 +276,14 @@
     <Resource Include="Assets\ModernUiLicense.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\PropertyIcon.png" />
+    <Resource Include="Assets\Icons\PropertyIcon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\action_add_16xLG.png" />
+    <Resource Include="Assets\Icons\action_add_16xLG.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\class_32xLG.png" />
-    <Resource Include="Icons\interface_16xLG.png" />
+    <Resource Include="Assets\Icons\class_32xLG.png" />
+    <Resource Include="Assets\Icons\interface_16xLG.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="DefaultState\DefaultState.xml" />
@@ -288,10 +292,19 @@
     <Folder Include="DesignModel\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\RunningStatusDisabled.png" />
-    <Resource Include="Assets\RunningStatusRunning.png" />
-    <Resource Include="Assets\RunningStatusRunningLocked.png" />
-    <Resource Include="Assets\RunningStatusStopped.png" />
+    <Resource Include="Assets\Icons\RunningStatusDisabled.png" />
+    <Resource Include="Assets\Icons\RunningStatusRunning.png" />
+    <Resource Include="Assets\Icons\RunningStatusRunningLocked.png" />
+    <Resource Include="Assets\Icons\RunningStatusStopped.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\NewDocument_32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\Folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\base_floppydisk_32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" />

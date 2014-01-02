@@ -21,7 +21,7 @@ namespace Yodii.Engine
 
             public override void Refresh()
             {
-                Refresh( Service.TotalAvailablePluginCount );
+                Refresh( Service.TotalAvailablePluginCount, Service.AvailablePluginCount, Service.AvailableServiceCount );
             }
 
             protected override bool IsValidPlugin( PluginData p )
@@ -51,10 +51,19 @@ namespace Yodii.Engine
                         return false;
                     }
                 }
+                else if( TheOnlyService != null )
+                {
+                    if( !TheOnlyService.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromServiceToSingleSpecialization ) )
+                    {
+                        if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToSingleSpecializationFailed );
+                        else Service._configDisabledReason = ServiceDisabledReason.PropagationToSingleSpecializationFailed;
+                        return false;
+                    }
+                }
                 else
                 {
                     StartDependencyImpact impact = Service.ConfigSolvedImpact;
-                    if( impact == StartDependencyImpact.Unknown ) impact = StartDependencyImpact.Minimal; 
+                    Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 );
 
                     foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
                     {
@@ -94,17 +103,19 @@ namespace Yodii.Engine
         {
             get 
             { 
-                return FinalConfigSolvedStatus <= ConfigurationStatus.Runnable 
-                        || !Family.AllPluginsHaveBeenAdded 
-                        || Family.RunningPlugin != null 
-                        || (Family.RunningService != null && this.IsStrictGeneralizationOf( Family.RunningService )); 
+                return Disabled
+                        || Family.Solver.Step < ConfigurationSolverStep.OnAllPluginsAdded 
+                        || Family.RunningPlugin != null; 
             }
         }
 
         public bool PropagateSolvedStatus()
         {
-            var p = GetUsefulPropagationInfo();
-            if( p != null ) return p.PropagateSolvedStatus();
+            if( ConfigSolvedStatus >= ConfigurationStatus.Runnable )
+            {
+                var p = GetUsefulPropagationInfo();
+                if( p != null ) return p.PropagateSolvedStatus();
+            }
             return true;
         }
 
@@ -112,7 +123,7 @@ namespace Yodii.Engine
         {
             if( Family.Solver.Step == ConfigurationSolverStep.InitializeFinalStartableStatus )
             {
-                if( Disabled || FinalConfigSolvedStatus == ConfigurationStatus.Running ) return null;
+                if( Disabled ) return null;
             }
             else if( PropagationIsUseless ) return null;
             if( _propagation == null ) _propagation = new StaticPropagation( this );

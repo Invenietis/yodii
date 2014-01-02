@@ -26,8 +26,11 @@
                     Property="VerticalAlignment"
                     Value="Center" />
                 <Setter
+                    Property="HorizontalAlignment"
+                    Value="Center" />
+                <Setter
                     Property="FontWeight"
-                    Value="ExtraBlack" />
+                    Value="Bold" />
                 <Setter
                     Property="FontSize"
                     Value="12pt" />

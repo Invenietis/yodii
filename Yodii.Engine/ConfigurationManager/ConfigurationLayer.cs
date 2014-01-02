@@ -38,11 +38,11 @@ namespace Yodii.Engine
             get { return _layerName; }
             set
             {
-                if ( String.IsNullOrWhiteSpace( value ) ) value = String.Empty;
-                if ( _layerName != value )
+                if( String.IsNullOrWhiteSpace( value ) ) value = String.Empty;
+                if( _layerName != value )
                 {
                     _layerName = value;
-                    if ( _owner != null ) _owner.OnLayerNameChanged( this );
+                    if( _owner != null ) _owner.OnLayerNameChanged( this );
                     NotifyPropertyChanged();
                 }
             }
@@ -184,7 +184,7 @@ namespace Yodii.Engine
                     }
                     return result;
                 }
-                return new YodiiEngineResult( new ConfigurationFailureResult("Item not found"), _layer._owner != null ? _layer._owner.Engine : null );
+                return new YodiiEngineResult( new ConfigurationFailureResult( "Item not found" ), _layer._owner != null ? _layer._owner.Engine : null );
             }
 
             public int Count

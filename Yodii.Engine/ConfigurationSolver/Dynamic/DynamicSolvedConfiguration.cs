@@ -12,12 +12,14 @@ namespace Yodii.Engine
     {
         readonly IReadOnlyList<IDynamicSolvedPlugin> _plugins;
         readonly IReadOnlyList<IDynamicSolvedService> _services;
+        readonly IReadOnlyList<IDynamicSolvedYodiiItem> _items;
 
         internal DynamicSolvedConfiguration( IReadOnlyList<IDynamicSolvedPlugin> plugins, IReadOnlyList<IDynamicSolvedService> services )
         {
             Debug.Assert(plugins != null && services != null);
             _plugins = plugins;
             _services = services;
+            _items = _services.Cast<IDynamicSolvedYodiiItem>().Concat( _plugins ).ToReadOnlyList();
         }
 
         public IReadOnlyList<IDynamicSolvedPlugin> Plugins
@@ -30,9 +32,19 @@ namespace Yodii.Engine
             get { return _services; }
         }
 
-        public IDynamicSolvedService FindService( string fullName )
+        public IReadOnlyList<IDynamicSolvedYodiiItem> YodiiItems
         {
-            return _services.FirstOrDefault( s => s.ServiceInfo.ServiceFullName == fullName);
+            get { return _items; }
+        }
+
+        public IDynamicSolvedYodiiItem FindItem( string fullName )
+        {
+            return (IDynamicSolvedYodiiItem)FindService( fullName ) ?? FindPlugin( fullName );
+        }
+
+        public IDynamicSolvedService FindService( string serviceFullName )
+        {
+            return _services.FirstOrDefault( s => s.ServiceInfo.ServiceFullName == serviceFullName);
         }
 
         public IDynamicSolvedPlugin FindPlugin( string pluginFullName )

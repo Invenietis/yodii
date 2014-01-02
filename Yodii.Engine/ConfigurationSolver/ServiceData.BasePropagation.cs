@@ -14,33 +14,51 @@ namespace Yodii.Engine
     {
         internal abstract class BasePropagation
         {
-            readonly HashSet<ServiceData>[] _inclServices;
-            readonly HashSet<ServiceData>[] _exclServices;
+            readonly IEnumerable<ServiceData>[] _inclServices;
+            readonly IEnumerable<ServiceData>[] _exclServices;
             PluginData _theOnlyPlugin;
+            ServiceData _theOnlyService;
+            int _nbTotalAvailablePlugins;
             int _nbAvailablePlugins;
+            int _nbAvailableServices;
 
+            /// <summary>
+            /// Initializes a new StaticPropagation.
+            /// </summary>
             protected BasePropagation( ServiceData s )
             {
                 Service = s;
-                _inclServices = new HashSet<ServiceData>[10];
-                _exclServices = new HashSet<ServiceData>[5];
+                _inclServices = new IEnumerable<ServiceData>[10];
+                _exclServices = new IEnumerable<ServiceData>[5];
+                _nbTotalAvailablePlugins = -1;
                 _nbAvailablePlugins = -1;
+                _nbAvailableServices = -1;
             }
 
+            /// <summary>
+            /// Initializes a new DynamicPropagation based on the StaticPropagation.
+            /// </summary>
             protected BasePropagation( BasePropagation staticPropagation )
                 : this( staticPropagation.Service )
             {
                 Service = staticPropagation.Service;
-                Copy( staticPropagation._inclServices, _inclServices );
-                Copy( staticPropagation._exclServices, _exclServices );
-                _nbAvailablePlugins = -1;
+                _nbTotalAvailablePlugins = staticPropagation._nbTotalAvailablePlugins;
+                _nbAvailablePlugins = staticPropagation._nbAvailablePlugins;
+                _nbAvailableServices = staticPropagation._nbAvailableServices;
+                _theOnlyPlugin = staticPropagation._theOnlyPlugin;
+                _theOnlyService = staticPropagation._theOnlyService;
+                if( _theOnlyPlugin != null && _theOnlyService != null )
+                {
+                    Copy( staticPropagation._inclServices, _inclServices );
+                    Copy( staticPropagation._exclServices, _exclServices );
+                }
             }
 
-            static void Copy( HashSet<ServiceData>[] source, HashSet<ServiceData>[] dest )
+            static void Copy( IEnumerable<ServiceData>[] source, IEnumerable<ServiceData>[] dest )
             {
                 for( int i = 0; i < source.Length; ++i )
                 {
-                    dest[i] = source[i] != null ? new HashSet<ServiceData>( source[i] ) : null;
+                    dest[i] = source[i] != null ? source[i].ToReadOnlyList() : null;
                 }
             }
 
@@ -48,32 +66,45 @@ namespace Yodii.Engine
 
             public PluginData TheOnlyPlugin { get { return _theOnlyPlugin; } }
 
-            protected void Refresh( int nbAvalaiblePlugins )
+            public ServiceData TheOnlyService { get { return _theOnlyService; } }
+
+            protected void Refresh( int nbTotalAvalaiblePlugins, int nbAvailablePlugins, int nbAvailableServices )
             {
-                if( _nbAvailablePlugins == nbAvalaiblePlugins ) return;
-                _nbAvailablePlugins = nbAvalaiblePlugins;
-                Debug.Assert( _nbAvailablePlugins >= 1 );
+                if( _nbTotalAvailablePlugins == nbTotalAvalaiblePlugins 
+                    && _nbAvailablePlugins == nbAvailablePlugins
+                    && _nbAvailableServices == nbAvailableServices ) return;
+
+                _nbTotalAvailablePlugins = nbTotalAvalaiblePlugins;
+                _nbAvailablePlugins = nbAvailablePlugins;
+                _nbAvailableServices = nbAvailableServices;
+
+                Debug.Assert( _nbTotalAvailablePlugins >= 1 );
                 _theOnlyPlugin = null;
+                _theOnlyService = null;
                 Array.Clear( _inclServices, 0, 10 );
                 Array.Clear( _exclServices, 0, 5 );
                 // Retrieves the potential only plugin.
-                if( _nbAvailablePlugins == 1 )
+                if( _nbTotalAvailablePlugins == 1 )
                 {
-                    ServiceData spec = Service.FirstSpecialization;
-                    while( spec != null )
+                    if( _nbAvailablePlugins == 0 )
                     {
-                        if( IsValidSpecialization( spec ) )
+                        ServiceData spec = Service.FirstSpecialization;
+                        while( spec != null )
                         {
-                            BasePropagation propSpec = GetPropagationInfo( spec );
-                            if( propSpec.TheOnlyPlugin != null )
+                            if( IsValidSpecialization( spec ) )
                             {
-                                Debug.Assert( _theOnlyPlugin == null );
-                                _theOnlyPlugin = propSpec.TheOnlyPlugin;
+                                BasePropagation propSpec = GetPropagationInfo( spec );
+                                Debug.Assert( propSpec != null );
+                                if( propSpec.TheOnlyPlugin != null )
+                                {
+                                    Debug.Assert( _theOnlyPlugin == null );
+                                    _theOnlyPlugin = propSpec.TheOnlyPlugin;
+                                }
                             }
+                            spec = spec.NextSpecialization;
                         }
-                        spec = spec.NextSpecialization;
                     }
-                    if( _theOnlyPlugin == null )
+                    else
                     {
                         PluginData p = Service.FirstPlugin;
                         while( p != null )
@@ -86,9 +117,23 @@ namespace Yodii.Engine
                             p = p.NextPluginForService;
                         }
                     }
+                    Debug.Assert( _theOnlyPlugin != null && IsValidPlugin( _theOnlyPlugin ) );
                 }
-                Debug.Assert( _theOnlyPlugin == null || IsValidPlugin( _theOnlyPlugin ) );
-                Debug.Assert( (_nbAvailablePlugins == 1) == (_theOnlyPlugin != null) );
+                else if( _nbAvailablePlugins == 0 && _nbAvailableServices == 1 )
+                {
+                    ServiceData spec = Service.FirstSpecialization;
+                    while( spec != null )
+                    {
+                        if( IsValidSpecialization( spec ) )
+                        {
+                            Debug.Assert( _theOnlyService == null );
+                            _theOnlyService = spec;
+                        }
+                        spec = spec.NextSpecialization;
+                    }
+                    Debug.Assert( _theOnlyService != null && IsValidSpecialization( _theOnlyService ) );
+                }
+                Debug.Assert( (_nbTotalAvailablePlugins == 1) == (_theOnlyPlugin != null) );
             }
 
             public abstract void Refresh();
@@ -102,9 +147,12 @@ namespace Yodii.Engine
             public IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact )
             {
                 if( _theOnlyPlugin != null ) return _theOnlyPlugin.GetExcludedServices( impact );
-                HashSet<ServiceData> excl = _exclServices[(int)impact - 1];
-                if( excl == null )
+                if( _theOnlyService != null ) return GetPropagationInfo( _theOnlyService ).GetExcludedServices( impact );
+
+                IEnumerable<ServiceData> exclExist = _exclServices[(int)impact - 1];
+                if( exclExist == null )
                 {
+                    HashSet<ServiceData> excl = null;
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
@@ -126,22 +174,24 @@ namespace Yodii.Engine
                         }
                         p = p.NextPluginForService;
                     }
-                    _exclServices[(int)impact - 1] = excl;
+                    _exclServices[(int)impact - 1] = exclExist = excl ?? Enumerable.Empty<ServiceData>();
                 }
-                return excl;
+                return exclExist;
             }
 
             public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
             {
                 if( _theOnlyPlugin != null ) return _theOnlyPlugin.GetIncludedServices( impact, forRunnableStatus );
-                
+                if( _theOnlyService != null ) return GetPropagationInfo( _theOnlyService ).GetIncludedServices( impact, forRunnableStatus );
+               
                 int iImpact = (int)impact;
                 if( forRunnableStatus ) iImpact *= 2;
                 --iImpact;
-                
-                HashSet<ServiceData> incl = _inclServices[iImpact];
-                if( incl == null )
+
+                IEnumerable<ServiceData> inclExist = _inclServices[iImpact];
+                if( inclExist == null )
                 {
+                    HashSet<ServiceData> incl = null;
                     ServiceData spec = Service.FirstSpecialization;
                     while( spec != null )
                     {
@@ -163,9 +213,9 @@ namespace Yodii.Engine
                         }
                         p = p.NextPluginForService;
                     }
-                    _inclServices[iImpact] = incl;
+                    _inclServices[iImpact] = inclExist = incl ?? Service.InheritedServicesWithThis;
                 }
-                return incl;
+                return inclExist;
             }
         }        
     }

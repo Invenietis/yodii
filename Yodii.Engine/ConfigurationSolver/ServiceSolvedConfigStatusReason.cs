@@ -42,6 +42,7 @@ namespace Yodii.Engine
         FromRunningPlugin,
         FromSpecialization,
         FromServiceToMultipleServices,
-        FromPropagation
+        FromPropagation,
+        FromServiceToSingleSpecialization
     }
 }

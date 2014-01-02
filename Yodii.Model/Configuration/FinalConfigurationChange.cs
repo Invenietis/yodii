@@ -34,6 +34,11 @@ namespace Yodii.Model
         /// <summary>
         /// A layer was removed.
         /// </summary>
-        LayerRemoved
+        LayerRemoved,
+
+        /// <summary>
+        /// The whole configuration has been cleared.
+        /// </summary>
+        Cleared
     }
 }

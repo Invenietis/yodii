@@ -39,8 +39,9 @@
     <AssemblyOriginatorKeyFile>SharedKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core">
-      <HintPath>..\packages\CK.Core.3.0.2-develop\lib\net40\CK.Core.dll</HintPath>
+    <Reference Include="CK.Core, Version=3.0.5.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Core.3.0.5-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
@@ -62,6 +63,9 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Yodii.Lab.Tests\EquivalenceExtensions.cs">
+      <Link>EquivalenceExtensions.cs</Link>
+    </Compile>
     <Compile Include="Extensions\ConfigurationManagerExtensions.cs" />
     <Compile Include="Tests\ConfigurationManagerTests.cs" />
     <Compile Include="Tests\ConfigurationSolverTests\DynamicConfigurationTests.cs" />
@@ -71,6 +75,13 @@
     <Compile Include="Tests\ConfigurationSolverTests\CurrentFailure\CurrentFailureTests.cs" />
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
     <Compile Include="Extensions\DynamicTestExtensions.cs" />
+    <Compile Include="LiveInfoNotificationsTests.cs" />
+    <Compile Include="Mocks\MockXmlUtils.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Mocks\DiscoveredInfo.cs" />
     <Compile Include="Mocks\AssemblyInfo.cs" />
     <Compile Include="Mocks\MockInfoFactory.cs" />
@@ -80,6 +91,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
     <Compile Include="Tests\YodiiEngineTests.cs" />
+    <Compile Include="XmlDeserializationTests.cs" />
+    <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
@@ -100,6 +113,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png" />
+    <None Include="Resources\BaseGraph4.xml" />
+    <None Include="Resources\Graph005.xml" />
+    <Resource Include="Resources\Valid001a.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TestData\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,8 +1,10 @@
 ﻿<Notifications
     xmlns="clr-namespace:Yodii.Lab">
     <Notification
-        Id="5"
-        Title="Notification #5" />
+        Id="0"
+        Title="Plugin running"
+        Message="Plugin 'Plugin.A1' is now running."
+        ImageUrl="/Yodii.Lab;component/Assets/RunningStatusRunning.png"/>
     <Notification
         Id="1"
         Title="Notification #1"

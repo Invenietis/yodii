@@ -35,13 +35,13 @@ namespace Yodii.Model
     {
         /// <summary>
         /// Whether this item is on error.
-        /// Typically an error occured during the discovery phasis.
+        /// Typically an error occurred during the discovery phase.
         /// </summary>
         bool HasError { get; }
 
         /// <summary>
         /// Gets the error message associated to this item.
-        /// Typically an error that happened during the discovery phasis.
+        /// Typically an error that happened during the discovery phase.
         /// </summary>
         string ErrorMessage { get; }
     }

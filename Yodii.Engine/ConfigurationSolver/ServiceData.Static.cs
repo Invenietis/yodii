@@ -7,10 +7,10 @@ using Yodii.Model;
 using CK.Core;
 
 namespace Yodii.Engine
-{   
-    internal partial class ServiceData
+{
+    internal partial class ServiceData : IYodiiItemData
     {
-        ServiceData[] _directExcludedServices;
+        ServiceData[] _inheritedServicesWithThis;
         ServiceDisabledReason _configDisabledReason;
         
         ConfigurationStatus _configSolvedStatus;
@@ -21,11 +21,9 @@ namespace Yodii.Engine
         
         ServiceData( IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact )
         {
-            _directExcludedServices = Util.EmptyArray<ServiceData>.Empty;
             _backReferences = new List<BackReference>();
             ServiceInfo = s;
             ConfigOriginalStatus = serviceStatus;
-
             RawConfigSolvedImpact = ConfigOriginalImpact = impact;
             if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Generalization != null )
             {
@@ -47,16 +45,23 @@ namespace Yodii.Engine
             : this( s, serviceStatus, impact )
         {
             Family = generalization.Family;
+            _inheritedServicesWithThis = new ServiceData[generalization._inheritedServicesWithThis.Length + 1];
+            generalization._inheritedServicesWithThis.CopyTo( _inheritedServicesWithThis, 0 );
+            _inheritedServicesWithThis[_inheritedServicesWithThis.Length - 1] = this;
             Generalization = generalization;
             NextSpecialization = Generalization.FirstSpecialization;
             Generalization.FirstSpecialization = this;
             Initialize();
+            if( !Disabled ) 
+                for( int i = 0; i < _inheritedServicesWithThis.Length - 1; ++i ) 
+                    ++_inheritedServicesWithThis[i].AvailableServiceCount;
         }
 
         internal ServiceData( IConfigurationSolver solver, IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
             : this( s, serviceStatus, impact )
         {
             Family = new ServiceFamily( solver, this );
+            _inheritedServicesWithThis = new ServiceData[] { this };
             Initialize();
         }
 
@@ -76,6 +81,7 @@ namespace Yodii.Engine
             {
                 _configDisabledReason = ServiceDisabledReason.GeneralizationIsDisabledByConfig;
             }
+
             if( Disabled )
             {
                 _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
@@ -83,6 +89,10 @@ namespace Yodii.Engine
             else if( ConfigOriginalStatus == ConfigurationStatus.Running )
             {
                 Family.SetRunningService( this, ServiceSolvedConfigStatusReason.Config );
+            }
+            else if( Family.RunningService != null && !Family.RunningService.IsStrictGeneralizationOf( this ) )
+            {
+                _configDisabledReason = ServiceDisabledReason.AnotherServiceIsRunningByConfig;
             }
         }
 
@@ -102,6 +112,14 @@ namespace Yodii.Engine
         public bool Disabled
         {
             get { return _configDisabledReason != ServiceDisabledReason.None; }
+        }
+
+        /// <summary>
+        /// Gets the inherited services including this one.
+        /// </summary>
+        public IEnumerable<ServiceData> InheritedServicesWithThis
+        {
+            get { return _inheritedServicesWithThis; }
         }
 
         /// <summary>
@@ -149,6 +167,11 @@ namespace Yodii.Engine
         }
 
         /// <summary>
+        /// Number of direct specialization that are not disabled.
+        /// </summary>
+        public int AvailableServiceCount;
+
+        /// <summary>
         /// Number of plugins for this exact service.
         /// </summary>
         public int PluginCount;
@@ -190,7 +213,7 @@ namespace Yodii.Engine
         /// </summary>
         internal IEnumerable<ServiceData> DirectExcludedServices
         {
-            get { return _directExcludedServices; }
+            get { return Family.AvailableServices.Where( s => !s.IsGeneralizationOf( this ) && !this.IsStrictGeneralizationOf( s ) ); }
         }
 
         /// <summary>
@@ -219,9 +242,9 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the first reason why this service is disabled. 
         /// </summary>
-        public ServiceDisabledReason DisabledReason
+        public string DisabledReason
         {
-            get { return _configDisabledReason; }
+            get { return _configDisabledReason == ServiceDisabledReason.None ? null : _configDisabledReason.ToString(); }
         }
 
         /// <summary>
@@ -262,6 +285,15 @@ namespace Yodii.Engine
             Debug.Assert( r != ServiceDisabledReason.None );
             Debug.Assert( _configDisabledReason == ServiceDisabledReason.None );
             _configDisabledReason = r;
+
+            for( int i = 0; i < _inheritedServicesWithThis.Length - 1; ++i )
+                --_inheritedServicesWithThis[i].AvailableServiceCount;
+
+            if( Family.Solver.Step > ConfigurationSolverStep.OnAllPluginsAdded )
+            {
+                Debug.Assert( Family.AvailableServices.Contains( this ) );
+                Family.AvailableServices.Remove( this );
+            }
             ServiceData spec = FirstSpecialization;
             while( spec != null )
             {
@@ -279,6 +311,7 @@ namespace Yodii.Engine
                 PluginDisabledReason reason = backRef.PluginData.GetDisableReasonForDisabledReference( backRef.Requirement );
                 if( reason != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( reason );
             }
+            Debug.Assert( Family.RunningService != this || _inheritedServicesWithThis.All( s => s.Disabled ), "If we were the RunningService, no one else is running." );
         }
 
         internal bool SetSolvedStatus( ConfigurationStatus status, ServiceSolvedConfigStatusReason reason )
@@ -342,7 +375,7 @@ namespace Yodii.Engine
             while( g != null );
         }
 
-        internal void OnAllPluginsAdded()
+        internal void OnAllPluginsAdded( Action<ServiceData> availableServiceCollector )
         {
             Debug.Assert( !Disabled, "Must NOT be called on already disabled service." );
 
@@ -358,31 +391,13 @@ namespace Yodii.Engine
 
             if( !Disabled )
             {
-                // Build the directly excluded services before calling OnAllPluginsAdded on specializations.
-                List<ServiceData> excl = null;
-                if( Generalization != null )
-                {
-                    if( Generalization._directExcludedServices.Length > 0 ) excl = new List<ServiceData>( Generalization._directExcludedServices.Where( s => !s.Disabled ) );
-                    ServiceData sibling = Generalization.FirstSpecialization;
-                    while( sibling != null )
-                    {
-                        if( sibling != this && !sibling.Disabled )
-                        {
-                            if( excl == null ) excl = new List<ServiceData>();
-                            excl.Add( sibling );
-                        }
-                        sibling = sibling.NextSpecialization;
-                    }
-                    if( excl != null ) _directExcludedServices = excl.Where( s => !s.Disabled ).ToArray();
-                }
-
+                availableServiceCollector( this );
                 ServiceData spec = FirstSpecialization;
                 while( spec != null )
                 {
-                    if( !spec.Disabled ) spec.OnAllPluginsAdded();
+                    if( !spec.Disabled ) spec.OnAllPluginsAdded( availableServiceCollector );
                     spec = spec.NextSpecialization;
                 }
-
                 Debug.Assert( !Disabled );
                 Family.Solver.DeferPropagation( this );
             }
@@ -394,7 +409,7 @@ namespace Yodii.Engine
             if( p.Service == this ) ++DisabledPluginCount;
             ++TotalDisabledPluginCount;
             if( Generalization != null ) Generalization.OnPluginDisabled( p );
-            if( !Disabled && Family.AllPluginsHaveBeenAdded )
+            if( !Disabled && Family.Solver.Step >= ConfigurationSolverStep.OnAllPluginsAdded )
             {
                 if( TotalAvailablePluginCount == 0 )
                 {
@@ -404,10 +419,14 @@ namespace Yodii.Engine
             }
         }
 
+        internal FinalConfigStartableStatus FinalStartableStatus
+        {
+            get { return _finalConfigStartableStatus; }
+        }
+        
         internal void InitializeFinalStartableStatus()
         {
-            ConfigurationStatus final = FinalConfigSolvedStatus;
-            if( final == ConfigurationStatus.Optional || final == ConfigurationStatus.Runnable )
+            if( !Disabled )
             {
                 _finalConfigStartableStatus = new FinalConfigStartableStatus( GetUsefulPropagationInfo() );
             }
@@ -460,5 +479,35 @@ namespace Yodii.Engine
                 spec = spec.NextSpecialization;
             }
         }
+
+        #region IYodiiItemData explicit implementation of properties
+
+        ConfigurationStatus IYodiiItemData.ConfigOriginalStatus
+        {
+            get { return ConfigOriginalStatus; }
+        }
+
+        string IYodiiItemData.DisabledReason
+        {
+            get { return DisabledReason; }
+        }
+
+        FinalConfigStartableStatus IYodiiItemData.FinalStartableStatus
+        {
+            get { return FinalStartableStatus; }
+        }
+
+        StartDependencyImpact IYodiiItemData.ConfigOriginalImpact
+        {
+            get { return ConfigOriginalImpact; }
+        }
+
+        StartDependencyImpact IYodiiItemData.RawConfigSolvedImpact
+        {
+            get { return RawConfigSolvedImpact; }
+        }
+
+        #endregion
+
     }
 }

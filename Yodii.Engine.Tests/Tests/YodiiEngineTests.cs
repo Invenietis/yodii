@@ -72,12 +72,9 @@ namespace Yodii.Engine.Tests
 
             Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).CurrentError, Is.Null );
             Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).CurrentError, Is.Null );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.EqualTo( "None" ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.Null );
 
             engine.Stop();
-
-            //il se passe quoi si on fait cela ?
-            //discoveredInfo = MockInfoFactory.CreateGraph005();
 
         }
     }

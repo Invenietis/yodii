@@ -9,27 +9,30 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Yodii resolution engine.
-    /// Generates a viable state for a Yodii host to be in, with a given configuration and
-    /// given host information about what plugins and services are available.
+    /// Yodii engine is the primary object of Yodii.
+    /// It is in charge of maintaining coherency among available plugins and services, their configuration and the evolution at runtime.
+    /// It exposes all relevant information to the external world thanks to its <see cref="LiveInfo"/>.
     /// </summary>
     public interface IYodiiEngine : INotifyPropertyChanged
     {
         /// <summary>
-        /// Host information about what plugins are available on the system.
+        /// Gets the current information about available plugins and services.
         /// </summary>
         IDiscoveredInfo DiscoveredInfo { get; }
 
         /// <summary>
-        /// Configuration manager.
+        /// Change the current set of <see cref="IPluginInfo"/> and <see cref="IServiceInfo"/>.
+        /// </summary>
+        /// <param name="dicoveredInfo">New discovered information to work with.</param>
+        /// <returns>Engine operation result.</returns>
+        IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
+
+        /// <summary>
+        /// Gets the configuration: gives access to static configuration that will 
+        /// necessarily be always satisfied.
         /// </summary>
         IConfigurationManager Configuration { get; }
         
-        /// <summary>
-        /// Currently active <see cref="YodiiCommand"/> on the engine.
-        /// </summary>
-        IObservableReadOnlyList<YodiiCommand> YodiiCommands { get; }
-
         /// <summary>
         /// Live information about the running services and plugins, when the engine is started.
         /// </summary>
@@ -53,11 +56,19 @@ namespace Yodii.Model
         void Stop();
         
         /// <summary>
-        /// Change the current set of <see cref="IPluginInfo"/> and <see cref="IServiceInfo"/>.
+        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
         /// </summary>
-        /// <param name="dicoveredInfo">Discovered information to work with.</param>
-        /// <returns>Engine start result.</returns>
-        IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
+        /// <returns>
+        /// <para>
+        /// The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an 
+        /// available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.
+        /// </para>
+        /// <para>
+        /// This method is useful only for advanced scenarios (for instance before starting the engine).
+        /// </para>
+        /// </returns>
+        IYodiiEngineStaticOnlyResult StaticResolutionOnly();
 
     }
 }

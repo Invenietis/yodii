@@ -8,7 +8,7 @@ using CK.Core;
 
 namespace Yodii.Engine
 {
-    partial class PluginData : IServiceDependentObject
+    partial class PluginData : IServiceDependentObject, IYodiiItemData
     {
         readonly IConfigurationSolver _solver;
         IReadOnlyList<ServiceData> _runningIncludedServices;
@@ -60,25 +60,29 @@ namespace Yodii.Engine
                     _configDisabledReason = PluginDisabledReason.AnotherRunningPluginExistsInFamilyByConfig;
                 }
             }
-            // Register Runnable references to Services from this plugin.
-            foreach( var sRef in PluginInfo.ServiceReferences )
+            // Immediately check for Runnable references to Disabled Services: this disables us.
+            if( !Disabled )
             {
-                if( sRef.Requirement >= DependencyRequirement.Runnable )
+                foreach( var sRef in PluginInfo.ServiceReferences )
                 {
-                    // If the required service is already disabled, we immediately disable this plugin.
-                    if( sRef.Reference.HasError )
+                    if( sRef.Requirement >= DependencyRequirement.Runnable )
                     {
-                        SetDisabled( PluginDisabledReason.RunnableReferenceServiceIsOnError );
-                        break;
-                    }
-                    ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                    if( sr.Disabled )
-                    {
-                        SetDisabled( PluginDisabledReason.RunnableReferenceIsDisabled );
-                        break;
+                        // If the required service is already disabled, we immediately disable this plugin.
+                        if( sRef.Reference.HasError && !Disabled )
+                        {
+                            _configDisabledReason = PluginDisabledReason.RunnableReferenceServiceIsOnError;
+                            break;
+                        }
+                        ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                        if( sr.Disabled && !Disabled )
+                        {
+                            _configDisabledReason = PluginDisabledReason.RunnableReferenceIsDisabled;
+                            break;
+                        }
                     }
                 }
             }
+            if( Service != null ) Service.AddPlugin( this );
             if( !Disabled  )
             {
                 // If the plugin is not yet disabled, we register it:
@@ -88,13 +92,9 @@ namespace Yodii.Engine
                 {
                     _solver.FindExistingService( sRef.Reference.ServiceFullName ).RegisterPluginReference( this, sRef.Requirement );
                 }
-                if( Service != null )
+                if( Service != null && ConfigOriginalStatus == ConfigurationStatus.Running )
                 {
-                    if( ConfigOriginalStatus == ConfigurationStatus.Running )
-                    {
-                        Service.Family.SetRunningPlugin( this );
-                    }
-                    Service.AddPlugin( this );
+                    Service.Family.SetRunningPlugin( this );
                 }
             }
         }
@@ -175,9 +175,9 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the first reason why this plugin is disabled. 
         /// </summary>
-        public PluginDisabledReason DisabledReason
+        internal string DisabledReason
         {
-            get { return _configDisabledReason; }
+            get { return _configDisabledReason == PluginDisabledReason.None ? null : _configDisabledReason.ToString(); }
         }
 
         internal void SetDisabled( PluginDisabledReason r )
@@ -231,10 +231,14 @@ namespace Yodii.Engine
             return !Disabled;
         }
 
+        internal FinalConfigStartableStatus FinalStartableStatus
+        {
+            get { return _finalConfigStartableStatus; }
+        }
+
         internal void InitializeFinalStartableStatus()
         {
-            ConfigurationStatus final = FinalConfigSolvedStatus;
-            if( final == ConfigurationStatus.Optional || final == ConfigurationStatus.Runnable )
+            if( !Disabled )
             {
                 _finalConfigStartableStatus = new FinalConfigStartableStatus( this );
             }
@@ -267,13 +271,7 @@ namespace Yodii.Engine
         {
             if( _runningIncludedServices == null )
             {
-                var running = new HashSet<ServiceData>();
-                var g = Service;
-                while( g != null )
-                {
-                    running.Add( g );
-                    g = g.Generalization;
-                }
+                var running = Service != null ? new HashSet<ServiceData>( Service.InheritedServicesWithThis ) : new HashSet<ServiceData>();
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
                     if( sRef.Requirement == DependencyRequirement.Running ) running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
@@ -433,5 +431,34 @@ namespace Yodii.Engine
                 ConfigOriginalStatus,
                 _dynamicStatus );
         }
+
+        #region IYodiiItemData explicit implementation of properties
+
+        ConfigurationStatus IYodiiItemData.ConfigOriginalStatus
+        {
+            get { return ConfigOriginalStatus; }
+        }
+
+        string IYodiiItemData.DisabledReason
+        {
+            get { return DisabledReason; }
+        }
+
+        FinalConfigStartableStatus IYodiiItemData.FinalStartableStatus
+        {
+            get { return FinalStartableStatus; }
+        }
+
+        StartDependencyImpact IYodiiItemData.ConfigOriginalImpact
+        {
+            get { return ConfigOriginalImpact; }
+        }
+
+        StartDependencyImpact IYodiiItemData.RawConfigSolvedImpact
+        {
+            get { return RawConfigSolvedImpact; }
+        }
+
+        #endregion
     }
 }

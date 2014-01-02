@@ -10,7 +10,7 @@ namespace Yodii.Engine
 {
     internal class SolvedServiceSnapshot : IStaticSolvedService, IDynamicSolvedService
     {
-        readonly ServiceDisabledReason _serviceDisabledReason;
+        readonly string _serviceDisabledReason;
         readonly ConfigurationStatus _configSolvedStatus;
         readonly IServiceInfo _serviceInfo;
         readonly ConfigurationStatus _configurationStatus;
@@ -29,9 +29,11 @@ namespace Yodii.Engine
             _configSolvedImpact = s.RawConfigSolvedImpact;
         }
 
+        public string FullName { get { return _serviceInfo.ServiceFullName; } }
+        
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }
 
-        public string DisabledReason { get { return _serviceDisabledReason == ServiceDisabledReason.None ? null : _serviceDisabledReason.ToString(); } }
+        public string DisabledReason { get { return _serviceDisabledReason; } }
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configurationStatus; } }
 
@@ -39,23 +41,23 @@ namespace Yodii.Engine
 
         public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
-        ConfigurationStatus IStaticSolvedService.WantedConfigSolvedStatus
+        ConfigurationStatus IStaticSolvedYodiiItem.WantedConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
 
-        ConfigurationStatus IDynamicSolvedService.ConfigSolvedStatus
+        ConfigurationStatus IDynamicSolvedYodiiItem.ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
 
 
-        bool IStaticSolvedService.IsBlocking 
+        bool IStaticSolvedYodiiItem.IsBlocking 
         { 
-            get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != ServiceDisabledReason.None; } 
+            get {  return _configSolvedStatus >= ConfigurationStatus.Runnable && _serviceDisabledReason != null; } 
         }
 
-        RunningStatus IDynamicYodiiItem.RunningStatus
+        RunningStatus IDynamicSolvedYodiiItem.RunningStatus
         {
             get
             {

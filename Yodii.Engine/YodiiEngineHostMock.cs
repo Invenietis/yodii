@@ -20,15 +20,15 @@ namespace Yodii.Engine
             List<Tuple<IPluginInfo, Exception>> pluginErrors = new List<Tuple<IPluginInfo, Exception>>();
             IEnumerable<IPluginInfo> toCheck = toDisable.Concat( toStop ).Concat( toStart );
 
-            foreach(IPluginInfo plugin in toCheck)
+            foreach( IPluginInfo plugin in toCheck )
             {
-                if ( plugin.PluginFullName.Contains( "buggy" ) )
+                if( plugin.PluginFullName.Contains( "buggy" ) )
                 {
                     pluginErrors.Add( new Tuple<IPluginInfo, Exception>( plugin, new Exception( "HostError" ) ) );
                 }
             }
-            
-            if ( pluginErrors.Any() ) return pluginErrors;
+
+            if( pluginErrors.Any() ) return pluginErrors;
             return null;
         }
     }
