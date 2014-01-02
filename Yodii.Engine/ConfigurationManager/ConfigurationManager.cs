@@ -64,22 +64,25 @@ namespace Yodii.Engine
                 ConfigurationStatus status;
                 foreach( ConfigurationItem item in layer.Items )
                 {
-                    if( filter == null || filter( item ) )
+                    if( item.Status != ConfigurationStatus.Optional )
                     {
-                        if( final.TryGetValue( item.ServiceOrPluginFullName, out status ) )
+                        if( filter == null || filter( item ) )
                         {
-                            if( status == ConfigurationStatus.Optional || (status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running) )
+                            if( final.TryGetValue( item.ServiceOrPluginFullName, out status ) )
                             {
-                                final[item.ServiceOrPluginFullName] = item.Status;
+                                if( status == ConfigurationStatus.Optional || (status >= ConfigurationStatus.Runnable && item.Status >= ConfigurationStatus.Runnable) )
+                                {
+                                    final[item.ServiceOrPluginFullName] = ( status == ConfigurationStatus.Running ) ? status : item.Status;
+                                }
+                                else if( status != item.Status )
+                                {
+                                    return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginFullName, item.Status, status ) );
+                                }
                             }
-                            else if( status != item.Status )
+                            else
                             {
-                                return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginFullName, item.Status, status ) );
+                                final.Add( item.ServiceOrPluginFullName, item.Status );
                             }
-                        }
-                        else
-                        {
-                            final.Add( item.ServiceOrPluginFullName, item.Status );
                         }
                     }
                 }

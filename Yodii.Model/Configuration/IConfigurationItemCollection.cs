@@ -30,5 +30,10 @@ namespace Yodii.Model
         /// <param name="key">ServiceOrPluginFullName</param>
         /// <returns>Configuration item.</returns>
         IConfigurationItem this[string key] { get; }
+
+        /// <summary>
+        /// Layer containing this IConfigurationItemCollection
+        /// </summary>
+        IConfigurationLayer ParentLayer { get; }
     }
 }

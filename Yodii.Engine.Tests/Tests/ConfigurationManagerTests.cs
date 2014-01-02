@@ -170,6 +170,34 @@ namespace Yodii.Engine.Tests
         }
 
         [Test]
+        public void RemovingLayerTests()
+        {
+            var e = new YodiiEngine( new YodiiEngineHostMock() );
+            var layer = e.Configuration.Layers.Create();
+            layer.Items.AddSuccess( "p1", ConfigurationStatus.Disabled, ConfigurationStatus.Disabled );
+            layer.Items.AddSuccess( "p2", ConfigurationStatus.Optional, ConfigurationStatus.Optional );
+            layer.Items.AddSuccess( "p3", ConfigurationStatus.Runnable, ConfigurationStatus.Runnable );
+            layer.Items.AddSuccess( "p4", ConfigurationStatus.Running, ConfigurationStatus.Running );
+
+            e.Configuration.CheckFinalConfigurationItems( "p1=Disabled", "p2=Optional", "p3=Runnable", "p4=Running" );
+
+            var layer2 = e.Configuration.Layers.Create();
+            layer2.Items.AddSuccess( "p1", ConfigurationStatus.Optional, ConfigurationStatus.Disabled );
+            layer2.Items.AddSuccess( "p2", ConfigurationStatus.Runnable, ConfigurationStatus.Runnable );
+            layer2.Items.AddSuccess( "p2", ConfigurationStatus.Running, ConfigurationStatus.Running );
+            layer2.Items.AddSuccess( "p2", ConfigurationStatus.Runnable, ConfigurationStatus.Runnable );
+            layer2.Items.AddSuccess( "p3", ConfigurationStatus.Running, ConfigurationStatus.Running );
+            layer2.Items.AddSuccess( "p4", ConfigurationStatus.Runnable, ConfigurationStatus.Running );
+
+            e.Configuration.CheckFinalConfigurationItems( "p1=Disabled", "p2=Runnable", "p3=Running", "p4=Running" );
+
+            e.Configuration.Layers.Remove( layer );
+
+            e.Configuration.CheckFinalConfigurationItems( "p1=Optional", "p2=Runnable", "p3=Running", "p4=Runnable" );
+
+        }
+
+        [Test]
         public void ManagerTests()
         {
 

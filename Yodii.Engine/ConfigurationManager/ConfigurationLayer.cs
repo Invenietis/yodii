@@ -97,11 +97,6 @@ namespace Yodii.Engine
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
             ConfigurationLayer _layer;
 
-            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
-            {
-                get { return _items; }
-            }
-
             internal ConfigurationItemCollection( ConfigurationLayer parent )
             {
                 _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
@@ -118,6 +113,21 @@ namespace Yodii.Engine
             private void RetrievePropertyEvent( object sender, PropertyChangedEventArgs e )
             {
                 FirePropertyChanged( e );
+            }
+            
+            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
+            {
+                get { return _items; }
+            }
+
+            IConfigurationLayer IConfigurationItemCollection.ParentLayer
+            {
+                get { return _layer; }
+            }
+
+            internal ConfigurationLayer ParentLayer
+            {
+                get { return _layer; }
             }
 
             public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "" )
