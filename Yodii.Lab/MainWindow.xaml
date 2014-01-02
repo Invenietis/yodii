@@ -900,11 +900,11 @@
                                                     DockPanel.Dock="Right"
                                                     Margin="3pt,0"
                                                     Text="{Binding Path=CallerKey}" />
-                                                <TextBlock
+                                                <!--<TextBlock
                                                     DockPanel.Dock="Right"
                                                     Margin="3pt,0"
                                                     Foreground="Purple"
-                                                    Text="{Binding Path=Impact}" />
+                                                    Text="{Binding Path=Impact}" />-->
 
                                                 <TextBlock
                                                     FontWeight="Bold"
