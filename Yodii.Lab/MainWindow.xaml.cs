@@ -45,6 +45,7 @@ namespace Yodii.Lab
             GraphArea.LayoutAlgorithm = _graphLayout;
             GraphArea.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.SimpleER;
             GraphArea.DefaultOverlapRemovalAlgorithm = GraphX.OverlapRemovalAlgorithmTypeEnum.FSA;
+            GraphArea.EdgeCurvingEnabled = true;
 
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
@@ -105,6 +106,7 @@ namespace Yodii.Lab
             }
 
             GraphArea.AddVertex( vertex, control );
+            DragBehaviour.SetUpdateEdgesOnMove( control, true );
         }
 
         void _vm_CloseBackstageRequest( object sender, EventArgs e )

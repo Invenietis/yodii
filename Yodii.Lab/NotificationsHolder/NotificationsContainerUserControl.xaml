@@ -12,9 +12,6 @@
     d:DesignHeight="600"
     d:DesignWidth="800">
     <UserControl.Resources>
-        <local:NullToVisibilityValueConverter
-            x:Key="NullToVisibilityConverter" />
-
         <Storyboard
             x:Key="CollapseStoryboard">
             <!--<DoubleAnimationUsingKeyFrames
@@ -80,7 +77,7 @@
                                 Width="*"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Image
-                            Visibility="{Binding Path=ImageUrl, Converter={StaticResource ResourceKey=NullToVisibilityConverter}}"
+                            Visibility="{Binding Path=ImageUrl, Converter={StaticResource ResourceKey=NullToVisibilityValueConverter}}"
                             Grid.RowSpan="2"
                             Source="{Binding Path=ImageUrl}"
                             Margin="8pt,4pt"
