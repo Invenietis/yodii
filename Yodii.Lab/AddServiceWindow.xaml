@@ -11,10 +11,6 @@
     Width="250pt"
     MinHeight="100pt"
     MinWidth="200pt">
-    <Window.Resources>
-        <local:IntegerToBoolConverter
-            x:Key="IntToBoolConverter" />
-    </Window.Resources>
     <DockPanel
         Margin="5">
         <Border
@@ -72,7 +68,7 @@
                     IsEnabled="{Binding Path=HasGeneralization}"
                     Click="ClearGeneralizationButton_Click" />
                 <ComboBox
-                    IsEnabled="{Binding Path=AvailableServices.Count, Converter={StaticResource IntToBoolConverter}}"
+                    IsEnabled="{Binding Path=AvailableServices.Count, Converter={StaticResource IntegerToBoolConverter}}"
                     Margin="5"
                     ItemsSource="{Binding Path=AvailableServices}"
                     SelectedItem="{Binding Path=SelectedGeneralization}">

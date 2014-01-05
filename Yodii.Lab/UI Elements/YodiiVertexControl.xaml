@@ -13,14 +13,6 @@
     d:DesignHeight="100"
     d:DesignWidth="200">
     <UserControl.Resources>
-        <local:EnumToBooleanConverter
-            x:Key="EnumToBooleanConv" />
-        <BooleanToVisibilityConverter
-            x:Key="BoolToVisibilityConv" />
-        <local:BooleanToVisibilityConverter
-            x:Key="InverseBooleanToVisibilityConverter"
-            True="Collapsed"
-            False="Visible" />
 
         <ObjectDataProvider
             MethodName="GetValues"
@@ -100,7 +92,7 @@
                         Height="16px"
                         Width="16px"
                         SnapsToDevicePixels="True"
-                        Visibility="{Binding Path=IsLive, Converter={StaticResource BoolToVisibilityConv}, Mode=OneWay}">
+                        Visibility="{Binding Path=IsLive, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
                         <Image.Style>
                             <Style
                                 TargetType="Image">
@@ -138,17 +130,19 @@
                         </Image.Style>
                     </Image>
                     <!-- Start button -->
-                    <local:DropDownButton
+                    <Button
                         Margin="3pt,0,0,0"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Height="12pt"
                         Width="12pt"
                         DockPanel.Dock="Right"
+                        Command="{Binding Path=StartItemCommand}"
+                        CommandParameter="{x:Static ym:StartDependencyImpact.Minimal}"
                         FontFamily="Webdings">
-                        <local:DropDownButton.Style>
+                        <Button.Style>
                             <Style
-                                TargetType="{x:Type local:DropDownButton}">
+                                TargetType="{x:Type Button}">
                                 <Setter
                                     Property="Visibility"
                                     Value="Collapsed" />
@@ -162,14 +156,14 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </local:DropDownButton.Style>
+                        </Button.Style>
                         <Image
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             SnapsToDevicePixels="True"
                             Source="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png">
                         </Image>
-                        <local:DropDownButton.DropDown>
+                        <!--<local:DropDownButton.DropDown>
                             <ContextMenu>
                                 <MenuItem
                                     Command="{Binding Path=StartItemCommand}"
@@ -212,9 +206,9 @@
                                     CommandParameter="{x:Static ym:StartDependencyImpact.TryFullStart}"
                                     Header="TryFullStart" />
                             </ContextMenu>
-                        </local:DropDownButton.DropDown>
+                        </local:DropDownButton.DropDown>-->
                         
-                    </local:DropDownButton>
+                    </Button>
                     <!-- Stop button -->
                     <Button
                         Margin="3pt,0,0,0"

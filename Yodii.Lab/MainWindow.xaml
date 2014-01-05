@@ -62,13 +62,6 @@
             CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
     </Fluent:RibbonWindow.InputBindings>
     <Fluent:RibbonWindow.Resources>
-        <BooleanToVisibilityConverter
-            x:Key="boolToVisibilityConverter" />
-        <local:EnumToBooleanConverter
-            x:Key="EnumToBooleanConv" />
-        <local:NullToBoolValueConverter
-            x:Key="NullToBoolConverter" />
-
         <ObjectDataProvider
             MethodName="GetValues"
             ObjectType="{x:Type sys:Enum}"
@@ -484,10 +477,43 @@
             <Grid.RowDefinitions>
                 <RowDefinition
                     Height="*" />
-                <RowDefinition
-                    Height="3pt" />
-                <RowDefinition
-                    Height="*" />
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style TargetType="RowDefinition">
+                            <Setter
+                                Property="Height"
+                                Value="3pt" />
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                    Value="false">
+                                    <Setter
+                                        Property="Height"
+                                        Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style
+                            TargetType="RowDefinition">
+                            <Setter
+                                Property="Height"
+                                Value="*" />
+                            <Style.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding Path=LabState.Engine.IsRunning}"
+                                    Value="false">
+                                    <Setter
+                                        Property="Height"
+                                        Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition
@@ -599,6 +625,7 @@
                     </Style.Resources>
 
                     <Style.Triggers>
+                        <!-- Specialization -->
                         <DataTrigger
                             Binding="{Binding Path=IsSpecialization}"
                             Value="true">
@@ -609,6 +636,7 @@
                                 Property="StrokeThickness"
                                 Value="5" />
                         </DataTrigger>
+                        <!-- Implementation -->
                         <DataTrigger
                             Binding="{Binding Path=IsImplementation}"
                             Value="true">
@@ -619,9 +647,66 @@
                                 Property="StrokeThickness"
                                 Value="3" />
                         </DataTrigger>
+                        <!-- Ref. Optional -->
                         <DataTrigger
-                            Binding="{Binding Path=IsServiceReference}"
-                            Value="true">
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="Optional">
+                            <Setter
+                                Property="Foreground"
+                                Value="MidnightBlue" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dot" />
+                        </DataTrigger>
+                        <!-- Ref. OptionalTryStart -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="OptionalTryStart">
+                            <Setter
+                                Property="Foreground"
+                                Value="MidnightBlue" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dash" />
+                        </DataTrigger>
+                        <!-- Ref. Runnable -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="Runnable">
+                            <Setter
+                                Property="Foreground"
+                                Value="Yellow" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dot" />
+                        </DataTrigger>
+                        <!-- Ref. RunnableTryStart -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="RunnableTryStart">
+                            <Setter
+                                Property="Foreground"
+                                Value="Yellow" />
+                            <Setter
+                                Property="StrokeThickness"
+                                Value="2" />
+                            <Setter
+                                Property="DashStyle"
+                                Value="Dash" />
+                        </DataTrigger>
+                        <!-- Ref. Running -->
+                        <DataTrigger
+                            Binding="{Binding Path=ReferenceRequirement}"
+                            Value="Running">
                             <Setter
                                 Property="Foreground"
                                 Value="#00FF00" />
@@ -815,11 +900,11 @@
                                                     DockPanel.Dock="Right"
                                                     Margin="3pt,0"
                                                     Text="{Binding Path=CallerKey}" />
-                                                <TextBlock
+                                                <!--<TextBlock
                                                     DockPanel.Dock="Right"
                                                     Margin="3pt,0"
                                                     Foreground="Purple"
-                                                    Text="{Binding Path=Impact}" />
+                                                    Text="{Binding Path=Impact}" />-->
 
                                                 <TextBlock
                                                     FontWeight="Bold"
@@ -830,7 +915,7 @@
                                                             TargetType="TextBlock">
                                                             <Style.Triggers>
                                                                 <DataTrigger
-                                                                    Binding="{Binding Path=PluginFullName, Converter={StaticResource NullToBoolConverter}, Mode=OneWay}"
+                                                                    Binding="{Binding Path=PluginFullName, Converter={StaticResource NullToBoolValueConverter}, Mode=OneWay}"
                                                                     Value="false">
                                                                     <Setter
                                                                         Property="Text">
@@ -845,7 +930,7 @@
                                                                         Value="Blue" />
                                                                 </DataTrigger>
                                                                 <DataTrigger
-                                                                    Binding="{Binding Path=ServiceFullName, Converter={StaticResource NullToBoolConverter}, Mode=OneWay}"
+                                                                    Binding="{Binding Path=ServiceFullName, Converter={StaticResource NullToBoolValueConverter}, Mode=OneWay}"
                                                                     Value="false">
                                                                     <Setter
                                                                         Property="Text">
