@@ -54,20 +54,25 @@ namespace Yodii.Model
             invalidCombination = "";
             if( s1 == s2 ) return s1;
 
-            if( s1 == ConfigurationStatus.Optional || ( s1 == ConfigurationStatus.Runnable && s2 == ConfigurationStatus.Running ) )
+            
+            if( s2 != ConfigurationStatus.Optional )
             {
-                return s2;
+                if( s1 == ConfigurationStatus.Optional || (s1 >= ConfigurationStatus.Runnable && s2 >= ConfigurationStatus.Runnable) )
+                {
+                    return (s1 == ConfigurationStatus.Running) ? s1 : s2;
+                }
+                else if( s1 != s2 )
+                {
+                    invalidCombination = string.Format( "Conflict for statuses {0} and {1}", s1, s2 );
+                    return s1;
+                }
+                else
+                {
+                    invalidCombination = string.Format( "Something went terribly, terribly wrong..." );
+                    return s1;
+                }
             }
-            else if( s1 != s2 )
-            {
-                invalidCombination = string.Format( "Conflict for statuses {0} and {1}", s1, s2 );
-                return s1;
-            }
-            else
-            {
-                invalidCombination = string.Format( "Something went terribly, terribly wrong..." );
-                return s1;
-            }
+            return s1;
         }
 
         public static StartDependencyImpact Combine( StartDependencyImpact i1, StartDependencyImpact i2, out string invalidCombination ) 

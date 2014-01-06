@@ -78,12 +78,11 @@ namespace Yodii.Engine
                                 combinedImpact = FinalConfigurationItem.Combine( item.Impact, data.Impact, out invalidCombination );
                                 if( string.IsNullOrEmpty( invalidCombination ) )
                                 {
-                                    final.Remove( item.ServiceOrPluginFullName );
-                                    final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact ) );
+                                    final[item.ServiceOrPluginFullName] = new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact );
                                 }
-                                else return new ConfigurationFailureResult( invalidCombination );
+                                else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
                             }
-                            else return new ConfigurationFailureResult( invalidCombination );                  
+                            else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
                         }            
                         else
                         {
@@ -156,6 +155,12 @@ namespace Yodii.Engine
                 return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.OnConfigurationChanging( t.Item2 );
             }
             return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.SuccessResult;
+        }
+
+        IYodiiEngineResult OnConfigurationClearing()
+        {
+            Dictionary<string,FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
+            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf ) );
         }
 
         IYodiiEngineResult OnConfigurationChangingForExternalWorld( ConfigurationChangingEventArgs eventChanging )
@@ -354,6 +359,17 @@ namespace Yodii.Engine
 
             #endregion           
         
+            public IYodiiEngineResult Clear()
+            {
+                if( _layers.Count == 0 ) return _parent.Engine.SuccessResult;
+                IYodiiEngineResult result = _parent.OnConfigurationClearing();
+                if( result.Success )
+                {
+                    _layers.Clear();
+                    _parent.OnConfigurationChanged();
+                }
+                return result;
+            }
 
             IReadOnlyCollection<IConfigurationLayer> IConfigurationLayerCollection.this[string layerName]
             {
