@@ -120,7 +120,7 @@ namespace Yodii.Engine
                 FirePropertyChanged( e );
             }
 
-            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string statusReason = "" )
+            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "", StartDependencyImpact impact = StartDependencyImpact.Unknown)
             {
                 if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
