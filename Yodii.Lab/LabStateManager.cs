@@ -162,13 +162,6 @@ namespace Yodii.Lab
         {
             var newInfo = new DiscoveredInfoClone( ServiceInfos, PluginInfos );
 
-            if( !newInfo.IsValid() )
-            {
-                Engine.Stop();
-                MessageBox.Show( "DiscoveredInfo failed sanity check." );
-                return;
-            }
-
             var result = _engine.SetDiscoveredInfo( newInfo );
 
             if( !result.Success )

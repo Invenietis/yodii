@@ -13,7 +13,7 @@ namespace Yodii.Lab
     public class YodiiGraphEdge : GraphX.EdgeBase<YodiiGraphVertex>, INotifyPropertyChanged
     {
         readonly YodiiGraphEdgeType _type;
-        DependencyRequirement _referenceRequirement;
+        DependencyRequirement? _referenceRequirement;
 
         internal YodiiGraphEdge( YodiiGraphVertex source, YodiiGraphVertex target, YodiiGraphEdgeType type )
             : base( source, target )
@@ -44,7 +44,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Requirement type of this edge, if it's a service reference.
         /// </summary>
-        public DependencyRequirement ReferenceRequirement
+        public DependencyRequirement? ReferenceRequirement
         {
             get { return _referenceRequirement; }
             internal set
