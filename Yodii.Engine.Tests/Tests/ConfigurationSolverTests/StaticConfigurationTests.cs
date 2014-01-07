@@ -1002,6 +1002,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.FullStaticResolutionOnly( res =>
                 {
                     res.CheckSuccess();
+                    res.CheckAllPluginsOptional( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8" );
                 } );
         }
 
@@ -1139,8 +1140,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             e.FullStaticResolutionOnly( res =>
             {
                 Assert.That( res.StaticFailureResult, Is.Not.Null );
-                //res.CheckAllBlockingPluginsAre("Plugin1, Plugin17, Plugin19, Plugin20, Plugin8");
-                //res.CheckAllBlockingServicesAre( "Service1.2" );
+                res.CheckAllBlockingPluginsAre( "Plugin1, Plugin17, Plugin19, Plugin20, Plugin4" );
+                res.CheckAllBlockingServicesAre( "Service1.2, Service2.1" );
             } );
         }
 
