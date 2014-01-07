@@ -380,7 +380,8 @@ namespace Yodii.Engine
                                 {
                                     excl.UnionWith( sr.DirectExcludedServices );
                                 }
-                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
+                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable 
+                                    || impact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
                                 {
                                     excl.Add( sr );
                                 }
@@ -404,7 +405,8 @@ namespace Yodii.Engine
                                 {
                                     excl.UnionWith( sr.DirectExcludedServices );
                                 }
-                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable )
+                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable 
+                                    || impact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
                                 {
                                     excl.Add( sr );
                                 }
