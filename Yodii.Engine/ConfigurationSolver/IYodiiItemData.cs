@@ -13,9 +13,9 @@ namespace Yodii.Engine
     {
         ConfigurationStatus ConfigOriginalStatus { get; }
 
-        ConfigurationStatus ConfigSolvedStatus { get; }
+        SolvedConfigurationStatus ConfigSolvedStatus { get; }
 
-        ConfigurationStatus FinalConfigSolvedStatus { get; }
+        SolvedConfigurationStatus FinalConfigSolvedStatus { get; }
 
         string DisabledReason { get; }
 

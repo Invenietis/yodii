@@ -13,7 +13,7 @@ namespace Yodii.Engine
         ServiceData[] _inheritedServicesWithThis;
         ServiceDisabledReason _configDisabledReason;
         
-        ConfigurationStatus _configSolvedStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
         ServiceSolvedConfigStatusReason _configSolvedStatusReason;
         readonly StartDependencyImpact _configSolvedImpact;
         readonly List<BackReference> _backReferences;
@@ -67,7 +67,12 @@ namespace Yodii.Engine
 
         void Initialize()
         {
-            _configSolvedStatus = ConfigOriginalStatus;
+            switch( ConfigOriginalStatus )
+            {
+                case ConfigurationStatus.Disabled: _configSolvedStatus = SolvedConfigurationStatus.Disabled; break;
+                case ConfigurationStatus.Running: _configSolvedStatus = SolvedConfigurationStatus.Running; break;
+                default: _configSolvedStatus = SolvedConfigurationStatus.Runnable; break;
+            }
             _configSolvedStatusReason = ServiceSolvedConfigStatusReason.Config;
             if( ConfigOriginalStatus == ConfigurationStatus.Disabled )
             {
@@ -250,7 +255,7 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the minimal running requirement. It is initialized by the configuration, but may evolve.
         /// </summary>
-        public ConfigurationStatus ConfigSolvedStatus
+        public SolvedConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -258,9 +263,9 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the ConfigSolvedStatus that is ConfigurationStatus.Disabled if the service is actually Disabled.
         /// </summary>
-        public ConfigurationStatus FinalConfigSolvedStatus
+        public SolvedConfigurationStatus FinalConfigSolvedStatus
         {
-            get { return _configDisabledReason != ServiceDisabledReason.None ? ConfigurationStatus.Disabled : _configSolvedStatus; }
+            get { return _configDisabledReason == ServiceDisabledReason.None ? _configSolvedStatus : SolvedConfigurationStatus.Disabled; }
         }
 
         struct BackReference
@@ -314,29 +319,10 @@ namespace Yodii.Engine
             Debug.Assert( Family.RunningService != this || _inheritedServicesWithThis.All( s => s.Disabled ), "If we were the RunningService, no one else is running." );
         }
 
-        internal bool SetSolvedStatus( ConfigurationStatus status, ServiceSolvedConfigStatusReason reason )
+        internal bool SetRunningStatus( ServiceSolvedConfigStatusReason reason )
         {
-            Debug.Assert( status >= ConfigurationStatus.Runnable );
-            if( _configSolvedStatus >= status ) return !Disabled;
-            if( status == ConfigurationStatus.Running )
-            {
-                if( !Family.SetRunningService( this, reason ) ) return false;
-            }
-            else
-            {
-                ServiceData g = Generalization;
-                while( g != null )
-                {
-                    if( g._configSolvedStatus <= ConfigurationStatus.Runnable )
-                    {
-                        g._configSolvedStatus = ConfigurationStatus.Runnable;
-                        g._configSolvedStatusReason = ServiceSolvedConfigStatusReason.FromSpecialization;
-                    }
-                    g = g.Generalization;
-                }
-                _configSolvedStatus = ConfigurationStatus.Runnable;
-                _configSolvedStatusReason = reason;
-            }
+            if( _configSolvedStatus == SolvedConfigurationStatus.Running ) return !Disabled;
+            if( !Family.SetRunningService( this, reason ) ) return false;
             PropagateSolvedStatus();
             return !Disabled;
         }

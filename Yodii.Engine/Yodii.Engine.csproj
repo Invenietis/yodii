@@ -67,6 +67,7 @@
     <Compile Include="ConfigurationManager\ConfigurationManager.cs" />
     <Compile Include="ConfigurationManager\ConfigurationFailureResult.cs" />
     <Compile Include="ConfigurationSolver\ConfigurationSolver.cs" />
+    <Compile Include="ConfigurationSolver\SolvedItemSnapshot.cs" />
     <Compile Include="ConfigurationSolver\FinalConfigStartableStatus.cs" />
     <Compile Include="ConfigurationSolver\IConfigurationSolver.cs" />
     <Compile Include="ConfigurationSolver\IServiceDependentObject.cs" />

@@ -18,7 +18,7 @@ namespace Yodii.Engine
         RunningStatus _runningStatus;
         string _disabledReason;
         ConfigurationStatus _configOriginalStatus;
-        ConfigurationStatus _configSolvedStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
         StartDependencyImpact _configOriginalImpact;
         StartDependencyImpact _configSolvedImpact;
 
@@ -42,16 +42,21 @@ namespace Yodii.Engine
         {
             Debug.Assert( d.DynamicStatus != null );
             bool wasRunning = _runningStatus >= RunningStatus.Running;
+            var prevFinalSolvedConfig = FinalConfigSolvedStatus;
             _capability.UpdateFrom( d.FinalConfigSolvedStatus, d.FinalStartableStatus, notifier );
             notifier.Update( this, ref _disabledReason, d.DisabledReason, () => DisabledReason );
             notifier.Update( this, ref _runningStatus, d.DynamicStatus.Value, () => RunningStatus );
             notifier.Update( this, ref _configOriginalStatus, d.ConfigOriginalStatus, () => ConfigOriginalStatus );
-            notifier.Update( this, ref _configSolvedStatus, d.ConfigSolvedStatus, () => ConfigSolvedStatus );
+            notifier.Update( this, ref _configSolvedStatus, d.ConfigSolvedStatus, () => WantedConfigSolvedStatus );
             notifier.Update( this, ref _configOriginalImpact, d.ConfigOriginalImpact, () => ConfigOriginalImpact );
             notifier.Update( this, ref _configSolvedImpact, d.RawConfigSolvedImpact, () => ConfigSolvedImpact );
-            if( wasRunning != _runningStatus >= RunningStatus.Running )
+            if( wasRunning != (_runningStatus >= RunningStatus.Running) )
             {
                 notifier.Notify( this, () => IsRunning );
+            }
+            if( prevFinalSolvedConfig != FinalConfigSolvedStatus )
+            {
+                notifier.Notify( this, () => FinalConfigSolvedStatus );
             }
         }
 
@@ -76,7 +81,9 @@ namespace Yodii.Engine
 
         public ConfigurationStatus ConfigOriginalStatus { get { return _configOriginalStatus; } }
 
-        public ConfigurationStatus ConfigSolvedStatus { get { return _configSolvedStatus; } }
+        public SolvedConfigurationStatus WantedConfigSolvedStatus { get { return _configSolvedStatus; } }
+
+        public SolvedConfigurationStatus FinalConfigSolvedStatus { get { return _disabledReason == null ? _configSolvedStatus : SolvedConfigurationStatus.Disabled; } }
 
         public StartDependencyImpact ConfigOriginalImpact { get { return _configOriginalImpact; } }
 

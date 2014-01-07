@@ -41,10 +41,10 @@ namespace Yodii.Engine
 
             public bool PropagateSolvedStatus()
             {
-                Debug.Assert( Service.FinalConfigSolvedStatus >= ConfigurationStatus.Runnable );
+                Debug.Assert( Service.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running );
                 if( TheOnlyPlugin != null )
                 {
-                    if( !TheOnlyPlugin.SetSolvedStatus( Service.ConfigSolvedStatus, PluginRunningRequirementReason.FromServiceToSinglePlugin ) )
+                    if( !TheOnlyPlugin.SetRunningStatus( PluginRunningRequirementReason.FromServiceToSinglePlugin ) )
                     {
                         if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToSinglePluginFailed );
                         else Service._configDisabledReason = ServiceDisabledReason.PropagationToSinglePluginFailed;
@@ -53,7 +53,7 @@ namespace Yodii.Engine
                 }
                 else if( TheOnlyService != null )
                 {
-                    if( !TheOnlyService.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromServiceToSingleSpecialization ) )
+                    if( !TheOnlyService.SetRunningStatus( ServiceSolvedConfigStatusReason.FromServiceToSingleSpecialization ) )
                     {
                         if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToSingleSpecializationFailed );
                         else Service._configDisabledReason = ServiceDisabledReason.PropagationToSingleSpecializationFailed;
@@ -65,9 +65,9 @@ namespace Yodii.Engine
                     StartDependencyImpact impact = Service.ConfigSolvedImpact;
                     Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 );
 
-                    foreach( var s in GetIncludedServices( impact, Service.ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
+                    foreach( var s in GetIncludedServices( impact, false ) )
                     {
-                        if( !s.SetSolvedStatus( Service.ConfigSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
+                        if( !s.SetRunningStatus( ServiceSolvedConfigStatusReason.FromPropagation ) )
                         {
                             if( !Service.Disabled ) Service.SetDisabled( ServiceDisabledReason.PropagationToCommonPluginReferencesFailed );
                             else Service._configDisabledReason = ServiceDisabledReason.PropagationToCommonPluginReferencesFailed;
@@ -85,7 +85,7 @@ namespace Yodii.Engine
                 return true;
             }
 
-            public ConfigurationStatus FinalConfigSolvedStatus
+            public SolvedConfigurationStatus FinalConfigSolvedStatus
             {
                 get { return Service.FinalConfigSolvedStatus; }
             }
@@ -111,7 +111,7 @@ namespace Yodii.Engine
 
         public bool PropagateSolvedStatus()
         {
-            if( ConfigSolvedStatus >= ConfigurationStatus.Runnable )
+            if( ConfigSolvedStatus == SolvedConfigurationStatus.Running )
             {
                 var p = GetUsefulPropagationInfo();
                 if( p != null ) return p.PropagateSolvedStatus();

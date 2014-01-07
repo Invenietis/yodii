@@ -343,7 +343,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
                     res.CheckAllBlockingServicesAre( "ServiceAx" );
                     res.CheckNoBlockingPlugins();
-                    res.CheckWantedConfigSolvedStatusIs( "PluginA-2", ConfigurationStatus.Runnable );
+                    res.CheckWantedConfigSolvedStatusIs( "PluginA-2", SolvedConfigurationStatus.Runnable );
                 } );
         }
 
@@ -495,8 +495,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
-                res.CheckAllPluginsOptional( "PluginA-1, PluginA-2" );
-                res.CheckAllServicesOptional( "ServiceA" );
+                res.CheckAllPluginsRunnable( "PluginA-1, PluginA-2" );
+                res.CheckAllServicesRunnable( "ServiceA" );
             } );
         }
 
@@ -656,7 +656,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.FullStaticResolutionOnly( res =>
                 {
                     res.CheckAllBlockingPluginsAre( "PluginA-1" );
-                    res.CheckWantedConfigSolvedStatusIs( "PluginA-1", ConfigurationStatus.Running );
+                    res.CheckWantedConfigSolvedStatusIs( "PluginA-1", SolvedConfigurationStatus.Running );
                 } );
         }
 
@@ -1002,6 +1002,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.FullStaticResolutionOnly( res =>
                 {
                     res.CheckSuccess();
+                    res.CheckAllPluginsRunnable( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8" );
                 } );
         }
 
@@ -1092,8 +1093,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             e.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
-                res.CheckAllServicesOptional( "Service1, Service2, Service3, Service3.1, Service3.2, Service3.3, Service4, Service4.1, Service4.2" );
-                res.CheckAllPluginsOptional( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
+                res.CheckAllServicesRunnable( "Service1, Service2, Service3, Service3.1, Service3.2, Service3.3, Service4, Service4.1, Service4.2" );
+                res.CheckAllPluginsRunnable( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
             } );
        }
 
@@ -1116,8 +1117,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             e.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
-                res.CheckAllServicesOptional( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
-                res.CheckAllPluginsOptional( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5" );
+                res.CheckAllServicesRunnable( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
+                res.CheckAllPluginsRunnable( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5" );
             } );
         }
 

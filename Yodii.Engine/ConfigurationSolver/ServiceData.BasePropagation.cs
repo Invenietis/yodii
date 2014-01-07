@@ -28,8 +28,8 @@ namespace Yodii.Engine
             protected BasePropagation( ServiceData s )
             {
                 Service = s;
-                _inclServices = new IEnumerable<ServiceData>[10];
-                _exclServices = new IEnumerable<ServiceData>[5];
+                _inclServices = new IEnumerable<ServiceData>[12];
+                _exclServices = new IEnumerable<ServiceData>[6];
                 _nbTotalAvailablePlugins = -1;
                 _nbAvailablePlugins = -1;
                 _nbAvailableServices = -1;

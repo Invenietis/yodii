@@ -57,29 +57,36 @@ namespace Yodii.Engine
             _configurationLayerCollection.CheckPosition( layer );
         }
 
-        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, ConfigurationStatus> final, Func<ConfigurationItem, bool> filter = null )
+        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, FinalConfigurationItem> final, Func<ConfigurationItem, bool> filter = null )
         {
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
-                ConfigurationStatus status;
+                FinalConfigurationItem data;
+                ConfigurationStatus combinedStatus;
+                StartDependencyImpact combinedImpact;
+                string invalidCombination;
+
                 foreach( ConfigurationItem item in layer.Items )
                 {
                     if( filter == null || filter( item ) )
                     {
-                        if( final.TryGetValue( item.ServiceOrPluginFullName, out status ) )
+                        if( final.TryGetValue( item.ServiceOrPluginFullName, out data ) )
                         {
-                            if( status == ConfigurationStatus.Optional || (status == ConfigurationStatus.Runnable && item.Status == ConfigurationStatus.Running) )
+                            combinedStatus = FinalConfigurationItem.Combine( item.Status, data.Status, out invalidCombination );
+                            if( string.IsNullOrEmpty( invalidCombination ) )
                             {
-                                final[item.ServiceOrPluginFullName] = item.Status;
+                                combinedImpact = FinalConfigurationItem.Combine( item.Impact, data.Impact, out invalidCombination );
+                                if( string.IsNullOrEmpty( invalidCombination ) )
+                                {
+                                    final[item.ServiceOrPluginFullName] = new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact );
+                                }
+                                else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
                             }
-                            else if( status != item.Status )
-                            {
-                                return new ConfigurationFailureResult( String.Format( "{0}: conflict for '{1}' between statuses '{2}' and '{3}'.", currentOperation, item.ServiceOrPluginFullName, item.Status, status ) );
-                            }
-                        }
+                            else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
+                        }            
                         else
                         {
-                            final.Add( item.ServiceOrPluginFullName, item.Status );
+                            final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
                         }
                     }
                 }
@@ -87,25 +94,26 @@ namespace Yodii.Engine
             return new ConfigurationFailureResult();
         }
 
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, FinalConfigurationItem data )
         {
             Debug.Assert( item != null && _finalConfiguration != null && _configurationLayerCollection.Count != 0 );
             if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
 
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            final.Add( item.ServiceOrPluginFullName, newStatus );
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
+            final.Add( item.ServiceOrPluginFullName, data );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine);
 
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
+            if(item.Status != data.Status) return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
+            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ImpactChanged, item ) );
         }
 
         internal IYodiiEngineResult OnConfigurationItemAdding( ConfigurationItem newItem )
         {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
-            final.Add( newItem.ServiceOrPluginFullName, newItem.Status );
-
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
+            final.Add( newItem.ServiceOrPluginFullName, new FinalConfigurationItem(newItem.ServiceOrPluginFullName, newItem.Status, newItem.Impact ));
+          
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine );
 
@@ -114,7 +122,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationItemRemoving( ConfigurationItem item )
         {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c != item );
             Debug.Assert( internalResult.Success, "Removing a configuration item can not lead to an impossibility." );
@@ -124,7 +132,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationLayerRemoving( ConfigurationLayer layer )
         {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c.Layer != layer );
             Debug.Assert( internalResult.Success, "Removing a configuration layer can not lead to an impossibility." );
@@ -132,7 +140,7 @@ namespace Yodii.Engine
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.LayerRemoved, layer ) );
         }
 
-        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, ConfigurationStatus> final, Func<FinalConfiguration, ConfigurationChangingEventArgs> createChangingEvent )
+        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, FinalConfigurationItem> final, Func<FinalConfiguration, ConfigurationChangingEventArgs> createChangingEvent )
         {
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
             if( Engine.IsRunning )
@@ -151,7 +159,7 @@ namespace Yodii.Engine
 
         IYodiiEngineResult OnConfigurationClearing()
         {
-            Dictionary<string,ConfigurationStatus> final = new Dictionary<string, ConfigurationStatus>();
+            Dictionary<string,FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf ) );
         }
 
@@ -174,7 +182,8 @@ namespace Yodii.Engine
             FinalConfiguration = _currentEventArgs.FinalConfiguration;
             if( _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.StatusChanged
                 || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemAdded
-                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved )
+                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved
+                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ImpactChanged)
             {
                 RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationItemChanged ) );
             }
@@ -221,16 +230,16 @@ namespace Yodii.Engine
                 _parent = parent;
                 _layers = new CKObservableSortedArrayKeyList<ConfigurationLayer, string>( e => e.LayerName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: true );
 
-                _layers.PropertyChanged += RelayPropertyEvent;
-                _layers.CollectionChanged += RelayCollectionEvent;
+                _layers.PropertyChanged += RetrievePropertyEvent;
+                _layers.CollectionChanged += RetrieveCollectionEvent;
             }
 
-            private void RelayCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
+            private void RetrieveCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
             {
                 FireCollectionChanged( e );
             }
 
-            private void RelayPropertyEvent( object sender, PropertyChangedEventArgs e )
+            private void RetrievePropertyEvent( object sender, PropertyChangedEventArgs e )
             {
                 FirePropertyChanged( e );
             }
@@ -257,18 +266,6 @@ namespace Yodii.Engine
                 {
                     _layers.Remove( l );
                     l.SetConfigurationManager( null );
-                    _parent.OnConfigurationChanged();
-                }
-                return result;
-            }
-
-            public IYodiiEngineResult Clear()
-            {
-                if( _layers.Count == 0 ) return _parent.Engine.SuccessResult;
-                IYodiiEngineResult result = _parent.OnConfigurationClearing();
-                if( result.Success )
-                {
-                    _layers.Clear();
                     _parent.OnConfigurationChanged();
                 }
                 return result;
@@ -362,6 +359,17 @@ namespace Yodii.Engine
 
             #endregion           
         
+            public IYodiiEngineResult Clear()
+            {
+                if( _layers.Count == 0 ) return _parent.Engine.SuccessResult;
+                IYodiiEngineResult result = _parent.OnConfigurationClearing();
+                if( result.Success )
+                {
+                    _layers.Clear();
+                    _parent.OnConfigurationChanged();
+                }
+                return result;
+            }
 
             IReadOnlyCollection<IConfigurationLayer> IConfigurationLayerCollection.this[string layerName]
             {

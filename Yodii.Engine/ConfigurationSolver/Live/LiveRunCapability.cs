@@ -19,10 +19,10 @@ namespace Yodii.Engine
             public bool CanStartWithStopOptionalAndRunnable;
             public bool CanStartWithFullStop;
 
-            public AllFlags( ConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
+            public AllFlags( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
             {
-                Debug.Assert( (s == null) == (finalConfigStatus == ConfigurationStatus.Disabled), "!Disabled <==> StartableStatus != null" );
-                CanStop = finalConfigStatus != ConfigurationStatus.Running;
+                Debug.Assert( (s == null) == (finalConfigStatus == SolvedConfigurationStatus.Disabled), "!Disabled <==> StartableStatus != null" );
+                CanStop = finalConfigStatus != SolvedConfigurationStatus.Running;
                 if( s != null )
                 {
                     CanStart = true;
@@ -39,12 +39,12 @@ namespace Yodii.Engine
         }
         AllFlags _flags;
 
-        internal LiveRunCapability( ConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
+        internal LiveRunCapability( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
         {
             _flags = new AllFlags( finalConfigStatus, s );
         }
 
-        internal void UpdateFrom( ConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s, DelayedPropertyNotification notifier )
+        internal void UpdateFrom( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s, DelayedPropertyNotification notifier )
         {
             AllFlags newOne = new AllFlags( finalConfigStatus, s );
             notifier.Update( this, ref _flags.CanStop, newOne.CanStop, () => CanStop );

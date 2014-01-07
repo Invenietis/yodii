@@ -123,7 +123,7 @@ namespace Yodii.Engine.Tests
             Assert.That( @this.ServiceCulprits, Is.Empty );
         }
 
-        public static void CheckWantedConfigSolvedStatusIs( this IYodiiEngineResult @this, string pluginOrServiceFullName, ConfigurationStatus wantedStatus )
+        public static void CheckWantedConfigSolvedStatusIs( this IYodiiEngineResult @this, string pluginOrServiceFullName, SolvedConfigurationStatus wantedStatus )
         {
             if( @this.Success )
             {

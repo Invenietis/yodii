@@ -21,7 +21,7 @@ namespace Yodii.Engine
 
         public FinalConfigStartableStatus( IServiceDependentObject o )
         {
-            Debug.Assert( o.FinalConfigSolvedStatus != ConfigurationStatus.Disabled );
+            Debug.Assert( o.FinalConfigSolvedStatus != SolvedConfigurationStatus.Disabled );
             Debug.Assert( ComputeStartableFor( o, StartDependencyImpact.Minimal ) );
             
             StartDependencyImpact config = o.ConfigSolvedImpact;
@@ -42,7 +42,7 @@ namespace Yodii.Engine
             }
             foreach( var s in o.GetExcludedServices( impact ) )
             {
-                if( s.FinalConfigSolvedStatus == ConfigurationStatus.Running ) return false;
+                if( s.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running ) return false;
             }
             return true;
         }

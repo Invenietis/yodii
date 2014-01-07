@@ -99,7 +99,8 @@ namespace Yodii.Engine.Tests
                 "p1.DisabledReason", 
                 "p1.RunningStatus", 
                 "p1.ConfigOriginalStatus", 
-                "p1.ConfigSolvedStatus" }, propertyChanged );
+                "p1.WantedConfigSolvedStatus",
+                "p1.FinalConfigSolvedStatus" }, propertyChanged );
             propertyChanged.Clear();
 
             config.Items.Add( p1.FullName, ConfigurationStatus.Optional );
@@ -113,7 +114,8 @@ namespace Yodii.Engine.Tests
                 "p1.DisabledReason", 
                 "p1.RunningStatus", 
                 "p1.ConfigOriginalStatus", 
-                "p1.ConfigSolvedStatus" }, propertyChanged );
+                "p1.WantedConfigSolvedStatus",
+                "p1.FinalConfigSolvedStatus" }, propertyChanged );
         }
 
     }

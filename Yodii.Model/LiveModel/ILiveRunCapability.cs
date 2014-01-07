@@ -14,13 +14,13 @@ namespace Yodii.Model
     {
         /// <summary>
         /// Gets whether the plugin or service can be stopped.
-        /// This is always true except if its <see cref="IDynamicSolvedYodiiItem.ConfigSolvedStatus"/> is <see cref="ConfigurationStatus.Running"/>.
+        /// This is always true except if its <see cref="IDynamicSolvedYodiiItem.WantedConfigSolvedStatus"/> is <see cref="ConfigurationStatus.Running"/>.
         /// </summary>
         bool CanStop { get; }
 
         /// <summary>
         /// Gets whether the plugin or service can be started.
-        /// As long as its <see cref="IDynamicSolvedYodiiItem.ConfigSolvedStatus"/> is not <see cref="ConfigurationStatus.Disabled"/>, it can run
+        /// As long as its <see cref="IDynamicSolvedYodiiItem.WantedConfigSolvedStatus"/> is not <see cref="ConfigurationStatus.Disabled"/>, it can run
         /// and will always be able to start with its <see cref="IDynamicSolvedYodiiItem.ConfigSolvedImpact"/>.
         /// </summary>
         bool CanStart { get; }
