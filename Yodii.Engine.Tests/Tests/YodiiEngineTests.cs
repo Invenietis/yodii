@@ -66,9 +66,9 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
 
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigSolvedStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
+            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
+            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
 
             Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).CurrentError, Is.Null );
             Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).CurrentError, Is.Null );

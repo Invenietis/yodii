@@ -141,9 +141,9 @@ namespace Yodii.Engine
             {
                 foreach( PluginData p in _orderedPlugins )
                 {
-                    if( p.FinalConfigSolvedStatus >= ConfigurationStatus.Runnable )
+                    if( p.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running )
                     {
-                        p.PropagateSolvedStatus();
+                        p.PropagateRunningStatus();
                     }
                 }
                 ProcessDeferredPropagations();

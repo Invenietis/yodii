@@ -64,6 +64,7 @@
     </Compile>
     <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
+    <Compile Include="Configuration\SolvedConfigurationStatus.cs" />
     <Compile Include="Configuration\FinalConfiguration.cs" />
     <Compile Include="Configuration\FinalConfigurationItem.cs" />
     <Compile Include="Configuration\IConfigurationItem.cs" />

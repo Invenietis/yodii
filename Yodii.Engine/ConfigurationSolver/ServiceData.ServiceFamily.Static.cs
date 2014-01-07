@@ -39,7 +39,7 @@ namespace Yodii.Engine
             public bool SetRunningPlugin( PluginData p )
             {
                 Debug.Assert( p.Service != null && p.Service.Family == this );
-                Debug.Assert( p.ConfigSolvedStatus == ConfigurationStatus.Running, "ConfigSolvedStatus must have been set to Running prior calling this." );
+                Debug.Assert( p.ConfigSolvedStatus == SolvedConfigurationStatus.Running, "ConfigSolvedStatus must have been set to Running prior calling this." );
                 if( _runningPlugin == p ) return !p.Disabled;
                 if( p.Disabled ) return false;
 
@@ -77,9 +77,9 @@ namespace Yodii.Engine
             public bool SetRunningService( ServiceData s, ServiceSolvedConfigStatusReason reason )
             {
                 Debug.Assert( s != null && s.Family == this );
-                if( s._configSolvedStatus != ConfigurationStatus.Running )
+                if( s._configSolvedStatus != SolvedConfigurationStatus.Running )
                 {
-                    s._configSolvedStatus = ConfigurationStatus.Running;
+                    s._configSolvedStatus = SolvedConfigurationStatus.Running;
                     s._configSolvedStatusReason = reason;
                 }
                 if( _runningService == s ) return !s.Disabled;
@@ -113,9 +113,9 @@ namespace Yodii.Engine
                 var g = s.Generalization;
                 while( g != null )
                 {
-                    if( g._configSolvedStatus != ConfigurationStatus.Running )
+                    if( g._configSolvedStatus != SolvedConfigurationStatus.Running )
                     {
-                        g._configSolvedStatus = ConfigurationStatus.Running;
+                        g._configSolvedStatus = SolvedConfigurationStatus.Running;
                         g._configSolvedStatusReason = ServiceSolvedConfigStatusReason.FromRunningSpecialization;
                     }
                     g = g.Generalization;

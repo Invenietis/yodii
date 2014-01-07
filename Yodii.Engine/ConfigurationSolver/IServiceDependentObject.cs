@@ -14,7 +14,7 @@ namespace Yodii.Engine
         /// <summary>
         /// The final configuration status (Disabled if the item is actually disabled).
         /// </summary>
-        ConfigurationStatus FinalConfigSolvedStatus { get; }
+        SolvedConfigurationStatus FinalConfigSolvedStatus { get; }
 
         /// <summary>
         /// The solved impact for the static resolution: never IsTryOnly nor unknown.

@@ -28,49 +28,39 @@ namespace Yodii.Engine.Tests
         #region Plugins and Services
         public static void CheckAllDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, ConfigurationStatus.Disabled, pluginOrServiceNames, false );
-        }
-
-        public static void CheckAllOptional( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
-        {
-            CheckStatus( @this, ConfigurationStatus.Optional, pluginOrServiceNames, false );
+            CheckStatus( @this, SolvedConfigurationStatus.Disabled, pluginOrServiceNames, false );
         }
 
         public static void CheckAllRunnable( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, ConfigurationStatus.Runnable, pluginOrServiceNames, false );
+            CheckStatus( @this, SolvedConfigurationStatus.Runnable, pluginOrServiceNames, false );
         }
 
         public static void CheckAllRunning( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, ConfigurationStatus.Running, pluginOrServiceNames, false );
+            CheckStatus( @this, SolvedConfigurationStatus.Running, pluginOrServiceNames, false );
         }
 
         public static void CheckDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, ConfigurationStatus.Disabled, pluginOrServiceNames, true );
-        }
-
-        public static void CheckOptional( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
-        {
-            CheckStatus( @this, ConfigurationStatus.Optional, pluginOrServiceNames, true );
+            CheckStatus( @this, SolvedConfigurationStatus.Disabled, pluginOrServiceNames, true );
         }
 
         public static void CheckRunnable( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, ConfigurationStatus.Runnable, pluginOrServiceNames, true );
+            CheckStatus( @this, SolvedConfigurationStatus.Runnable, pluginOrServiceNames, true );
         }
 
         public static void CheckRunning( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckStatus( @this, ConfigurationStatus.Running, pluginOrServiceNames, true );
+            CheckStatus( @this, SolvedConfigurationStatus.Running, pluginOrServiceNames, true );
         }
 
-        static void CheckStatus( this IYodiiEngineStaticOnlyResult @this, ConfigurationStatus status, string pluginOrServiceNames, bool expectedIsPartial )
+        static void CheckStatus( this IYodiiEngineStaticOnlyResult @this, SolvedConfigurationStatus status, string pluginOrServiceNames, bool expectedIsPartial )
         {
             string[] expected = pluginOrServiceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-            var withTheStatus = @this.StaticSolvedConfiguration.Plugins.Where( p => p.FinalConfigurationStatus() == status ).Select( p => p.PluginInfo.PluginFullName );
-            withTheStatus = withTheStatus.Concat( @this.StaticSolvedConfiguration.Services.Where( s => s.FinalConfigurationStatus() == status ).Select( s => s.ServiceInfo.ServiceFullName ) );
+            var withTheStatus = @this.StaticSolvedConfiguration.Plugins.Where( p => p.FinalConfigSolvedStatus == status ).Select( p => p.PluginInfo.PluginFullName );
+            withTheStatus = withTheStatus.Concat( @this.StaticSolvedConfiguration.Services.Where( s => s.FinalConfigSolvedStatus == status ).Select( s => s.ServiceInfo.ServiceFullName ) );
             TestExtensions.CheckContainsWithAlternative( expected, withTheStatus, expectedIsPartial );
         }
         #endregion
@@ -78,48 +68,38 @@ namespace Yodii.Engine.Tests
         #region Plugins only
         public static void CheckAllPluginsDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, ConfigurationStatus.Disabled, pluginOrServiceNames, false );
-        }
-
-        public static void CheckAllPluginsOptional( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
-        {
-            CheckPluginsStatus( @this, ConfigurationStatus.Optional, pluginOrServiceNames, false );
+            CheckPluginsStatus( @this, SolvedConfigurationStatus.Disabled, pluginOrServiceNames, false );
         }
 
         public static void CheckAllPluginsRunnable( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, ConfigurationStatus.Runnable, pluginOrServiceNames, false );
+            CheckPluginsStatus( @this, SolvedConfigurationStatus.Runnable, pluginOrServiceNames, false );
         }
 
         public static void CheckAllPluginsRunning( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, ConfigurationStatus.Running, pluginOrServiceNames, false );
+            CheckPluginsStatus( @this, SolvedConfigurationStatus.Running, pluginOrServiceNames, false );
         }
 
         public static void CheckPluginsDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, ConfigurationStatus.Disabled, pluginOrServiceNames, true );
-        }
-
-        public static void CheckPluginsOptional( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
-        {
-            CheckPluginsStatus( @this, ConfigurationStatus.Optional, pluginOrServiceNames, true );
+            CheckPluginsStatus( @this, SolvedConfigurationStatus.Disabled, pluginOrServiceNames, true );
         }
 
         public static void CheckPluginsRunnable( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, ConfigurationStatus.Runnable, pluginOrServiceNames, true );
+            CheckPluginsStatus( @this, SolvedConfigurationStatus.Runnable, pluginOrServiceNames, true );
         }
 
         public static void CheckPluginsRunning( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckPluginsStatus( @this, ConfigurationStatus.Running, pluginOrServiceNames, true );
+            CheckPluginsStatus( @this, SolvedConfigurationStatus.Running, pluginOrServiceNames, true );
         }
 
-        static void CheckPluginsStatus( this IYodiiEngineStaticOnlyResult @this, ConfigurationStatus status, string pluginOrServiceNames, bool expectedIsPartial )
+        static void CheckPluginsStatus( this IYodiiEngineStaticOnlyResult @this, SolvedConfigurationStatus status, string pluginOrServiceNames, bool expectedIsPartial )
         {
             string[] expected = pluginOrServiceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-            var withTheStatus = @this.StaticSolvedConfiguration.Plugins.Where( p => p.FinalConfigurationStatus() == status ).Select( p => p.PluginInfo.PluginFullName );
+            var withTheStatus = @this.StaticSolvedConfiguration.Plugins.Where( p => p.FinalConfigSolvedStatus == status ).Select( p => p.PluginInfo.PluginFullName );
             TestExtensions.CheckContainsWithAlternative( expected, withTheStatus, expectedIsPartial );
         }
         #endregion
@@ -127,48 +107,38 @@ namespace Yodii.Engine.Tests
         #region Services only
         public static void CheckAllServicesDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, ConfigurationStatus.Disabled, pluginOrServiceNames, false );
-        }
-
-        public static void CheckAllServicesOptional( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
-        {
-            CheckServicesStatus( @this, ConfigurationStatus.Optional, pluginOrServiceNames, false );
+            CheckServicesStatus( @this, SolvedConfigurationStatus.Disabled, pluginOrServiceNames, false );
         }
 
         public static void CheckAllServicesRunnable( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, ConfigurationStatus.Runnable, pluginOrServiceNames, false );
+            CheckServicesStatus( @this, SolvedConfigurationStatus.Runnable, pluginOrServiceNames, false );
         }
 
         public static void CheckAllServicesRunning( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, ConfigurationStatus.Running, pluginOrServiceNames, false );
+            CheckServicesStatus( @this, SolvedConfigurationStatus.Running, pluginOrServiceNames, false );
         }
 
         public static void CheckServicesDisabled( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, ConfigurationStatus.Disabled, pluginOrServiceNames, true );
-        }
-
-        public static void CheckServicesOptional( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
-        {
-            CheckServicesStatus( @this, ConfigurationStatus.Optional, pluginOrServiceNames, true );
+            CheckServicesStatus( @this, SolvedConfigurationStatus.Disabled, pluginOrServiceNames, true );
         }
 
         public static void CheckServicesRunnable( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, ConfigurationStatus.Runnable, pluginOrServiceNames, true );
+            CheckServicesStatus( @this, SolvedConfigurationStatus.Runnable, pluginOrServiceNames, true );
         }
 
         public static void CheckServicesRunning( this IYodiiEngineStaticOnlyResult @this, string pluginOrServiceNames )
         {
-            CheckServicesStatus( @this, ConfigurationStatus.Running, pluginOrServiceNames, true );
+            CheckServicesStatus( @this, SolvedConfigurationStatus.Running, pluginOrServiceNames, true );
         }
 
-        static void CheckServicesStatus( this IYodiiEngineStaticOnlyResult @this, ConfigurationStatus status, string pluginOrServiceNames, bool expectedIsPartial )
+        static void CheckServicesStatus( this IYodiiEngineStaticOnlyResult @this, SolvedConfigurationStatus status, string pluginOrServiceNames, bool expectedIsPartial )
         {
             string[] expected = pluginOrServiceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-            var withTheStatus = @this.StaticSolvedConfiguration.Services.Where( s => s.FinalConfigurationStatus() == status ).Select( s => s.ServiceInfo.ServiceFullName );
+            var withTheStatus = @this.StaticSolvedConfiguration.Services.Where( s => s.FinalConfigSolvedStatus == status ).Select( s => s.ServiceInfo.ServiceFullName );
             TestExtensions.CheckContainsWithAlternative( expected, withTheStatus, expectedIsPartial );
         }
         #endregion
