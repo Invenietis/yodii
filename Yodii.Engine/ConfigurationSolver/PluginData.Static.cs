@@ -16,7 +16,7 @@ namespace Yodii.Engine
         IReadOnlyList<ServiceData>[] _exclServices;
         IReadOnlyList<ServiceData>[] _inclServices;
         PluginDisabledReason _configDisabledReason;
-        ConfigurationStatus _configSolvedStatus;
+        SolvedConfigurationStatus _configSolvedStatus;
         PluginRunningRequirementReason _configSolvedStatusReason;
         readonly StartDependencyImpact _configSolvedImpact;
         FinalConfigStartableStatus _finalConfigStartableStatus;
@@ -27,7 +27,12 @@ namespace Yodii.Engine
             PluginInfo = p;
             Service = service;
             ConfigOriginalStatus = pluginStatus;
-            _configSolvedStatus = pluginStatus;
+            switch( pluginStatus )
+            {
+                case ConfigurationStatus.Disabled: _configSolvedStatus = SolvedConfigurationStatus.Disabled; break;
+                case ConfigurationStatus.Running: _configSolvedStatus = SolvedConfigurationStatus.Running; break;
+                default: _configSolvedStatus = SolvedConfigurationStatus.Runnable; break;
+            }
             _configSolvedStatusReason = PluginRunningRequirementReason.Config;
 
             RawConfigSolvedImpact = ConfigOriginalImpact = impact;
@@ -142,7 +147,7 @@ namespace Yodii.Engine
         /// if this plugin implements a service.
         /// This is the minimal requirement after having propagated the constraints through the graph.
         /// </summary>
-        public ConfigurationStatus ConfigSolvedStatus
+        public SolvedConfigurationStatus ConfigSolvedStatus
         {
             get { return _configSolvedStatus; }
         }
@@ -150,9 +155,9 @@ namespace Yodii.Engine
         /// <summary>
         /// Gets the ConfigSolvedStatus that is ConfigurationStatus.Disabled if the plugin is actually Disabled.
         /// </summary>
-        public ConfigurationStatus FinalConfigSolvedStatus
+        public SolvedConfigurationStatus FinalConfigSolvedStatus
         {
-            get { return _configDisabledReason != PluginDisabledReason.None ? ConfigurationStatus.Disabled : _configSolvedStatus; }
+            get { return _configDisabledReason == PluginDisabledReason.None ? _configSolvedStatus : SolvedConfigurationStatus.Disabled; }
         }
 
         /// <summary>
@@ -188,26 +193,23 @@ namespace Yodii.Engine
             if( Service != null ) Service.OnPluginDisabled( this );
         }
 
-        internal bool SetSolvedStatus( ConfigurationStatus status, PluginRunningRequirementReason reason )
+        internal bool SetRunningStatus( PluginRunningRequirementReason reason )
         {
-            Debug.Assert( status >= ConfigurationStatus.Runnable );
-            if( _configSolvedStatus >= status ) return !Disabled;
-            _configSolvedStatus = status;
+            if( _configSolvedStatus == SolvedConfigurationStatus.Running ) return !Disabled;
+            _configSolvedStatus = SolvedConfigurationStatus.Running;
             _configSolvedStatusReason = reason;
-
-            if( status == ConfigurationStatus.Running && Service != null && !Service.Family.SetRunningPlugin( this ) ) return false;
-
-            return PropagateSolvedStatus();
+            if( Service != null && !Service.Family.SetRunningPlugin( this ) ) return false;
+            return PropagateRunningStatus();
         }
 
-        internal bool PropagateSolvedStatus()
+        internal bool PropagateRunningStatus()
         {
-            Debug.Assert( FinalConfigSolvedStatus >= ConfigurationStatus.Runnable );
+            Debug.Assert( FinalConfigSolvedStatus == SolvedConfigurationStatus.Running );
             if( !Disabled )
             {
-                foreach( var s in GetIncludedServices( _configSolvedImpact, ConfigSolvedStatus == ConfigurationStatus.Runnable ) )
+                foreach( var s in GetIncludedServices( _configSolvedImpact, false ) )
                 {
-                    if( !s.SetSolvedStatus( _configSolvedStatus, ServiceSolvedConfigStatusReason.FromPropagation ) )
+                    if( !s.SetRunningStatus( ServiceSolvedConfigStatusReason.FromPropagation ) )
                     {
                         if( !Disabled )
                         {
@@ -293,7 +295,7 @@ namespace Yodii.Engine
             if( forRunnableStatus ) iImpact *= 2;
             --iImpact;
 
-            IReadOnlyList < ServiceData > i = _inclServices[iImpact];
+            IReadOnlyList<ServiceData> i = _inclServices[iImpact];
             if( i == null )
             {
                 var baseSet = forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;

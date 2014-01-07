@@ -7,27 +7,22 @@ using System.Threading.Tasks;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Configuration status for a configuration item (a plugin or a service).
+    /// Solved configuration status captures for any item (either a plugin or a service) the result of the static resolution.
     /// </summary>
-    public enum ConfigurationStatus
+    public enum SolvedConfigurationStatus
     {
         /// <summary>
-        /// Item must be disabled, and cannot be running.
+        /// Item must be disabled, and cannot be run.
         /// </summary>
         Disabled = -1,
 
         /// <summary>
-        /// Item can be running or not. This is the default.
-        /// </summary>
-        Optional = 0,
-
-        /// <summary>
-        /// Item must be able to start as needed.
+        /// Item can be started or stopped at any time.
         /// </summary>
         Runnable = 4,
 
         /// <summary>
-        /// Item must be running.
+        /// Item must run.
         /// </summary>
         Running = 6
     }

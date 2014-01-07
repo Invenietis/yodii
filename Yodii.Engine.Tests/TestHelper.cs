@@ -33,7 +33,7 @@ using NUnit.Framework;
 namespace Yodii.Engine.Tests
 {
     [ExcludeFromCodeCoverage]
-    static partial class TestHelper
+    static class TestHelper
     {
         static string _testData;
         static string _solutionFolder;

@@ -45,9 +45,16 @@ namespace Yodii.Model
         StartDependencyImpact ConfigSolvedImpact { get; }
 
         /// <summary>
-        /// Final configuration status based on requirements from other participants.
+        /// Gets the solved configuration status, it is the wanted result: it can be <see cref="SolvedConfigurationStatus.Runnning"/>
+        /// even if the <see cref="DisabledReason"/> is not null.
+        /// Use <see cref="FinalConfigSolvedStatus"/> to get a status that integrates the fact that the item is disabled.
         /// </summary>
-        ConfigurationStatus WantedConfigSolvedStatus { get; }
+        SolvedConfigurationStatus WantedConfigSolvedStatus { get; }
+
+        /// <summary>
+        /// Gets the final configuration status, it is the result of the static resolution phase.
+        /// </summary>
+        SolvedConfigurationStatus FinalConfigSolvedStatus { get; }
 
         /// <summary>
         /// Gets whether this item blocks static resolution.

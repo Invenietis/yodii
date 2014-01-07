@@ -32,9 +32,16 @@ namespace Yodii.Model
         ConfigurationStatus ConfigOriginalStatus { get; }
 
         /// <summary>
+        /// Gets the solved configuration status, it is the wanted result: it can be <see cref="SolvedConfigurationStatus.Running"/>
+        /// even if the <see cref="DisabledReason"/> is not null.
+        /// Use <see cref="FinalConfigSolvedStatus"/> to get a status that integrates the fact that the item is disabled.
+        /// </summary>
+        SolvedConfigurationStatus WantedConfigSolvedStatus { get; }
+
+        /// <summary>
         /// Gets the final configuration status, it is the result of the static resolution phase.
         /// </summary>
-        ConfigurationStatus ConfigSolvedStatus { get; }
+        SolvedConfigurationStatus FinalConfigSolvedStatus { get; }
 
         /// <summary>
         /// Gets the dependency impact as set by initial configuration.

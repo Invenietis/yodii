@@ -41,7 +41,7 @@ namespace Yodii.Engine
 
             internal bool TestCanStart( StartDependencyImpact impact )
             {
-                Debug.Assert( Service.DynamicStatus == null && (Service.FinalConfigSolvedStatus == ConfigurationStatus.Runnable || Service.FinalConfigSolvedStatus == ConfigurationStatus.Optional ) );
+                Debug.Assert( Service.DynamicStatus == null && Service.FinalConfigSolvedStatus == SolvedConfigurationStatus.Runnable );
                 Debug.Assert( impact != StartDependencyImpact.Unknown );
 
                 if( TheOnlyPlugin != null )

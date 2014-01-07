@@ -21,13 +21,13 @@ namespace Yodii.Engine
         {
             switch( FinalConfigSolvedStatus )
             {
-                case ConfigurationStatus.Disabled: 
+                case SolvedConfigurationStatus.Disabled: 
                     {
                         _dynamicReason = PluginRunningStatusReason.StoppedByConfig;
                         _dynamicStatus = RunningStatus.Disabled;
                         break;
                     }
-                case ConfigurationStatus.Running: 
+                case SolvedConfigurationStatus.Running: 
                     {
                         Debug.Assert( Service == null || (Service.Family.RunningPlugin == this) );
                         _dynamicReason = PluginRunningStatusReason.StartedByConfig;
