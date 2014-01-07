@@ -72,12 +72,12 @@ namespace Yodii.Engine
 
         #endregion properties
 
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, ConfigurationStatus newStatus )
+        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, FinalConfigurationItem data )
         {
             Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
 
             if( _owner == null ) return SuccessYodiiEngineResult.NullEngineSuccessResult;
-            return _owner.OnConfigurationItemChanging( item, newStatus );
+            return _owner.OnConfigurationItemChanging( item, data );
         }
 
         #region INotifyPropertyChanged
@@ -97,11 +97,6 @@ namespace Yodii.Engine
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
             ConfigurationLayer _layer;
 
-            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
-            {
-                get { return _items; }
-            }
-
             internal ConfigurationItemCollection( ConfigurationLayer parent )
             {
                 _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
@@ -119,15 +114,35 @@ namespace Yodii.Engine
             {
                 FirePropertyChanged( e );
             }
+            
+            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
+            {
+                get { return _items; }
+            }
 
-            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "" )
+            IConfigurationLayer IConfigurationItemCollection.ParentLayer
+            {
+                get { return _layer; }
+            }
+
+            internal ConfigurationLayer ParentLayer
+            {
+                get { return _layer; }
+            }
+
+            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "", StartDependencyImpact impact = StartDependencyImpact.Unknown)
             {
                 if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
                 ConfigurationItem existing = _items.GetByKey( serviceOrPluginFullName );
-                if( existing != null ) return existing.SetStatus( status );
+                if( existing != null )
+                {
+                    IYodiiEngineResult res = existing.SetStatus( status );
+                    if( res.Success ) return existing.SetImpact(impact);
+                    return res;
+                }
 
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, statusReason );
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, impact, statusReason );
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );

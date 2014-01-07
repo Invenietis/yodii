@@ -35,13 +35,23 @@ namespace Yodii.Model
         }
 
         /// <summary>
+        /// Gets the final configuration impact for a given service or plugin ID.
+        /// </summary>
+        /// <param name="serviceOrPluginFullName">Service or plugin ID to check.</param>
+        /// <returns>The impact of the item.</returns>
+        public StartDependencyImpact GetImpact( string serviceOrPluginFullName )
+        {
+            return _items.GetByKey( serviceOrPluginFullName ).Impact;
+        }
+
+        /// <summary>
         /// Creates a new instance of FinalConfiguration, using given statuses.
         /// </summary>
-        /// <param name="finalStatus">Statuses to set.</param>
-        public FinalConfiguration( Dictionary<string, ConfigurationStatus> finalStatus )
+        /// <param name="finalStatusAndImpact">Statuses to set.</param>
+        public FinalConfiguration( Dictionary<string, FinalConfigurationItem> finalStatusAndImpact )
             : this()
         {
-            foreach( var item in finalStatus ) _items.Add( new FinalConfigurationItem( item.Key, item.Value ) );
+            foreach( var item in finalStatusAndImpact ) _items.Add( new FinalConfigurationItem(item.Key, item.Value.Status, item.Value.Impact) );
         }
 
         /// <summary>
