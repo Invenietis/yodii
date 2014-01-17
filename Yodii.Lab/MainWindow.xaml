@@ -95,19 +95,26 @@
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon
+            AutomaticStateManagement="False"
+            CanCustomizeQuickAccessToolBar="False"
             CanQuickAccessLocationChanging="False"
+            CanCustomizeRibbon="False"
+            x:Name="RibbonControl"
             ShowQuickAccessToolBarAboveRibbon="True"
             DockPanel.Dock="Top">
             <!--Quick Access Toolbar Items-->
             <Fluent:Ribbon.QuickAccessItems>
                 <!--Use Content or Target Property to set QAT item-->
                 <Fluent:QuickAccessMenuItem
+                    CanAddToQuickAccessToolBar="False"
                     IsChecked="true"
                     Target="{Binding ElementName=NewButton}" />
                 <Fluent:QuickAccessMenuItem
+                    CanAddToQuickAccessToolBar="False"
                     IsChecked="true"
                     Target="{Binding ElementName=SaveButton}" />
                 <Fluent:QuickAccessMenuItem
+                    CanAddToQuickAccessToolBar="False"
                     IsChecked="true"
                     Target="{Binding ElementName=OpenButton}" />
             </Fluent:Ribbon.QuickAccessItems>

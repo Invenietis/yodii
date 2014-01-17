@@ -347,7 +347,7 @@ namespace Yodii.Engine
 
         public IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact )
         {
-            if( _exclServices == null ) _exclServices = new IReadOnlyList<ServiceData>[5];
+            if( _exclServices == null ) _exclServices = new IReadOnlyList<ServiceData>[6];
             IReadOnlyList<ServiceData> e = _exclServices[(int)impact-1];
             if( e == null )
             {

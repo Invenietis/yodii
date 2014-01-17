@@ -15,7 +15,7 @@ namespace Yodii.Model
         /// <param name="status">Required configuration status.</param>
         /// <param name="statusReason">Description of the change.</param>
         /// <returns>Yodii engine change result.</returns>
-        IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "" );
+        IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "", StartDependencyImpact impact = StartDependencyImpact.Unknown );
 
         /// <summary>
         /// Attempts to remove a configuration item, effectively making it Optional.
@@ -30,5 +30,10 @@ namespace Yodii.Model
         /// <param name="key">ServiceOrPluginFullName</param>
         /// <returns>Configuration item.</returns>
         IConfigurationItem this[string key] { get; }
+
+        /// <summary>
+        /// Layer containing this IConfigurationItemCollection
+        /// </summary>
+        IConfigurationLayer ParentLayer { get; }
     }
 }
