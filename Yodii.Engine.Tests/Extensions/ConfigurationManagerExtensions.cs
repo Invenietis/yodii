@@ -33,5 +33,13 @@ namespace Yodii.Engine.Tests
                 Assert.That( @this.FinalConfiguration.GetStatus( split[0] ).ToString(), Is.EqualTo( split[1] ) );
             }
         }
+
+        public static void ClearAllLayers( this YodiiEngine @this, string pluginOrServiceFullName )
+        {
+            foreach( ConfigurationLayer layer in @this.Configuration.Layers )
+            {
+                layer.Items.Remove( pluginOrServiceFullName );
+            }
+        }
     }
 }

@@ -253,13 +253,7 @@ namespace Yodii.Engine.Tests
         }
 
         [Test]
-        public void ConfigStatusManagement()
-        {
-
-        }
-
-        [Test]
-        public void ConfigStatusManagement()
+        public void FullStartImpactCombination()
         {
             YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
 
@@ -268,17 +262,130 @@ namespace Yodii.Engine.Tests
             string pluginIdentifier = Guid.NewGuid().ToString();
 
             IYodiiEngineResult result;
+            layer1.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStart );
+      
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
 
-            layer1.Items.Add( pluginIdentifier, ConfigurationStatus.Disabled );
-            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Running );
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );         
+            Assert.That( result.Success ); 
+            Assert.That( StartDependencyImpact.FullStart == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
 
-            Assert.That( !result.Success );
-            Assert.That( layer1.Items[pluginIdentifier].Status == ConfigurationStatus.Disabled &&
-                layer2.Items.Count == 0);
+            layer2.Items.Remove( pluginIdentifier );
 
-            layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Disabled );
-            result = layer2.Items[pluginIdentifier].SetStatus( ConfigurationStatus.Running );
-            Assert.That( layer2.Items[pluginIdentifier].Status == ConfigurationStatus.Running );
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.Minimal);
+            Assert.That( result.Success && StartDependencyImpact.FullStart == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+        }
+
+        [Test]
+        public void FullStopImpactCombination()
+        {
+            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer layer1 = e.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = e.Configuration.Layers.Create();
+            string pluginIdentifier = Guid.NewGuid().ToString();
+
+            IYodiiEngineResult result;
+            layer1.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStart );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            Assert.That( result.Success && StartDependencyImpact.FullStop == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.Minimal );
+            Assert.That( result.Success && StartDependencyImpact.FullStop == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+        }
+
+        [Test]
+        public void StartRecommendedImpactCombination()
+        {
+            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer layer1 = e.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = e.Configuration.Layers.Create();
+            string pluginIdentifier = Guid.NewGuid().ToString();
+
+            IYodiiEngineResult result;
+            layer1.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStart );
+            Assert.That( result.Success && StartDependencyImpact.FullStart == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.Minimal );
+            Assert.That( result.Success && StartDependencyImpact.StartRecommended == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            Assert.That( result.Success && StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            Assert.That( result.Success && StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+        }
+
+        [Test]
+        public void StartRecommendedAndStopOptionalAndRunnableImpactCombination()
+        {
+            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer layer1 = e.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = e.Configuration.Layers.Create();
+            string pluginIdentifier = Guid.NewGuid().ToString();
+
+            IYodiiEngineResult result;
+            layer1.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStart );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            Assert.That( !result.Success && result.ConfigurationFailureResult.FailureReasons != null );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.Minimal );
+            Assert.That( result.Success && StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            Assert.That( result.Success && StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
+
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            Assert.That( result.Success && StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable == e.Configuration.FinalConfiguration.GetImpact( pluginIdentifier ) );
+
+            layer2.Items.Remove( pluginIdentifier );
         }
     }   
 }
