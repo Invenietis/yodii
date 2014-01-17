@@ -252,5 +252,33 @@ namespace Yodii.Engine.Tests
 
         }
 
-    }
+        [Test]
+        public void ConfigStatusManagement()
+        {
+
+        }
+
+        [Test]
+        public void ConfigStatusManagement()
+        {
+            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+
+            IConfigurationLayer layer1 = e.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = e.Configuration.Layers.Create();
+            string pluginIdentifier = Guid.NewGuid().ToString();
+
+            IYodiiEngineResult result;
+
+            layer1.Items.Add( pluginIdentifier, ConfigurationStatus.Disabled );
+            result = layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Running );
+
+            Assert.That( !result.Success );
+            Assert.That( layer1.Items[pluginIdentifier].Status == ConfigurationStatus.Disabled &&
+                layer2.Items.Count == 0);
+
+            layer2.Items.Add( pluginIdentifier, ConfigurationStatus.Disabled );
+            result = layer2.Items[pluginIdentifier].SetStatus( ConfigurationStatus.Running );
+            Assert.That( layer2.Items[pluginIdentifier].Status == ConfigurationStatus.Running );
+        }
+    }   
 }
