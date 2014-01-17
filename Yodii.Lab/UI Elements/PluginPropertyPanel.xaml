@@ -263,7 +263,7 @@
                     <TextBlock
                         Grid.Row="3"
                         Style="{StaticResource PropertyNameStyle}">
-                    ConfigSolvedStatus
+                    WantedConfigSolvedStatus
                     </TextBlock>
                     <Border
                         Grid.Column="1"
@@ -271,7 +271,7 @@
                         Style="{StaticResource PropertyBorderStyle}">
                         <TextBlock
                             Style="{StaticResource PropertyValueStyle}"
-                            Text="{Binding Path=LivePluginInfo.ConfigSolvedStatus, Mode=OneWay}" />
+                            Text="{Binding Path=LivePluginInfo.WantedConfigSolvedStatus, Mode=OneWay}" />
                     </Border>
 
                     <TextBlock
