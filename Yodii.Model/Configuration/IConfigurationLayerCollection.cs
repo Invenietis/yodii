@@ -36,5 +36,10 @@ namespace Yodii.Model
         /// <returns>Yodii engine change result.</returns>
         IYodiiEngineResult Clear();
 
+        /// <summary>
+        /// Manager containing this IConfigurationLayerCollection
+        /// </summary>
+        IConfigurationManager ParentManager { get; }
+
     }
 }
