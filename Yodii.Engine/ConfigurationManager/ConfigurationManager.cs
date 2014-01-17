@@ -375,6 +375,16 @@ namespace Yodii.Engine
             {
                 get { return _layers.GetAllByKey( String.IsNullOrWhiteSpace( layerName ) ? String.Empty : layerName ); }
             }
+
+            #region IConfigurationLayerCollection Members
+
+
+            public IConfigurationManager ParentManager
+            {
+                get { return _parent; }
+            }
+
+            #endregion
         }
 
     }
