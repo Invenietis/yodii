@@ -653,10 +653,10 @@
                                 Property="DashStyle"
                                 Value="Dot" />
                         </DataTrigger>
-                        <!-- Ref. OptionalTryStart -->
+                        <!-- Ref. OptionalRecommended -->
                         <DataTrigger
                             Binding="{Binding Path=ReferenceRequirement}"
-                            Value="OptionalTryStart">
+                            Value="OptionalRecommended">
                             <Setter
                                 Property="Foreground"
                                 Value="MidnightBlue" />
@@ -681,10 +681,10 @@
                                 Property="DashStyle"
                                 Value="Dot" />
                         </DataTrigger>
-                        <!-- Ref. RunnableTryStart -->
+                        <!-- Ref. RunnableRecommended -->
                         <DataTrigger
                             Binding="{Binding Path=ReferenceRequirement}"
-                            Value="RunnableTryStart">
+                            Value="RunnableRecommended">
                             <Setter
                                 Property="Foreground"
                                 Value="Yellow" />

@@ -61,9 +61,9 @@ namespace Yodii.Engine
         StoppedByFinalDecision,
         StartedByFinalDecision,
         StoppedByRunningReference,
-        StoppedByRunnableTryStartReference,
+        StoppedByRunnableRecommendedReference,
         StoppedByRunnableReference,
-        StoppedByOptionalTryStartReference,
+        StoppedByOptionalRecommendedReference,
         StoppedByOptionalReference
     }
 }

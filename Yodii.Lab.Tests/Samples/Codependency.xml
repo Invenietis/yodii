@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="IA">
+      <Generalization />
+      <X>0</X>
+      <Y>0</Y>
+    </Service>
+    <Service FullName="IB">
+      <Generalization />
+      <X>119</X>
+      <Y>0</Y>
+    </Service>
+    <Service FullName="IC">
+      <Generalization />
+      <X>236</X>
+      <Y>0</Y>
+    </Service>
+    <Service FullName="ID">
+      <Generalization />
+      <X>354</X>
+      <Y>0</Y>
+    </Service>
+    <Service FullName="IE">
+      <Generalization />
+      <X>473</X>
+      <Y>0</Y>
+    </Service>
+    <Service FullName="IF">
+      <Generalization />
+      <X>642.5</X>
+      <Y>0</Y>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>A</FullName>
+      <Service>IA</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IB" Requirement="Running" />
+      </ServiceReferences>
+      <X>0</X>
+      <Y>65</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>B</FullName>
+      <Service>IB</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IA" Requirement="Running" />
+      </ServiceReferences>
+      <X>119</X>
+      <Y>65</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>C</FullName>
+      <Service>IC</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IF" Requirement="Running" />
+      </ServiceReferences>
+      <X>236</X>
+      <Y>65</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>D</FullName>
+      <Service>ID</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IC" Requirement="Running" />
+      </ServiceReferences>
+      <X>354</X>
+      <Y>65</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>E</FullName>
+      <Service>IE</Service>
+      <ServiceReferences>
+        <ServiceReference Service="ID" Requirement="Running" />
+      </ServiceReferences>
+      <X>473</X>
+      <Y>65</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>F</FullName>
+      <Service>IF</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IE" Requirement="Running" />
+      </ServiceReferences>
+      <X>588.871930956813</X>
+      <Y>65.9185168633158</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>F2</FullName>
+      <Service>IF</Service>
+      <ServiceReferences />
+      <X>700.378642350873</X>
+      <Y>64.6110125635716</Y>
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="DefaultLayer">
+      <ConfigurationItem ServiceOrPluginId="F2" Status="Disabled" Reason="Right-click change" />
+    </ConfigurationLayer>
+  </Configuration>
+</Yodii.Lab>

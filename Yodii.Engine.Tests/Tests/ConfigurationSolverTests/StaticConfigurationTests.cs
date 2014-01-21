@@ -235,7 +235,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             res.CheckSuccess();
 
             info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.OptionalTryStart );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.OptionalRecommended );
 
             res = engine.SetDiscoveredInfo( info );
 
@@ -249,7 +249,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             res.CheckSuccess();
 
             info = MockInfoFactory.CreateGraph001();
-            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.RunnableTryStart );
+            info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.RunnableRecommended );
 
             res = engine.SetDiscoveredInfo( info );
 
@@ -1133,10 +1133,10 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
-        public void InvalidRunnableTryStartReference()
+        public void InvalidRunnableRecommendedReference()
         {
-            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\InvalidRunnableTryStartReference.png
-            var e = CreateInvalidRunnableTryStartReference();
+            // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\InvalidRunnableRecommendedReference.png
+            var e = CreateInvalidRunnableRecommendedReference();
             e.FullStaticResolutionOnly( res =>
             {
                 Assert.That( res.StaticFailureResult, Is.Not.Null );
@@ -1145,7 +1145,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             } );
         }
 
-        internal static YodiiEngine CreateInvalidRunnableTryStartReference()
+        internal static YodiiEngine CreateInvalidRunnableRecommendedReference()
         {
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph008() );
@@ -1242,7 +1242,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         [Test]
-        public void ValidOptionalTryStartReferences()
+        public void ValidOptionalRecommendedReferences()
         {
             #region graph
             /*
@@ -1292,7 +1292,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
 
-            YodiiEngine engine = CreateValidOptionalTryStartReferences();
+            YodiiEngine engine = CreateValidOptionalRecommendedReferences();
 
             engine.FullStaticResolutionOnly( res =>
             {
@@ -1300,7 +1300,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             } );
         }
 
-        internal static YodiiEngine CreateValidOptionalTryStartReferences()
+        internal static YodiiEngine CreateValidOptionalRecommendedReferences()
         {
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005f() );

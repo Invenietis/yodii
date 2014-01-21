@@ -63,7 +63,7 @@
       <Service>IService1-2</Service>
       <ServiceReferences>
         <ServiceReference Service="IService2" Requirement="Running" />
-        <ServiceReference Service="IService2-1" Requirement="OptionalTryStart" />
+        <ServiceReference Service="IService2-1" Requirement="OptionalRecommended" />
       </ServiceReferences>
       <X>-1041.16437124318</X>
       <Y>8.20419646553125</Y>

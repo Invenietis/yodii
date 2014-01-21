@@ -65,8 +65,8 @@ namespace Yodii.Engine
         OptionalReferenceIsDisabled,
         ByRunningReference,
         ByRunnableReference,
-        ByRunnableTryStartReference,
-        ByOptionalTryStartReference,
+        ByRunnableRecommendedReference,
+        ByOptionalRecommendedReference,
         ByOptionalReference,
     }
 }

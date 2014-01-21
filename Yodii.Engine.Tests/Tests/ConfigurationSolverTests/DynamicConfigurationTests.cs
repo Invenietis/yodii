@@ -384,7 +384,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
 
         //[Test]
-        //public void ValidOptionalTryStartReferences()
+        //public void ValidOptionalRecommendedReferences()
         //{
         //    #region graph
         //    /*
@@ -433,7 +433,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         //     *                                                              +--------+                  +--------+
         //    */
         //    #endregion
-        //    StaticConfigurationTests.CreateValidOptionalTryStartReferences().FullStart( ( engine, res ) =>
+        //    StaticConfigurationTests.CreateValidOptionalRecommendedReferences().FullStart( ( engine, res ) =>
         //    {
         //        engine.CheckAllServicesRunningLocked( "Service1, Service2" );
         //        //After the static resolution and before submitting any yodiiCommands (see TryStarts)

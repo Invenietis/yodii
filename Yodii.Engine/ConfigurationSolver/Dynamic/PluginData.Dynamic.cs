@@ -81,10 +81,10 @@ namespace Yodii.Engine
             switch( requirement )
             {
                 case DependencyRequirement.Running: return PluginRunningStatusReason.StoppedByRunningReference;
-                case DependencyRequirement.RunnableTryStart:
+                case DependencyRequirement.RunnableRecommended:
                     if( impact >= StartDependencyImpact.StartRecommended )
                     {
-                        return PluginRunningStatusReason.StoppedByRunnableTryStartReference;
+                        return PluginRunningStatusReason.StoppedByRunnableRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Runnable:
@@ -93,10 +93,10 @@ namespace Yodii.Engine
                         return PluginRunningStatusReason.StoppedByRunnableReference;
                     }
                     break;
-                case DependencyRequirement.OptionalTryStart:
+                case DependencyRequirement.OptionalRecommended:
                     if( impact >= StartDependencyImpact.StartRecommended )
                     {
-                        return PluginRunningStatusReason.StoppedByOptionalTryStartReference;
+                        return PluginRunningStatusReason.StoppedByOptionalRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
