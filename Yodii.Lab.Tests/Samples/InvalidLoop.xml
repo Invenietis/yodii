@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="IService1">
+      <Generalization />
+      <X>-18.0264159449109</X>
+      <Y>45</Y>
+    </Service>
+    <Service FullName="IService1.2">
+      <Generalization>IService1</Generalization>
+      <X>-66.9315655650749</X>
+      <Y>157.152839090199</Y>
+    </Service>
+    <Service FullName="IService2">
+      <Generalization />
+      <X>291.106342822397</X>
+      <Y>86.1523683472761</Y>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>Plugin1</FullName>
+      <Service>IService1</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IService2" Requirement="Running" />
+      </ServiceReferences>
+      <X>88.4152930063588</X>
+      <Y>138.566230422556</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin1.2</FullName>
+      <Service>IService1.2</Service>
+      <ServiceReferences />
+      <X>-90.18148907096</X>
+      <Y>239.442163852181</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin2</FullName>
+      <Service>IService2</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IService1.2" Requirement="Running" />
+      </ServiceReferences>
+      <X>196.069775613934</X>
+      <Y>269.099319765856</Y>
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="DefaultLayer" />
+  </Configuration>
+</Yodii.Lab>

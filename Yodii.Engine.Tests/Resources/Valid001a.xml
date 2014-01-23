@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="ServiceA">
+      <Generalization />
+    </Service>
+    <Service FullName="ServiceAx">
+      <Generalization>ServiceA</Generalization>
+    </Service>
+    <Service FullName="ServiceB">
+      <Generalization />
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>PluginA-1</FullName>
+      <Service>ServiceA</Service>
+      <ServiceReferences />
+    </Plugin>
+    <Plugin>
+      <FullName>PluginA-2</FullName>
+      <Service>ServiceA</Service>
+      <ServiceReferences>
+        <ServiceReference Service="ServiceB" Requirement="Running" />
+      </ServiceReferences>
+    </Plugin>
+    <Plugin>
+      <FullName>PluginAx-1</FullName>
+      <Service>ServiceAx</Service>
+      <ServiceReferences />
+    </Plugin>
+    <Plugin>
+      <FullName>PluginB-1</FullName>
+      <Service>ServiceB</Service>
+      <ServiceReferences />
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="">
+      <ConfigurationItem ServiceOrPluginId="PluginA-1" Status="Runnable" Reason="" />
+      <ConfigurationItem ServiceOrPluginId="PluginA-2" Status="Runnable" Reason="" />
+      <ConfigurationItem ServiceOrPluginId="PluginAx-1" Status="Runnable" Reason="" />
+      <ConfigurationItem ServiceOrPluginId="PluginB-1" Status="Runnable" Reason="" />
+      <ConfigurationItem ServiceOrPluginId="ServiceA" Status="Runnable" Reason="" />
+      <ConfigurationItem ServiceOrPluginId="ServiceAx" Status="Runnable" Reason="" />
+      <ConfigurationItem ServiceOrPluginId="ServiceB" Status="Runnable" Reason="" />
+    </ConfigurationLayer>
+  </Configuration>
+</Yodii.Lab>

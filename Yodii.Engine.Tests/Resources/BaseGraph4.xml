@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="IService1">
+      <Generalization />
+      <X>-637.593810037161</X>
+      <Y>-344.269395424875</Y>
+    </Service>
+    <Service FullName="IService1-1">
+      <Generalization>IService1</Generalization>
+      <X>-791.670431176708</X>
+      <Y>-246.944802537054</Y>
+    </Service>
+    <Service FullName="IService1-2">
+      <Generalization>IService1-1</Generalization>
+      <X>-976.34265228201</X>
+      <Y>-113.340121772959</Y>
+    </Service>
+    <Service FullName="IService2">
+      <Generalization />
+      <X>32.0475882386247</X>
+      <Y>-349.058729509118</Y>
+    </Service>
+    <Service FullName="IService2-1">
+      <Generalization>IService2</Generalization>
+      <X>402.087490795861</X>
+      <Y>-140.763662611984</Y>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>Plugin 1.1</FullName>
+      <Service>IService1</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IService2" Requirement="Running" />
+      </ServiceReferences>
+      <X>-552.846576195655</X>
+      <Y>-261.315178334479</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 1.2</FullName>
+      <Service>IService1</Service>
+      <ServiceReferences />
+      <X>-395.929983378213</X>
+      <Y>-262.892151939198</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 1-1.1</FullName>
+      <Service>IService1-1</Service>
+      <ServiceReferences />
+      <X>-790.816534434338</X>
+      <Y>-151.634264400079</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 1-1.2</FullName>
+      <Service>IService1-1</Service>
+      <ServiceReferences />
+      <X>-615.257936312672</X>
+      <Y>-147.60108310311</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 1-2.1</FullName>
+      <Service>IService1-2</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IService2" Requirement="Running" />
+        <ServiceReference Service="IService2-1" Requirement="OptionalRecommended" />
+      </ServiceReferences>
+      <X>-1041.16437124318</X>
+      <Y>8.20419646553125</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 1-2.2</FullName>
+      <Service>IService1-2</Service>
+      <ServiceReferences />
+      <X>-866.337202460431</X>
+      <Y>-2.89971432543069</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 2.1</FullName>
+      <Service>IService2</Service>
+      <ServiceReferences />
+      <X>12.2021310483813</X>
+      <Y>-255.992725265758</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 2.2</FullName>
+      <Service>IService2</Service>
+      <ServiceReferences />
+      <X>141.017557360948</X>
+      <Y>-232.969919018186</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 2-1.1</FullName>
+      <Service>IService2-1</Service>
+      <ServiceReferences />
+      <X>521.7976323936</X>
+      <Y>-27.129894902456</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Plugin 2-1.2</FullName>
+      <Service>IService2-1</Service>
+      <ServiceReferences />
+      <X>340.617923469731</X>
+      <Y>-60.4451237152795</Y>
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="DefaultLayer">
+      <ConfigurationItem ServiceOrPluginId="Plugin 1-1.2" Status="Runnable" Reason="Right-click change" />
+      <ConfigurationItem ServiceOrPluginId="Plugin 1-2.1" Status="Runnable" Reason="Right-click change" />
+    </ConfigurationLayer>
+  </Configuration>
+</Yodii.Lab>
