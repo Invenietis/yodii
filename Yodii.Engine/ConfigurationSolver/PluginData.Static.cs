@@ -216,7 +216,7 @@ namespace Yodii.Engine
                             // Instead of generic "PropagationFailed", take the time to compute a detailed reason
                             // for the first reason why this plugin is disabled.
                             var requirement = PluginInfo.ServiceReferences.First( sRef => sRef.Reference == s.ServiceInfo ).Requirement;
-                            var reason = GetDisableReasonForDisabledReference( requirement );
+                            var reason = GetDisableReasonForReference( requirement, _configSolvedImpact );
                             Debug.Assert( reason != PluginDisabledReason.None );
                             SetDisabled( reason );
                         }
@@ -246,24 +246,26 @@ namespace Yodii.Engine
             }
         }
 
-        public PluginDisabledReason GetDisableReasonForDisabledReference( DependencyRequirement req )
+        public PluginDisabledReason GetDisableReasonForReference( DependencyRequirement req, StartDependencyImpact impact )
         {
             switch( req )
             {
-                case DependencyRequirement.Running: return PluginDisabledReason.ByRunningReference;
-                case DependencyRequirement.RunnableRecommended: return PluginDisabledReason.ByRunnableRecommendedReference;
-                case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
+                case DependencyRequirement.Running: 
+                    if( _configSolvedStatus == SolvedConfigurationStatus.Disabled ) return PluginDisabledReason.ByRunningReference;
+                    break;
+                case DependencyRequirement.RunnableRecommended: 
+                    if( impact >= StartDependencyImpact.StartRecommended && _configSolvedStatus == SolvedConfigurationStatus.Disabled )
+                        return PluginDisabledReason.ByRunnableRecommendedReference;
+                    break;
+                case DependencyRequirement.Runnable: 
+                    if( impact == StartDependencyImpact.FullStart && _configSolvedStatus == SolvedConfigurationStatus.Disabled )
+                        return PluginDisabledReason.ByRunnableReference;
+                    break;
                 case DependencyRequirement.OptionalRecommended:
-                    if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
-                    {
-                        return PluginDisabledReason.ByOptionalRecommendedReference;
-                    }
+                    if( impact >= StartDependencyImpact.StartRecommended && _configSolvedStatus == SolvedConfigurationStatus.Disabled ) return PluginDisabledReason.ByOptionalRecommendedReference;
                     break;
                 case DependencyRequirement.Optional:
-                    if( _configSolvedImpact == StartDependencyImpact.FullStart )
-                    {
-                        return PluginDisabledReason.ByOptionalReference;
-                    }
+                    if( impact == StartDependencyImpact.FullStart ) return PluginDisabledReason.ByOptionalReference;
                     break;
             }
             return PluginDisabledReason.None;
