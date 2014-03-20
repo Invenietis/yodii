@@ -251,12 +251,12 @@ namespace Yodii.Engine
             switch( req )
             {
                 case DependencyRequirement.Running: return PluginDisabledReason.ByRunningReference;
-                case DependencyRequirement.RunnableTryStart: return PluginDisabledReason.ByRunnableTryStartReference;
+                case DependencyRequirement.RunnableRecommended: return PluginDisabledReason.ByRunnableRecommendedReference;
                 case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
-                case DependencyRequirement.OptionalTryStart:
+                case DependencyRequirement.OptionalRecommended:
                     if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
                     {
-                        return PluginDisabledReason.ByOptionalTryStartReference;
+                        return PluginDisabledReason.ByOptionalRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
@@ -329,7 +329,7 @@ namespace Yodii.Engine
                     ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
                     switch( sRef.Requirement )
                     {
-                        case DependencyRequirement.RunnableTryStart:
+                        case DependencyRequirement.RunnableRecommended:
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
                                 {
@@ -345,7 +345,7 @@ namespace Yodii.Engine
                                 }
                                 break;
                             }
-                        case DependencyRequirement.OptionalTryStart:
+                        case DependencyRequirement.OptionalRecommended:
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
                                 {
@@ -385,7 +385,7 @@ namespace Yodii.Engine
                                 excl.UnionWith( sr.DirectExcludedServices );
                                 break;
                             }
-                        case DependencyRequirement.RunnableTryStart:
+                        case DependencyRequirement.RunnableRecommended:
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
                                 {
@@ -410,7 +410,7 @@ namespace Yodii.Engine
                                 }
                                 break;
                             }
-                        case DependencyRequirement.OptionalTryStart:
+                        case DependencyRequirement.OptionalRecommended:
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
                                 {

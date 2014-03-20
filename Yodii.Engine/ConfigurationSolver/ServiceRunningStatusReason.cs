@@ -65,17 +65,17 @@ namespace Yodii.Engine
         /// </summary>
         StartedByOptionalReference,
         /// <summary>
-        /// Service started by a plugin's OptionalTryStart reference to this service.
+        /// Service started by a plugin's OptionalRecommended reference to this service.
         /// </summary>
-        StartedByOptionalTryStartReference,
+        StartedByOptionalRecommendedReference,
         /// <summary>
         /// Service started by a plugin's Runnable reference to this service.
         /// </summary>
         StartedByRunnableReference,
         /// <summary>
-        /// Service started by a plugin's RunnableTryStart reference to this service.
+        /// Service started by a plugin's RunnableRecommended reference to this service.
         /// </summary>
-        StartedByRunnableTryStartReference,
+        StartedByRunnableRecommendedReference,
         /// <summary>
         /// Service started by a plugin's Running reference to this service.
         /// </summary>
@@ -86,17 +86,17 @@ namespace Yodii.Engine
         /// </summary>
         StoppedByOptionalReference,
         /// <summary>
-        /// Service stopped by a plugin's OptionalTryStart reference.
+        /// Service stopped by a plugin's OptionalRecommended reference.
         /// </summary>
-        StoppedByOptionalTryStartReference,
+        StoppedByOptionalRecommendedReference,
         /// <summary>
         /// Service stopped by a plugin's Runnable reference.
         /// </summary>
         StoppedByRunnableReference,
         /// <summary>
-        /// Service stopped by a plugin's RunnableTryStart reference.
+        /// Service stopped by a plugin's RunnableRecommended reference.
         /// </summary>
-        StoppedByRunnableTryStartReference,
+        StoppedByRunnableRecommendedReference,
 
         /// <summary>
         /// Service stopped when reaching end of resolution.

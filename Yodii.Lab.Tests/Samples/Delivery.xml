@@ -8,13 +8,13 @@
     </Service>
     <Service FullName="Je livre des colis">
       <Generalization />
-      <X>-54.4877742651743</X>
-      <Y>-100.520899203099</Y>
+      <X>-31.7201566666612</X>
+      <Y>-71.2324253420682</Y>
     </Service>
     <Service FullName="Je livre des colis (avec des garanties)">
       <Generalization>Je livre des colis</Generalization>
-      <X>19.9492431644287</X>
-      <Y>206.268012660135</Y>
+      <X>20.2217964088358</X>
+      <Y>181.410202587578</Y>
     </Service>
     <Service FullName="Je répare les véhicules">
       <Generalization />
@@ -52,7 +52,7 @@
       <Service />
       <ServiceReferences>
         <ServiceReference Service="Je livre des colis" Requirement="Running" />
-        <ServiceReference Service="Je livre des colis (avec des garanties)" Requirement="OptionalTryStart" />
+        <ServiceReference Service="Je livre des colis (avec des garanties)" Requirement="OptionalRecommended" />
       </ServiceReferences>
       <X>-236.698714634642</X>
       <Y>316.900489224127</Y>
@@ -60,11 +60,9 @@
     <Plugin>
       <FullName>ManPower</FullName>
       <Service>Je gère des intérimaires</Service>
-      <ServiceReferences>
-        <ServiceReference Service="Je livre des colis" Requirement="Running" />
-      </ServiceReferences>
-      <X>445.131120535514</X>
-      <Y>413.176081385002</Y>
+      <ServiceReferences />
+      <X>487.88307726771</X>
+      <Y>425.466172444654</Y>
     </Plugin>
     <Plugin>
       <FullName>UPS</FullName>

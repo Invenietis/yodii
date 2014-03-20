@@ -22,7 +22,7 @@ namespace Yodii.Model
         /// <summary>
         /// If the service is available, it is better if it is started (it is a "recommended" service).
         /// </summary>
-        OptionalTryStart = 1,
+        OptionalRecommended = 1,
 
         /// <summary>
         /// The service must be available (ready to run but it can be stopped if nothing else want to start it).
@@ -34,7 +34,7 @@ namespace Yodii.Model
         /// The service must be available and it is better if it is started (it is a "recommended" service). 
         /// It can always be stopped at any time.
         /// </summary>
-        RunnableTryStart = 5,
+        RunnableRecommended = 5,
 
         /// <summary>
         /// The service must be running.

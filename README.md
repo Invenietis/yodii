@@ -51,7 +51,7 @@ Yoddi engine is in charge of computing and maintaining the best configuration of
   
 ##Implementation, Choices & Frame of Works
 
-Yodii is a VS2012 solution. It currently targets .Net framework 4.5 but should compile against other frameworks. We use quite standard C# coding conventions (with minor differences): this [Visual Studio settings](https://github.com/Invenietis/ck-core/blob/master/CKTextEditor.vssettings) should be used to define them. NUnit is used for the unit tests, NuGet for package management.
+Yodii is a VS2012 solution. It currently targets .Net framework 4.0 but should compile against other frameworks. We use quite standard C# coding conventions (with minor differences): this [Visual Studio settings](https://github.com/Invenietis/ck-core/blob/master/CKTextEditor.vssettings) should be used to define them. NUnit is used for the unit tests, NuGet for package management.
 
 Yodii is split into two assemblies: Yodii.Engine and Yodii.Model that exposes the abstractions. Both of them rely on as few dependencies as possible.
 
@@ -61,7 +61,12 @@ Yodii does not use multiple threads nor does it support any kind of multi-thread
 
 #Current Project Status
 Project started on March 2013, the 15<super>th</super>.
-Everything has to be done. The start will mainly consist into extracting parts of the engine from [CK-Desktop](https://github.com/Invenietis/ck-desktop) Civikey project.
+
+###January 23rd, 2014 (0.0.1):
+
+- Engine is functional, but running propagations still need some work for advanced usage. See Yodii.Lab.Tests/Samples/InvalidLoop.xml.
+- Lab is functional. Still has some graph issues with overlap removal. Can display, save, load, and add/remove/edit components and configuration. Engine integration is mostly complete: You can start the Engine and play around with components while it's running.
+- Host needs implementation.
 
 Any help is appreciated.
 

@@ -213,7 +213,7 @@ namespace Yodii.Lab
 
         private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
         {
-            GraphArea.ExportAsPNG( false );
+            GraphArea.ExportAsPNG( true );
         }
 
     }

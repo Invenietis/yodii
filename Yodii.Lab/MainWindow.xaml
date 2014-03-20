@@ -95,19 +95,26 @@
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon
+            AutomaticStateManagement="False"
+            CanCustomizeQuickAccessToolBar="False"
             CanQuickAccessLocationChanging="False"
+            CanCustomizeRibbon="False"
+            x:Name="RibbonControl"
             ShowQuickAccessToolBarAboveRibbon="True"
             DockPanel.Dock="Top">
             <!--Quick Access Toolbar Items-->
             <Fluent:Ribbon.QuickAccessItems>
                 <!--Use Content or Target Property to set QAT item-->
                 <Fluent:QuickAccessMenuItem
+                    CanAddToQuickAccessToolBar="False"
                     IsChecked="true"
                     Target="{Binding ElementName=NewButton}" />
                 <Fluent:QuickAccessMenuItem
+                    CanAddToQuickAccessToolBar="False"
                     IsChecked="true"
                     Target="{Binding ElementName=SaveButton}" />
                 <Fluent:QuickAccessMenuItem
+                    CanAddToQuickAccessToolBar="False"
                     IsChecked="true"
                     Target="{Binding ElementName=OpenButton}" />
             </Fluent:Ribbon.QuickAccessItems>
@@ -118,32 +125,7 @@
                     Header="File">
                     <Fluent:BackstageTabControl>
                         <Fluent:BackstageTabItem
-                            Header="New">
-                            <Grid
-                                Margin="15pt"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top">
-                                <Button
-                                    VerticalContentAlignment="Stretch"
-                                    HorizontalContentAlignment="Stretch"
-                                    Width="100pt"
-                                    Height="100pt"
-                                    Command="{Binding Path=NewFileCommand}">
-                                    <DockPanel>
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            Margin="0,0,0,5pt"
-                                            FontWeight="Bold"
-                                            DockPanel.Dock="Bottom">New file</TextBlock>
-                                        <Viewbox
-                                            Stretch="UniformToFill"
-                                            Child="{StaticResource NewFileIcon}" />
-                                    </DockPanel>
-                                </Button>
-                            </Grid>
-                        </Fluent:BackstageTabItem>
-                        <Fluent:BackstageTabItem
-                            Header="Open">
+                            Header="Home">
                             <Grid
                                 Margin="15pt"
                                 HorizontalAlignment="Stretch"
@@ -154,13 +136,20 @@
                                     <ColumnDefinition
                                         Width="*" />
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition
+                                        Height="Auto" />
+                                    <RowDefinition
+                                        Height="Auto" />
+                                </Grid.RowDefinitions>
                                 <Button
+                                    Grid.Row="1"
                                     VerticalAlignment="Top"
                                     HorizontalAlignment="Left"
                                     VerticalContentAlignment="Stretch"
                                     HorizontalContentAlignment="Stretch"
-                                    Width="100pt"
-                                    Height="100pt"
+                                    Width="60pt"
+                                    Height="60pt"
                                     Command="{Binding Path=OpenFileCommand}">
                                     <DockPanel>
                                         <TextBlock
@@ -169,11 +158,30 @@
                                             FontWeight="Bold"
                                             DockPanel.Dock="Bottom">Open file</TextBlock>
                                         <Viewbox
-                                            Stretch="UniformToFill"
+                                            Stretch="Uniform"
                                             Child="{StaticResource FolderOpenIcon}" />
                                     </DockPanel>
                                 </Button>
+                                <Button
+                                    Grid.Row="0"
+                                    VerticalContentAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    Width="60pt"
+                                    Height="60pt"
+                                    Command="{Binding Path=NewFileCommand}">
+                                    <DockPanel>
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,5pt"
+                                            FontWeight="Bold"
+                                            DockPanel.Dock="Bottom">New file</TextBlock>
+                                        <Viewbox
+                                            Stretch="Uniform"
+                                            Child="{StaticResource NewFileIcon}" />
+                                    </DockPanel>
+                                </Button>
                                 <ScrollViewer
+                                    Grid.RowSpan="10"
                                     Grid.Column="1"
                                     VerticalScrollBarVisibility="Auto">
                                     <StackPanel
@@ -240,42 +248,26 @@
                                 </ScrollViewer>
                             </Grid>
                         </Fluent:BackstageTabItem>
-                        <Fluent:BackstageTabItem
+                        <Fluent:Button
+                            Icon="/Yodii.Lab;component/Assets/Icons/NewDocument_32x32.png"
+                            Command="{Binding Path=NewFileCommand}"
+                            Header="New document..." >
+                        </Fluent:Button>
+                        <Fluent:Button
+                            Icon="/Yodii.Lab;component/Assets/Icons/Folder.png"
+                            Command="{Binding Path=OpenFileCommand}"
+                            Header="Open file">
+                        </Fluent:Button>
+                        <Fluent:Button
+                            Icon="/Yodii.Lab;component/Assets/Icons/base_floppydisk_32.png"
+                            Command="{Binding Path=SaveCommand}"
                             Header="Save">
-                            <Grid
-                                Margin="15pt"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch">
-                                <Button
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Top"
-                                    HorizontalContentAlignment="Stretch"
-                                    VerticalContentAlignment="Stretch"
-                                    Width="100pt"
-                                    Height="100pt"
-                                    Command="{Binding Path=SaveAsFileCommand}">
-                                    <DockPanel
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch">
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            Margin="0,0,0,5pt"
-                                            FontWeight="Bold"
-                                            DockPanel.Dock="Bottom">Save as...</TextBlock>
-                                        <Grid>
-                                            <Grid.Background>
-                                                <VisualBrush
-                                                    AlignmentX="Center"
-                                                    AlignmentY="Center"
-                                                    Visual="{StaticResource DiskIconViewBox}"
-                                                    Stretch="UniformToFill" />
-                                            </Grid.Background>
-                                        </Grid>
-
-                                    </DockPanel>
-                                </Button>
-                            </Grid>
-                        </Fluent:BackstageTabItem>
+                        </Fluent:Button>
+                        <Fluent:Button
+                            Icon="/Yodii.Lab;component/Assets/Icons/base_floppydisk_32.png"
+                            Command="{Binding Path=SaveAsFileCommand}"
+                            Header="Save as...">
+                        </Fluent:Button>
                     </Fluent:BackstageTabControl>
                 </Fluent:Backstage>
             </Fluent:Ribbon.Menu>
@@ -661,10 +653,10 @@
                                 Property="DashStyle"
                                 Value="Dot" />
                         </DataTrigger>
-                        <!-- Ref. OptionalTryStart -->
+                        <!-- Ref. OptionalRecommended -->
                         <DataTrigger
                             Binding="{Binding Path=ReferenceRequirement}"
-                            Value="OptionalTryStart">
+                            Value="OptionalRecommended">
                             <Setter
                                 Property="Foreground"
                                 Value="MidnightBlue" />
@@ -689,10 +681,10 @@
                                 Property="DashStyle"
                                 Value="Dot" />
                         </DataTrigger>
-                        <!-- Ref. RunnableTryStart -->
+                        <!-- Ref. RunnableRecommended -->
                         <DataTrigger
                             Binding="{Binding Path=ReferenceRequirement}"
-                            Value="RunnableTryStart">
+                            Value="RunnableRecommended">
                             <Setter
                                 Property="Foreground"
                                 Value="Yellow" />

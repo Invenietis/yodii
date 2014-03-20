@@ -604,9 +604,9 @@ namespace Yodii.Lab
                 OpenedFilePath = null;
                 LabState.ClearState();
                 ChangedSinceLastSave = false;
+                RaiseCloseBackstageRequest();
             }
 
-            RaiseCloseBackstageRequest();
         }
 
         private bool CanRevokeAllCommands( object obj )
@@ -1147,7 +1147,6 @@ namespace Yodii.Lab
                 _hideNotifications = false;
                 Graph.LockGraphUpdates = false;
             }
-            RaiseCloseBackstageRequest();
             return new DetailedOperationResult( false );
         }
 
@@ -1178,14 +1177,13 @@ namespace Yodii.Lab
                 ChangedSinceLastSave = false;
                 OpenedFilePath = filePath;
                 ClearAutosave();
+                RaiseCloseBackstageRequest();
             }
             catch( Exception e ) // TODO: Detailed exception handling
             {
-                RaiseCloseBackstageRequest();
                 return new DetailedOperationResult( false, e.Message );
             }
 
-            RaiseCloseBackstageRequest();
 
             RaiseNewNotification( new Notification() { Title = "Saved state", Message = filePath } );
             return new DetailedOperationResult( true );

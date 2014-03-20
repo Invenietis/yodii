@@ -760,12 +760,12 @@ namespace Yodii.Engine.Tests.Mocks
             d.PluginInfos.Add( new PluginInfo( "Plugin8", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin8" ).Service = d.FindService( "Service4.4" );
 
-            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service3.1" ), DependencyRequirement.OptionalTryStart);
-            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service3.4" ), DependencyRequirement.OptionalTryStart );
-            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service4.1" ), DependencyRequirement.OptionalTryStart );
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service3.1" ), DependencyRequirement.OptionalRecommended);
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service3.4" ), DependencyRequirement.OptionalRecommended );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service4.1" ), DependencyRequirement.OptionalRecommended );
 
-            d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service4.3" ), DependencyRequirement.OptionalTryStart );
-            d.FindPlugin( "Plugin4" ).AddServiceReference( d.FindService( "Service4.2" ), DependencyRequirement.OptionalTryStart );
+            d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service4.3" ), DependencyRequirement.OptionalRecommended );
+            d.FindPlugin( "Plugin4" ).AddServiceReference( d.FindService( "Service4.2" ), DependencyRequirement.OptionalRecommended );
 
             return d;
         }
@@ -959,7 +959,7 @@ namespace Yodii.Engine.Tests.Mocks
 
             d.PluginInfos.Add( new PluginInfo( "Plugin17", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin17" ).Service = d.FindService( "Service1.2.3" );
-            d.FindPlugin( "Plugin17" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.RunnableTryStart );
+            d.FindPlugin( "Plugin17" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.RunnableRecommended );
 
             d.PluginInfos.Add( new PluginInfo( "Plugin18", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin18" ).Service = d.FindService( "Service1.2.3" );

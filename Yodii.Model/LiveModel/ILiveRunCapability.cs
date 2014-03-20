@@ -33,7 +33,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.StartRecommended"/> mode.
-        /// This requires the recommended dependencies (<see cref="DependencyRequirement.OptionalTryStart"/> and <see cref="DependencyRequirement.RunnableTryStart"/>) to be running. 
+        /// This requires the recommended dependencies (<see cref="DependencyRequirement.OptionalRecommended"/> and <see cref="DependencyRequirement.RunnableRecommended"/>) to be running. 
         /// </summary>
         bool CanStartWithStartRecommended { get; }
 
