@@ -269,6 +269,29 @@ namespace Yodii.Engine
             return PluginDisabledReason.None;
         }
 
+        public PluginDisabledReason GetDisableReasonForRunningReference( DependencyRequirement req )
+        {
+            switch( req )
+            {
+                case DependencyRequirement.Running: return PluginDisabledReason.ByRunningReference;
+                case DependencyRequirement.RunnableTryStart: return PluginDisabledReason.ByRunnableTryStartReference;
+                case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
+                case DependencyRequirement.OptionalTryStart:
+                    if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
+                    {
+                        return PluginDisabledReason.ByOptionalTryStartReference;
+                    }
+                    break;
+                case DependencyRequirement.Optional:
+                    if( _configSolvedImpact == StartDependencyImpact.FullStart )
+                    {
+                        return PluginDisabledReason.ByOptionalReference;
+                    }
+                    break;
+            }
+            return PluginDisabledReason.None;
+        }
+
         public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
         {
             if( _runningIncludedServices == null )

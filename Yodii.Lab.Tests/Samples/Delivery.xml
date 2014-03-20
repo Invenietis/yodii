@@ -8,13 +8,13 @@
     </Service>
     <Service FullName="Je livre des colis">
       <Generalization />
-      <X>-31.7201566666612</X>
-      <Y>-71.2324253420682</Y>
+      <X>-54.4877742651743</X>
+      <Y>-100.520899203099</Y>
     </Service>
     <Service FullName="Je livre des colis (avec des garanties)">
       <Generalization>Je livre des colis</Generalization>
-      <X>20.2217964088358</X>
-      <Y>181.410202587578</Y>
+      <X>19.9492431644287</X>
+      <Y>206.268012660135</Y>
     </Service>
     <Service FullName="Je répare les véhicules">
       <Generalization />
@@ -63,8 +63,8 @@
       <ServiceReferences>
         <ServiceReference Service="Je livre des colis" Requirement="Running" />
       </ServiceReferences>
-      <X>488.253128771288</X>
-      <Y>425.446250156493</Y>
+      <X>445.131120535514</X>
+      <Y>413.176081385002</Y>
     </Plugin>
     <Plugin>
       <FullName>UPS</FullName>
