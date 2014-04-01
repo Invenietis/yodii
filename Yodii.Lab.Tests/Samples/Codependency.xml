@@ -57,8 +57,8 @@
       <ServiceReferences>
         <ServiceReference Service="IF" Requirement="Running" />
       </ServiceReferences>
-      <X>236</X>
-      <Y>65</Y>
+      <X>401.01858067512</X>
+      <Y>294.673255633137</Y>
     </Plugin>
     <Plugin>
       <FullName>D</FullName>
@@ -84,8 +84,8 @@
       <ServiceReferences>
         <ServiceReference Service="IE" Requirement="Running" />
       </ServiceReferences>
-      <X>588.871930956813</X>
-      <Y>65.9185168633158</Y>
+      <X>629.314612039069</X>
+      <Y>129.457905046657</Y>
     </Plugin>
     <Plugin>
       <FullName>F2</FullName>

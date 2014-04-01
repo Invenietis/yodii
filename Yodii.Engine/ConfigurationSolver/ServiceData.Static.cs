@@ -316,6 +316,17 @@ namespace Yodii.Engine
                 PluginDisabledReason reason = backRef.PluginData.GetDisableReasonForDisabledReference( backRef.Requirement );
                 if( reason != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( reason );
             }
+
+            if( Family.RunningService == this )
+            {
+                ServiceData g = Generalization;
+                while( g != null )
+                {
+                    if( !g.Disabled ) g.SetDisabled( ServiceDisabledReason.RunningServiceDisabled );
+                    g = g.Generalization;
+                }
+            }
+
             Debug.Assert( Family.RunningService != this || _inheritedServicesWithThis.All( s => s.Disabled ), "If we were the RunningService, no one else is running." );
         }
 
@@ -377,15 +388,17 @@ namespace Yodii.Engine
 
             if( !Disabled )
             {
-                availableServiceCollector( this );
                 ServiceData spec = FirstSpecialization;
                 while( spec != null )
                 {
                     if( !spec.Disabled ) spec.OnAllPluginsAdded( availableServiceCollector );
                     spec = spec.NextSpecialization;
                 }
-                Debug.Assert( !Disabled );
-                Family.Solver.DeferPropagation( this );
+                if( !Disabled )
+                {
+                    availableServiceCollector( this );
+                    Family.Solver.DeferPropagation( this );
+                }
             }
         }
 
