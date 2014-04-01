@@ -1406,15 +1406,21 @@ namespace Yodii.Lab
             // Settings are not available outside app context.
             if( Application.Current == null ) return;
             _recentFiles.Clear();
-
-            StringCollection files = Properties.Settings.Default.RecentFiles;
-            if( files != null )
+            try
             {
-                foreach( string f in files )
+                StringCollection files = Properties.Settings.Default != null ? Properties.Settings.Default.RecentFiles : null;
+                if( files != null )
                 {
-                    RecentFile r = RecentFile.TryParse( _activityMonitor, f );
-                    if( r != null ) _recentFiles.Add( r );
+                    foreach( string f in files )
+                    {
+                        RecentFile r = RecentFile.TryParse( _activityMonitor, f );
+                        if( r != null ) _recentFiles.Add( r );
+                    }
                 }
+            }
+            catch( Exception ex )
+            {
+                _activityMonitor.Error().Send( ex, "While loading recent files." );
             }
         }
 

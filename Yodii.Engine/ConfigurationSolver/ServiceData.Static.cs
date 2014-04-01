@@ -316,6 +316,7 @@ namespace Yodii.Engine
                 PluginDisabledReason reason = backRef.PluginData.GetDisableReasonForDisabledReference( backRef.Requirement );
                 if( reason != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( reason );
             }
+            
             Debug.Assert( Family.RunningService != this || _inheritedServicesWithThis.All( s => s.Disabled ), "If we were the RunningService, no one else is running." );
         }
 

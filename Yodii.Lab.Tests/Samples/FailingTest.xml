@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="S1">
+      <Generalization />
+      <X>39.5951671106175</X>
+      <Y>-1.02766295954058</Y>
+    </Service>
+    <Service FullName="S1.1">
+      <Generalization>S1</Generalization>
+      <X>38.4249909195164</X>
+      <Y>85.9587859780862</Y>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>P</FullName>
+      <Service>S1</Service>
+      <ServiceReferences />
+      <X>115.915619206618</X>
+      <Y>54.7473261564215</Y>
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="DefaultLayer">
+      <ConfigurationItem ServiceOrPluginId="S1.1" Status="Running" Reason="Right-click change" />
+    </ConfigurationLayer>
+  </Configuration>
+</Yodii.Lab>
