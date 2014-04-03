@@ -64,6 +64,19 @@ namespace Yodii.Engine
                 {
                     _configDisabledReason = PluginDisabledReason.AnotherRunningPluginExistsInFamilyByConfig;
                 }
+                else
+                {
+                    ServiceData SiblingService = Service.FirstSpecialization;
+                    while( SiblingService != null )
+                    {
+                        if( SiblingService.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+                        {
+                             _configDisabledReason = PluginDisabledReason.ServiceSpecializationRunning;
+                             break;
+                        }
+                        SiblingService = SiblingService.NextSpecialization;
+                    }
+                }
             }
             // Immediately check for Runnable references to Disabled Services: this disables us.
             if( !Disabled )
@@ -87,7 +100,11 @@ namespace Yodii.Engine
                     }
                 }
             }
-            if( Service != null ) Service.AddPlugin( this );
+            if (Service != null)
+            {
+                Service.AddPlugin(this);
+
+            }
             if( !Disabled  )
             {
                 // If the plugin is not yet disabled, we register it:
