@@ -66,15 +66,15 @@ namespace Yodii.Engine
                 }
                 else
                 {
-                    ServiceData SiblingService = Service.FirstSpecialization;
-                    while( SiblingService != null )
+                    ServiceData siblingService = Service.FirstSpecialization;
+                    while( siblingService != null )
                     {
-                        if( SiblingService.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+                        if( siblingService.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
                         {
                              _configDisabledReason = PluginDisabledReason.ServiceSpecializationRunning;
                              break;
                         }
-                        SiblingService = SiblingService.NextSpecialization;
+                        siblingService = siblingService.NextSpecialization;
                     }
                 }
             }
@@ -100,10 +100,9 @@ namespace Yodii.Engine
                     }
                 }
             }
-            if (Service != null)
+            if( Service != null )
             {
-                Service.AddPlugin(this);
-
+                Service.AddPlugin( this );
             }
             if( !Disabled  )
             {
@@ -309,6 +308,41 @@ namespace Yodii.Engine
             return PluginDisabledReason.None;
         }
 
+        public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
+        {
+            if( !set.Add( this ) ) return;
+            foreach( var s in GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
+            {
+                s.FillTransitiveIncludedServices( set );
+            }
+        }
+
+        public void CheckInvalidLoop()
+        {
+            Debug.Assert( !Disabled );
+            HashSet<IYodiiItemData> running = new HashSet<IYodiiItemData>();
+            foreach( var sRef in PluginInfo.ServiceReferences )
+            {
+                if( sRef.Requirement == DependencyRequirement.Running )
+                {
+                    ServiceData service = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                    service.FillTransitiveIncludedServices( running );
+                }
+            }
+            if( running.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
+            {
+                SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+            }
+            else
+            {
+                //TODO: for each reference other than running. 
+                //          Clone HashSet, 
+                //          adds FillTransitiveIncludedServices for each reference other than running.
+                // As soon as one intersects, SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+            }
+        }
+
+
         public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
         {
             if( _runningIncludedServices == null )
@@ -322,7 +356,10 @@ namespace Yodii.Engine
                 bool newRunnableAdded = false;
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
-                    if( sRef.Requirement == DependencyRequirement.Runnable ) newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                    if( sRef.Requirement == DependencyRequirement.Runnable || sRef.Requirement == DependencyRequirement.RunnableRecommended )
+                    {
+                        newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                    }
                 }
                 _runnableIncludedServices = newRunnableAdded ? running.ToReadOnlyList() : _runningIncludedServices;
             }
@@ -391,7 +428,13 @@ namespace Yodii.Engine
             IReadOnlyList<ServiceData> e = _exclServices[(int)impact-1];
             if( e == null )
             {
-                HashSet<ServiceData> excl = new HashSet<ServiceData>();
+                HashSet<ServiceData> excl;
+                if( Service != null )
+                {
+                    excl = new HashSet<ServiceData>( Service.Family.AvailableServices );
+                    excl.Except( Service.InheritedServicesWithThis );
+                }
+                else excl = new HashSet<ServiceData>();
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
                     ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );

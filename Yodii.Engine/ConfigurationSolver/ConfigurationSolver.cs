@@ -147,6 +147,10 @@ namespace Yodii.Engine
                     }
                 }
                 ProcessDeferredPropagations();
+                foreach( var p in _orderedPlugins )
+                {
+                    if( !p.Disabled ) p.CheckInvalidLoop();
+                }
             }
 
             // Finalizes static resolution by computing final Runnable statuses per impact for Optional and Runnable plugins or services.
