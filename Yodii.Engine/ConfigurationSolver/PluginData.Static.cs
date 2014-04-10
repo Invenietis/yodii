@@ -432,7 +432,10 @@ namespace Yodii.Engine
                 if( Service != null )
                 {
                     excl = new HashSet<ServiceData>( Service.Family.AvailableServices );
-                    excl.Except( Service.InheritedServicesWithThis );
+                    foreach( ServiceData Sdata in Service.InheritedServicesWithThis )
+                    {
+                        excl.Remove( Sdata );
+                    }
                 }
                 else excl = new HashSet<ServiceData>();
                 foreach( var sRef in PluginInfo.ServiceReferences )
