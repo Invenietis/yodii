@@ -1337,6 +1337,282 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 res.CheckAllServicesRunnable("Service1,Service2,Service3");
             });
         }
+        [Test]
+        public void ValidInternalLoop1()
+        {
+            #region graph
+            /**
+             *                  +--------+          
+             *      +---------->|Service1|
+             *      |           |Optional|
+             *      |           +--------+
+             *      |                    
+             *      |                    
+             *      |                    
+             *  +---+------+             
+             *  |Service1.1|             
+             *  |Optional  |--------+
+             *  +----+-----+        |     
+             *       |              |     
+             *       |              |     
+             *       |              |
+             *       |              |
+             *       |              |
+             *       |              |
+             *  +---+-------+       |      
+             *  |Plugin1.1  |       |      
+             *  |Optional   |-------+      
+             *  +-----------+  Need Running           
+             *                                                       
+             */
+            #endregion
+
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
+            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+
+            d.FindPlugin("Plugin1.1").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
+
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(d);
+
+
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllPluginsRunnable("Plugin1.1,");
+                res.CheckAllServicesRunnable("Service1,Service1.1");
+            });
+        }
+
+        [Test]
+        public void ValidInternalLoop2()
+        {
+            #region graph
+            /**
+             *                  +--------+          
+             *      +---------->|Service1|
+             *      |           |Optional|
+             *      |           +---+----+
+             *      |               |     
+             *      |               |     
+             *      |               |     
+             *  +---+------+        |     
+             *  |Service1.1|        |     
+             *  |Optional  |        |
+             *  +----+-----+        |     
+             *       |              |     
+             *       |              |     
+             *       |              |
+             *       |              |
+             *       |              |
+             *       |              |
+             *  +---+-------+       |      
+             *  |Plugin1.1  |       |      
+             *  |Optional   |-------+      
+             *  +-----------+  Need Running           
+             *                                                       
+             */
+            #endregion
+
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
+            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+
+            d.FindPlugin("Plugin1.1").AddServiceReference(d.FindService("Service1"), DependencyRequirement.Running);
+
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(d);
+
+
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllPluginsRunnable("Plugin1.1,");
+                res.CheckAllServicesRunnable("Service1,Service1.1");
+            });
+        }
+
+        [Test]
+        public void InvalidInternalLoop1()
+        {
+            #region graph
+            /**
+             *                  +--------+           
+             *      +---------->|Service1+-------+   
+             *      |           |Optional|       |   
+             *      |           +---+----+       |   
+             *      |                        +---+-----+                  
+             *      |                        |Plugin1  |                  
+             *      |                        |Optional |                  
+             *  +---+------+                 +---+-----+                  
+             *  |Service1.1|                     | Need Running                       
+             *  |Optional  |---------------------+                        
+             *  +----+-----+                
+             *       |         
+             *       |                 
+             *       |         
+             *       |         
+             *  +----+------+                
+             *  |Plugin1.1  |                
+             *  |Optional   |                
+             *  +-----------+                
+             *                                                            
+             */
+            #endregion
+
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
+            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1").Service = d.FindService("Service1");
+            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+
+            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
+
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(d);
+
+
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckPluginsDisabled("Plugin1");
+                res.CheckAllPluginsRunnable("Plugin1.1");
+                res.CheckAllServicesRunnable("Service1,Service1.1");
+            });
+        }
+        [Test]
+        public void InvalidInternalLoop2()
+        {
+            #region graph
+            /**
+             *                  +--------+           
+             *      +---------->|Service1+---------+ 
+             *      |           |Optional|         | 
+             *      |           +---+----+         | 
+             *      |                              | 
+             *      |                              | 
+             *      |                              | 
+             *  +---+------+                   +---+------+
+             *  |Service1.1|       +---------->|Service1.2|
+             *  |Optional  +-------|-----+     |Optional  |
+             *  +----+-----+       |     |     +----+-----+
+             *       |             |     |          |       
+             *       |             |     |          |       
+             *       |             |     |      +---+------+
+             *   +---+-------+     |     |      |Plugin1.2 |
+             *   |Plugin1.1  |     |     +------+Optional  |
+             *   |Optional   +-----+            +----------+
+             *   +-----------+            Need Running                  
+             *                Need Running      
+             *                                                                
+             */
+            #endregion
+
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.2", d.DefaultAssembly));
+            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+            d.FindService("Service1.2").Generalization = d.FindService("Service1");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1.2", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.2").Service = d.FindService("Service1.2");
+            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+
+            d.FindPlugin("Plugin1.1").AddServiceReference(d.FindService("Service1.2"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin1.2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
+
+
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(d);
+
+
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckPluginsDisabled("Plugin1.1,Plugin1.2");
+                res.CheckAllServicesDisabled("Service1,Service1.1,Service1.2");
+            });
+        }
+        [Test]
+        public void InvalidInternalLoop2WithARunnableReference()
+        {
+            #region graph
+            /**
+             *                  +--------+           
+             *      +---------->|Service1+---------+ 
+             *      |           |Optional|         | 
+             *      |           +---+----+         | 
+             *      |                              | 
+             *      |                              | 
+             *      |                              | 
+             *  +---+------+                   +---+------+
+             *  |Service1.1|       +---------->|Service1.2|
+             *  |Optional  +-------|-----+     |Optional  |
+             *  +----+-----+       |     |     +----+-----+
+             *       |             |     |          |       
+             *       |             |     |          |       
+             *       |             |     |      +---+------+
+             *   +---+-------+     |     |      |Plugin1.2 |
+             *   |Plugin1.1  |     |     +------+Optional  |
+             *   |Optional   +-----+            +----------+
+             *   +-----------+            Need Running                  
+             *                Need Runnable      
+             *                                                                
+             */
+            #endregion
+
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.2", d.DefaultAssembly));
+            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+            d.FindService("Service1.2").Generalization = d.FindService("Service1");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1.2", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.2").Service = d.FindService("Service1.2");
+            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+
+            d.FindPlugin("Plugin1.1").AddServiceReference(d.FindService("Service1.2"), DependencyRequirement.Runnable);
+            d.FindPlugin("Plugin1.2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
+
+
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(d);
+
+
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckPluginsDisabled("Plugin1.1,Plugin1.2");
+                res.CheckAllServicesDisabled("Service1,Service1.1,Service1.2");
+            });
+        }
         internal static YodiiEngine CreateValidCommonReferences3()
         {
             YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
