@@ -335,6 +335,23 @@ namespace Yodii.Engine
             }
             else
             {
+                HashSet<IYodiiItemData> runnable = new HashSet<IYodiiItemData>();
+                
+                foreach (var sRef in PluginInfo.ServiceReferences)
+                {
+                    if (sRef.Requirement == DependencyRequirement.Runnable)
+                    {
+                        runnable.Clear();
+                        runnable.AddRange(running);
+                        ServiceData service2 = _solver.FindExistingService(sRef.Reference.ServiceFullName);
+                        service2.FillTransitiveIncludedServices(runnable);
+                        if (runnable.Overlaps(GetExcludedServices(ConfigSolvedImpact)))
+                        {
+                            SetDisabled(PluginDisabledReason.InvalidStructureLoop);
+                            break;
+                        }
+                    }
+                }
                 //TODO: for each reference other than running. 
                 //          Clone HashSet, 
                 //          adds FillTransitiveIncludedServices for each reference other than running.
