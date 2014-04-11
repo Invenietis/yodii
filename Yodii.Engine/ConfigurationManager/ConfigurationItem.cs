@@ -69,7 +69,7 @@ namespace Yodii.Engine
         public IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem(_serviceOrPluginFullName, _status, _impact ) ); 
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem(_serviceOrPluginFullName, newStatus, _impact ) ); 
             if( result.Success )
             {
                 _status = newStatus;
@@ -82,7 +82,7 @@ namespace Yodii.Engine
 
         public IYodiiEngineResult SetImpact( StartDependencyImpact newImpact )
         {
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, _status, _impact ) );
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, _status, newImpact ) );
             if( result.Success )
             {
                 _impact = newImpact;
