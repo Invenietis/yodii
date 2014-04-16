@@ -311,13 +311,14 @@ namespace Yodii.Engine
         public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
         {
             if( !set.Add( this ) ) return;
+
             foreach( var s in GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
             {
                 s.FillTransitiveIncludedServices( set );
             }
         }
 
-        public void CheckInvalidLoop()
+        public bool CheckInvalidLoop()
         {
             Debug.Assert( !Disabled );
             HashSet<IYodiiItemData> running = new HashSet<IYodiiItemData>();
@@ -332,23 +333,25 @@ namespace Yodii.Engine
             if( running.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
             {
                 SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                return false;
             }
-            else
+            //BELOW : code garenting the use of ONE runnable. Was deemed confusing to the user.
+            /*else
             {
                 HashSet<IYodiiItemData> runnable = new HashSet<IYodiiItemData>();
                 
-                foreach (var sRef in PluginInfo.ServiceReferences)
+                foreach( var sRef in PluginInfo.ServiceReferences )
                 {
-                    if (sRef.Requirement == DependencyRequirement.Runnable)
+                    if( sRef.Requirement == DependencyRequirement.Runnable )
                     {
                         runnable.Clear();
                         runnable.AddRange(running);
-                        ServiceData service2 = _solver.FindExistingService(sRef.Reference.ServiceFullName);
-                        service2.FillTransitiveIncludedServices(runnable);
-                        if (runnable.Overlaps(GetExcludedServices(ConfigSolvedImpact)))
+                        ServiceData service2 = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                        service2.FillTransitiveIncludedServices( runnable );
+                        if( runnable.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
                         {
-                            SetDisabled(PluginDisabledReason.InvalidStructureLoop);
-                            break;
+                            SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                            return false;
                         }
                     }
                 }
@@ -356,7 +359,8 @@ namespace Yodii.Engine
                 //          Clone HashSet, 
                 //          adds FillTransitiveIncludedServices for each reference other than running.
                 // As soon as one intersects, SetDisabled( PluginDisabledReason.InvalidStructureLoop );
-            }
+            }*/
+            return true;
         }
 
 
@@ -449,10 +453,7 @@ namespace Yodii.Engine
                 if( Service != null )
                 {
                     excl = new HashSet<ServiceData>( Service.Family.AvailableServices );
-                    foreach( ServiceData Sdata in Service.InheritedServicesWithThis )
-                    {
-                        excl.Remove( Sdata );
-                    }
+                    excl.ExceptWith( Service.InheritedServicesWithThis );
                 }
                 else excl = new HashSet<ServiceData>();
                 foreach( var sRef in PluginInfo.ServiceReferences )
