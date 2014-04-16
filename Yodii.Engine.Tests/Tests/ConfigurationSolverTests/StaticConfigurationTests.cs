@@ -2208,5 +2208,54 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 res.CheckAllServicesRunnable("Service1,Service2,Service2.1,Service2.2,Service3");
             });
         }
+
+        [Test]
+        public void DoubleInvalidLoopWithRunningReferences()
+        {
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service2", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service2.1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service2.2", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service3", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service3.1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service4", d.DefaultAssembly));
+
+            d.FindService("Service2.1").Generalization = d.FindService("Service2");
+            d.FindService("Service2.2").Generalization = d.FindService("Service2");
+            d.FindService("Service3.1").Generalization = d.FindService("Service3");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1").Service = d.FindService("Service1");
+            d.PluginInfos.Add(new PluginInfo("Plugin2", d.DefaultAssembly));
+            d.FindPlugin("Plugin2").Service = d.FindService("Service2.1");
+            d.PluginInfos.Add(new PluginInfo("Plugin3", d.DefaultAssembly));
+            d.FindPlugin("Plugin3").Service = d.FindService("Service2.2");
+            d.PluginInfos.Add(new PluginInfo("Plugin4", d.DefaultAssembly));
+            d.FindPlugin("Plugin4").Service = d.FindService("Service3");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin5", d.DefaultAssembly));
+            d.FindPlugin("Plugin5").Service = d.FindService("Service3.1");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin6", d.DefaultAssembly));
+            d.FindPlugin("Plugin6").Service = d.FindService("Service4");
+
+            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service2.1"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service3"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin4").AddServiceReference(d.FindService("Service4"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin5").AddServiceReference(d.FindService("Service2.2"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin6").AddServiceReference(d.FindService("Service3.1"), DependencyRequirement.Running);
+
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(d);
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllPluginsRunnable("Plugin2,Plugin3,Plugin5,Plugin6");
+                res.CheckAllServicesRunnable("Service2,Service2.1,Service2.2,Service3, Service3.1, Service4");
+            });
+        }
     }
 }
