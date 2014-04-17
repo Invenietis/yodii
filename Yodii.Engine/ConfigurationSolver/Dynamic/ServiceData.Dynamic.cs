@@ -112,6 +112,7 @@ namespace Yodii.Engine
                             || reason == ServiceRunningStatusReason.StartedByRunnableReference
                             || reason == ServiceRunningStatusReason.StartedByRunnableRecommendedReference
                             || reason == ServiceRunningStatusReason.StartedByRunningReference
+                            || reason == ServiceRunningStatusReason.StartedByPropagation
                             );
             if( _dynamicStatus == null )
             {
@@ -231,7 +232,9 @@ namespace Yodii.Engine
                         || reason == ServiceRunningStatusReason.StoppedByOptionalRecommendedReference
                         || reason == ServiceRunningStatusReason.StoppedByRunnableReference
                         || reason == ServiceRunningStatusReason.StoppedByRunnableRecommendedReference
-                        || reason == ServiceRunningStatusReason.StoppedByFinalDecision );
+                        || reason == ServiceRunningStatusReason.StoppedByFinalDecision 
+                        || reason == ServiceRunningStatusReason.StoppedByPropagation
+                        );
 
             _dynamicStatus = RunningStatus.Stopped;
             _dynamicReason = reason;
