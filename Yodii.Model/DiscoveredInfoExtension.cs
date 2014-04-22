@@ -72,13 +72,13 @@ namespace Yodii.Model
                     return false; // Plugin name is already used.
                 }
 
-                foreach( var serviceRef in plugin.ServiceReferences )
+                /*foreach( var serviceRef in plugin.ServiceReferences )
                 {
                     if( !plugin.CanReference( serviceRef.Reference ) )
                     {
                         return false; // Service reference points to a service that cannot be run (same family, different branch).
                     }
-                }
+                }*/
             }
 
             return true;
