@@ -39,7 +39,8 @@
     <AssemblyOriginatorKeyFile>SharedKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core">
+    <Reference Include="CK.Core, Version=3.0.19.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.3.0.19-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
@@ -48,13 +49,13 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO">
-      <HintPath>..\packages\Microsoft.Bcl.1.1.7\lib\net40\System.IO.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.1.1.8\lib\net40\System.IO.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime">
-      <HintPath>..\packages\Microsoft.Bcl.1.1.7\lib\net40\System.Runtime.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.1.1.8\lib\net40\System.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks">
-      <HintPath>..\packages\Microsoft.Bcl.1.1.7\lib\net40\System.Threading.Tasks.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Bcl.1.1.8\lib\net40\System.Threading.Tasks.dll</HintPath>
     </Reference>
     <Reference Include="System.XML" />
   </ItemGroup>

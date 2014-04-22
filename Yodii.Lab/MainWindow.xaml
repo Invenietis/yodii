@@ -92,6 +92,9 @@
             PluginPropertiesTemplate="{StaticResource pluginVertexPropertiesTemplate}"
             ServicePropertiesTemplate="{StaticResource serviceVertexPropertiesTemplate}"
             x:Key="vertexPropertiesTemplateSelector" />
+
+        <BooleanToVisibilityConverter
+            x:Key="boolToVisibilityConverter" />
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon
@@ -277,7 +280,6 @@
                 <Fluent:RibbonGroupBox
                     Header="File">
                     <Fluent:Button
-                        Size="Small"
                         x:Name="NewButton"
                         Header="New"
                         Fluent:KeyTip.Keys="N"
@@ -291,7 +293,6 @@
                         </Fluent:Button.ToolTip>
                     </Fluent:Button>
                     <Fluent:Button
-                        Size="Small"
                         x:Name="SaveButton"
                         Header="Save"
                         Fluent:KeyTip.Keys="S"
@@ -306,7 +307,6 @@
                         </Fluent:Button.ToolTip>
                     </Fluent:Button>
                     <Fluent:Button
-                        Size="Small"
                         x:Name="OpenButton"
                         Header="Open"
                         Fluent:KeyTip.Keys="O"
