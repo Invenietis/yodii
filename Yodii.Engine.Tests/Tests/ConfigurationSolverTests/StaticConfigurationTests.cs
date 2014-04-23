@@ -2047,5 +2047,51 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 res.CheckAllServicesRunnable("Service2,Service2.1,Service2.2,Service3, Service3.1, Service4");
             });
         }
+        [Test]
+        public void DynamicInvalidLoop()
+        {
+            #region graph
+            /**
+             *  +--------+                         +--------+   +----------+               +--------+       +----------+ 
+             *  |Service1+-----+   *-------------->|Service2|---|Plugin2   +-------------->|Service3|-------|Plugin3bis|
+             *  |Optional|     |   | Need Running  |Optional|   |Optional  | Need Running  |Optional|       |Optional  |    
+             *  +---+----+     |   |               +---+----+   +----------+               +---+----+       +----------+ 
+             *      |          +---+-----+             |                                       |
+             *      |          |Plugin1  |        +----+-----+                                 |
+             *      |          |Optional |        |Service2.1|                                 |
+             *  +---+------+   +---+-----+        |Optional  |--------------+              +---+-----+
+             *  |Service1.1|                      +----+-----+              |              |Plugin3  |
+             *  |Optional  |---+                       |                    + -------------|Optional |
+             *  +----+-----+   |                   +---+-----+                Need Running +---------+
+             *       |         --------------------|Plugin2.1|                              
+             *       |                Need Running |Optional |                              
+             *       |                             +---------+                              
+             *       |                                                           
+             *       |                                                           
+             *       |                                                                    
+             *  +---+-------+                                                               
+             *  |Plugin1.1  |                                                               
+             *  |Optional   |                                                               
+             *  +-----------+                                                               
+             */
+            #endregion
+            YodiiEngine engine = CreateDynamicInvalidLoop();
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly(res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllPluginsRunnable("Plugin1,Plugin2,Plugin1.1,Plugin2.1,Plugin3,Plugin3bis");
+                res.CheckAllServicesRunnable("Service1,Service1.1,Service2,Service2.1,Service3");
+            });
+        }
+        internal static YodiiEngine CreateDynamicInvalidLoop()
+        {
+            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            engine.SetDiscoveredInfo(MockInfoFactory.CreateGraphDynamicInvalidLoop());
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            return engine;
+        }
     }
 }

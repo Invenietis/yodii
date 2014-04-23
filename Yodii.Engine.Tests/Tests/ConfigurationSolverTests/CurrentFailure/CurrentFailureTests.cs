@@ -221,5 +221,46 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             });
         }
         #endregion
+
+        [Test]
+        public void DynamicInvalidLoop()
+        {
+            #region graph
+            /**
+             *  +--------+                         +--------+   +----------+               +--------+       +----------+ 
+             *  |Service1+-----+   *-------------->|Service2|---|Plugin2   +-------------->|Service3|-------|Plugin3bis|
+             *  |Optional|     |   | Need Running  |Optional|   |Optional  | Need Running  |Optional|       |Optional  |    
+             *  +---+----+     |   |               +---+----+   +----------+               +---+----+       +----------+ 
+             *      |          +---+-----+             |                                       |
+             *      |          |Plugin1  |        +----+-----+                                 |
+             *      |          |Optional |        |Service2.1|                                 |
+             *  +---+------+   +---+-----+        |Optional  |--------------+              +---+-----+
+             *  |Service1.1|                      +----+-----+              |              |Plugin3  |
+             *  |Optional  |---+                       |                    + -------------|Optional |
+             *  +----+-----+   |                   +---+-----+                Need Running +---------+
+             *       |         --------------------|Plugin2.1|                              
+             *       |                Need Running |Optional |                              
+             *       |                             +---------+                              
+             *       |                                                           
+             *       |                                                           
+             *       |                                                                    
+             *  +---+-------+                                                               
+             *  |Plugin1.1  |                                                               
+             *  |Optional   |                                                               
+             *  +-----------+                                                               
+             */
+            #endregion
+
+            StaticConfigurationTests.CreateDynamicInvalidLoop().FullStart((engine, res) =>
+            {
+                engine.LiveInfo.FindService("Service1").Start("caller", StartDependencyImpact.Minimal);
+                engine.CheckAllPluginsRunning("Plugin1, Plugin2, Plugin3bis");
+                engine.CheckAllPluginsStopped("Plugin1.1, Plugin2.1, Plugin3");
+                engine.LiveInfo.FindPlugin("Plugin3bis").Stop();
+                engine.CheckAllPluginsRunning("Plugin1.1, Plugin2.1, Plugin3");
+                engine.CheckAllPluginsStopped("Plugin1, Plugin2, Plugin3bis");
+            });
+        }
+
     }
 }

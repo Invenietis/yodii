@@ -981,5 +981,62 @@ namespace Yodii.Engine.Tests.Mocks
 
             return d;
         }
+        internal static IDiscoveredInfo CreateGraphDynamicInvalidLoop()
+        {
+            #region graph
+            /**
+             *  +--------+                         +--------+   +----------+               +--------+       +----------+ 
+             *  |Service1+-----+   *-------------->|Service2|---|Plugin2   +-------------->|Service3|-------|Plugin3bis|
+             *  |Optional|     |   | Need Running  |Optional|   |Optional  | Need Running  |Optional|       |Optional  |    
+             *  +---+----+     |   |               +---+----+   +----------+               +---+----+       +----------+ 
+             *      |          +---+-----+             |                                       |
+             *      |          |Plugin1  |        +----+-----+                                 |
+             *      |          |Optional |        |Service2.1|                                 |
+             *  +---+------+   +---+-----+        |Optional  |--------------+              +---+-----+
+             *  |Service1.1|                      +----+-----+              |              |Plugin3  |
+             *  |Optional  |---+                       |                    + -------------|Optional |
+             *  +----+-----+   |                   +---+-----+                Need Running +---------+
+             *       |         --------------------|Plugin2.1|                              
+             *       |                Need Running |Optional |                              
+             *       |                             +---------+                              
+             *       |                                                           
+             *       |                                                           
+             *       |                                                                    
+             *  +---+-------+                                                               
+             *  |Plugin1.1  |                                                               
+             *  |Optional   |                                                               
+             *  +-----------+                                                               
+             */
+            #endregion
+
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service2", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service2.1", d.DefaultAssembly));
+            d.ServiceInfos.Add(new ServiceInfo("Service3", d.DefaultAssembly));
+            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+            d.FindService("Service2.1").Generalization = d.FindService("Service2");
+
+            d.PluginInfos.Add(new PluginInfo("Plugin1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1").Service = d.FindService("Service1");
+            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+            d.PluginInfos.Add(new PluginInfo("Plugin2", d.DefaultAssembly));
+            d.FindPlugin("Plugin2").Service = d.FindService("Service2");
+            d.PluginInfos.Add(new PluginInfo("Plugin2.1", d.DefaultAssembly));
+            d.FindPlugin("Plugin2.1").Service = d.FindService("Service2.1");
+            d.PluginInfos.Add(new PluginInfo("Plugin3", d.DefaultAssembly));
+            d.FindPlugin("Plugin3").Service = d.FindService("Service3");
+            d.PluginInfos.Add(new PluginInfo("Plugin3bis", d.DefaultAssembly));
+            d.FindPlugin("Plugin3bis").Service = d.FindService("Service3");
+
+            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service2"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin2").AddServiceReference(d.FindService("Service3"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin2.1").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
+            d.FindPlugin("Plugin3").AddServiceReference(d.FindService("Service2.1"), DependencyRequirement.Running);
+
+            return d;
+        }
     }
 }
