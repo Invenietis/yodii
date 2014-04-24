@@ -110,7 +110,7 @@ namespace Yodii.Engine
                ILivePluginInfo caller = _engine.LiveInfo.FindPlugin( callerKey );
                if( caller != null )
                {
-                   YodiiCommand command = new YodiiCommand( true, caller.FullName, IsPlugin, impact, callerKey );
+                   YodiiCommand command = new YodiiCommand( true, caller.FullName, true , impact, callerKey );
                    _engine.PhantomCommand( command );
                }
             }
