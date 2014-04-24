@@ -246,6 +246,11 @@ namespace Yodii.Engine
         {
             get { return _host; }
         }
-
+        internal void PhantomCommand( YodiiCommand command )
+        {
+            var commands = new List<YodiiCommand> ();
+            commands.Add( command );
+            _yodiiCommands.Merge( commands.ToReadOnlyList() );
+        }
     }
 }

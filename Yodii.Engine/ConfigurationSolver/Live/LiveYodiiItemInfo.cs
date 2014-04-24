@@ -103,6 +103,20 @@ namespace Yodii.Engine
             return _engine.AddYodiiCommand( command );
         }
 
+        public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact, bool tryToStayLaunched )
+        {
+            if( tryToStayLaunched )
+            {
+               ILivePluginInfo caller = _engine.LiveInfo.FindPlugin( callerKey );
+               if( caller != null )
+               {
+                   YodiiCommand command = new YodiiCommand( true, caller.FullName, IsPlugin, impact, callerKey );
+                   _engine.PhantomCommand( command );
+               }
+            }
+            return Start( callerKey, impact );
+        }
+
         public IYodiiEngineResult Stop( string callerKey )
         {
             if( !_capability.CanStop )

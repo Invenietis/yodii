@@ -254,6 +254,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             StaticConfigurationTests.CreateDynamicInvalidLoop().FullStart((engine, res) =>
             {
                 engine.LiveInfo.FindService("Service1").Start("caller", StartDependencyImpact.Minimal);
+                engine.LiveInfo.FindPlugin("Plugin3bis").Start(StartDependencyImpact.Minimal);
                 engine.CheckAllPluginsRunning("Plugin1, Plugin2, Plugin3bis");
                 engine.CheckAllPluginsStopped("Plugin1.1, Plugin2.1, Plugin3");
                 engine.LiveInfo.FindPlugin("Plugin3bis").Stop();
@@ -261,6 +262,58 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.CheckAllPluginsStopped("Plugin1, Plugin2, Plugin3bis");
             });
         }
+        [Test]
+        public void ToTestStartOverload()
+        {
+            #region graph
+            /**
+             *       +-----------------------------------------------+
+             *       |                                               |  
+             *       |                                            +--+-----+                  
+             *       |                                 +----------|Service1|----------+       
+             *       |                                 |          |Optional|          |       
+             *       |                                 |          +---+----+          |       
+             *       |                             +---+-----+                    +---+-----+ 
+             *       |                             |Plugin1.1|                    |Plugin1.2| 
+             *       |Need Optional                |Optional |                    |Optional | 
+             *       |                             +------+--+                    +---+-----+
+             *       |                                    |Need Running               |Need Running                     
+             *       |            +--------+              |                           |             +--------+                  
+             *       | +----------|Service2|----------+   |                           |  +----------|Service3|----------+       
+             *       | |          |Optional|          |   |                           |  |          |Optional|          |       
+             *       | |          +---+----+          |   |                           |  |          +---+----+          |       
+             *     +-+-+-----+                    +---+---+--+                      +-+--+-----+                    +---+-----+ 
+             *     |Plugin2  |                    |Service2.1|                      |Service3.1|                    |Plugin3  | 
+             *     |Optional |                    |Optional  |                      |Optional  |                    |Optional | 
+             *     +---+-----+                    +---+------+                      +--+-------+                    +---+-----+
+             *                                        |                                |      
+             *                                        |                                |      
+             *                                    +---+-----+                      +---+-----+
+             *                                    |Plugin2.1|                      |Plugin3.1|
+             *                                    |Optional |                      |Optional |
+             *                                    +---+-----+                      +---+-----+                                                                                 
+             */
+            #endregion
 
+            StaticConfigurationTests.CreateToTestStartOverload().FullStart( ( engine, res ) =>
+            {
+                //p2,p3,s1
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Start();
+                engine.LiveInfo.FindService( "Service1" ).Start();
+
+                engine.CheckAllPluginsRunning( "Plugin3, Plugin2.1, Plugin1.1" );
+                engine.CheckAllPluginsStopped( "Plugin2, Plugin3.1, Plugin1.2" );
+                engine.Stop();
+                engine.Start();
+                //p2,p3,s1(caller is p2)
+                engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
+                engine.LiveInfo.FindPlugin( "Plugin3" ).Start();
+                engine.LiveInfo.FindService( "Service1" ).Start( "Plugin2", StartDependencyImpact.Minimal, true );
+
+                engine.CheckAllPluginsRunning( "Plugin2, Plugin1.2, Plugin3.1" );
+                engine.CheckAllPluginsStopped( "Plugin3, Plugin2.1, Plugin1.1" );
+            } );
+        }
     }
 }

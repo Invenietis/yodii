@@ -40,7 +40,17 @@ namespace Yodii.Model
         {
             return @this.Start( null, impact );
         }
-
+        /// <summary>
+        /// </summary>
+        /// <param name="this">This live plugin/service info.</param>
+        /// <param name="callerKey">Caller key.</param>
+        /// <param name="impact">The impact.</param>
+        /// <param name="tryToStayLaunched">true : puts the caller in second position</param>
+        /// <returns>The engine result.</returns>
+        public static IYodiiEngineResult Start( this ILiveYodiiItem @this, string callerKey, StartDependencyImpact impact, bool tryToStayLaunched )
+        {
+            return @this.Start( null, impact );
+        }
         /// <summary>
         /// </summary>
         /// <param name="this">This live plugin/service info.</param>

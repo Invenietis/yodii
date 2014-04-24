@@ -2093,5 +2093,55 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             return engine;
         }
+        [Test]
+        public void ToTestStartOverload()
+        {
+            #region graph
+            /**
+             *       +-----------------------------------------------+
+             *       |                                               |  
+             *       |                                            +--+-----+                  
+             *       |                                 +----------|Service1|----------+       
+             *       |                                 |          |Optional|          |       
+             *       |                                 |          +---+----+          |       
+             *       |                             +---+-----+                    +---+-----+ 
+             *       |                             |Plugin1.1|                    |Plugin1.2| 
+             *       |Need Optional                |Optional |                    |Optional | 
+             *       |                             +------+--+                    +---+-----+
+             *       |                                    |Need Running               |Need Running                     
+             *       |            +--------+              |                           |             +--------+                  
+             *       | +----------|Service2|----------+   |                           |  +----------|Service3|----------+       
+             *       | |          |Optional|          |   |                           |  |          |Optional|          |       
+             *       | |          +---+----+          |   |                           |  |          +---+----+          |       
+             *     +-+-+-----+                    +---+---+--+                      +-+--+-----+                    +---+-----+ 
+             *     |Plugin2  |                    |Service2.1|                      |Service3.1|                    |Plugin3  | 
+             *     |Optional |                    |Optional  |                      |Optional  |                    |Optional | 
+             *     +---+-----+                    +---+------+                      +--+-------+                    +---+-----+
+             *                                        |                                |      
+             *                                        |                                |      
+             *                                    +---+-----+                      +---+-----+
+             *                                    |Plugin2.1|                      |Plugin3.1|
+             *                                    |Optional |                      |Optional |
+             *                                    +---+-----+                      +---+-----+                                                                                 
+             */
+            #endregion
+            YodiiEngine engine = CreateToTestStartOverload();
+
+            var result = engine.Start();
+            engine.FullStaticResolutionOnly( res =>
+            {
+                res.CheckSuccess();
+                res.CheckAllPluginsRunnable( "Plugin1.1,Plugin1.2,Plugin2,Plugin2.1,Plugin3,Plugin3.1" );
+                res.CheckAllServicesRunnable( "Service1,Service2,Service2.1,Service3,Service3.1" );
+            } );
+        }
+        internal static YodiiEngine CreateToTestStartOverload()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraphToTestStartOverload() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            return engine;
+        }
     }
 }

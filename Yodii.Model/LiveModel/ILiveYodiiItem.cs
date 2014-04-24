@@ -30,6 +30,15 @@ namespace Yodii.Model
         IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact );
 
         /// <summary>
+        /// Attempts to start the service or plugin.
+        /// </summary>
+        /// <param name="callerKey">Caller identifier.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <param name="tryToStayLaunched">true : puts the caller in second position</param>
+        /// <returns>Result detailing whether the service or plugin was successfully started or not.</returns>
+        IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact, bool tryToStayLaunched );
+
+        /// <summary>
         /// Result detailing whether the service or plugin was successfully stopped or not.
         /// </summary>
         /// <param name="callerKey">Caller identifier.</param>
