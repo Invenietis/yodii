@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Yodii.Model.HostModel
+namespace Yodii.Model
 {
     public interface IService<T> where T : IYodiiService
     {

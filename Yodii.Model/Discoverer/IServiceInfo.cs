@@ -17,7 +17,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the <see cref="IServiceInfo"/> that generalizes this one if it exists.
         /// </summary>
-        IServiceInfo Generalization { get; }
+        IServiceInfo Generalization { get; set; }
 
         /// <summary>
         /// Gets the assembly info that contains (defines) this interface.

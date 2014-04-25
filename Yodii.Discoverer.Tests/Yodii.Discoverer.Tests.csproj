@@ -70,7 +70,10 @@
     <Compile Include="ChoucroutePlugin.cs" />
     <Compile Include="IChoucrouteService.cs" />
     <Compile Include="DiscovererTests.cs" />
+    <Compile Include="IService1.cs" />
+    <Compile Include="IService2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UntaggedPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

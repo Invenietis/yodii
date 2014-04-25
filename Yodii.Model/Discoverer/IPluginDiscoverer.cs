@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yodii.Model
 {
-    /*public interface IPluginDiscoverer
+    public interface IPluginDiscoverer
     {
         /// <summary>
         /// Fires at the beginning of a discovery process.
@@ -37,46 +37,25 @@ namespace Yodii.Model
         IReadOnlyCollection<IPluginInfo> Plugins { get; }
 
         /// <summary>
-        /// Contains all the <see cref="IPluginInfo"/>. This groups <see cref="Plugins"/> and <see cref="OldVersionnedPlugins"/>
-        /// and plugins that are on error.
-        /// </summary>
-        IReadOnlyCollection<IPluginInfo> AllPlugins { get; }
-
-        /// <summary>
-        /// Contains all the <see cref="IPluginInfo"/> that have been succesfully discovered.
-        /// </summary>
-        IReadOnlyCollection<IPluginInfo> OldVersionnedPlugins { get; }
-
-        /// <summary>
         /// Contains all the <see cref="IServiceInfo"/> that have been succesfully discovered
         /// with their implementations.
         /// </summary>
         IReadOnlyCollection<IServiceInfo> Services { get; }
 
-        /// <summary>
-        /// Contains all the <see cref="IServiceInfo"/> that have been succesfully discovered.
-        /// </summary>
-        IReadOnlyCollection<IServiceInfo> AllServices { get; }
-
-        /// <summary>
-        /// Contains all the <see cref="IServiceInfo"/> implemented or referenced by plugins and not
-        /// founded into assemblies.
-        /// </summary>
-        IReadOnlyCollection<IServiceInfo> NotFoundServices { get; }
-
+       
         /// <summary>
         /// Gets <see cref="IPluginInfo"/> best version with the given plugin identifier.
         /// </summary>
         /// <param name="pluginId"></param>
         /// <returns></returns>
-        IPluginInfo FindPlugin( Guid pluginId );
+        IPluginInfo FindPlugin( string pluginFullName );
 
         /// <summary>
         /// Gets the <see cref="IServiceInfo"/> associated to the given assembly qualified name.
         /// </summary>
         /// <param name="assemblyQualifiedName"></param>
         /// <returns></returns>
-        IServiceInfo FindService( string assemblyQualifiedName );
+        IServiceInfo FindService( string serviceFullName );
 
         /// <summary>
         /// Gets the number of discover previously done.
@@ -95,5 +74,5 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="file">An exisiting file (a dll).</param>
         //void Discover( FileInfo file );
-    }*/
+    }
 }

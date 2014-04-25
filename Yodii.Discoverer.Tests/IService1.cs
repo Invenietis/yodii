@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yodii.Model;
 
-namespace Yodii.Model
+namespace Yodii.Discoverer.Tests
 {
-    public interface IRunningService<T> : IService<T> where T : IYodiiService
+    public interface IService1 : IYodiiService
     {
+
     }
 }
