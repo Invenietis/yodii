@@ -73,6 +73,9 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Discoverer\Attributes\DependencyRequirementAttribute.cs" />
+    <Compile Include="Discoverer\Attributes\ImpactAttribute.cs" />
+    <Compile Include="Discoverer\Attributes\PluginAttribute.cs" />
     <Compile Include="Discoverer\DiscoveredInfoChanged.cs" />
     <Compile Include="Discoverer\IPluginDiscoverer.cs" />
     <Compile Include="Discoverer\IYodiiItemCollection.cs" />
