@@ -8,9 +8,11 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
+    [Plugin( "dddddddddddddddddddddddddddddddd", PublicName = "ChoucroutePlugin" )]
     public class ChoucroutePlugin : IChoucrouteService, IYodiiPlugin
     {
         readonly string _pluginFullName;
+        IChoucrouteServiceRef _service;
 
         public ChoucroutePlugin( string pluginFullName ) 
         {
@@ -20,12 +22,7 @@ namespace Yodii.Discoverer.Tests
         public ChoucroutePlugin()
         {
         }
-
-        public void DoSomething()
-        {
-            Debug.WriteLine( "DoSomething!" );
-        }
-
+        
         public bool Setup( PluginSetupInfo info )
         {
             throw new NotImplementedException();
@@ -44,6 +41,20 @@ namespace Yodii.Discoverer.Tests
         public void Stop()
         {
             throw new NotImplementedException();
+        }
+
+        void IChoucrouteService.DoSomething()
+        {
+            Debug.WriteLine( "Done" );
+        }
+
+        //[DependencyRequirementAttribute( DependencyRequirement.Running )]
+        public IChoucrouteServiceRef Service 
+        {
+            [DependencyRequirementAttribute( DependencyRequirement.Running )]
+            get { return _service; }
+            [DependencyRequirementAttribute( DependencyRequirement.Running )]
+            set { _service = value; }
         }
     }
 }

@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 
 namespace Yodii.Discoverer
 {
-    //[GuidAttribute( Guid.NewGuid().ToString() )]
     internal sealed class PluginInfo : IPluginInfo, IDiscoveredItem
     {
         readonly string _pluginFullName;

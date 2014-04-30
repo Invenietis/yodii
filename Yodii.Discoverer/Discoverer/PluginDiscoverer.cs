@@ -17,21 +17,21 @@ namespace Yodii.Discoverer
         AssemblyInfo _assemblyInfo;
 
         //  DiscoveredInfo _discoveredInfo;
-        List<AssemblyInfo> _allAssemblies;
         Collection<TypeDefinition> _allModules;
-        IEnumerable<TypeDefinition> _taggedModules;
-        List<PluginInfo> _foundPlugins;
-        YodiiPluginCollection _plugins;
-        YodiiServiceCollection _services;
+        CKSortedArrayKeyList<PluginInfo, string> _plugins;
+        CKSortedArrayKeyList<ServiceInfo, string> _services;
 
         List<TypeDefinition> _pluginTypes;
         List<TypeDefinition> _serviceTypes;
 
         public PluginDiscoverer()
         {
-            _plugins = new YodiiPluginCollection( this );
-            _services = new YodiiServiceCollection( this );
-            //AssemblyDefinition.ReadAssembly( Path.GetFullPath( "Yodii.Model.dll" ) );
+            _plugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
+            _services = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
+            
+            _pluginTypes = new List<TypeDefinition>();
+            _serviceTypes = new List<TypeDefinition>();
+            AssemblyDefinition.ReadAssembly( Path.GetFullPath( "Yodii.Model.dll" ) );
         }
 
         public void ReadAssembly( string path )
@@ -61,11 +61,16 @@ namespace Yodii.Discoverer
                     _services.Add( new ServiceInfo( type.Name, _assemblyInfo ) );
                 }
             }
+            foreach( TypeDefinition pluginType in _pluginTypes )
+            {
+                SetService( pluginType );
+                SetServiceReferences( pluginType );
+                //RetrievePluginAttribute( pluginType );
+            }
             //Set specialization/generalization for each service families.
             foreach( TypeDefinition serviceType in _serviceTypes )
             {
                 SetGeneralization( serviceType );           
-                AddImplementation( serviceType );
             }
 
             foreach(TypeDefinition pluginType in _pluginTypes )
@@ -73,102 +78,65 @@ namespace Yodii.Discoverer
                 SetServiceReferences( pluginType );
             }
 
-            //Handle conf
-
-            //Not constructor methods
-            IEnumerable<MethodDefinition> typeMethods = _allModules.SelectMany( x => x.Methods ).Where( x => x.Name.StartsWith( ".ctor" ) );
-            //Constructor methods
-            IEnumerable<MethodDefinition> typeConstructors = _allModules.SelectMany( x => x.Methods ).Where( x => x.Name.StartsWith( ".ctor" ) );
-            
             return true;
-        }
-
-
-        public class YodiiPluginCollection 
-        {
-            private CKObservableSortedArrayKeyList<PluginInfo, string> _plugins;
-
-            private PluginDiscoverer _parent;
-
-            internal YodiiPluginCollection(PluginDiscoverer parent)
-            {
-                _parent = parent;
-                _plugins = new CKObservableSortedArrayKeyList<PluginInfo, string>( e => e.PluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
-                //Set events here later if needed.
-            }
-            
-            public IPluginInfo this[string key]
-            {
-                get { return _plugins.GetByKey( key ); }
-            }
-
-            //public CKObservableSortedArrayKeyList<PluginInfo, string> Plugins
-            //{
-            //    get { return _plugins; }
-            //}
-
-            internal void Add( PluginInfo pluginInfo )
-            {
-                _plugins.Add( pluginInfo );
-            }
-
-            internal CKObservableSortedArrayKeyList<PluginInfo, string> All
-            {
-                get { return _plugins; }
-            }
-        }
-
-        public class YodiiServiceCollection 
-        {
-            private CKObservableSortedArrayKeyList<ServiceInfo, string> _services;
-
-            private PluginDiscoverer _parent;
-
-            internal YodiiServiceCollection( PluginDiscoverer parent )
-            {
-                _parent = parent;
-                _services = new CKObservableSortedArrayKeyList<ServiceInfo, string>( e => e.ServiceFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
-                //Set events here later if needed.
-            }
-
-            public IServiceInfo this[string key]
-            {
-                get { return _services.GetByKey( key ); }
-            }
-
-            internal CKObservableSortedArrayKeyList<ServiceInfo, string> All
-            {
-                get { return _services; }
-            }
-
-            internal void Add( ServiceInfo serviceInfo )
-            {
-                _services.Add( serviceInfo );
-            }
         }
 
         private void SetGeneralization( TypeDefinition serviceType )
         {
             IEnumerable<TypeReference> parent =
                     from i in serviceType.Interfaces
-                    where !i.FullName.Equals( typeof( IYodiiService ).FullName ) && IsYodiiService( i.Resolve() ) // && IsTheOnlyGeneralization
+                    where !i.FullName.Equals( typeof( IYodiiService ).FullName ) && IsYodiiService( i.Resolve() )
                     select i;
             
             if( parent.Any() )
-                _services[serviceType.Name].Generalization = _services[parent.ElementAt( 0 ).Name];
+                _services.GetByKey( serviceType.Name ).Generalization = _services.GetByKey( parent.ElementAt( 0 ).Name );
         }
 
-        private void SetServiceReferences( TypeDefinition pluginType )
+        private CustomAttribute RetrievePluginAttribute( TypeDefinition type )
+        {
+            return type.Methods[0].DeclaringType.CustomAttributes[0];
+        }
+
+        //Get Service name + requirement
+        public void SetServiceReferences( TypeDefinition pluginType )
+        {
+            //Retrieves the DependencyRequirement value of a service reference.
+            foreach(MethodDefinition method in pluginType.Methods)
+            {
+                if( method.HasCustomAttributes )
+                {
+                    var query = method.CustomAttributes
+                        .Where(ca => ca.ConstructorArguments != null)
+                        .Select( ca => ca.ConstructorArguments );
+                    
+                    if( query.Any() )
+                    {
+                        string serviceKey = method.ReturnType.Name;
+                        ServiceReferenceInfo serviceRefInfo =
+                            new ServiceReferenceInfo( _plugins.GetByKey( pluginType.Name ), _services.GetByKey( serviceKey ), (DependencyRequirement)query.ElementAt( 0 ).ElementAt( 0 ).Value );
+                        _plugins.GetByKey( pluginType.Name ).BindServiceRequirement( serviceRefInfo );
+                    }
+                }
+            }
+            if( HasService( pluginType ) )
+            {
+                //Retrieve Service
+                //Set Plugin.Service = target in _plugins which will in turn trigger ( (ServiceInfo)_service ).AddPlugin( this ); 
+                //in the property setter.
+            }
+        }
+
+        private bool HasService( TypeDefinition pluginType )
         {
             throw new NotImplementedException();
         }
 
-        private void AddImplementation( TypeDefinition serviceType )
+        private void SetService( TypeDefinition pluginType )
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
-        internal bool IsYodiiPlugin(TypeDefinition type)
+        internal bool IsYodiiPlugin( TypeDefinition type )
         {
             if( type.IsClass && !type.IsAbstract )
             {
@@ -181,7 +149,7 @@ namespace Yodii.Discoverer
             return false;
         }
 
-        internal bool IsYodiiService(TypeDefinition type)
+        internal bool IsYodiiService( TypeDefinition type )
         {
             if( type.IsInterface )
             {
@@ -225,23 +193,11 @@ namespace Yodii.Discoverer
             get { return _assembly == null ? String.Empty : _assembly.MainModule.FullyQualifiedName; }
         }
 
-        private bool FileFilter( FileInfo f )
-        {
-            return !f.Name.EndsWith( ".resources.dll" )
-                    && f.Name != "Yodii.Model.dll"
-                    && f.Name != "nunit.framework.dll";
-        }
-
         public int CurrentVersion { get; set; }
 
         public event EventHandler DiscoverBegin;
 
 #region Properties
-
-        public IReadOnlyCollection<IAssemblyInfo> AllAssemblies
-        {
-            get { return _allAssemblies.AsReadOnlyList(); }
-        }
 
         public IReadOnlyCollection<IAssemblyInfo> PluginOrServiceAssemblies
         {
@@ -250,24 +206,24 @@ namespace Yodii.Discoverer
 
         public IReadOnlyCollection<IPluginInfo> Plugins
         {
-            get { return _plugins.All.AsReadOnlyList(); }
+            get { return _plugins.AsReadOnlyList(); }
         }
 
         public IReadOnlyCollection<IServiceInfo> Services
         {
-            get { return _services.All.AsReadOnlyList(); }
+            get { return _services.AsReadOnlyList(); }
         }
         
 #endregion
 
         public IPluginInfo FindPlugin( string pluginFullName )
         {
-            return _plugins[pluginFullName];
+            return _plugins.GetByKey( pluginFullName );
         }
 
         public IServiceInfo FindService( string serviceFullName )
         {
-            return _services[serviceFullName];
+            return _services.GetByKey( serviceFullName );
         }
     }
 }

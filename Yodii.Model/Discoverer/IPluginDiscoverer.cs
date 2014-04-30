@@ -22,7 +22,7 @@ namespace Yodii.Model
         /// Contains all the <see cref="IAssemblyInfo"/> that have been processed.
         /// They may contain an error or no plugins at all.
         /// </summary>
-        IReadOnlyCollection<IAssemblyInfo> AllAssemblies { get; }
+        //IReadOnlyCollection<IAssemblyInfo> AllAssemblies { get; }
 
         /// <summary>
         /// Contains all the <see cref="IAssemblyInfo"/> that have been succesfully discovered 

@@ -67,8 +67,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChoucroutePlugin.cs" />
-    <Compile Include="IChoucrouteService.cs" />
+    <Compile Include="ChoucrouteTest\ChoucroutePlugin.cs" />
+    <Compile Include="ChoucrouteTest\IChoucrouteService.cs" />
+    <Compile Include="ChoucrouteTest\IChoucrouteServiceRef.cs" />
     <Compile Include="DiscovererTests.cs" />
     <Compile Include="IService1.cs" />
     <Compile Include="IService2.cs" />
@@ -92,6 +93,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
