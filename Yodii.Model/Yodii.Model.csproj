@@ -78,7 +78,6 @@
     <Compile Include="Discoverer\Attributes\PluginAttribute.cs" />
     <Compile Include="Discoverer\DiscoveredInfoChanged.cs" />
     <Compile Include="Discoverer\IPluginDiscoverer.cs" />
-    <Compile Include="Discoverer\IYodiiItemCollection.cs" />
     <Compile Include="Host\Service\IOptionalRecommended.cs" />
     <Compile Include="Host\Service\IOptionalService.cs" />
     <Compile Include="Host\Service\IRunnableRecommendedService.cs" />
