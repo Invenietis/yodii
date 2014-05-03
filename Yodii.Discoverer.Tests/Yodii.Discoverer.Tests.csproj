@@ -67,14 +67,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChoucrouteTest\ChoucroutePlugin.cs" />
-    <Compile Include="ChoucrouteTest\IChoucrouteService.cs" />
-    <Compile Include="ChoucrouteTest\IChoucrouteServiceRef.cs" />
+    <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
+    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
+    <Compile Include="ChoucrouteTest1\IChoucrouteServiceRef.cs" />
+    <Compile Include="ChoucrouteTest2\Plugin1.cs" />
+    <Compile Include="ChoucrouteTest2\Service1.cs" />
+    <Compile Include="ChoucrouteTest2\Service2.cs" />
     <Compile Include="DiscovererTests.cs" />
-    <Compile Include="IService1.cs" />
-    <Compile Include="IService2.cs" />
+    <Compile Include="ChoucrouteTest3\IService1.cs" />
+    <Compile Include="ChoucrouteTest3\IService2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UntaggedPlugin.cs" />
+    <Compile Include="ChoucrouteTest2\UntaggedPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

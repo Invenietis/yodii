@@ -15,7 +15,7 @@ namespace Yodii.Discoverer
         readonly IAssemblyInfo _assemblyInfo;
         readonly List<IServiceReferenceInfo> _serviceReferences;
         IServiceInfo _service;
-        bool _hasError;
+        string _errorMessage;
 
         internal PluginInfo( string pluginFullName, IAssemblyInfo assemblyInfo )
         {
@@ -74,13 +74,13 @@ namespace Yodii.Discoverer
 
         public bool HasError
         {
-            get { return _hasError; }
-            set { _hasError = value; }
+            get { return _errorMessage != null; }
         }
 
         public string ErrorMessage
         {
-            get { return _hasError ? "An error occurred." : null; }
+            get { return _errorMessage; }
+            set { _errorMessage = value; }
         }
 
         IReadOnlyList<IServiceReferenceInfo> IPluginInfo.ServiceReferences

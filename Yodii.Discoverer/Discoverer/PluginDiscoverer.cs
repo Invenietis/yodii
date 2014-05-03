@@ -56,13 +56,13 @@ namespace Yodii.Discoverer
                     _services.Add( new ServiceInfo( type.Name, _assemblyInfo ) );
                 }
             }
+
             foreach( TypeDefinition pluginType in _pluginTypes )
             {
-                SetService( pluginType );
                 SetServiceReferences( pluginType );
-                //RetrievePluginAttribute( pluginType );
+                SetPluginAttribute( pluginType );
             }
-            //Set specialization/generalization for each service families.
+
             foreach( TypeDefinition serviceType in _serviceTypes )
             {
                 SetGeneralization( serviceType );           
@@ -71,19 +71,18 @@ namespace Yodii.Discoverer
             return true;
         }
 
-        private void SetGeneralization( TypeDefinition serviceType )
+        internal void SetGeneralization( TypeDefinition serviceType )
         {
             IEnumerable<TypeReference> parent =
                     from i in serviceType.Interfaces
-                    where !i.FullName.Equals( typeof( IYodiiService ).FullName ) && IsYodiiService( i.Resolve() )
+                    where IsYodiiService( i.Resolve() )
                     select i;
             
             if( parent.Any() )
                 _services.GetByKey( serviceType.Name ).Generalization = _services.GetByKey( parent.ElementAt( 0 ).Name );
         }
 
-        //Get Service name + requirement
-        public void SetServiceReferences( TypeDefinition pluginType )
+        internal void SetServiceReferences( TypeDefinition pluginType )
         {
             //Retrieves the DependencyRequirement value of a service reference.
             foreach(MethodDefinition method in pluginType.Methods)
@@ -106,28 +105,34 @@ namespace Yodii.Discoverer
                     }
                 }
             }
-            if( HasService( pluginType ) )
+            //Set Service
+            string error;
+            TypeReference target = GetService( pluginType, out error );
+            if( target != null )
+                _plugins.GetByKey( pluginType.Name ).Service = _services.GetByKey( target.Name );
+            if( !String.IsNullOrEmpty( error ) )
+                _plugins.GetByKey( pluginType.Name ).ErrorMessage = error;
+        }
+
+        internal void SetPluginAttribute( TypeDefinition pluginType )
+        {
+            CustomAttribute attr = pluginType.Methods[0].DeclaringType.CustomAttributes[0];
+            //Set ID, PublicName, Description, Version?
+        }
+
+        internal TypeReference GetService( TypeDefinition pluginType, out string error )
+        {
+            error = "";
+            IEnumerable<TypeReference> query = from TypeReference i in pluginType.Interfaces
+                                               where IsYodiiService( i.Resolve() )
+                                               select i;
+            if( query.Any() )
             {
-                
-                //Retrieve Service
-                //Set Plugin.Service = target in _plugins which will in turn trigger ( (ServiceInfo)_service ).AddPlugin( this ); 
-                //in the property setter.
+                if( query.Count() > 1 )
+                    error = "A plugin cannot have more than 2 services";
+                return query.ElementAt( 0 );
             }
-        }
-
-        private void SetService( TypeDefinition pluginType )
-        {
-            //throw new NotImplementedException();
-        }
-
-        private CustomAttribute RetrievePluginAttribute( TypeDefinition type )
-        {
-            return type.Methods[0].DeclaringType.CustomAttributes[0];
-        }
-
-        private bool HasService( TypeDefinition pluginType )
-        {
-            throw new NotImplementedException();
+            return null;                
         }
 
         internal bool IsYodiiPlugin( TypeDefinition type )
@@ -156,35 +161,35 @@ namespace Yodii.Discoverer
             return false;
         }
 
-        private TypeReference GetReference( Type type )
+        //Helper methods
+        internal TypeReference GetReference<T>()
+        {
+            return GetReference( typeof( T ) );
+        }
+
+        internal TypeReference GetReference( Type type )
         {
             TypeReference typeReference;
             _assembly.MainModule.TryGetTypeReference( type.Name, out typeReference );
             return typeReference;
         }
 
-        private TypeReference ImportType<T>()
+        internal TypeReference ImportType<T>()
         {
             return _assembly.MainModule.Import( typeof( T ) );
         }
 
-        //Service family specialization/generalization
-        bool IsSubType(TypeDefinition type, TypeReference superType)
+        internal bool IsType( TypeReference a, TypeReference b )
+        {
+            return a.Namespace == b.Namespace && a.Name == b.Name;
+        }
+
+        internal bool IsSubType( TypeDefinition type, TypeReference superType )
         {
             return
                 IsType( type, superType ) ||
                 ( type.BaseType != null && IsSubType( type.BaseType.Resolve(), superType ) ) ||
                 ( type.Interfaces.Select( i => i.Resolve() ).Any( i => IsSubType( i, superType ) ) );
-        }
-
-        bool IsType(TypeReference a, TypeReference b)
-        {
-            return a.Namespace == b.Namespace && a.Name == b.Name;
-        }
-
-        private TypeReference GetReference<T>()
-        {
-            return GetReference( typeof( T ) );
         }
 
         public string CurrentAssemblyLocation
