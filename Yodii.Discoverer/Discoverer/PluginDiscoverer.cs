@@ -116,7 +116,7 @@ namespace Yodii.Discoverer
 
         internal void SetPluginAttribute( TypeDefinition pluginType )
         {
-            CustomAttribute attr = pluginType.Methods[0].DeclaringType.CustomAttributes[0];
+            //CustomAttribute attr = pluginType.Methods[0].DeclaringType.CustomAttributes[0];
             //PluginAttribute Constructor argument : Guid.ToString()
             //attr.ConstructorArguments[0].Value
 
