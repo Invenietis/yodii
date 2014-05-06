@@ -117,7 +117,15 @@ namespace Yodii.Discoverer
         internal void SetPluginAttribute( TypeDefinition pluginType )
         {
             CustomAttribute attr = pluginType.Methods[0].DeclaringType.CustomAttributes[0];
-            //Set ID, PublicName, Description, Version?
+            //PluginAttribute Constructor argument : Guid.ToString()
+            //attr.ConstructorArguments[0].Value
+
+            //Field attribute (Public Name, Version, Description, etc.)
+            //attr.Properties[0].Name
+
+            //Value attribute
+            //attr.Properties[0].Argument.Value
+            //_plugins.GetByKey( pluginType.Name ).Id = attr.ConstructorArguments//Set ID, PublicName, Description, Version?
         }
 
         internal TypeReference GetService( TypeDefinition pluginType, out string error )

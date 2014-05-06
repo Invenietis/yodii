@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Model", "Yodii.Model\Yodii.Model.csproj", "{DB68716F-9883-433A-928D-AA597D377C9C}"
 EndProject
@@ -21,6 +21,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Discoverer", "Yodii.Discoverer\Yodii.Discoverer.csproj", "{38EFBE67-F0C8-4896-A7D0-606F663AA931}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Discoverer.Tests", "Yodii.Discoverer.Tests\Yodii.Discoverer.Tests.csproj", "{0087ED95-38B2-4EE1-A64A-77AF09CA13DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp", "Yodii.DemoApp\Yodii.DemoApp.csproj", "{E8F8401C-D306-427F-8E82-311D2855EB32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp.Tests", "Yodii.DemoApp.Tests\Yodii.DemoApp.Tests.csproj", "{8902FBD5-3E76-47C4-92B1-60E808156D30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +60,14 @@ Global
 		{0087ED95-38B2-4EE1-A64A-77AF09CA13DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0087ED95-38B2-4EE1-A64A-77AF09CA13DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0087ED95-38B2-4EE1-A64A-77AF09CA13DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8F8401C-D306-427F-8E82-311D2855EB32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8F8401C-D306-427F-8E82-311D2855EB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F8401C-D306-427F-8E82-311D2855EB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8F8401C-D306-427F-8E82-311D2855EB32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8902FBD5-3E76-47C4-92B1-60E808156D30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8902FBD5-3E76-47C4-92B1-60E808156D30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8902FBD5-3E76-47C4-92B1-60E808156D30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8902FBD5-3E76-47C4-92B1-60E808156D30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

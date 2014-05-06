@@ -78,6 +78,11 @@
     <Compile Include="Discoverer\Attributes\PluginAttribute.cs" />
     <Compile Include="Discoverer\DiscoveredInfoChanged.cs" />
     <Compile Include="Discoverer\IPluginDiscoverer.cs" />
+    <Compile Include="Host\Plugin\ExecutionPlanResultStatus.cs" />
+    <Compile Include="Host\Plugin\IExecutionPlanResult.cs" />
+    <Compile Include="Host\Plugin\IPluginHost.cs" />
+    <Compile Include="Host\Plugin\IPluginProxy.cs" />
+    <Compile Include="Host\Plugin\PluginStatusChangedEventArgs.cs" />
     <Compile Include="Host\Service\IOptionalRecommended.cs" />
     <Compile Include="Host\Service\IOptionalService.cs" />
     <Compile Include="Host\Service\IRunnableRecommendedService.cs" />
@@ -86,7 +91,9 @@
     <Compile Include="Host\Service\IService.cs" />
     <Compile Include="Host\Plugin\PluginSetupInfo.cs" />
     <Compile Include="Host\Plugin\IYodiiPlugin.cs" />
+    <Compile Include="Host\Service\IServiceHost.cs" />
     <Compile Include="Host\Service\IYodiiService.cs" />
+    <Compile Include="Host\Service\ServiceStatusChangedEventArgs.cs" />
     <Compile Include="LiveModel\ILiveRunCapability.cs" />
     <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
     <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />

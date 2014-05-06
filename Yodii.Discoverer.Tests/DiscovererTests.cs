@@ -24,6 +24,7 @@ namespace Yodii.Discoverer.Tests
             Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).Service == discoverer.FindService( "IChoucrouteService" ) );
             Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).ServiceReferences[0].Reference == discoverer.FindService( "IChoucrouteServiceRef" ) );
             Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).ServiceReferences[0].Requirement == DependencyRequirement.Running );
+            Assert.That( discoverer.FindService( "IChoucrouteService" ).Implementations.Contains( discoverer.FindPlugin( "ChoucroutePlugin" ) ) );
         }
 
         [Test]
