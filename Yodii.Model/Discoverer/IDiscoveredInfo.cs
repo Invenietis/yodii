@@ -12,6 +12,11 @@ namespace Yodii.Model
         /// <summary>
         /// Lists of all discovered services on this system.
         /// </summary>
+        IReadOnlyList<IAssemblyInfo> AssemblyInfos { get; }
+
+        /// <summary>
+        /// Lists of all discovered services on this system.
+        /// </summary>
         IReadOnlyList<IServiceInfo> ServiceInfos { get; }
 
         /// <summary>

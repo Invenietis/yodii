@@ -26,22 +26,19 @@ namespace Yodii.Model
         DependencyRequirement Requirement { get; }
         
         /// <summary>
-        /// Gets the name of the property or constructor parameter that references the service.
-        /// This is used by the dependency injection engine (IServiceHost and IPluginHost).
+        /// Gets the name of the constructor parameter that references the service.
         /// </summary>
-        string ConstructorParameterOrPropertyName { get; }
+        string ConstructorParameterName { get; }
 
         /// <summary>
-        /// Gets the index of the parameter in the constructor if the reference appears as a parameter constructor.
-        /// -1 otherwise.
+        /// Gets the index of the parameter in the constructor.
         /// This is used by the dependency injection engine (IServiceHost and IPluginHost).
         /// </summary>
         int ConstructorParameterIndex { get; }
 
         /// <summary>
-        /// Gets whether the <see cref="Reference"/> is wrapped..
-        /// This is used by the dependency injection engine (IServiceHost and IPluginHost).
+        /// Gets whether the <see cref="Reference"/> is directly expressed without <see cref="IRunningService{T}"/> wrapper.
         /// </summary>
-        bool IsIServiceWrapped { get; }
+        bool IsNakedRunningService { get; }
     }
 }

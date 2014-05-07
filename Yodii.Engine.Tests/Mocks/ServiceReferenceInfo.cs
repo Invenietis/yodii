@@ -46,7 +46,7 @@ namespace Yodii.Engine.Tests.Mocks
             set { _requirement = value; }
         }
 
-        public string ConstructorParameterOrPropertyName
+        public string ConstructorParameterName
         {
             get { return _ctorParamOrPropertyName; }
             set { _ctorParamOrPropertyName = value; }
@@ -59,7 +59,7 @@ namespace Yodii.Engine.Tests.Mocks
             set { _ctorParamIndex = value; }
         }
 
-        public bool IsIServiceWrapped
+        public bool IsNakedRunningService
         {
             get { return _isServiceWrapped; }
             set { _isServiceWrapped = value; }

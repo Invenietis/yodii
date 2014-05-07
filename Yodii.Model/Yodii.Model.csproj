@@ -83,7 +83,7 @@
     <Compile Include="Host\Plugin\IPluginHost.cs" />
     <Compile Include="Host\Plugin\IPluginProxy.cs" />
     <Compile Include="Host\Plugin\PluginStatusChangedEventArgs.cs" />
-    <Compile Include="Host\Service\IOptionalRecommended.cs" />
+    <Compile Include="Host\Service\IOptionalRecommendedService.cs" />
     <Compile Include="Host\Service\IOptionalService.cs" />
     <Compile Include="Host\Service\IRunnableRecommendedService.cs" />
     <Compile Include="Host\Service\IRunnableService.cs" />

@@ -10,14 +10,14 @@ namespace Yodii.Discoverer
 {
     internal sealed class ServiceReferenceInfo : IServiceReferenceInfo
     {
-        IPluginInfo _owner;
-        IServiceInfo _reference;
-        DependencyRequirement _requirement;
-        string _ctorParamOrPropertyName;
-        int _ctorParamIndex;
-        bool _isServiceWrapped;
+        readonly IPluginInfo _owner;
+        readonly IServiceInfo _reference;
+        readonly DependencyRequirement _requirement;
+        readonly string _ctorParamName;
+        readonly int _ctorParamIndex;
+        readonly bool _isNakedRunningService;
 
-        internal ServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, DependencyRequirement requirement )
+        internal ServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, DependencyRequirement requirement, string paramName, int paramIndex, bool isNakedService )
         {
             Debug.Assert( ownerPlugin != null );
             Debug.Assert( referencedService != null );
@@ -25,43 +25,40 @@ namespace Yodii.Discoverer
             _owner = ownerPlugin;
             _reference = referencedService;
             _requirement = requirement;
+            _ctorParamName = paramName;
+            _ctorParamIndex = paramIndex;
+            _isNakedRunningService = isNakedService;
         }
 
         public IPluginInfo Owner
         {
             get { return _owner; }
-            set { _owner = value; }
         }
 
         public IServiceInfo Reference
         {
             get { return _reference; }
-            set { _reference = value; }
         }
 
         public DependencyRequirement Requirement
         {
             get { return _requirement; }
-            set { _requirement = value; }
         }
 
-        public string ConstructorParameterOrPropertyName
+        public string ConstructorParameterName
         {
-            get { return _ctorParamOrPropertyName; }
-            set { _ctorParamOrPropertyName = value; }
+            get { return _ctorParamName; }
         }
 
 
         public int ConstructorParameterIndex
         {
             get { return _ctorParamIndex; }
-            set { _ctorParamIndex = value; }
         }
 
-        public bool IsIServiceWrapped
+        public bool IsNakedRunningService
         {
-            get { return _isServiceWrapped; }
-            set { _isServiceWrapped = value; }
+            get { return _isNakedRunningService; }
         }
     }
 }

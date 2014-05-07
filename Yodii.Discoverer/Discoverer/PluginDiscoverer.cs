@@ -11,37 +11,98 @@ using Mono.Cecil;
 
 namespace Yodii.Discoverer
 {
-    public sealed class PluginDiscoverer : IPluginDiscoverer
+    public sealed partial class PluginDiscoverer : IPluginDiscoverer
     {
-        AssemblyDefinition _assembly;
-        AssemblyInfo _assemblyInfo;
+        readonly Dictionary<string,CachedAssemblyInfo> _assemblies;
+        readonly Dictionary<TypeDefinition,ServiceInfo> _allServices;
+        readonly Dictionary<TypeDefinition,PluginInfo> _allPlugins;
+
+        readonly AssemblyDefinition _yodiiModel;
+        readonly TypeDefinition _tDefIYodiiService;
+        readonly TypeDefinition _tDefIYodiiPlugin;
+        readonly TypeDefinition _tDefIService;
+        readonly TypeDefinition _tDefIRunningService;
+        readonly TypeDefinition _tDefIRunnableRecoService;
+        readonly TypeDefinition _tDefIRunnableService;
+        readonly TypeDefinition _tDefIOptionalRecoService;
+        readonly TypeDefinition _tDefIOptionalService;
 
         //  DiscoveredInfo _discoveredInfo;
-        Collection<TypeDefinition> _allModules;
+        IList<TypeDefinition> _allModules;
         CKSortedArrayKeyList<PluginInfo, string> _plugins;
         CKSortedArrayKeyList<ServiceInfo, string> _services;
 
         List<TypeDefinition> _pluginTypes;
         List<TypeDefinition> _serviceTypes;
 
-        public PluginDiscoverer()
+        class AssemblyResolver : DefaultAssemblyResolver
         {
+            readonly PluginDiscoverer _discoverer;
+
+            public AssemblyResolver( PluginDiscoverer d )
+            {
+                _discoverer = d;
+            }
+
+        }
+
+        readonly AssemblyResolver _resolver;
+        readonly ReaderParameters _readerParameters;
+        readonly Func<string,string> _mapAssemblyPath;
+
+        public PluginDiscoverer( Func<string,string> mapAssemblyPath = null )
+        {
+            _assemblies = new Dictionary<string, CachedAssemblyInfo>();
+            _mapAssemblyPath = mapAssemblyPath;
+            _resolver = new AssemblyResolver( this );
+
             _plugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
             _services = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
             
             _pluginTypes = new List<TypeDefinition>();
             _serviceTypes = new List<TypeDefinition>();
-            AssemblyDefinition.ReadAssembly( Path.GetFullPath( "Yodii.Model.dll" ) );
+            var pathYodiiModel = new Uri( typeof( IYodiiService ).Assembly.CodeBase ).LocalPath;
+            _yodiiModel = AssemblyDefinition.ReadAssembly( pathYodiiModel );
+            _tDefIYodiiService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiService ).FullName );
+            _tDefIYodiiPlugin = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiPlugin ).FullName );
+
+            _tDefIService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IService<> ).FullName );
+            _tDefIRunningService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IRunningService<> ).FullName );
+            _tDefIRunnableRecoService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IRunnableRecommendedService<> ).FullName );
+            _tDefIRunnableService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IRunnableService<> ).FullName );
+            _tDefIOptionalRecoService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IOptionalRecommendedService<> ).FullName );
+            _tDefIOptionalService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IOptionalService<> ).FullName );
         }
 
-        public void ReadAssembly( string path )
+        public IAssemblyInfo ReadAssembly( string path )
         {
-            _assembly = AssemblyDefinition.ReadAssembly( path );
-            _assemblyInfo = new AssemblyInfo( new System.Uri( path ) );
-            _allModules = _assembly.MainModule.Types;
+            if( _mapAssemblyPath != null ) path = _mapAssemblyPath( path );
+            if( path != null )
+            {
+                CachedAssemblyInfo result;
+                if( !_assemblies.TryGetValue( path, out result ) )
+                {
+                    try
+                    {
+                        AssemblyDefinition.ReadAssembly( path, _readerParameters );
+                    }
+                    catch( Exception ex )
+                    {
+                        _assemblies.Add( path, new CachedAssemblyInfo( path, ex ) );
+                    }
+                    result = _assemblies[path];
+                }
+                return result.YodiiInfo;
+            }
+            return null;
         }
 
-        public bool Discover()
+        public IDiscoveredInfo GetDiscoveredInfo( bool withAssembliesOnError = false )
+        {
+            return null;
+        }
+
+        bool Discover()
         {    
             foreach( TypeDefinition type in _allModules )
             {
@@ -84,6 +145,14 @@ namespace Yodii.Discoverer
 
         internal void SetServiceReferences( TypeDefinition pluginType )
         {
+            var properties = pluginType.Properties
+                                .Where( p => p.PropertyType.Resolve().Interfaces.Any( r => r.Resolve() == _tDefIYodiiService ))
+                                .Where( p => p.CustomAttributes.Where( a => a.AttributeType.FullName == typeof(DependencyRequirementAttribute).FullName
+                                                                            && a.ConstructorArguments.Count == 1 
+                                                                            && a.ConstructorArguments[0].Type.FullName == typeof(DependencyRequirement).FullName )
+                                                                .Select( a => (DependencyRequirement)a.ConstructorArguments[0].Value );
+
+
             //Retrieves the DependencyRequirement value of a service reference.
             foreach(MethodDefinition method in pluginType.Methods)
             {

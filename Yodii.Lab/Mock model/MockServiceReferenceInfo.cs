@@ -76,7 +76,7 @@ namespace Yodii.Lab.Mocks
         /// <summary>
         /// Not implemented.
         /// </summary>
-        public string ConstructorParameterOrPropertyName
+        public string ConstructorParameterName
         {
             get { throw new NotImplementedException(); }
         }
@@ -92,7 +92,7 @@ namespace Yodii.Lab.Mocks
         /// <summary>
         /// Not implemented.
         /// </summary>
-        public bool IsIServiceWrapped
+        public bool IsNakedRunningService
         {
             get { throw new NotImplementedException(); }
         }
