@@ -28,13 +28,18 @@ namespace Yodii.Discoverer
             _services = services;
             _plugins = plugins;
         }
-
+        internal AssemblyInfo( Uri location )
+        {
+            _location = location;
+        }
         public Uri AssemblyLocation
         {
             get { return _location; }
         }
 
-        public string ErrorMessage { get { return _error; } }
+        public bool HasErrorMessage { get { return _errorMessage != null; } }
+
+        public string ErrorMessage { get { return _errorMessage; } }
 
     }
 }

@@ -6,7 +6,6 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer
 {
-    [Plugin( "dddddddddddddddddddddddddddddddd", PublicName = "Plugin1" )]
     public class Plugin1 : IYodiiPlugin, Service2, Service1
     {
         readonly string _pluginFullName;

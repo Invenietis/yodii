@@ -3,21 +3,14 @@ using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    [Plugin( "dddddddddddddddddddddddddddddddd", PublicName = "Client1" )]
     public class Client1 : IYodiiPlugin
     {
         private IMarketPlaceService _service;
 
-        public Client1()
+        [DependencyRequirement( DependencyRequirement.Running, "Service" )]
+        public Client1( IMarketPlaceService service )
         {
-        }
-
-        public IMarketPlaceService Service
-        {
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            get { return _service; }
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            set { _service = value; }
+            _service = service;
         }
 
         bool IYodiiPlugin.Setup( PluginSetupInfo info )

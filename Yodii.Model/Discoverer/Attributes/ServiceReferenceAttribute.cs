@@ -2,16 +2,19 @@
 
 namespace Yodii.Model
 {
-    [AttributeUsage( AttributeTargets.Method, AllowMultiple = false )]
+    [AttributeUsage( AttributeTargets.Constructor, AllowMultiple = true )]
     public sealed class DependencyRequirementAttribute : Attribute
     {
-        DependencyRequirement _req;
+        readonly DependencyRequirement _req;
+        readonly string _paramName;
 
-        public DependencyRequirementAttribute( DependencyRequirement req )
+        public DependencyRequirementAttribute( DependencyRequirement req, string paramName )
         {
-            DependencyRequirement _req = req;
+            _req = req;
+            _paramName = paramName;
         }
 
-        public DependencyRequirement Requires { get { return _req; } set { _req = value; } }
+        string ParameterName { get { return _paramName; } }
+        DependencyRequirement DependencyReq { get { return _req; } }
     }
 }

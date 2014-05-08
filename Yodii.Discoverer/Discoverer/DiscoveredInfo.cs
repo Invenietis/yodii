@@ -8,7 +8,7 @@ namespace Yodii.Discoverer
 {
     internal abstract class DiscoveredInfo : IDiscoveredInfo
     {
-        PluginDiscoverer _discoverer;
+        StandardDiscoverer _discoverer;
         string _errorMessage;
         int _version;
 
@@ -32,9 +32,9 @@ namespace Yodii.Discoverer
             get { return _errorMessage; }
         }
 
-        internal PluginDiscoverer Discoverer { get { return _discoverer; } }
+        internal StandardDiscoverer Discoverer { get { return _discoverer; } }
 
-        protected DiscoveredInfo( PluginDiscoverer discoverer )
+        protected DiscoveredInfo( StandardDiscoverer discoverer )
         {
             _discoverer = discoverer;
             _version = _discoverer.CurrentVersion;
@@ -46,6 +46,11 @@ namespace Yodii.Discoverer
         }
 
         public IReadOnlyList<IPluginInfo> PluginInfos
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IReadOnlyList<IAssemblyInfo> AssemblyInfos
         {
             get { throw new NotImplementedException(); }
         }

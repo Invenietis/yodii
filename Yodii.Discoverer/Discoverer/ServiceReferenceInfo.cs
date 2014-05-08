@@ -50,7 +50,6 @@ namespace Yodii.Discoverer
             get { return _ctorParamName; }
         }
 
-
         public int ConstructorParameterIndex
         {
             get { return _ctorParamIndex; }

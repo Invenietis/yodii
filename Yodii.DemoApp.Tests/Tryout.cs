@@ -14,11 +14,6 @@ namespace Yodii.DemoApp.Tests
         [Test]
         public void Whatever()
         {
-            var d = new PluginDiscoverer();
-            d.ReadAssembly( Path.GetFullPath( "Yodii.DemoApp.dll" ) );
-            d.Discover();
-
-
         }
     }
 }

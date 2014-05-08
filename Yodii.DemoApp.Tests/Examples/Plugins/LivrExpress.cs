@@ -8,26 +8,14 @@ namespace Yodii.DemoApp
         ICarRepairService _serviceRef1;
         IOutSourcingService _serviceRef2;
 
-        public LivrExpress()
-        { 
-        }
-
-        public ICarRepairService ServiceRef1
+        [DependencyRequirement( DependencyRequirement.Running, "ServiceRef1" )]
+        [DependencyRequirement( DependencyRequirement.Running, "ServiceRef2" )]
+        public LivrExpress( ICarRepairService ServiceRef1, IOutSourcingService ServiceRef2 )
         {
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            get { return _serviceRef1; }
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            set { _serviceRef1 = value; }
+            _serviceRef1 = ServiceRef1;
+            _serviceRef2 = ServiceRef2;
         }
-
-        public IOutSourcingService ServiceRef2
-        {
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            get { return _serviceRef2; }
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            set { _serviceRef2 = value; }
-        }
-
+        
         public bool Setup( PluginSetupInfo info )
         {
             throw new NotImplementedException();

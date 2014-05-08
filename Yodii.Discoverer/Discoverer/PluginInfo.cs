@@ -13,7 +13,7 @@ namespace Yodii.Discoverer
     {
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
-        readonly List<IServiceReferenceInfo> _serviceReferences;
+        List<IServiceReferenceInfo> _serviceReferences;
         IServiceInfo _service;
         string _errorMessage;
 
@@ -50,13 +50,6 @@ namespace Yodii.Discoverer
         public List<IServiceReferenceInfo> ServiceReferencess
         {
             get { return _serviceReferences; }
-        }
-
-        public ServiceReferenceInfo AddServiceReference( ServiceInfo service, DependencyRequirement req )
-        {
-            var r = new ServiceReferenceInfo( this, service, req );
-            _serviceReferences.Add( r );
-            return r;
         }
 
         public IServiceInfo Service

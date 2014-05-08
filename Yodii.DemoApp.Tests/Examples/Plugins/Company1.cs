@@ -8,24 +8,12 @@ namespace Yodii.DemoApp
         IMarketPlaceService _serviceRef1;
         IDeliveryService _serviceRef2;
 
-        public Company1()
+        [DependencyRequirementAttribute( DependencyRequirement.Running, "ServiceRef1" )]
+        [DependencyRequirementAttribute( DependencyRequirement.Running, "ServiceRef2" )]
+        public Company1(IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2)
         {
-        }
-
-        public IMarketPlaceService ServiceRef1
-        {
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            get { return _serviceRef1; }
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            set { _serviceRef1 = value; }
-        }
-
-        public IDeliveryService ServiceRef2
-        {
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            get { return _serviceRef2; }
-            [DependencyRequirementAttribute( DependencyRequirement.Running )]
-            set { _serviceRef2 = value; }
+            _serviceRef1 = ServiceRef1;
+            _serviceRef2 = ServiceRef2;
         }
 
         bool IYodiiPlugin.Setup( PluginSetupInfo info )

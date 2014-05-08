@@ -74,10 +74,7 @@
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Discoverer\Attributes\ServiceReferenceAttribute.cs" />
-    <Compile Include="Discoverer\Attributes\ImpactAttribute.cs" />
-    <Compile Include="Discoverer\Attributes\PluginAttribute.cs" />
-    <Compile Include="Discoverer\DiscoveredInfoChanged.cs" />
-    <Compile Include="Discoverer\IPluginDiscoverer.cs" />
+    <Compile Include="Discoverer\IDiscoverer.cs" />
     <Compile Include="Host\Plugin\ExecutionPlanResultStatus.cs" />
     <Compile Include="Host\Plugin\IExecutionPlanResult.cs" />
     <Compile Include="Host\Plugin\IPluginHost.cs" />
