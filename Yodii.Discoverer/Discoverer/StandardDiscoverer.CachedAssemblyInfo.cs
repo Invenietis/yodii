@@ -18,7 +18,7 @@ namespace Yodii.Discoverer
             public readonly AssemblyDefinition CecilInfo;
             public AssemblyInfo YodiiInfo { get; private set; }
             public Exception Error { get; private set; }
-            StandardDiscoverer _discoverer { get { return _discoverer; } set { _discoverer = value; } }
+            public StandardDiscoverer _discoverer { get; private set; }
 
             public CachedAssemblyInfo( string path, Exception ex )
             {
@@ -33,6 +33,7 @@ namespace Yodii.Discoverer
 
             public void Discover( string path, StandardDiscoverer d )
             {
+                Debug.Assert( !String.IsNullOrEmpty( path ) && d != null );
                 _discoverer = d;
 
                 try
@@ -93,7 +94,7 @@ namespace Yodii.Discoverer
                 {
                     IEnumerable<TypeReference> target =
                         from i in type.Interfaces
-                        where i.FullName.Equals( _discoverer._tDefIYodiiPlugin )
+                        where i.Resolve().FullName.Equals( _discoverer._tDefIYodiiPlugin.FullName )
                         select i;
                     if( target.Any() ) return true;
                 }
@@ -106,7 +107,7 @@ namespace Yodii.Discoverer
                 {
                     IEnumerable<TypeReference> target =
                         from i in type.Interfaces
-                        where i.FullName.Equals( _discoverer._tDefIYodiiService )
+                        where i.Resolve().FullName.Equals( _discoverer._tDefIYodiiService.FullName )
                         select i;
                     if( target.Any() ) return true;
                 }

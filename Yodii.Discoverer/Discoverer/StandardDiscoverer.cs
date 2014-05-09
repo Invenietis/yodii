@@ -49,6 +49,8 @@ namespace Yodii.Discoverer
                 CachedAssemblyInfo info;
                 if( !_discoverer._assemblies.TryGetValue( fullName, out info ) )
                 {
+                    if( _discoverer._allModules != null ) _discoverer._allModules.AddRange( a.MainModule.Types );
+                    else _discoverer._allModules = a.MainModule.Types;
                     _discoverer.RegisterNewAssembly( a );
                 }
                 return a;
@@ -98,6 +100,8 @@ namespace Yodii.Discoverer
                     AssemblyDefinition a = AssemblyDefinition.ReadAssembly( path, _readerParameters );
                     if( !_assemblies.TryGetValue( a.FullName, out result ) )
                     {
+                        if( _allModules != null ) _allModules.AddRange( a.MainModule.Types );
+                        else _allModules = a.MainModule.Types;
                         result = RegisterNewAssembly( a );
                     }
                 }

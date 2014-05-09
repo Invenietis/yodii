@@ -18,9 +18,9 @@ namespace Yodii.Discoverer.Tests
         [Test]
         public void ChoucrouteTest1()
         {
-            //StandardDiscoverer discoverer = new StandardDiscoverer();
-            //discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
-            //discoverer.Discover();
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
+            discoverer.GetDiscoveredInfo();
             //Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).Service == discoverer.FindService( "IChoucrouteService" ) );
             //Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).ServiceReferences[0].Reference == discoverer.FindService( "IChoucrouteServiceRef" ) );
             //Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).ServiceReferences[0].Requirement == DependencyRequirement.Running );
