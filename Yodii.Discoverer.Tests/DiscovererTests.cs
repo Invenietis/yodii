@@ -21,30 +21,21 @@ namespace Yodii.Discoverer.Tests
             StandardDiscoverer discoverer = new StandardDiscoverer();
             discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-            //Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).Service == discoverer.FindService( "IChoucrouteService" ) );
-            //Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).ServiceReferences[0].Reference == discoverer.FindService( "IChoucrouteServiceRef" ) );
-            //Assert.That( discoverer.FindPlugin( "ChoucroutePlugin" ).ServiceReferences[0].Requirement == DependencyRequirement.Running );
-            //Assert.That( discoverer.FindService( "IChoucrouteService" ).Implementations.Contains( discoverer.FindPlugin( "ChoucroutePlugin" ) ) );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteService" ) );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).ServiceReferences[0].Reference == info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteServiceRef" ) );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).ServiceReferences[0].Requirement == DependencyRequirement.Running );
+            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteService" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ) ) );
         }
 
         [Test]
         public void ChoucrouteTest2()
         {
-            //StandardDiscoverer discoverer = new StandardDiscoverer();
-            //discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
-            //discoverer.Discover();
-            //Assert.That( discoverer.FindPlugin( "Plugin1" ).Service == discoverer.FindService( "Service2" ) );
-            //Assert.That( discoverer.FindService( "Service2" ).Implementations.Contains( discoverer.FindPlugin( "Plugin1" ) ) );
-            //Assert.That( discoverer.FindPlugin( "Plugin1" ).ErrorMessage == "A plugin cannot have more than 2 services" );
-            //Assert.That( discoverer.FindPlugin( "UntaggedPlugin" ) == null );
-        }
-        [Test]
-        public void ChoucrouteTest3()
-        {
-            //StandardDiscoverer discoverer = new StandardDiscoverer();
-            //discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
-            //discoverer.Discover();
-            //Assert.That( discoverer.FindService( "IService2" ).Generalization.ServiceFullName == "IService1" );
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
+            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Plugin1" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "Service2" ) );
+            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "Service2" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "Plugin1" ) ) );
+            Assert.That( info.PluginInfos.FirstOrDefault( p => p.PluginFullName == "UntaggedPlugin" ) == null );
         }
     }
 }
