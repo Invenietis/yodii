@@ -28,11 +28,6 @@ namespace Yodii.Discoverer
 
         //  DiscoveredInfo _discoveredInfo;
         IList<TypeDefinition> _allModules;
-        CKSortedArrayKeyList<PluginInfo, string> _plugins;
-        CKSortedArrayKeyList<ServiceInfo, string> _services;
-
-        List<TypeDefinition> _pluginTypes;
-        List<TypeDefinition> _serviceTypes;
 
         class CustomAssemblyResolver : DefaultAssemblyResolver
         {
@@ -68,13 +63,7 @@ namespace Yodii.Discoverer
             _resolver = new CustomAssemblyResolver( this );
             foreach( var d in directories ) _resolver.AddSearchDirectory( d );
             _readerParameters = new ReaderParameters() { AssemblyResolver = _resolver };
-
-            _plugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
-            _services = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
             
-            _pluginTypes = new List<TypeDefinition>();
-            _serviceTypes = new List<TypeDefinition>();
-
             var pathYodiiModel = new Uri( typeof( IYodiiService ).Assembly.CodeBase ).LocalPath;
             _yodiiModel = AssemblyDefinition.ReadAssembly( pathYodiiModel );
             _tDefIYodiiService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiService ).FullName );
@@ -126,53 +115,15 @@ namespace Yodii.Discoverer
 
         public IDiscoveredInfo GetDiscoveredInfo( bool withAssembliesOnError = false )
         {
-            return null;
-        }
+            List<IAssemblyInfo> _assemblyInfos = new List<IAssemblyInfo>();
+            foreach( CachedAssemblyInfo info in _assemblies.Values )
+            {
+                if( !( withAssembliesOnError ) && info.Error != null )
+                    continue;
+                _assemblyInfos.Add( info.YodiiInfo );
+            }
 
-        internal void SetServiceReferences( TypeDefinition pluginType )
-        {
-            throw new NotImplementedException();
-            //foreach(MethodDefinition method in pluginType.Methods)
-            //{
-            //    if( method.HasCustomAttributes )
-            //    {
-            //        var query = method.CustomAttributes
-            //            .Where(ca => ca.ConstructorArguments != null)
-            //            .Select( ca => ca.ConstructorArguments );
-                    
-            //        if( query.Any() && method.IsGetter )
-            //        {
-            //            ServiceInfo service = _services.GetByKey( method.ReturnType.Name );
-            //            if( service != null )
-            //            {
-            //                ServiceReferenceInfo serviceRefInfo =
-            //                new ServiceReferenceInfo( _plugins.GetByKey( pluginType.Name ), service, (DependencyRequirement)query.ElementAt( 0 ).ElementAt( 0 ).Value );
-            //                _plugins.GetByKey( pluginType.Name ).BindServiceRequirement( serviceRefInfo );
-            //            }
-            //        }
-            //    }
-            //}
-            //Set Service
-            //string error;
-            //TypeReference target = GetService( pluginType, out error );
-            //if( target != null )
-            //    _plugins.GetByKey( pluginType.Name ).Service = _services.GetByKey( target.Name );
-            //if( !String.IsNullOrEmpty( error ) )
-            //    _plugins.GetByKey( pluginType.Name ).ErrorMessage = error;
-        }
-
-        internal void SetPluginAttribute( TypeDefinition pluginType )
-        {
-            //CustomAttribute attr = pluginType.Methods[0].DeclaringType.CustomAttributes[0];
-            //PluginAttribute Constructor argument : Guid.ToString()
-            //attr.ConstructorArguments[0].Value
-
-            //Field attribute (Public Name, Version, Description, etc.)
-            //attr.Properties[0].Name
-
-            //Value attribute
-            //attr.Properties[0].Argument.Value
-            //_plugins.GetByKey( pluginType.Name ).Id = attr.ConstructorArguments//Set ID, PublicName, Description, Version?
-        }
+            return new DiscoveredInfo( _assemblyInfos.ToReadOnlyList(), this );
+        } 
     }
 }

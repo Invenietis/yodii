@@ -16,7 +16,7 @@ namespace Yodii.Discoverer
         class CachedAssemblyInfo
         {
             public readonly AssemblyDefinition CecilInfo;
-            public AssemblyInfo YodiiInfo { get; private set; }
+            public IAssemblyInfo YodiiInfo { get; private set; }
             public Exception Error { get; private set; }
             public StandardDiscoverer _discoverer { get; private set; }
 
@@ -38,54 +38,73 @@ namespace Yodii.Discoverer
 
                 try
                 {
-                    List<ServiceInfo> _thisServices = new List<ServiceInfo>();
-                    List<PluginInfo> _thisPlugins = new List<PluginInfo>();
+                    CKSortedArrayKeyList<PluginInfo, string> _plugins = new CKSortedArrayKeyList<PluginInfo, string>( p => p.PluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );
+                    CKSortedArrayKeyList<ServiceInfo, string> _services = new CKSortedArrayKeyList<ServiceInfo, string>( s => s.ServiceFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ), allowDuplicates: false );             
+                    List<TypeDefinition> _serviceTypes = new List<TypeDefinition>();
 
-                    //List<TypeDefinition> _pluginTypes = new List<TypeDefinition>();
-                    //List<TypeDefinition> _serviceTypes = new List<TypeDefinition>(); 
-
-                    //Instantiate service infos 
                     foreach( TypeDefinition service in d._allModules )
                     {
                         if( IsYodiiService( service ) )
                         {
-                            _thisServices.Add( new ServiceInfo( service.Name, new AssemblyInfo( new Uri( service.Module.FullyQualifiedName.ToString() ) ) ) );
-                            d._serviceTypes.Add( service );
-                            d._services.Add( new ServiceInfo( service.Name, new AssemblyInfo( new Uri( service.Module.FullyQualifiedName.ToString() ) ) ) );
+                            _services.Add( new ServiceInfo( service.Name, new AssemblyInfo( new Uri( service.Module.FullyQualifiedName.ToString() ) ) ) );
+                            _serviceTypes.Add( service );
                         }
                     }
 
-                    //Set generalization on services
-                    foreach( TypeReference typeRef in _discoverer._serviceTypes )
+                    foreach( TypeDefinition typeDef in _serviceTypes )
                     {
                         IEnumerable<TypeReference> parent =
-                            from i in typeRef.Resolve().Interfaces
+                            from i in typeDef.Interfaces
                             where IsYodiiService( i.Resolve() )
                             select i;
 
                         if( parent.Any() )
-                            _discoverer._services.GetByKey( typeRef.Name ).Generalization = _discoverer._services.GetByKey( parent.ElementAt( 0 ).Name );
+                            _services.GetByKey( typeDef.Name ).Generalization = _services.GetByKey( parent.ElementAt( 0 ).Name );
                     }
 
-                    //Instantiate plugins and set their service references
                     foreach( TypeDefinition plugin in d._allModules )
                     {
                         if( IsYodiiPlugin( plugin ) )
                         {
-                            _thisPlugins.Add( new PluginInfo( plugin.Name, new AssemblyInfo( new Uri( plugin.Module.FullyQualifiedName.ToString() ) ) ) );
-                            d._pluginTypes.Add( plugin );
-                            d._plugins.Add( new PluginInfo( plugin.Name, new AssemblyInfo( new Uri( plugin.Module.FullyQualifiedName.ToString() ) ) ) );
-                            SetServiceReferences( plugin );
+                            _plugins.Add( new PluginInfo( plugin.Name, new AssemblyInfo( new Uri( plugin.Module.FullyQualifiedName.ToString() ) ) ) );
+                            //SetServiceReferences( plugin );
+                            TypeReference s = GetService( plugin );
+                            if( s != null )
+                                _plugins.GetByKey( plugin.Name ).Service = _services.GetByKey( s.Name );
+
+                            if( HasYodiiServiceReferences( plugin ) )
+                            {
+                                MethodDefinition ctor = plugin.Methods.Where( m => m.IsConstructor && m.HasCustomAttributes ).ElementAt( 0 );
+
+                                var attr = ctor.CustomAttributes.Where( ca => ca.ConstructorArguments[0].Type.FullName == _discoverer._tDefDependencyRequirement.FullName ).Select( ca => ca.ConstructorArguments );
+                                for( int i = 0; i < attr.Count(); ++i )
+                                {
+                                    DependencyRequirement req = (DependencyRequirement)attr.ElementAt( i ).ElementAt( 0 ).Value;
+                                    string paramName = attr.ElementAt( i ).ElementAt( 1 ).Value.ToString();
+                                    int paramIndex = ctor.Parameters.IndexOf( p => p.Name == paramName );
+
+                                    ServiceInfo service = _services.GetByKey( ctor.Parameters.ElementAt( paramIndex ).ParameterType.Name );
+                                    PluginInfo pl = _plugins.GetByKey( plugin.Name );
+                                    ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( pl, service, req, paramName, paramIndex, req == DependencyRequirement.Running );
+                                    pl.BindServiceRequirement( serviceRef );
+                                }
+                            }
                         }
                     }
 
-                    YodiiInfo = new AssemblyInfo( new Uri( path ), _thisServices.ToArray(), _thisPlugins.ToArray() );
+                    YodiiInfo = new AssemblyInfo( new Uri( path ), _services.ToArray(), _plugins.ToArray() );
                 }
                 catch( Exception ex )
                 {
                     YodiiInfo = new AssemblyInfo( new Uri( path ), ex.Message );
                     Error = ex;
                 }
+            }
+
+            private bool HasYodiiServiceReferences( TypeDefinition plugin )
+            {
+                if( plugin.Methods.Where( m => m.IsConstructor && m.HasCustomAttributes ).Any() ) return true;
+                return false;
             }
 
             bool IsYodiiPlugin( TypeDefinition type )
@@ -112,28 +131,6 @@ namespace Yodii.Discoverer
                     if( target.Any() ) return true;
                 }
                 return false;
-            }
-
-            //Ugly as fuck, needs refactoring, fast.
-            void SetServiceReferences( TypeDefinition plugin )
-            {
-                //check for service 
-                var s = GetService( plugin );
-                if( s != null )
-                    _discoverer._plugins.GetByKey( plugin.Name ).Service = _discoverer._services.GetByKey( s.Name );
-                
-                //check for references
-                MethodDefinition ctor = plugin.Methods.Where( m => m.IsConstructor && m.HasCustomAttributes ).ElementAt( 0 );
-
-                var attr = ctor.CustomAttributes.Where( ca => ca.ConstructorArguments[0].Type.Resolve() == _discoverer._tDefDependencyRequirement ).Select( ca => ca.ConstructorArguments );
-                DependencyRequirement req = (DependencyRequirement)attr.ElementAt( 0 ).ElementAt( 0 ).Value;
-                string paramName = attr.ElementAt( 0 ).ElementAt( 1 ).Value.ToString();
-
-                int paramIndex = ctor.Parameters.IndexOf( p => p.Name == paramName );
-                ServiceInfo service = _discoverer._services.GetByKey( ctor.Parameters.ElementAt( paramIndex ).ParameterType.Name );
-                PluginInfo pl = _discoverer._plugins.GetByKey( plugin.Name );
-                ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( pl, service, req, paramName, paramIndex, req == DependencyRequirement.Running );
-                pl.BindServiceRequirement( serviceRef );             
             }
 
             TypeReference GetService( TypeDefinition plugin )

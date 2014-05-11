@@ -11,8 +11,8 @@ namespace Yodii.Discoverer
     {
         readonly Uri _location;
         readonly string _errorMessage;
-        readonly IReadOnlyCollection<ServiceInfo> _services;
-        readonly IReadOnlyCollection<PluginInfo> _plugins;
+        readonly IReadOnlyList<ServiceInfo> _services;
+        readonly IReadOnlyList<PluginInfo> _plugins;
 
         internal AssemblyInfo( Uri location, string errorMessage )
         {
@@ -21,7 +21,7 @@ namespace Yodii.Discoverer
             _errorMessage = errorMessage;
         }
 
-        internal AssemblyInfo( Uri location, IReadOnlyCollection<ServiceInfo> services, IReadOnlyCollection<PluginInfo> plugins )
+        internal AssemblyInfo( Uri location, IReadOnlyList<ServiceInfo> services, IReadOnlyList<PluginInfo> plugins )
         {
             Debug.Assert( location != null && services != null && plugins != null );
             _location = location;
@@ -41,5 +41,8 @@ namespace Yodii.Discoverer
 
         public string ErrorMessage { get { return _errorMessage; } }
 
+        public IReadOnlyList<IServiceInfo> Services { get { return _services; } }
+
+        public IReadOnlyList<IPluginInfo> Plugins { get { return _plugins; } }
     }
 }

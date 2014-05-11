@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yodii.Model;
+using CK.Core;
 
 namespace Yodii.Discoverer
 {
-    internal abstract class DiscoveredInfo : IDiscoveredInfo
+    internal class DiscoveredInfo : IDiscoveredInfo
     {
-        StandardDiscoverer _discoverer;
-        string _errorMessage;
-        int _version;
+        readonly StandardDiscoverer _discoverer;
+        readonly string _errorMessage;
+        readonly int _version;
+        readonly IReadOnlyList<IAssemblyInfo> _assemblies;
+        readonly IReadOnlyList<IPluginInfo> _allPlugins;
+        readonly IReadOnlyList<IServiceInfo> _allServices;
 
         public bool HasError
         {
@@ -34,25 +38,28 @@ namespace Yodii.Discoverer
 
         internal StandardDiscoverer Discoverer { get { return _discoverer; } }
 
-        protected DiscoveredInfo( StandardDiscoverer discoverer )
+        internal DiscoveredInfo( IReadOnlyList<IAssemblyInfo> assemblies, StandardDiscoverer discoverer )
         {
+            _assemblies = assemblies;
+            _allPlugins = _assemblies.SelectMany( p => p.Plugins ).ToReadOnlyList();
+            _allServices = _assemblies.SelectMany( s => s.Services ).ToReadOnlyList();
             _discoverer = discoverer;
             _version = _discoverer.CurrentVersion;
         }
 
-        public IReadOnlyList<IServiceInfo> ServiceInfos
-        {
-            get { throw new NotImplementedException(); }
-        }
-
         public IReadOnlyList<IPluginInfo> PluginInfos
         {
-            get { throw new NotImplementedException(); }
+            get { return _allPlugins; }
+        }
+
+        public IReadOnlyList<IServiceInfo> ServiceInfos
+        {
+            get { return _allServices; }
         }
 
         public IReadOnlyList<IAssemblyInfo> AssemblyInfos
         {
-            get { throw new NotImplementedException(); }
+            get { return _assemblies; }
         }
     }
 }

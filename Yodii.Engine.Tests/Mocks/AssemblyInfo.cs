@@ -21,5 +21,16 @@ namespace Yodii.Engine.Tests.Mocks
         {
 	        get { return _location; }
         }
+
+
+        public IReadOnlyList<IPluginInfo> Plugins
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IReadOnlyList<IServiceInfo> Services
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

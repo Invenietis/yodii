@@ -7,6 +7,7 @@ namespace Yodii.Model
 {
     public interface IDiscoverer
     {
+        IAssemblyInfo ReadAssembly( string path );
         IDiscoveredInfo GetDiscoveredInfo( bool withAssembliesOnError = false );
     }
 }
