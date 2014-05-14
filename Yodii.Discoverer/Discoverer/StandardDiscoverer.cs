@@ -123,7 +123,7 @@ namespace Yodii.Discoverer
                 _assemblyInfos.Add( info.YodiiInfo );
             }
 
-            return new DiscoveredInfo( _assemblyInfos.ToReadOnlyList(), this );
+            return new DiscoveredInfo( _assemblyInfos.ToReadOnlyList() );
         } 
     }
 }

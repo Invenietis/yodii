@@ -69,10 +69,11 @@
   <ItemGroup>
     <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
     <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
-    <Compile Include="ChoucrouteTest1\IChoucrouteServiceRef.cs" />
+    <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
     <Compile Include="ChoucrouteTest2\Plugin1.cs" />
     <Compile Include="ChoucrouteTest2\Service1.cs" />
     <Compile Include="ChoucrouteTest2\Service2.cs" />
+    <Compile Include="ChoucrouteTest3\Plugin1Bis.cs" />
     <Compile Include="DiscovererTests.cs" />
     <Compile Include="ChoucrouteTest3\IService1.cs" />
     <Compile Include="ChoucrouteTest3\IService2.cs" />

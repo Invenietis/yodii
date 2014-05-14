@@ -10,18 +10,13 @@ namespace Yodii.Discoverer.Tests
 {
     public class ChoucroutePlugin : IChoucrouteService, IYodiiPlugin
     {
-        IChoucrouteServiceRef _service;
+        IService<IAnotherService> _serviceOpt;
 
-        [DependencyRequirementAttribute( DependencyRequirement.Running, "serviceRef" )]
-        public ChoucroutePlugin( IChoucrouteServiceRef serviceRef) 
+        public ChoucroutePlugin( IOptionalService<IAnotherService> s )
         {
-            _service = serviceRef;
+            _serviceOpt = s;
         }
 
-        public ChoucroutePlugin()
-        {
-        }
-        
         public bool Setup( PluginSetupInfo info )
         {
             throw new NotImplementedException();

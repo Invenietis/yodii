@@ -64,33 +64,67 @@ namespace Yodii.Discoverer
 
                     foreach( TypeDefinition plugin in d._allModules )
                     {
-                        if( IsYodiiPlugin( plugin ) )
+                        if( !IsYodiiPlugin( plugin ) )
+                            continue;
+
+                        PluginInfo pluginInfo = new PluginInfo( plugin.Name, new AssemblyInfo( new Uri( plugin.Module.FullyQualifiedName.ToString() ) ) );
+                        _plugins.Add( pluginInfo );
+                        TypeReference s = GetService( plugin );
+                        if( s != null )
+                            _plugins.GetByKey( plugin.Name ).Service = _services.GetByKey( s.Name );
+
+                        var ctors = plugin.Methods.Where( m => m.IsConstructor );
+                        var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
+                        if( longerCtor != null )
                         {
-                            _plugins.Add( new PluginInfo( plugin.Name, new AssemblyInfo( new Uri( plugin.Module.FullyQualifiedName.ToString() ) ) ) );
-                            //SetServiceReferences( plugin );
-                            TypeReference s = GetService( plugin );
-                            if( s != null )
-                                _plugins.GetByKey( plugin.Name ).Service = _services.GetByKey( s.Name );
-
-                            if( HasYodiiServiceReferences( plugin ) )
+                            foreach( ParameterDefinition param in longerCtor.Parameters ) 
                             {
-                                MethodDefinition ctor = plugin.Methods.Where( m => m.IsConstructor && m.HasCustomAttributes ).ElementAt( 0 );
-
-                                var attr = ctor.CustomAttributes.Where( ca => ca.ConstructorArguments[0].Type.FullName == _discoverer._tDefDependencyRequirement.FullName ).Select( ca => ca.ConstructorArguments );
-                                for( int i = 0; i < attr.Count(); ++i )
+                                var paramType = param.ParameterType.Resolve();
+                                if( !paramType.IsInterface ) continue;
+                                DependencyRequirement req;
+                                if( GetReq( paramType.GenericParameters.FirstOrDefault().DeclaringType, out req ) )
                                 {
-                                    DependencyRequirement req = (DependencyRequirement)attr.ElementAt( i ).ElementAt( 0 ).Value;
-                                    string paramName = attr.ElementAt( i ).ElementAt( 1 ).Value.ToString();
-                                    int paramIndex = ctor.Parameters.IndexOf( p => p.Name == paramName );
-
-                                    ServiceInfo service = _services.GetByKey( ctor.Parameters.ElementAt( paramIndex ).ParameterType.Name );
-                                    PluginInfo pl = _plugins.GetByKey( plugin.Name );
-                                    ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( pl, service, req, paramName, paramIndex, req == DependencyRequirement.Running );
-                                    pl.BindServiceRequirement( serviceRef );
+                                    ServiceInfo sRef = _services.GetByKey( ( (GenericInstanceType)param.ParameterType ).GenericParameters[param.Index].Name );
+                                    ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( pluginInfo, sRef, req, param.Name, param.Index, DependencyRequirement.Running == req );
                                 }
+                                //foreach( GenericParameter generic in paramType.GenericParameters )
+                                //{
+                                //    TypeReference typeDef = generic.DeclaringType;
+                                //}
+                                //if( paramType.Interfaces.Contains(
+
+                                //DependencyRequirement req = GetReq( param.ParameterType );
+                                //ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, req, paramName, param.Index, req == DependencyRequirement.Running );                               
                             }
+
+                        }
+
+                        var ctorParameters = plugin.Methods.Where( m => m.IsConstructor && ContainsYodiiReferences( m.Parameters ) ).SelectMany( m => m.Parameters);
+                            //var ctorParameters = plugin.Methods.Where( m => m.IsConstructor && HasYodiiServiceReferences( m ) ).Where(p => p..ElementAt( 0 ).Parameters.Where( p => IsYodiiServiceReference( p.ParameterType ) );
+                            
+                        foreach( ParameterDefinition param in ctorParameters ) 
+                        {
+                            PluginInfo p = _plugins.GetByKey( plugin.Name );
+                            //DependencyRequirement req = GetReq( param.ParameterType );
+                            ServiceInfo sRef = _services.GetByKey( ( (GenericInstanceType)param.ParameterType ).GenericParameters[param.Index].Name );
+                            //ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, req, paramName, param.Index, req == DependencyRequirement.Running );                               
                         }
                     }
+                
+                    //HasYodiiServiceReferences(ctor) && 
+                        //var attr = ctor.CustomAttributes.Where( ca => ca.ConstructorArguments[0].Type.FullName == _discoverer._tDefDependencyRequirement.FullName ).Select( ca => ca.ConstructorArguments );
+                        //for( int i = 0; i < attr.Count(); ++i )
+                        //{
+                        //    DependencyRequirement req = (DependencyRequirement)attr.ElementAt( i ).ElementAt( 0 ).Value;
+                        //    string paramName = attr.ElementAt( i ).ElementAt( 1 ).Value.ToString();
+                        //    int paramIndex = ctor.Parameters.IndexOf( p => p.Name == paramName );
+
+                        //    ServiceInfo service = _services.GetByKey( ctor.Parameters.ElementAt( paramIndex ).ParameterType.Name );
+                        //    PluginInfo pl = _plugins.GetByKey( plugin.Name );
+                        //    ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( pl, service, req, paramName, paramIndex, req == DependencyRequirement.Running );
+                        //    pl.BindServiceRequirement( serviceRef );
+                        //}
+                    //}
 
                     YodiiInfo = new AssemblyInfo( new Uri( path ), _services.ToArray(), _plugins.ToArray() );
                 }
@@ -101,10 +135,77 @@ namespace Yodii.Discoverer
                 }
             }
 
-            private bool HasYodiiServiceReferences( TypeDefinition plugin )
+            private bool GetReq( TypeReference param, out DependencyRequirement req )
             {
-                if( plugin.Methods.Where( m => m.IsConstructor && m.HasCustomAttributes ).Any() ) return true;
+                req = DependencyRequirement.Optional;
+
+                if( param == _discoverer._tDefIOptionalService )
+                {
+                    req = DependencyRequirement.Optional;
+                    return true;
+                }
+                else if( param == _discoverer._tDefIOptionalRecoService )
+                {
+                    req = DependencyRequirement.OptionalRecommended;
+                    return true;
+                }
+                else if( param == _discoverer._tDefIRunnableService )
+                {
+                    req = DependencyRequirement.Runnable;
+                    return true;
+                }
+                else if( param == _discoverer._tDefIRunnableRecoService )
+                {
+                    req = DependencyRequirement.RunnableRecommended;
+                    return true;
+                }
+                else if( param == _discoverer._tDefIRunningService )
+                {
+                    req = DependencyRequirement.Running;
+                    return true;
+                }
                 return false;
+            }
+
+            private bool ContainsYodiiReferences( Collection<ParameterDefinition> parameters )
+            {
+                foreach( ParameterDefinition param in parameters )
+                {
+                    string name = param.ParameterType.Name;
+                    //Collection<GenericParameter> generics = param.Resolve().Name
+                        //ParameterType.Resolve().GenericParameters;
+
+                    if( param.ParameterType.Name == _discoverer._tDefIOptionalRecoService.Name
+                    || param.ParameterType.Name == _discoverer._tDefIOptionalService.Name
+                    || param.ParameterType.Name == _discoverer._tDefIRunnableRecoService.Name
+                    || param.ParameterType.Name == _discoverer._tDefIRunnableService.Name
+                    || param.ParameterType.Name == _discoverer._tDefIRunningService.Name ) return true;
+                }
+                return false;
+            }      
+
+            private bool IsYodiiDependencyService( TypeReference typeReference )
+            {
+                return true;
+            }
+
+            //private IEnumerable<ParameterDefinition> HasYodiiServiceReferences( TypeDefinition plugin )
+            //{
+            //    var query = plugin.Methods.Where( m => m.IsConstructor ).SelectMany( m => m.Parameters.Where( p => IsDependencyService( p.ParameterType ) ) );
+            //    var test = plugin.Methods.Where( m => m.Parameters != null );
+            //    if( query.Any() ) return query;
+            //    return null;
+            //}
+            private bool HasYodiiServiceReferences( MethodDefinition method )
+            {
+                var query = method.Parameters.Select( p => IsYodiiService( p.ParameterType.Resolve() ) );
+                return query.Any();
+            }
+    
+            private bool IsDependencyService( TypeReference typeReference )
+            {
+                if( !typeReference.HasGenericParameters ) return false;
+                return true;
             }
 
             bool IsYodiiPlugin( TypeDefinition type )
@@ -143,7 +244,5 @@ namespace Yodii.Discoverer
                 return null;
             }
         }
-
-        public int CurrentVersion { get; set; }
     }
 }

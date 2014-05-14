@@ -9,42 +9,15 @@ namespace Yodii.Discoverer
 {
     internal class DiscoveredInfo : IDiscoveredInfo
     {
-        readonly StandardDiscoverer _discoverer;
-        readonly string _errorMessage;
-        readonly int _version;
         readonly IReadOnlyList<IAssemblyInfo> _assemblies;
         readonly IReadOnlyList<IPluginInfo> _allPlugins;
         readonly IReadOnlyList<IServiceInfo> _allServices;
 
-        public bool HasError
-        {
-            get { return ErrorMessage != null && ErrorMessage.Length > 0; }
-        }
-
-        public int LastChangedVersion
-        {
-            get { return _version; }
-        }
-
-        public bool HasChanged
-        {
-            get { return _version == _discoverer.CurrentVersion; }
-        }
-
-        public string ErrorMessage
-        {
-            get { return _errorMessage; }
-        }
-
-        internal StandardDiscoverer Discoverer { get { return _discoverer; } }
-
-        internal DiscoveredInfo( IReadOnlyList<IAssemblyInfo> assemblies, StandardDiscoverer discoverer )
+        internal DiscoveredInfo( IReadOnlyList<IAssemblyInfo> assemblies )
         {
             _assemblies = assemblies;
             _allPlugins = _assemblies.SelectMany( p => p.Plugins ).ToReadOnlyList();
             _allServices = _assemblies.SelectMany( s => s.Services ).ToReadOnlyList();
-            _discoverer = discoverer;
-            _version = _discoverer.CurrentVersion;
         }
 
         public IReadOnlyList<IPluginInfo> PluginInfos

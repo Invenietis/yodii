@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public interface IChoucrouteServiceRef : IYodiiService
+    public interface IAnotherService : IYodiiService
     {
         void DoSomethingElse();
     }
