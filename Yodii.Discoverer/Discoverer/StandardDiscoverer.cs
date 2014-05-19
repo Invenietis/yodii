@@ -154,8 +154,8 @@ namespace Yodii.Discoverer
             foreach( CachedAssemblyInfo info in _assemblies.Values )
             {
                 if( !withAssembliesOnError && info.Error != null ) continue;
-                //Debug.Assert( info.YodiiInfo != null, "YodiiInfo of the CachedAssembly info in the StandardDiscoverer's _assembly is null" );
-                if( !assemblyInfos.Contains( info.YodiiInfo ) ) continue;
+                Debug.Assert( info.YodiiInfo != null, "YodiiInfo of the CachedAssembly info in the StandardDiscoverer's _assembly is null" );
+                if( assemblyInfos.Contains( info.YodiiInfo ) ) continue;
                 assemblyInfos.Add( info.YodiiInfo );
             }
             return new DiscoveredInfo( assemblyInfos.ToReadOnlyList() );
@@ -249,8 +249,11 @@ namespace Yodii.Discoverer
 
         TypeDefinition GetService( TypeDefinition plugin )
         {
-            IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
+            /*IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
                                                where IsYodiiService( i.Resolve() ) && i.FullName != _tDefIYodiiService.FullName
+                                               select i;*/
+            IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
+                                               where IsYodiiService( i.Resolve() ) 
                                                select i;
             if( query.Any() )
                 return query.ElementAt( 0 ).Resolve();
@@ -258,16 +261,23 @@ namespace Yodii.Discoverer
             return null;
         }
 
+        /// <summary>
+        /// Checks whether the Interface implements IYodiiService.
+        /// If the interface itself is IYodiiService, returns false.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         bool IsYodiiService( TypeDefinition type )
         {
-                if( !type.IsInterface ) return false;
-                var ys = type.Interfaces.Where( i => i.FullName == _tDefIYodiiService.FullName );
-                Debug.Assert( ys.Count() < 2 );
-                if( !ys.Any() ) return false;
-                return true;
-                //TypeDefinition test= ys.First().Resolve();
-                //bool result= (test == _tDefIYodiiService);
-                //return result;
+            if( type.IsInterface )
+            {
+                IEnumerable<TypeReference> target =
+                    from i in type.Interfaces
+                    where i.Resolve().Equals( _tDefIYodiiService )
+                    select i;
+                if( target.Any() ) return true;
+            }
+            return false;
         }
 
         bool IsYodiiPlugin( TypeDefinition type )
@@ -276,7 +286,7 @@ namespace Yodii.Discoverer
             {
                 IEnumerable<TypeReference> target =
                     from i in type.Interfaces
-                    where i.Resolve().FullName.Equals( _tDefIYodiiPlugin.FullName )
+                    where i.Resolve().Equals( _tDefIYodiiPlugin)
                     select i;
                 if( target.Any() ) return true;
             }
