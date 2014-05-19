@@ -16,7 +16,7 @@ namespace Yodii.Discoverer
         readonly Dictionary<string, CachedAssemblyInfo> _assemblies;
         readonly Dictionary<TypeDefinition, ServiceInfo> _services;
         readonly Dictionary<TypeDefinition, PluginInfo> _plugins;
-
+        
         readonly AssemblyDefinition _yodiiModel;
         readonly TypeDefinition _tDefIYodiiService;
         readonly TypeDefinition _tDefIYodiiPlugin;
@@ -154,7 +154,8 @@ namespace Yodii.Discoverer
             foreach( CachedAssemblyInfo info in _assemblies.Values )
             {
                 if( !withAssembliesOnError && info.Error != null ) continue;
-                Debug.Assert( info.YodiiInfo != null, "YodiiInfo of the CachedAssembly info in the StandardDiscoverer's _assembly is null" );
+                //Debug.Assert( info.YodiiInfo != null, "YodiiInfo of the CachedAssembly info in the StandardDiscoverer's _assembly is null" );
+                if( !assemblyInfos.Contains( info.YodiiInfo ) ) continue;
                 assemblyInfos.Add( info.YodiiInfo );
             }
             return new DiscoveredInfo( assemblyInfos.ToReadOnlyList() );
@@ -186,9 +187,14 @@ namespace Yodii.Discoverer
             PluginInfo p = new PluginInfo( t.FullName, new AssemblyInfo( new Uri( _pathTest) ) );
             _plugins.Add( t, p );
 
-            ServiceInfo service = FindOrCreateService( GetService( t ) );
-            if( service != null )
-               _plugins[t].Service = service;
+            ServiceInfo service = null;
+            TypeDefinition serviceType = GetService( t );
+            if( serviceType != null )
+            {
+                service = FindOrCreateService( serviceType );
+                if( service != null )
+                    _plugins[t].Service = service;
+            }      
 
             var ctors = t.Methods.Where( m => m.IsConstructor );
             var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
@@ -196,18 +202,25 @@ namespace Yodii.Discoverer
             {
                 foreach( ParameterDefinition param in longerCtor.Parameters )
                 {
+                    if( param.ParameterType.Namespace.StartsWith( "System" ) ) continue;
                     var paramType = param.ParameterType.Resolve();
                     if( !paramType.IsInterface ) continue;
                     if( paramType.HasGenericParameters )
                     {
                         if( paramType.GenericParameters.Count > 1 ) continue;
-                        TypeDefinition wrappedService = paramType.GenericParameters[0].Resolve();
+                        //ServiceInfo sRef = FindOrCreateService( ( (GenericInstanceType)param.ParameterType ).GenericParameters[0].Resolve() );
+                        
+                        TypeReference refWrapped = ( (GenericInstanceType)param.ParameterType ).GenericArguments.FirstOrDefault();
+                        if( refWrapped == null ) continue;
+                        TypeDefinition wrappedService = refWrapped.Resolve();
+                        TypeDefinition wrappedService2 = paramType.GenericParameters[0].DeclaringType.Resolve();
                         if( !IsYodiiService( wrappedService ) ) continue;
-                        //TypeDefinition wrapper = wrappedService.DeclaringType;
-                        TypeDefinition wrapper = wrappedService;
+                        //TypeDefinition genericForReq = paramType.GenericParameters[0].DeclaringType;
+                        //TypeDefinition wrapper = wrappedService2.DeclaringType;
+                        //TypeDefinition wrapper = wrappedService;
                         DependencyRequirement req;
-                        if( !IsDependencyRequirement( wrapper, out req ) ) continue;
-
+                        if( !IsDependencyRequirement( wrappedService2, out req ) ) continue;
+                                    
                         ServiceInfo sRef = FindOrCreateService( wrappedService );
                         ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, req, param.Name, param.Index, false );
                     }
@@ -237,10 +250,11 @@ namespace Yodii.Discoverer
         TypeDefinition GetService( TypeDefinition plugin )
         {
             IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
-                                               where IsYodiiService( i.Resolve() )
+                                               where IsYodiiService( i.Resolve() ) && i.FullName != _tDefIYodiiService.FullName
                                                select i;
             if( query.Any() )
                 return query.ElementAt( 0 ).Resolve();
+            //ElementAt( 0 ).Resolve();
             return null;
         }
 
