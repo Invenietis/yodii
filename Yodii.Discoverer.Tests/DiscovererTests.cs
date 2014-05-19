@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using Yodii.Model;
 using Yodii.Discoverer;
-using Mono.Cecil;
+//using Mono.Cecil;
 using CK.Core;
 
 namespace Yodii.Discoverer.Tests
@@ -19,7 +19,7 @@ namespace Yodii.Discoverer.Tests
         public void ChoucrouteTest1()
         {
             StandardDiscoverer discoverer = new StandardDiscoverer();
-            discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
+            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
             //Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteService" ) );
             //Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).ServiceReferences[0].Reference == info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteServiceRef" ) );

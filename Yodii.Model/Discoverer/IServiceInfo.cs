@@ -29,6 +29,7 @@ namespace Yodii.Model
         /// Gets the different <see cref="IPluginInfo"/> that implement this service.
         /// </summary>
         IReadOnlyList<IPluginInfo> Implementations { get; }
+        //TODO : get rid of this.
 
     }
 }
