@@ -21,10 +21,10 @@ namespace Yodii.Discoverer.Tests
             StandardDiscoverer discoverer = new StandardDiscoverer();
             IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-            //Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteService" ) );
-            //Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).ServiceReferences[0].Reference == info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteServiceRef" ) );
-            //Assert.That( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ).ServiceReferences[0].Requirement == DependencyRequirement.Running );
-            //Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "IChoucrouteService" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "ChoucroutePlugin" ) ) );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.IChoucrouteService" ) );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ).ServiceReferences.FirstOrDefault().Reference == info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.IAnotherService" ) );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ).ServiceReferences.FirstOrDefault().Requirement == DependencyRequirement.Optional );
+            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.IChoucrouteService" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ) ) );
         }
 
         [Test]
@@ -33,9 +33,9 @@ namespace Yodii.Discoverer.Tests
             StandardDiscoverer discoverer = new StandardDiscoverer();
             discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Plugin1" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "Service2" ) );
-            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "Service2" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "Plugin1" ) ) );
-            Assert.That( info.PluginInfos.FirstOrDefault( p => p.PluginFullName == "UntaggedPlugin" ) == null );
+            Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.Plugin1" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.Service2" ) );
+            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.Service2" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.Plugin1" ) ) );
+            Assert.That( info.PluginInfos.FirstOrDefault( p => p.PluginFullName == "Yodii.Discoverer.Tests.UntaggedPlugin" ) == null );
         }
     }
 }

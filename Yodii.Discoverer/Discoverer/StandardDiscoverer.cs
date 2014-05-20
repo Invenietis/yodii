@@ -223,12 +223,14 @@ namespace Yodii.Discoverer
                                     
                         ServiceInfo sRef = FindOrCreateService( wrappedService );
                         ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, req, param.Name, param.Index, false );
+                        p.BindServiceRequirement( serviceRef );
                     }
                     else
                     {
                         if( !IsYodiiService( paramType ) ) continue;
                         ServiceInfo sRef = FindOrCreateService( paramType );
                         ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, DependencyRequirement.Running, param.Name, param.Index, true );
+                        p.BindServiceRequirement( serviceRef );
                     }
                 }
             }

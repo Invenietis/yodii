@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Yodii.Model;
 
-namespace Yodii.Discoverer
+namespace Yodii.Discoverer.Tests
 {
     public interface Service1 : IYodiiService
     {
