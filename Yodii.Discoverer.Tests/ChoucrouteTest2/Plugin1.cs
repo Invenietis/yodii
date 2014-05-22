@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public class Plugin1 : IYodiiPlugin, Service2, Service1
+    public class Plugin1 : IYodiiPlugin, IService2
     {
         readonly string _pluginFullName;
 

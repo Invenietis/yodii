@@ -55,12 +55,7 @@ namespace Yodii.Discoverer
         public IServiceInfo Service
         {
             get { return _service; }
-            set
-            {
-                if( _service != null ) ( (ServiceInfo)_service ).RemovePlugin( this );
-                _service = value;
-                if( _service != null ) ( (ServiceInfo)_service ).AddPlugin( this );
-            }
+            internal set { _service = value; }
         }
 
         #endregion

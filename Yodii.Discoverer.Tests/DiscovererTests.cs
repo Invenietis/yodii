@@ -24,7 +24,6 @@ namespace Yodii.Discoverer.Tests
             Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.IChoucrouteService" ) );
             Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ).ServiceReferences.FirstOrDefault().Reference == info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.IAnotherService" ) );
             Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ).ServiceReferences.FirstOrDefault().Requirement == DependencyRequirement.Optional );
-            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.IChoucrouteService" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.ChoucroutePlugin" ) ) );
         }
 
         [Test]
@@ -34,7 +33,6 @@ namespace Yodii.Discoverer.Tests
             discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Discoverer.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
             Assert.That( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.Plugin1" ).Service == info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.Service2" ) );
-            Assert.That( info.ServiceInfos.First( s => s.ServiceFullName == "Yodii.Discoverer.Tests.Service2" ).Implementations.Contains( info.PluginInfos.First( p => p.PluginFullName == "Yodii.Discoverer.Tests.Plugin1" ) ) );
             Assert.That( info.PluginInfos.FirstOrDefault( p => p.PluginFullName == "Yodii.Discoverer.Tests.UntaggedPlugin" ) == null );
         }
     }

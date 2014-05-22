@@ -6,7 +6,8 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public interface IService2 : IYodiiService, IService1
+    public interface ITest3Service1 : IYodiiService
     {
+
     }
 }

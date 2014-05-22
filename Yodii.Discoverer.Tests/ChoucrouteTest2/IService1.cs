@@ -8,6 +8,5 @@ namespace Yodii.Discoverer.Tests
 {
     public interface IService1 : IYodiiService
     {
-
     }
 }

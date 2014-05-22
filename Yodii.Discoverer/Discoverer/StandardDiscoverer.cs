@@ -36,31 +36,31 @@ namespace Yodii.Discoverer
             {
                 _discoverer = d;
             }
-             
-            public override AssemblyDefinition Resolve( string fullName )
+
+            public AssemblyDefinition ReadAssembly( string path )
             {
-                AssemblyDefinition a = base.Resolve( fullName );
-                CachedAssemblyInfo info;
-                if( !_discoverer._assemblies.TryGetValue( fullName /*a.FullName*/, out info ) )
+                CachedAssemblyInfo cached;
+                if( !_discoverer._assemblies.TryGetValue( path, out cached ) )
                 {
-                    _discoverer.RegisterNewAssembly( a );
+                    AssemblyDefinition a = AssemblyDefinition.ReadAssembly( path, _discoverer._readerParameters );
+                    RegisterAssembly( a );
+                    if( !_discoverer._assemblies.TryGetValue( a.FullName, out cached ) )
+                    {
+                        cached = _discoverer.RegisterNewAssembly( a );
+                        _discoverer._assemblies.Add( path, cached );
+                    }
                 }
-                return a;
+                return cached.CecilInfo;
             }
+             
             public override AssemblyDefinition Resolve( AssemblyNameReference name )
             {
-                AssemblyDefinition assembly;
-                assembly = base.Resolve( name );
-                if( assembly.FullName.Equals( _discoverer._yodiiModel.FullName ) )
-                {
-                    return _discoverer._yodiiModel;
-                }
+                AssemblyDefinition assembly = base.Resolve( name );
                 CachedAssemblyInfo info;
-                if( !_discoverer._assemblies.TryGetValue( name.FullName /*assembly.FullName*/, out info ) )
+                if( !_discoverer._assemblies.TryGetValue( assembly.FullName, out info ) )
                 {
                     _discoverer.RegisterNewAssembly( assembly );
                 }   
-                //info.YodiiInfo.
                 return assembly;
             }
 
@@ -77,11 +77,10 @@ namespace Yodii.Discoverer
 
             _resolver = new CustomAssemblyResolver( this );
             foreach( var d in directories ) _resolver.AddSearchDirectory( d );
-            //IAssemblyResolver restest = _resolver;//TESTE
-            _readerParameters = new ReaderParameters/*()*/ { AssemblyResolver = _resolver };
+            _readerParameters = new ReaderParameters() { AssemblyResolver = _resolver };
             
             var pathYodiiModel = new Uri( typeof( IYodiiService ).Assembly.CodeBase ).LocalPath;
-            _yodiiModel = AssemblyDefinition.ReadAssembly( pathYodiiModel );
+            _yodiiModel = _resolver.ReadAssembly( pathYodiiModel );
 
             _tDefIYodiiService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiService ).FullName );
             _tDefIYodiiPlugin = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiPlugin ).FullName );
@@ -97,8 +96,8 @@ namespace Yodii.Discoverer
 
         public IAssemblyInfo ReadAssembly( string path )
         {
-            _pathTest = path;
             if( String.IsNullOrEmpty( path ) ) throw new ArgumentNullException( "path" );
+            _resolver.ReadAssembly( path );
             CachedAssemblyInfo result;
             if( !_assemblies.TryGetValue( path, out result ) )
             {
@@ -113,7 +112,7 @@ namespace Yodii.Discoverer
                 }
                 catch( Exception ex )
                 {
-                    result = new CachedAssemblyInfo( path, ex );
+                    result = new CachedAssemblyInfo( ex );
                     CachedAssemblyInfo info;
                     if(_assemblies.TryGetValue(path, out info))
                     {
@@ -126,26 +125,12 @@ namespace Yodii.Discoverer
             return result.YodiiInfo;
         }
 
-        //private CachedAssemblyInfo RegisterNewAssembly( AssemblyDefinition a, string path )
-        //{
-        //    //string path = a.MainModule.FullyQualifiedName;
-        //    CachedAssemblyInfo info = new CachedAssemblyInfo( a );
-        //    _assemblies.Add( a.FullName, info );
-        //    _assemblies.Add( path, info );
-        //    info.Discover( path, this );
-        //    return info;
-        //}
-        string _pathTest;
         private CachedAssemblyInfo RegisterNewAssembly( AssemblyDefinition a )
         {
-            //string path = a.MainModule.FullyQualifiedName;
-            string path = _pathTest;
+            Debug.Assert( a != null );
             CachedAssemblyInfo info = new CachedAssemblyInfo( a );
-            Debug.Assert( info != null, "info is null" );
             _assemblies.Add( a.FullName, info );
-            _assemblies.Add( path, info ); // /!\
-           // _assemblies.TryGetValue(
-            info.Discover( path, this );
+            info.Discover( this );
             return info;
         }
         public IDiscoveredInfo GetDiscoveredInfo( bool withAssembliesOnError = false )
@@ -154,7 +139,6 @@ namespace Yodii.Discoverer
             foreach( CachedAssemblyInfo info in _assemblies.Values )
             {
                 if( !withAssembliesOnError && info.Error != null ) continue;
-                Debug.Assert( info.YodiiInfo != null, "YodiiInfo of the CachedAssembly info in the StandardDiscoverer's _assembly is null" );
                 if( assemblyInfos.Contains( info.YodiiInfo ) ) continue;
                 assemblyInfos.Add( info.YodiiInfo );
             }
@@ -165,36 +149,27 @@ namespace Yodii.Discoverer
         {
             ServiceInfo s;
             if( _services.TryGetValue( t, out s ) ) return s;
-            //_services.Add( t, new ServiceInfo( t.FullName, new AssemblyInfo( new Uri( t.Module.FullyQualifiedName.ToString() ) ) ) );
-            _services.Add( t, new ServiceInfo( t.FullName, new AssemblyInfo( new Uri( _pathTest ) ) ) );
+
+            s = new ServiceInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
+            _services.Add( t, s );
+            s.Generalization = t.Interfaces
+                                    .Select( i => i.Resolve() )
+                                    .Where( i => IsYodiiService( i ) )
+                                    .Select( i => FindOrCreateService( i ) )
+                                    .SingleOrDefault();
            
-            IEnumerable<TypeReference> parent =
-                            from i in t.Interfaces
-                            where IsYodiiService( i.Resolve() )
-                            select i;
-
-            if( parent.Any() )
-                _services[t].Generalization = FindOrCreateService( parent.First().Resolve() );
-
-            return _services[t];         
+            return s;         
         }
 
         PluginInfo FindOrCreatePlugin( TypeDefinition t )
         {
-            PluginInfo tryP;
-            if( _plugins.TryGetValue( t, out tryP ) ) return tryP;
-            //PluginInfo p = new PluginInfo( t.FullName, new AssemblyInfo( new Uri( t.Module.FullyQualifiedName.ToString() ) ) );
-            PluginInfo p = new PluginInfo( t.FullName, new AssemblyInfo( new Uri( _pathTest) ) );
+            PluginInfo p;
+            if( _plugins.TryGetValue( t, out p ) ) return p;
+
+            p = new PluginInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
             _plugins.Add( t, p );
 
-            ServiceInfo service = null;
-            TypeDefinition serviceType = GetService( t );
-            if( serviceType != null )
-            {
-                service = FindOrCreateService( serviceType );
-                if( service != null )
-                    _plugins[t].Service = service;
-            }      
+            p.Service = GetImplementedService( p, t );
 
             var ctors = t.Methods.Where( m => m.IsConstructor );
             var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
@@ -202,15 +177,15 @@ namespace Yodii.Discoverer
             {
                 foreach( ParameterDefinition param in longerCtor.Parameters )
                 {
-                    if( param.ParameterType.Namespace.StartsWith( "System" ) ) continue;
                     var paramType = param.ParameterType.Resolve();
                     if( !paramType.IsInterface ) continue;
+
                     if( paramType.HasGenericParameters )
                     {
                         if( paramType.GenericParameters.Count > 1 ) continue;
                         //ServiceInfo sRef = FindOrCreateService( ( (GenericInstanceType)param.ParameterType ).GenericParameters[0].Resolve() );
                         
-                        TypeReference refWrapped = ( (GenericInstanceType)param.ParameterType ).GenericArguments.FirstOrDefault();
+                        TypeReference refWrapped = ( (GenericInstanceType)param.ParameterType ).GenericArguments[0];
                         if( refWrapped == null ) continue;
                         TypeDefinition wrappedService = refWrapped.Resolve();
                         TypeDefinition wrappedService2 = paramType.GenericParameters[0].DeclaringType.Resolve();
@@ -249,18 +224,13 @@ namespace Yodii.Discoverer
         //    return null;
         //}
 
-        TypeDefinition GetService( TypeDefinition plugin )
+        ServiceInfo GetImplementedService( PluginInfo plugin, TypeDefinition pluginType )
         {
-            /*IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
-                                               where IsYodiiService( i.Resolve() ) && i.FullName != _tDefIYodiiService.FullName
-                                               select i;*/
-            IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
-                                               where IsYodiiService( i.Resolve() ) 
-                                               select i;
-            if( query.Any() )
-                return query.ElementAt( 0 ).Resolve();
-            //ElementAt( 0 ).Resolve();
-            return null;
+            return pluginType.Interfaces
+                            .Select( i => i.Resolve() )
+                            .Where( i => IsYodiiService( i ) )
+                            .Select( i => FindOrCreateService( i ) )
+                            .SingleOrDefault();
         }
 
         /// <summary>
@@ -323,5 +293,7 @@ namespace Yodii.Discoverer
             }
             return false;
         }
+
+        public IAssemblyInfo currentIfNotYetLoaded { get; set; }
     }
 }

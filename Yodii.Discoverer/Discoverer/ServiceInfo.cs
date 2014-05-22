@@ -12,7 +12,6 @@ namespace Yodii.Discoverer
     {
         readonly string _serviceFullName;
         readonly IAssemblyInfo _assemblyInfo;
-        readonly List<IPluginInfo> _implementations;
         IServiceInfo _generalization;
         bool _hasError;
 
@@ -23,23 +22,6 @@ namespace Yodii.Discoverer
 
             _serviceFullName = serviceFullName;
             _assemblyInfo = assemblyInfo;
-            _implementations = new List<IPluginInfo>();
-        }
-
-        internal void AddPlugin( IPluginInfo plugin )
-        {
-            Debug.Assert( plugin != null );
-            Debug.Assert( plugin.Service == this );
-            Debug.Assert( !_implementations.Contains( plugin ) );
-            _implementations.Add( plugin );
-        }
-
-        internal void RemovePlugin( IPluginInfo plugin )
-        {
-            Debug.Assert( plugin != null );
-            Debug.Assert( plugin.Service == this );
-            Debug.Assert( _implementations.Contains( plugin ) );
-            _implementations.Remove( plugin );
         }
 
         #region IServiceInfo Members
@@ -52,17 +34,12 @@ namespace Yodii.Discoverer
         public IServiceInfo Generalization
         {
             get { return _generalization; }
-            set { _generalization = value; }
+            internal set { _generalization = value; }
         }
 
         public IAssemblyInfo AssemblyInfo
         {
             get { return _assemblyInfo; }
-        }
-
-        public IReadOnlyList<IPluginInfo> Implementations
-        {
-            get { return _implementations.AsReadOnlyList(); }
         }
 
         #endregion

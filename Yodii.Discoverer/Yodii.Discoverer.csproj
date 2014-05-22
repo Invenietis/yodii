@@ -34,6 +34,19 @@
     <Reference Include="CK.Core">
       <HintPath>..\packages\CK.Core.3.0.19-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Cecil, Version=0.9.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO">
@@ -52,19 +65,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Discoverer\AssemblyInfo.cs" />
-    <Compile Include="Discoverer\DiscoveredInfo.cs" />
+    <Compile Include="Discoverer\SnapshotDiscoveredInfo.cs" />
     <Compile Include="Discoverer\StandardDiscoverer.CachedAssemblyInfo.cs" />
     <Compile Include="Discoverer\StandardDiscoverer.cs" />
     <Compile Include="Discoverer\PluginInfo.cs" />
     <Compile Include="Discoverer\ServiceInfo.cs" />
-    <Compile Include="Discoverer\ServiceReferenceInfo.cs" />
+    <Compile Include="Discoverer\ReferenceInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\cecil-master\cecil-master\Mono.Cecil.csproj">
-      <Project>{d68133bd-1e63-496e-9ede-4fbdbf77b486}</Project>
-      <Name>Mono.Cecil</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>

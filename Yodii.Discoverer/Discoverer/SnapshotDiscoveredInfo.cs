@@ -17,7 +17,6 @@ namespace Yodii.Discoverer
         internal DiscoveredInfo( IReadOnlyList<IAssemblyInfo> assemblies )
         {
             _assemblies = assemblies;
-            Debug.Assert(_assemblies[0]!=null, "assembly 0 is null");
             _allPlugins = _assemblies.SelectMany( p => p.Plugins ).ToReadOnlyList();
             _allServices = _assemblies.SelectMany( s => s.Services ).ToReadOnlyList();
         }

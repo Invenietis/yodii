@@ -12,7 +12,7 @@ namespace Yodii.Discoverer.Tests
     {
         IService<IAnotherService> _serviceOpt;
 
-        public ChoucroutePlugin( IOptionalService<IAnotherService> s )
+        public ChoucroutePlugin( IOptionalService<IAnotherService> s, Microsoft.SqlServer.Server.SqlContext context )
         {
             _serviceOpt = s;
         }

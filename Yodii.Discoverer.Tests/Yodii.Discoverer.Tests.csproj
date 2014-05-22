@@ -59,12 +59,12 @@
     <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
     <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
     <Compile Include="ChoucrouteTest2\Plugin1.cs" />
-    <Compile Include="ChoucrouteTest2\Service1.cs" />
-    <Compile Include="ChoucrouteTest2\Service2.cs" />
+    <Compile Include="ChoucrouteTest2\IService1.cs" />
+    <Compile Include="ChoucrouteTest2\IService2.cs" />
     <Compile Include="ChoucrouteTest3\Plugin1Bis.cs" />
     <Compile Include="DiscovererTests.cs" />
-    <Compile Include="ChoucrouteTest3\IService1.cs" />
-    <Compile Include="ChoucrouteTest3\IService2.cs" />
+    <Compile Include="ChoucrouteTest3\ITest3Service1.cs" />
+    <Compile Include="ChoucrouteTest3\ITest3Service2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ChoucrouteTest2\UntaggedPlugin.cs" />
   </ItemGroup>
