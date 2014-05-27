@@ -27,7 +27,7 @@ namespace Yodii.Engine.Tests
                 Assert.That( b.Service == null );
             else if( inspectServices )
             {
-                AssertServiceEquivalence( a.Service, b.Service, false );
+                AssertServiceEquivalence( a.Service, b.Service );
             }
 
             Assert.That( a.ServiceReferences.Count == b.ServiceReferences.Count );
@@ -39,7 +39,7 @@ namespace Yodii.Engine.Tests
 
                 Assert.That( referenceA != null );
 
-                AssertServiceEquivalence( referenceA.Reference, referenceB.Reference, false );
+                AssertServiceEquivalence( referenceA.Reference, referenceB.Reference );
             }
         }
 
@@ -48,25 +48,13 @@ namespace Yodii.Engine.Tests
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
-        public static void AssertServiceEquivalence( IServiceInfo a, IServiceInfo b, bool inspectPlugins = false )
+        public static void AssertServiceEquivalence( IServiceInfo a, IServiceInfo b )
         {
             if( a == null && b == null ) return;
 
             Assert.That( a != null && b != null );
             Assert.That( a.ServiceFullName == b.ServiceFullName );
-            AssertServiceEquivalence( a.Generalization, b.Generalization, inspectPlugins );
-
-            Assert.That( a.Implementations.Count == b.Implementations.Count );
-            if( inspectPlugins )
-            {
-                foreach( var pluginB in b.Implementations )
-                {
-                    Assert.That( a.Implementations.Where( x => x.PluginFullName == pluginB.PluginFullName ).Count() == 1 );
-                    var pluginA = a.Implementations.Where( x => x.PluginFullName == pluginB.PluginFullName ).First();
-
-                    AssertPluginEquivalence( pluginA, pluginB, false );
-                }
-            }
+            AssertServiceEquivalence( a.Generalization, b.Generalization );
             
         }
 
@@ -134,7 +122,7 @@ namespace Yodii.Engine.Tests
             {
                 var sB = b.ServiceInfos.First( s => sA.ServiceFullName == s.ServiceFullName );
 
-                AssertServiceEquivalence( sA, sB, true );
+                AssertServiceEquivalence( sA, sB );
             }
 
             foreach( var pA in a.PluginInfos )
