@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Model", "Yodii.Model\Yodii.Model.csproj", "{DB68716F-9883-433A-928D-AA597D377C9C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Engine", "Yodii.Engine\Yodii.Engine.csproj", "{A11642D8-CDA7-4044-AD8A-03ED61A71BC3}"
@@ -25,6 +23,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp", "Yodii.DemoApp\Yodii.DemoApp.csproj", "{E8F8401C-D306-427F-8E82-311D2855EB32}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp.Tests", "Yodii.DemoApp.Tests\Yodii.DemoApp.Tests.csproj", "{8902FBD5-3E76-47C4-92B1-60E808156D30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Host", "Yodii.Host\Yodii.Host.csproj", "{C9FCBF26-371B-48C2-AA78-06292EE30B9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -258,6 +258,30 @@ Global
 		{8902FBD5-3E76-47C4-92B1-60E808156D30}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8902FBD5-3E76-47C4-92B1-60E808156D30}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8902FBD5-3E76-47C4-92B1-60E808156D30}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_2_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_2_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_2_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_2_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_3_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_3_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_3_5_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_3_5_Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_4_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_4_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_4_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.net_4_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.silverlight_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.silverlight_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.silverlight_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.silverlight_Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.winphone_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FCBF26-371B-48C2-AA78-06292EE30B9D}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

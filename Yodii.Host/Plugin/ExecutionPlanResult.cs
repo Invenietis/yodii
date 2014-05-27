@@ -25,10 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using CK.Plugin;
+using Yodii.Model;
 using CK.Core;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     class ExecutionPlanResult : IExecutionPlanResult
     {

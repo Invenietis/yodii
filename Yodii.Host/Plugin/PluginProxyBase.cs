@@ -28,12 +28,14 @@ using System.Text;
 using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
+using Yodii.Model;
+using Yodii.Model.LiveModel;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     class PluginProxyBase
     {
-        IPlugin _instance;
+        IYodiiPlugin _instance;
         Exception  _loadError;
 
         internal PluginProxyBase()
@@ -66,13 +68,13 @@ namespace CK.Plugin.Hosting
 
         public object RealPluginObject { get { return RealPlugin; } }
 
-        internal MethodInfo GetImplMethodInfoSetup() { return GetImplMethodInfo( typeof( IPlugin ), "Setup" ); }
+        internal MethodInfo GetImplMethodInfoSetup() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Setup" ); }
 
-        internal MethodInfo GetImplMethodInfoStart() { return GetImplMethodInfo( typeof( IPlugin ), "Start" ); }
+        internal MethodInfo GetImplMethodInfoStart() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Start" ); }
 
-        internal MethodInfo GetImplMethodInfoStop() { return GetImplMethodInfo( typeof( IPlugin ), "Stop" ); }
+        internal MethodInfo GetImplMethodInfoStop() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Stop" ); }
 
-        internal MethodInfo GetImplMethodInfoTeardown() { return GetImplMethodInfo( typeof( IPlugin ), "Teardown" ); }
+        internal MethodInfo GetImplMethodInfoTeardown() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Teardown" ); }
         
         internal MethodInfo GetImplMethodInfoDispose() { return GetImplMethodInfo( typeof( IDisposable ), "Dispose" ); }
 
@@ -84,7 +86,7 @@ namespace CK.Plugin.Hosting
             return m;
         }
 
-        internal IPlugin RealPlugin 
+        internal IYodiiPlugin RealPlugin 
         { 
             get 
             { 
@@ -113,7 +115,7 @@ namespace CK.Plugin.Hosting
             }
         }
 
-        internal bool TryLoad( ServiceHost serviceHost, Func<IPlugin> pluginCreator, object pluginKey )
+        internal bool TryLoad( ServiceHost serviceHost, Func<IYodiiPlugin> pluginCreator, object pluginKey )
         {
             if( _instance == null )
             {

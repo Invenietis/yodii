@@ -30,7 +30,7 @@ using System.Collections;
 using CK.Core;
 using System.Diagnostics;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     class LogEventEntry : LogHostEventArgs, ILogEventEntry, ICKReadOnlyCollection<ILogEventError>
     {

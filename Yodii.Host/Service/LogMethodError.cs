@@ -27,7 +27,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     /// <summary>
     /// Used for error that occured in a non-logged method.

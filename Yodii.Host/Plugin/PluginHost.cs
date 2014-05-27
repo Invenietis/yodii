@@ -27,8 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Yodii.Model;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     public class PluginHost : IPluginHost
     {
@@ -57,7 +58,7 @@ namespace CK.Plugin.Hosting
         /// Gets or sets a function that is in charge of obtaining concrete plugin instances.
         /// Only the default constructor of the plugin must be called by this action.
         /// </summary>
-        public Func<IPluginInfo, IPlugin> PluginCreator { get; set; }
+        public Func<IPluginInfo, IYodiiPlugin> PluginCreator { get; set; }
 
         /// <summary>
         /// Gets or sets a function called before the setup of each plugins to fill their edition properties.

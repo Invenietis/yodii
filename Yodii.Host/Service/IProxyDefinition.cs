@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
 	internal class ProxyOptions
 	{

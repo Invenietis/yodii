@@ -28,7 +28,7 @@ using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     class LogMethodEntry : LogHostEventArgs, ILogMethodEntry
     {

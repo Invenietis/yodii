@@ -25,12 +25,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
-using CK.Plugin;
+using Yodii.Model;
 using System.Reflection;
 using System.Linq;
 using CK.Core;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     internal struct MEntry
     {

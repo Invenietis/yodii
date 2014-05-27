@@ -27,10 +27,10 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
-using CK.Reflection;
 using System.IO;
+using Yodii.Model;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
 	internal class ProxyFactory
 	{
@@ -750,7 +750,7 @@ namespace CK.Plugin.Hosting
             if( definition.IsDynamicService )
             {
                 // Our proxy object will implement both typeInterface and IService<typeInterface> interfaces.
-                Type serviceInterfaceType = typeof( IService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                Type serviceInterfaceType = typeof( IYodiiService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
                 typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
             }
             

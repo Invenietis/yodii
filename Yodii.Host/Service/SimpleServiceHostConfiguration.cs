@@ -27,7 +27,7 @@ using System.Reflection;
 using System.Linq;
 
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     /// <summary>
     /// Simple dictionary based implementation of <see cref="IServiceHostConfiguration"/>.

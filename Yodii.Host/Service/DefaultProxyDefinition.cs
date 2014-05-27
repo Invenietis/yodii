@@ -25,10 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using CK.Plugin;
 using System.Diagnostics;
+using Yodii.Model;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     internal enum CatchExceptionGeneration
     {

@@ -27,9 +27,10 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
+using Yodii.Model;
 using CK.Core;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     internal class ServiceHost : IServiceHost, ILogCenter
     {

@@ -29,7 +29,7 @@ using System.Reflection;
 using System.Diagnostics;
 using CK.Core;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     class LogEventEntryError : LogHostEventArgs, ILogEventError
     {

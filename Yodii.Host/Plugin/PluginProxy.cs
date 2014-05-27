@@ -27,8 +27,9 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using CK.Core;
+using Yodii.Model;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
 
     class PluginProxy : PluginProxyBase, IPluginProxy
@@ -46,7 +47,7 @@ namespace CK.Plugin.Hosting
 
         public string PublicName { get { return PluginKey.PublicName; } }
 
-        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, IPlugin> pluginCreator )
+        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, IYodiiPlugin> pluginCreator )
         {
             return TryLoad( serviceHost, () => pluginCreator( PluginKey ), PluginKey );
         }

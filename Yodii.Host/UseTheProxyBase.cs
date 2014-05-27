@@ -20,18 +20,19 @@
 * All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
+using Yodii.Model;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     /// <summary>
     /// Fake internal class that forces the compiler to keep <see cref="ServiceProxyBase"/> implementation.
     /// Without it, get_Status (for instance) is not ignored at compile time and hence, not defined when 
     /// the ServiceProxyBase is used as the base class by dynamic proxies.
     /// </summary>
-    class UseTheProxyBase : ServiceProxyBase, IService<CK.Plugin.IDynamicService>
+    class UseTheProxyBase : ServiceProxyBase, IService<IDynamicService>
     {
         UseTheProxyBase()
-            : base( null, typeof( CK.Plugin.IDynamicService ), null, null )
+            : base( null, typeof( IDynamicService ), null, null )
         {
         }
 
@@ -41,7 +42,7 @@ namespace CK.Plugin.Hosting
             set { }
         }
 
-        public CK.Plugin.IDynamicService Service
+        public IDynamicService Service
         {
             get { return null; }
         }

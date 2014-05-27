@@ -92,6 +92,7 @@
     <Compile Include="Host\Service\IYodiiService.cs" />
     <Compile Include="Host\Service\ServiceStatusChangedEventArgs.cs" />
     <Compile Include="LiveModel\ILiveRunCapability.cs" />
+    <Compile Include="LiveModel\InternalRunningStatus.cs" />
     <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
     <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />
     <Compile Include="YodiiModelExtension.cs" />

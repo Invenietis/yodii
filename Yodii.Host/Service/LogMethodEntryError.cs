@@ -28,7 +28,7 @@ using System.Text;
 using System.Reflection;
 using System.Diagnostics;
 
-namespace CK.Plugin.Hosting
+namespace Yodii.Host
 {
     /// <summary>
     /// Used for error that occured in a logged method: the <see cref="LogMethodEntry"/> already exists.
