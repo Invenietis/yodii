@@ -41,11 +41,12 @@ namespace Yodii.Host
 
         public IPluginInfo PluginKey { get; private set; }
 
-        public Guid UniqueId { get { return PluginKey.UniqueId; } }
+        //public Guid UniqueId { get { return PluginKey.UniqueId; } }
 
-        public Version Version { get { return PluginKey.Version; } }
+        //public Version Version { get { return PluginKey.Version; } }
 
-        public string PublicName { get { return PluginKey.PublicName; } }
+        //public string PublicName { get { return PluginKey.PublicName; } }
+        public string PublicName { get { return PluginKey.PluginFullName; } }
 
         internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, IYodiiPlugin> pluginCreator )
         {

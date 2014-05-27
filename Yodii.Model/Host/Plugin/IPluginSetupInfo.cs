@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\IPluginSetupInfo.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -25,26 +25,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yodii.Model;
-using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// 
+    /// </summary>
+    public class IPluginSetupInfo
     {
-        Exception _error;
+        /// <summary>
+        /// Gets or sets an explicit message for the user when <see cref="IPlugin.Setup"/> fails.
+        /// </summary>
+        public string FailedUserMessage { get; set; }
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
+        /// <summary>
+        /// Gets or sets a message for the user when <see cref="IPlugin.Setup"/> fails.
+        /// </summary>
+        public string FailedDetailedMessage { get; set; }
 
-        public Exception Error
+        /// <summary>
+        /// Gets or sets an optional exception.
+        /// </summary>
+        public Exception Error { get; set; }
+
+        /// <summary>
+        /// Clears <see cref="FailedUserMessage"/>, <see cref="FailedDetailedMessage"/> and <see cref="Error"/>: they are all set to null.
+        /// </summary>
+        public void Clear()
         {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
+            FailedUserMessage = null;
+            FailedDetailedMessage = null;
+            Error = null;
         }
 
     }
-
 }

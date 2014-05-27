@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\UseTheProxyBase.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\Log\LogEntryType.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -20,37 +20,48 @@
 * All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
-using Yodii.Model;
 
-namespace Yodii.Host
+namespace Yodii.Model
 {
     /// <summary>
-    /// Fake internal class that forces the compiler to keep <see cref="ServiceProxyBase"/> implementation.
-    /// Without it, get_Status (for instance) is not ignored at compile time and hence, not defined when 
-    /// the ServiceProxyBase is used as the base class by dynamic proxies.
+    /// Qualifies the actual type of <see cref="ILogInterceptionEntry"/>.
     /// </summary>
-    class UseTheProxyBase : ServiceProxyBase, IService<IYodiiService>
+    public enum LogEntryType
     {
-        UseTheProxyBase()
-            : base( null, typeof( IYodiiService ), null, null )
-        {
-        }
-
-        protected override object RawImpl
-        {
-            get { return null; }
-            set { }
-        }
-
-        public IYodiiService Service
-        {
-            get { return null; }
-        }
+        /// <summary>
+        /// The log entry is a <see cref="ILogEventEntry"/>.
+        /// </summary>
+        Event,
 
         /// <summary>
-        /// Gets the current <see cref="RunningStatus"/> of the service.
-        /// From Yodii
+        /// The log entry is a <see cref="ILogEventError"/>.
         /// </summary>
-        public RunningStatus RunningStatus { get; set; }
+        EventError,
+
+        /// <summary>
+        /// The log entry is a <see cref="ILogEventNotRunningError"/>.
+        /// </summary>
+        EventNotRunningError,
+
+        /// <summary>
+        /// The log entry is a <see cref="ILogMethodEntry"/>.
+        /// </summary>
+        Method,
+
+        /// <summary>
+        /// The log entry is a <see cref="ILogMethodError"/>.
+        /// </summary>
+        MethodError,
+
+        /// <summary>
+        /// The log entry is a <see cref="ILogExternal"/>.
+        /// </summary>
+        External,
+        
+        /// <summary>
+        /// The log entry is a <see cref="ILogExternalError"/>.
+        /// </summary>
+        ExternalError
     }
+
 }

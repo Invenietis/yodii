@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\Log\ILogMethodEntry.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,34 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
-using CK.Core;
+using System.Reflection;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Log event related to a method call.
+    /// </summary>
+    public interface ILogMethodEntry : ILogInterceptionEntry, ILogWithParametersEntry
     {
-        Exception _error;
+        /// <summary>
+        /// Gets the service logged method.
+        /// </summary>
+        MethodInfo Method { get; }
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
+        /// <summary>
+        /// Gets the caller of the method if it has been captured.
+        /// </summary>
+        MethodInfo Caller { get; }
 
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
+        /// <summary>
+        /// Gets the returned value if it has been captured.
+        /// </summary>
+        object ReturnValue { get; }
+
+        /// <summary>
+        /// Gets the error entry if an error occured.
+        /// </summary>
+        ILogMethodError Error { get; }       
 
     }
-
 }

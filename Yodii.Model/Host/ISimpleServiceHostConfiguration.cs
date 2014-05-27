@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Service\LogExternalEntry.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\ISimpleServiceHostConfiguration.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,48 +22,23 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
-using System.Diagnostics;
-using Yodii.Model;
 
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class LogExternalEntry : LogEventArgs, ILogExternalEntry
+    /// <summary>
+    /// Extension of the basic <see cref="IServiceHostConfiguration"/> that 
+    /// memorizes its configuration and provides helpers to set multiple configurations at once.
+    /// </summary>
+    public interface ISimpleServiceHostConfiguration : IServiceHostConfiguration
     {
-        int _depth;
-        string _msg;
-        object _extraData;
-
-        internal LogExternalEntry( int lsn, int depth, string message, object extraData )
-        {
-            LSN = -lsn;
-            _depth = depth;
-            _msg = message;
-            _extraData = extraData;
-        }
-
-        public override LogEntryType EntryType
-        {
-            get { return LogEntryType.External; }
-        }
-
-        public override int Depth
-        {
-            get { return _depth; }
-        }
-
-        public string Message
-        {
-            get { return _msg; }
-        }
-
-        public object ExtraData
-        {
-            get { return _extraData; }
-        }
-
+        void Clear();
+        void SetConfiguration( EventInfo e, ServiceLogEventOptions option );
+        void SetConfiguration( MethodInfo m, ServiceLogMethodOptions option );
+        void SetConfiguration( PropertyInfo p, ServiceLogMethodOptions option );
+        void SetAllEventsConfiguration( Type type, ServiceLogEventOptions option );
+        void SetAllMethodsConfiguration( Type type, ServiceLogMethodOptions option );
+        void SetAllPropertiesConfiguration( Type type, ServiceLogMethodOptions option );
+        void SetMethodGroupConfiguration( Type type, string methodName, ServiceLogMethodOptions option );
     }
 }

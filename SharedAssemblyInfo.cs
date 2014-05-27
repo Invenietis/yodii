@@ -26,7 +26,7 @@ using System.Reflection;
 [assembly: AssemblyProduct( "Yodii" )]
 [assembly: AssemblyCopyright( "Copyright © Invenietis 2013" )]
 [assembly: AssemblyTrademark( "" )]
-[assembly: CLSCompliant( true )]
+//[assembly: CLSCompliant( true )] //TODO : fix this
 [assembly: AssemblyVersion( "0.0.2" )]
 [assembly: AssemblyFileVersion( "0.0.2" )]
 

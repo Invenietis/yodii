@@ -36,7 +36,8 @@ namespace Yodii.Host
         static ILog _log = LogManager.GetLogger( typeof( PluginHost ) );
         readonly ServiceHost _serviceHost;
         readonly Dictionary<IPluginInfo, PluginProxy> _plugins;
-        readonly Dictionary<Guid, PluginProxy> _loadedPlugins;
+        //readonly Dictionary<Guid, PluginProxy> _loadedPlugins;
+        readonly Dictionary<string, PluginProxy> _loadedPlugins;
         readonly ICKReadOnlyCollection<IPluginProxy> _loadedPluginsEx;
         readonly List<PluginProxy> _newlyLoadedPlugins;
 
@@ -48,11 +49,16 @@ namespace Yodii.Host
         internal PluginHost( CatchExceptionGeneration catchMode )
         {
             _plugins = new Dictionary<IPluginInfo, PluginProxy>();
-            _loadedPlugins = new Dictionary<Guid, PluginProxy>();
+            //_loadedPlugins = new Dictionary<Guid, PluginProxy>();
+            _loadedPlugins = new Dictionary<string, PluginProxy>();
             _loadedPluginsEx = new CKReadOnlyCollectionOnICollection<PluginProxy>( _loadedPlugins.Values );
             _serviceHost = new ServiceHost( catchMode );
             _newlyLoadedPlugins = new List<PluginProxy>();
         }
+        /// <summary>
+        /// Gets the loaded plugins. This contains also the plugins that are currently disabled but have been loaded at least once.
+        /// </summary>
+        public IReadOnlyCollection<IPluginProxy> LoadedPlugins { get { return _loadedPlugins.Values.ToList().ToReadOnlyCollection(); } }
 
         /// <summary>
         /// Gets or sets a function that is in charge of obtaining concrete plugin instances.
@@ -87,17 +93,19 @@ namespace Yodii.Host
         /// <param name="pluginId">The Guid of the plugin</param>
         /// <param name="checkCurrentlyLoading">set to yes if you want to look for the right IPluginProxy in the plugin currently being loaded</param>
         /// <returns>The plugin proxy (may be stopped or even not loaded).</returns>
-        public IPluginProxy FindLoadedPlugin( Guid pluginId, bool checkCurrentlyLoading )
+        public IPluginProxy FindLoadedPlugin( /*Guid pluginId*/ string pluginFullName, bool checkCurrentlyLoading )
         {
-            var p = _loadedPlugins.GetValueWithDefault( pluginId, null );
-            if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.UniqueId == pluginId );
+            //var p = _loadedPlugins.GetValueWithDefault( pluginId, null );
+            var p = _loadedPlugins.GetValueWithDefault( pluginFullName, null );
+            //if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.UniqueId == pluginId );
+            if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.PluginFullName == pluginFullName  );
             return p;
         }
 
         /// <summary>
         /// Gets the loaded plugins. This contains also the plugins that are currently disabled but have been loaded at least once.
         /// </summary>
-        public ICKReadOnlyCollection<IPluginProxy> LoadedPlugins { get { return _loadedPluginsEx; } }
+        //public ICKReadOnlyCollection<IPluginProxy> LoadedPlugins { get { return _loadedPluginsEx; } }
 
         public bool IsPluginRunning( IPluginInfo key )
         {
@@ -262,7 +270,7 @@ namespace Yodii.Host
                 if( PluginConfigurator != null ) PluginConfigurator( p );
 
                 SetPluginStatus( p, InternalRunningStatus.Starting );
-                IPluginSetupInfo info = new IPluginSetupInfo();
+                PluginSetupInfo info = new PluginSetupInfo();
                 try
                 {
                     p.RealPlugin.Setup( info );
@@ -290,7 +298,8 @@ namespace Yodii.Host
             // aware of the existence of any new plugins and configure them to run.
             foreach( PluginProxy p in _newlyLoadedPlugins )
             {
-                _loadedPlugins.Add( p.PluginKey.UniqueId, p );
+                //_loadedPlugins.Add( p.PluginKey.UniqueId, p );
+                _loadedPlugins.Add( p.PluginKey.PluginFullName, p );
             }
             Debug.Assert( ServiceReferencesBinder != null );
             try
@@ -446,6 +455,6 @@ namespace Yodii.Host
             get { return _serviceHost; }
         }
 
-
+        
     }
 }

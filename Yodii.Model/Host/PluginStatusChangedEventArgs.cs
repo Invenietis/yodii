@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\PluginStatusChangedEventArgs.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,36 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
 using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+	/// <summary>
+	/// Event argument when a plugin <see cref="InternalRunningStatus">status</see> changed.
+	/// </summary>
+	public class PluginStatusChangedEventArgs : EventArgs
     {
-        Exception _error;
+        /// <summary>
+        /// Gets the plugin proxy.
+        /// </summary>
+        public IPluginProxy PluginProxy { get; private set; }
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
+        /// <summary>
+		/// Gets the previous status.
+		/// </summary>
+		public InternalRunningStatus Previous { get; private set; }
+		
+        /// <summary>
+        /// Initializes a new instance of a <see cref="PluginStatusChangedEventArgs"/>.
+        /// </summary>
+        /// <param name="previous">The previous running status.</param>
+        /// <param name="current">The plugin proxy.</param>
+        public PluginStatusChangedEventArgs( InternalRunningStatus previous, IPluginProxy pluginProxy )
+		{
+			Previous = previous;
+			PluginProxy = pluginProxy;
+		}
 
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
-
-    }
+	}
 
 }

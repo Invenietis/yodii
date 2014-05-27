@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\Log\ILogEventNotRunningError.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,24 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
+using System.Reflection;
 using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Log event emitted when service that is not running raised an event.
+    /// </summary>
+    public interface ILogEventNotRunningError : ILogInterceptionEntry, ILogErrorCulprit
     {
-        Exception _error;
+        /// <summary>
+        /// The event raised when the service not in a running state: it is the <see cref="ILogErrorCulprit.Culprit"/>.
+        /// </summary>
+        EventInfo Event { get; }
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
-
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
-
+        /// <summary>
+        /// True if the service is actually disabled, false if it is not running.
+        /// </summary>
+        bool ServiceIsDisabled { get; }
     }
-
 }

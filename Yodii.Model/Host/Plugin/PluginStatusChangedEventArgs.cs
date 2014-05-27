@@ -15,14 +15,14 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the previous status.
         /// </summary>
-        public RunningStatus Previous { get; private set; }
+        public InternalRunningStatus Previous { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of a <see cref="PluginStatusChangedEventArgs"/>.
         /// </summary>
         /// <param name="previous">The previous running status.</param>
         /// <param name="current">The plugin proxy.</param>
-        public PluginStatusChangedEventArgs( RunningStatus previous, IPluginProxy pluginProxy )
+        public PluginStatusChangedEventArgs( InternalRunningStatus previous, IPluginProxy pluginProxy )
         {
             Previous = previous;
             PluginProxy = pluginProxy;

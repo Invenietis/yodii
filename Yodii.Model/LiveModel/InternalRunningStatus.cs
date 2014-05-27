@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Yodii.Model.LiveModel
+namespace Yodii.Model
 {
     /// <summary>
     /// Defines the internal runtime status for a plugin (or a service) with the transition states. 

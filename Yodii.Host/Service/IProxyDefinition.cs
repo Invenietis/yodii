@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using Yodii.Model;
 
 namespace Yodii.Host
 {
@@ -68,7 +69,7 @@ namespace Yodii.Host
 		Type ProxyBase { get; }
 
         /// <summary>
-        /// Gets whether the interface is a <see cref="IDynamicService"/> or not.
+        /// Gets whether the interface is a <see cref="IYodiiService"/> or not.
         /// </summary>
         bool IsDynamicService { get; }
 

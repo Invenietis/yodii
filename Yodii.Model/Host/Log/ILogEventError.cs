@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\Log\ILogEventError.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,34 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
+using System.Reflection;
 using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Log event related to an error during event raising.
+    /// </summary>
+    public interface ILogEventError : ILogInterceptionEntry, ILogErrorCaught
     {
-        Exception _error;
+        /// <summary>
+        /// The event that raised the error.
+        /// </summary>
+        EventInfo Event { get; }
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
+        /// <summary>
+        /// Corresponding log entry if it exists (null otherwise).
+        /// </summary>
+        ILogEventEntry EventEntry { get; }
 
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
+        /// <summary>
+        /// Other errors related to the same event.
+        /// </summary>
+        ICKReadOnlyCollection<ILogEventError> OtherErrors { get; }
 
+        /// <summary>
+        /// The subscriber method that thrown the error: it is the <see cref="ILogErrorCulprit.Culprit"/>.
+        /// </summary>
+        MethodInfo Target { get; }
     }
-
 }

@@ -51,7 +51,7 @@ namespace Yodii.Host
 			}
 			_typeInterface = typeInterface;
             _errorCatch = errorCatch;
-            _isDynamicService = typeof( IDynamicService ).IsAssignableFrom( typeInterface );
+            _isDynamicService = typeof( IYodiiService ).IsAssignableFrom( typeInterface );
         }
 
         public Type TypeInterface

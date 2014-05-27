@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\IServiceHostConfiguration.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,29 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
-using CK.Core;
+using System.Reflection;
 
 
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Configures the <see cref="IServiceHost"/>.
+    /// </summary>
+    public interface IServiceHostConfiguration
     {
-        Exception _error;
+        /// <summary>
+        /// Returns the <see cref="ServiceLogMethodOptions"/> for the given method.
+        /// </summary>
+        /// <param name="m">Method for which options should be obtained.</param>
+        /// <returns>Configuration for the method.</returns>
+        ServiceLogMethodOptions GetOptions( MethodInfo m );
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
-
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
-
+        /// <summary>
+        /// Returns the <see cref="ServiceLogEventOptions"/> for the given event.
+        /// </summary>
+        /// <param name="e">Event for which options should be obtained.</param>
+        /// <returns>Configuration for the event.</returns>
+        ServiceLogEventOptions GetOptions( EventInfo e );
     }
 
 }

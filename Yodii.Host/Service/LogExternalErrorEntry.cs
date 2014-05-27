@@ -27,6 +27,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Diagnostics;
+using Yodii.Model;
 
 namespace Yodii.Host
 {

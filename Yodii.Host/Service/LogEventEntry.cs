@@ -29,6 +29,7 @@ using System.Reflection;
 using System.Collections;
 using CK.Core;
 using System.Diagnostics;
+using Yodii.Model;
 
 namespace Yodii.Host
 {

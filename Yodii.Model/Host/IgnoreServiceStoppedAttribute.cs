@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\IgnoreServiceStoppedAttribute.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,22 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
-using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Enables methods (or events) to be called (and fire) even when the service is stopped.
+    /// This is a dangerous attribute that must be reserved for special uses.
+    /// </summary>
+    [AttributeUsage( AttributeTargets.Method | AttributeTargets.Event | AttributeTargets.Property, AllowMultiple = false, Inherited = false )]
+    public class IgnoreServiceStoppedAttribute : Attribute
     {
-        Exception _error;
-
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
-
-        public Exception Error
+        /// <summary>
+        /// Initializes a new <see cref="IgnoreServiceStoppedAttribute"/>.
+        /// </summary>
+        public IgnoreServiceStoppedAttribute()
         {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
         }
-
     }
 
 }

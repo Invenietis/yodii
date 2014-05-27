@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\Log\ILogErrorCulprit.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -25,26 +25,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yodii.Model;
-using CK.Core;
+using System.Reflection;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Base interface that defines a log event that holds an <see cref="Exception"/>.
+    /// </summary>
+    public interface ILogErrorCulprit : ILogEntry
     {
-        Exception _error;
-
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
-
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
+        /// <summary>
+        /// The culprit is actually required to define an error. 
+        /// The specialized <see cref="ILogErrorCaught"/> holds an exception but there exist errors 
+        /// that do not have any associated exception to expose.
+        /// This is the case of <see cref="ILogEventNotRunningError"/>: when a plugin raises an event 
+        /// while beeing stopped, it is an error (silently ignored by the kernel), but there is
+        /// no exception to associate with.
+        /// </summary>
+        MemberInfo Culprit { get; }
 
     }
-
 }

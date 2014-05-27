@@ -15,12 +15,12 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the previous status.
         /// </summary>
-        public RunningStatus Previous { get; private set; }
+        public InternalRunningStatus Previous { get; private set; }
 
         /// <summary>
         /// Gets the current status of the service.
         /// </summary>
-        public RunningStatus Current { get; private set; }
+        public InternalRunningStatus Current { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of a <see cref="ServiceStatusChangedEventArgs"/>.
@@ -28,7 +28,7 @@ namespace Yodii.Model
         /// <param name="previous">The previous running status.</param>
         /// <param name="current">The current running Status</param>
         /// <param name="allowErrorTransition">True if the next status is a valid next one (like <see cref="RunningStatus.Starting"/> to <see cref="RunningStatus.Started"/>). False otherwise.</param>
-        public ServiceStatusChangedEventArgs( RunningStatus previous, RunningStatus current, bool allowErrorTransition )
+        public ServiceStatusChangedEventArgs( InternalRunningStatus previous, InternalRunningStatus current, bool allowErrorTransition )
         {
             //Debug.Assert( previous.IsValidTransition( current, allowErrorTransition ) );
             Previous = previous;

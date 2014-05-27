@@ -29,6 +29,7 @@ using System.Reflection.Emit;
 using System.Threading;
 using System.IO;
 using Yodii.Model;
+using CK.Reflection;
 
 namespace Yodii.Host
 {
@@ -235,7 +236,7 @@ namespace Yodii.Host
                 MethodBuilder mHookB;
                 {
                     MethodInfo mCall = e.EventHandlerType.GetMethod( "Invoke" );
-                    Type[] parameters = ReflectionHelper.CreateParametersType( mCall.GetParameters() );
+                    Type[] parameters = CK.Reflection.ReflectionHelper.CreateParametersType( mCall.GetParameters() );
                     mHookB = _typeBuilder.DefineMethod( "_realService_" + e.Name, MethodAttributes.Private, CallingConventions.HasThis, typeof( void ), parameters );
                     {
                         SetDebuggerStepThroughAttribute( mHookB );

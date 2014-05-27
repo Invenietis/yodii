@@ -30,6 +30,7 @@ using System.Diagnostics;
 using Yodii.Model;
 using CK.Core;
 
+
 namespace Yodii.Host
 {
     internal class ServiceHost : IServiceHost, ILogCenter
@@ -93,7 +94,7 @@ namespace Yodii.Host
 
         internal ServiceProxyBase EnsureProxyForDynamicService( Type interfaceType )
         {
-            Debug.Assert( typeof( IDynamicService ).IsAssignableFrom( interfaceType ) && interfaceType != typeof( IDynamicService ) );
+            Debug.Assert( typeof( IYodiiService ).IsAssignableFrom( interfaceType ) && interfaceType != typeof( IYodiiService ) );
             return EnsureProxy( interfaceType, false );
         }
 
@@ -381,9 +382,9 @@ namespace Yodii.Host
 
         object IServiceHost.EnsureProxyForDynamicService( Type interfaceType )
         {
-            if( !typeof( IDynamicService ).IsAssignableFrom( interfaceType ) || interfaceType == typeof( IDynamicService ) )
+            if( !typeof( IYodiiService ).IsAssignableFrom( interfaceType ) || interfaceType == typeof( IYodiiService ) )
             {
-                throw new ArgumentException( R.InterfaceMustExtendIDynamicService, "interfaceType" );
+                throw new ArgumentException( R.InterfaceMustExtendIYodiiService, "interfaceType" );
             }
             return EnsureProxyForDynamicService( interfaceType );
         }

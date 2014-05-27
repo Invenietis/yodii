@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\IgnoreExceptionAttribute.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,22 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
-using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Removes the catching of exceptions from methods (or events).
+    /// This should not be used in production code: overhead of catching errors is very low and should be kept.
+    /// </summary>
+    [AttributeUsage( AttributeTargets.Method | AttributeTargets.Event | AttributeTargets.Property, AllowMultiple = false, Inherited = false )]
+    public class IgnoreExceptionAttribute : Attribute
     {
-        Exception _error;
-
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
-
-        public Exception Error
+        /// <summary>
+        /// Initializes a new <see cref="IgnoreExceptionAttribute"/>.
+        /// </summary>
+        public IgnoreExceptionAttribute()
         {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
         }
-
     }
 
 }

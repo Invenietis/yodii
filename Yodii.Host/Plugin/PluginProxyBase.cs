@@ -29,7 +29,7 @@ using System.Diagnostics;
 using CK.Core;
 using System.Reflection;
 using Yodii.Model;
-using Yodii.Model.LiveModel;
+
 
 namespace Yodii.Host
 {
@@ -128,9 +128,9 @@ namespace Yodii.Host
                         return false;
                     }
                     Type t = _instance.GetType();
-                    if( typeof( IDynamicService ).IsAssignableFrom( t ) )
+                    if( typeof( IYodiiService ).IsAssignableFrom( t ) )
                     {
-                        Type iType = t.GetInterfaces().FirstOrDefault( i => i != typeof( IDynamicService ) && typeof( IDynamicService ).IsAssignableFrom( i ) );
+                        Type iType = t.GetInterfaces().FirstOrDefault( i => i != typeof( IYodiiService ) && typeof( IYodiiService ).IsAssignableFrom( i ) );
                         if( iType != null )
                         {
                             Service = serviceHost.EnsureProxyForDynamicService( iType );

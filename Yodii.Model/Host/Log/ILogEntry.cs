@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\ExecutionPlanResult.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\Host\Log\ILogEntry.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,29 +22,33 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Yodii.Model;
-using CK.Core;
 
-
-namespace Yodii.Host
+namespace Yodii.Model
 {
-    class ExecutionPlanResult : IExecutionPlanResult
+    /// <summary>
+    /// Common interface for log entries.
+    /// </summary>
+    public interface ILogEntry
     {
-        Exception _error;
+        /// <summary>
+        /// Gets the actual type of this entry.
+        /// </summary>
+        LogEntryType EntryType { get; }
+        
+        /// <summary>
+        /// Gets the creation time.
+        /// </summary>
+        DateTime CreationTimeUtc { get; }
 
-        public ExecutionPlanResultStatus Status { get; internal set; }
-        public IPluginInfo Culprit { get; internal set; }
-        public PluginSetupInfo SetupInfo { get; internal set; }
+        /// <summary>
+        /// Log Serial Number.
+        /// </summary>
+        int LSN { get; }
 
-        public Exception Error
-        {
-            get { return _error ?? SetupInfo.Error; }
-            set { _error = value; }
-        }
+        /// <summary>
+        /// Depth on the call stack.
+        /// </summary>
+        int Depth { get; }
 
     }
-
 }

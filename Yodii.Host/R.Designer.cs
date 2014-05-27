@@ -97,11 +97,11 @@ namespace Yodii.Host {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Interface must extend IDynamicService to be a Dynamic Service..
+        ///   Looks up a localized string similar to Interface must extend IYodiiService to be a Dynamic Service..
         /// </summary>
-        internal static string InterfaceMustExtendIDynamicService {
+        internal static string InterfaceMustExtendIYodiiService {
             get {
-                return ResourceManager.GetString("InterfaceMustExtendIDynamicService", resourceCulture);
+                return ResourceManager.GetString("InterfaceMustExtendIYodiiService", resourceCulture);
             }
         }
         

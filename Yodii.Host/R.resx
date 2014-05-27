@@ -129,8 +129,8 @@
   <data name="ExternalLogErrorMissException" xml:space="preserve">
     <value>Missing Exception object in call to ExternalLogError.</value>
   </data>
-  <data name="InterfaceMustExtendIDynamicService" xml:space="preserve">
-    <value>Interface must extend IDynamicService to be a Dynamic Service.</value>
+  <data name="InterfaceMustExtendIYodiiService" xml:space="preserve">
+    <value>Interface must extend IYodiiService to be a Dynamic Service.</value>
   </data>
   <data name="PluginConfiguratorIsNull" xml:space="preserve">
     <value>PluginRunner.PluginConfigurator must be not null.</value>
