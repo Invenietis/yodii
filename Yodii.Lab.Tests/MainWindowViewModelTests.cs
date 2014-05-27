@@ -40,10 +40,6 @@ namespace Yodii.Lab.Tests
                 {
                     Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Specialization && e.Source.LabServiceInfo.ServiceInfo == serviceInfo && e.Target.LabServiceInfo.ServiceInfo == serviceInfo.Generalization ) );
                 }
-                foreach( var p in serviceInfo.Implementations )
-                {
-                    Assert.That( vm.Graph.Edges.Any( e => e.Type == YodiiGraphEdgeType.Implementation && e.Source.LabPluginInfo.PluginInfo == p && e.Target.LabServiceInfo.ServiceInfo == serviceInfo ) );
-                }
             }
 
             // Check by plugin
@@ -217,8 +213,6 @@ namespace Yodii.Lab.Tests
             {
                 Assert.That( _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).Count() == 1 );
                 var infoA = _vm1.ServiceInfos.Where( x => x.ServiceFullName == infoB.ServiceFullName ).First();
-
-                EquivalenceExtensions.AssertServiceEquivalence( infoA, infoB, true );
             }
 
             EquivalenceExtensions.AssertManagerEquivalence( _vm1.LabState.Engine.Configuration, _vm2.LabState.Engine.Configuration );
@@ -425,10 +419,6 @@ namespace Yodii.Lab.Tests
             Assert.That( pluginA2.ServiceReferences[0].Reference == serviceB );
             Assert.That( pluginA2.ServiceReferences[0].Requirement == DependencyRequirement.Running );
 
-            Assert.That( serviceA.Implementations.Count == 2 );
-            Assert.That( serviceB.Implementations.Count == 1 );
-            Assert.That( serviceAx.Implementations.Count == 1 );
-
             // Set configuration
             var cLayer1 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer" );
             var result = cLayer1.Items.Add( serviceA.ServiceFullName, ConfigurationStatus.Running, "Test reason" );
@@ -441,7 +431,7 @@ namespace Yodii.Lab.Tests
             // Testing tests
             foreach( var si in vm.ServiceInfos )
             {
-                EquivalenceExtensions.AssertServiceEquivalence( si, si, true );
+                EquivalenceExtensions.AssertServiceEquivalence( si, si );
             }
             foreach( var pi in vm.PluginInfos )
             {
