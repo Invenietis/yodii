@@ -750,7 +750,7 @@ namespace Yodii.Host
             if( definition.IsDynamicService )
             {
                 // Our proxy object will implement both typeInterface and IService<typeInterface> interfaces.
-                Type serviceInterfaceType = typeof( IYodiiService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                Type serviceInterfaceType = typeof( IService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
                 typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
             }
             
