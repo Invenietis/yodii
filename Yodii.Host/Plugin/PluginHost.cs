@@ -31,7 +31,7 @@ using Yodii.Model;
 
 namespace Yodii.Host
 {
-    public class PluginHost : IPluginHost
+    public class PluginHost : IPluginHost, IYodiiEngineHost
     {
         static ILog _log = LogManager.GetLogger( typeof( PluginHost ) );
         readonly ServiceHost _serviceHost;
@@ -121,11 +121,12 @@ namespace Yodii.Host
         /// <param name="stoppedPluginKeys">Plugins that must be stopped.</param>
         /// <param name="runningPluginKeys">Plugins that must be running.</param>
         /// <returns>A <see cref="IExecutionPlanError"/> that details the error if any.</returns>
-        public IExecutionPlanResult Execute( IEnumerable<IPluginInfo> disabledPluginKeys, IEnumerable<IPluginInfo> stoppedPluginKeys, IEnumerable<IPluginInfo> runningPluginKeys )
+        public IEnumerable<Tuple<IPluginInfo, Exception>> Apply( IEnumerable<IPluginInfo> disabledPluginKeys, IEnumerable<IPluginInfo> stoppedPluginKeys, IEnumerable<IPluginInfo> runningPluginKeys )    
         {
             if( PluginCreator == null ) throw new InvalidOperationException( R.PluginCreatorIsNull );
             if( ServiceReferencesBinder == null ) throw new InvalidOperationException( R.PluginConfiguratorIsNull );
 
+            IEnumerable<Tuple<IPluginInfo, Exception>> executionPlanResult =new List<Tuple<IPluginInfo, Exception>>();
             int nbIntersect;
             nbIntersect = disabledPluginKeys.Intersect( stoppedPluginKeys ).Count();
             if( nbIntersect != 0 ) throw new CKException( R.DisabledAndStoppedPluginsIntersect, nbIntersect );
@@ -173,7 +174,7 @@ namespace Yodii.Host
                         Debug.Assert( p.LoadError != null, "Error is catched by the PluginHost itself." );
                         _serviceHost.LogMethodError( PluginCreator.Method, p.LoadError );
                         // Unable to load the plugin: leave now.
-                        return new ExecutionPlanResult() { Culprit = p.PluginKey, Status = ExecutionPlanResultStatus.LoadError, Error = p.LoadError };
+                        return executionPlanResult.Append(new Tuple<IPluginInfo, Exception>(p.PluginKey,p.LoadError));
                     }
                     Debug.Assert( p.LoadError == null );
                     Debug.Assert( p.Status == InternalRunningStatus.Disabled );
@@ -202,6 +203,7 @@ namespace Yodii.Host
                     {
                         _log.ErrorFormat( "There has been a problem when stopping the {0} plugin.", ex, p.PublicName );
                         _serviceHost.LogMethodError( p.GetImplMethodInfoStop(), ex );
+                        executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                     }
                 }
             }
@@ -224,6 +226,7 @@ namespace Yodii.Host
                 {
                     _log.ErrorFormat( "There has been a problem when tearing down the {0} plugin.", ex, p.PublicName );
                     _serviceHost.LogMethodError( p.GetImplMethodInfoTeardown(), ex );
+                    executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                 }
             }
             Debug.Assert( toStop.All( p => p.Status <= InternalRunningStatus.Stopped ) );
@@ -259,6 +262,7 @@ namespace Yodii.Host
                 {
                     _log.ErrorFormat( "There has been a problem when disposing the {0} plugin.", ex, p.PublicName );
                     _serviceHost.LogMethodError( p.GetImplMethodInfoDispose(), ex );
+                    executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                 }
             }
 
@@ -290,7 +294,7 @@ namespace Yodii.Host
                     }
 
                     info.Error = ex;
-                    return new ExecutionPlanResult() { Culprit = p.PluginKey, Status = ExecutionPlanResultStatus.SetupError, SetupInfo = info };
+                   return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                 }
             }
 
@@ -342,10 +346,10 @@ namespace Yodii.Host
                         RevokeSetupCall( toStart[j] );
                     }
 
-                    return new ExecutionPlanResult() { Culprit = p.PluginKey, Status = ExecutionPlanResultStatus.LoadError, Error = ex };
+                    return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                 }
             }
-            return new ExecutionPlanResult();
+            return executionPlanResult;
         }
 
         private void RevokeStartCall( PluginProxy p )
