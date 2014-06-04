@@ -28,6 +28,7 @@ using System.Text;
 using System.Diagnostics;
 using CK.Core;
 using Yodii.Model;
+using System.Reflection;
 
 namespace Yodii.Host
 {
@@ -41,16 +42,18 @@ namespace Yodii.Host
 
         public IPluginInfo PluginKey { get; private set; }
 
-        //public Guid UniqueId { get { return PluginKey.UniqueId; } }
-
-        //public Version Version { get { return PluginKey.Version; } }
-
-        //public string PublicName { get { return PluginKey.PublicName; } }
         public string PublicName { get { return PluginKey.PluginFullName; } }
 
-        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, IYodiiPlugin> pluginCreator )
+        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo,object[],IYodiiPlugin> pluginCreator )
         {
-            return TryLoad( serviceHost, () => pluginCreator( PluginKey ), PluginKey );
+            var serviceReferences = PluginKey.ServiceReferences;
+
+            object[] ctorParameters = new object[serviceReferences.Count];
+            for( int i = 0; i < serviceReferences.Count; ++i )
+            {
+                ctorParameters[serviceReferences[i].ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( serviceReferences[i].Reference );
+            }
+            return TryLoad( serviceHost, () => pluginCreator( PluginKey, ctorParameters ), PluginKey );
         }
 
     }

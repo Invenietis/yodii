@@ -10,36 +10,46 @@ namespace Yodii.Host.Tests
 {
     public class ChoucroutePlugin : IChoucrouteService, IYodiiPlugin
     {
-        IService<IAnotherService> _serviceOpt;
+        IOptionalService<IAnotherService> _serviceOpt;
+
+        public static List<string> CalledMethods = new List<string>();
 
         public ChoucroutePlugin( IOptionalService<IAnotherService> s)
         {
             _serviceOpt = s;
+            _serviceOpt.ServiceStatusChanged += _serviceOpt_ServiceStatusChanged;
+            CalledMethods.Add( "Constructor" );
+        }
+
+        void _serviceOpt_ServiceStatusChanged( object sender, ServiceStatusChangedEventArgs e )
+        {
+            CalledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService = " + _serviceOpt.Status );
         }
 
         public bool Setup( PluginSetupInfo info )
         {
-            throw new NotImplementedException();
+            CalledMethods.Add( "Setup - IAnotherService = " + _serviceOpt.Status );
+            return true;
         }
 
         public void Start()
         {
-            throw new NotImplementedException();
+            CalledMethods.Add( "Start - IAnotherService = " + _serviceOpt.Status );
         }
 
         public void Teardown()
         {
-            throw new NotImplementedException();
+            CalledMethods.Add( "Teardown - IAnotherService = " + _serviceOpt.Status );
         }
 
         public void Stop()
         {
-            throw new NotImplementedException();
+            CalledMethods.Add( "Stop - IAnotherService = " + _serviceOpt.Status );
         }
 
         void IChoucrouteService.DoSomething()
         {
-            Debug.WriteLine( "Done" );
+            CalledMethods.Add( "DoSomething - IAnotherService = " + _serviceOpt.Status );
         }
     }
 }

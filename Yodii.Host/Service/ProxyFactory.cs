@@ -48,7 +48,7 @@ namespace Yodii.Host
 			assemblyName.Version = new Version( 1, 0, 0, 0 );
            
             StrongNameKeyPair kp;
-            using( Stream stream = Assembly.GetAssembly( typeof( ProxyFactory ) ).GetManifestResourceStream( "CK.Plugin.DynamicKeyPair.DynamicKeyPair.snk" ) )
+            using( Stream stream = Assembly.GetAssembly( typeof( ProxyFactory ) ).GetManifestResourceStream( "Yodii.Host.DynamicKeyPair.DynamicKeyPair.snk" ) )
             {
                 // This is the public key of DynamicKeyPair.snk.
                 //
@@ -752,6 +752,21 @@ namespace Yodii.Host
             {
                 // Our proxy object will implement both typeInterface and IService<typeInterface> interfaces.
                 Type serviceInterfaceType = typeof( IService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
+
+                serviceInterfaceType = typeof( IOptionalService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
+
+                serviceInterfaceType = typeof( IOptionalRecommendedService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
+
+                serviceInterfaceType = typeof( IRunnableService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
+
+                serviceInterfaceType = typeof( IRunnableRecommendedService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
+                typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
+
+                serviceInterfaceType = typeof( IRunningService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
                 typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
             }
             

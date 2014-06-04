@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Yodii.Model;
+using System.Reflection;
 
 namespace Yodii.Host
 {
@@ -36,10 +37,10 @@ namespace Yodii.Host
         static ILog _log = LogManager.GetLogger( typeof( PluginHost ) );
         readonly ServiceHost _serviceHost;
         readonly Dictionary<IPluginInfo, PluginProxy> _plugins;
-        //readonly Dictionary<Guid, PluginProxy> _loadedPlugins;
         readonly Dictionary<string, PluginProxy> _loadedPlugins;
         readonly ICKReadOnlyCollection<IPluginProxy> _loadedPluginsEx;
         readonly List<PluginProxy> _newlyLoadedPlugins;
+        Func<IPluginInfo,object[],IYodiiPlugin> _pluginCreator;
 
         public PluginHost()
             : this( CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
@@ -49,12 +50,20 @@ namespace Yodii.Host
         internal PluginHost( CatchExceptionGeneration catchMode )
         {
             _plugins = new Dictionary<IPluginInfo, PluginProxy>();
-            //_loadedPlugins = new Dictionary<Guid, PluginProxy>();
             _loadedPlugins = new Dictionary<string, PluginProxy>();
             _loadedPluginsEx = new CKReadOnlyCollectionOnICollection<PluginProxy>( _loadedPlugins.Values );
             _serviceHost = new ServiceHost( catchMode );
             _newlyLoadedPlugins = new List<PluginProxy>();
+            _pluginCreator = DefaultPluginCreator;
         }
+
+        static IYodiiPlugin DefaultPluginCreator( IPluginInfo pluginInfo, object[] ctorParameters )
+        {
+            var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
+            var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
+            return (IYodiiPlugin)ctor.Invoke( ctorParameters );
+        }
+
         /// <summary>
         /// Gets the loaded plugins. This contains also the plugins that are currently disabled but have been loaded at least once.
         /// </summary>
@@ -62,20 +71,15 @@ namespace Yodii.Host
 
         /// <summary>
         /// Gets or sets a function that is in charge of obtaining concrete plugin instances.
-        /// Only the default constructor of the plugin must be called by this action.
+        /// The dynamic services parameters is available in the order 
+        /// of <see cref="IServiceReferenceInfo.ConstructorParameterIndex">ConstructorParameterIndex</see> property 
+        /// of <see cref="IPluginInfo.ServiceReferences">PluginInfo.ServiceReferences</see> objects.
         /// </summary>
-        public Func<IPluginInfo, IYodiiPlugin> PluginCreator { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function called before the setup of each plugins to fill their edition properties.
-        /// </summary>
-        public Action<IPluginProxy> PluginConfigurator { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function called after plugins that must stop or be disabled have actually been stopped or disabled
-        /// and before start of (potentially newly loaded) plugins.
-        /// </summary>
-        public Action<ICKReadOnlyCollection<IPluginProxy>> ServiceReferencesBinder { get; set; }
+        public Func<IPluginInfo,object[],IYodiiPlugin> PluginCreator 
+        {
+            get { return _pluginCreator; }
+            set { _pluginCreator = value ?? DefaultPluginCreator; } 
+        }
 
         /// <summary>
         /// Gets the <see cref="IPluginProxy"/> corresponding to the <see cref="IPluginInfo"/>.
@@ -124,9 +128,8 @@ namespace Yodii.Host
         public IEnumerable<Tuple<IPluginInfo, Exception>> Apply( IEnumerable<IPluginInfo> disabledPluginKeys, IEnumerable<IPluginInfo> stoppedPluginKeys, IEnumerable<IPluginInfo> runningPluginKeys )    
         {
             if( PluginCreator == null ) throw new InvalidOperationException( R.PluginCreatorIsNull );
-            if( ServiceReferencesBinder == null ) throw new InvalidOperationException( R.PluginConfiguratorIsNull );
 
-            IEnumerable<Tuple<IPluginInfo, Exception>> executionPlanResult =new List<Tuple<IPluginInfo, Exception>>();
+            IEnumerable<Tuple<IPluginInfo, Exception>> executionPlanResult = new List<Tuple<IPluginInfo, Exception>>();
             int nbIntersect;
             nbIntersect = disabledPluginKeys.Intersect( stoppedPluginKeys ).Count();
             if( nbIntersect != 0 ) throw new CKException( R.DisabledAndStoppedPluginsIntersect, nbIntersect );
@@ -270,8 +273,6 @@ namespace Yodii.Host
             for( int i = 0; i < toStart.Count; i++ )
             {
                 PluginProxy p = toStart[i];
-                // We configure plugin's edition properties.
-                if( PluginConfigurator != null ) PluginConfigurator( p );
 
                 SetPluginStatus( p, InternalRunningStatus.Starting );
                 PluginSetupInfo info = new PluginSetupInfo();
@@ -304,16 +305,6 @@ namespace Yodii.Host
             {
                 //_loadedPlugins.Add( p.PluginKey.UniqueId, p );
                 _loadedPlugins.Add( p.PluginKey.PluginFullName, p );
-            }
-            Debug.Assert( ServiceReferencesBinder != null );
-            try
-            {
-                var listNew = new CKReadOnlyCollectionOnICollection<PluginProxy>( _newlyLoadedPlugins );
-                ServiceReferencesBinder( listNew );
-            }
-            catch( Exception ex )
-            {
-                _serviceHost.LogMethodError( ServiceReferencesBinder.Method, ex );
             }
             _newlyLoadedPlugins.Clear();
 

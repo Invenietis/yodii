@@ -92,10 +92,18 @@ namespace Yodii.Host
             set { _eventSender = value; }
         }
 
-        internal ServiceProxyBase EnsureProxyForDynamicService( Type interfaceType )
+        internal ServiceProxyBase EnsureProxyForDynamicService( IServiceInfo service )
         {
-            Debug.Assert( typeof( IYodiiService ).IsAssignableFrom( interfaceType ) && interfaceType != typeof( IYodiiService ) );
-            return EnsureProxy( interfaceType, false );
+            Debug.Assert( service != null );
+            var serviceType = Assembly.Load( service.AssemblyInfo.AssemblyName ).GetType( service.ServiceFullName );
+            Debug.Assert( typeof( IYodiiService ).IsAssignableFrom( serviceType ) && serviceType != typeof( IYodiiService ) );
+            return EnsureProxy( serviceType, false );
+        }
+
+        internal ServiceProxyBase EnsureProxyForDynamicService( Type serviceType )
+        {
+            Debug.Assert( typeof( IYodiiService ).IsAssignableFrom( serviceType ) && serviceType != typeof( IYodiiService ) );
+            return EnsureProxy( serviceType, false );
         }
 
         internal ServiceProxyBase EnsureProxyForExternalService( Type interfaceType, object externalImplementation )

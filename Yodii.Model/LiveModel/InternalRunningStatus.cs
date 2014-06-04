@@ -66,7 +66,8 @@ namespace Yodii.Model
                 case _disabled: return next._v == _stopped;
                 case _stopped: return next._v == _starting || next._v == _disabled;
                 case _stopping: return next._v == _stopped;
-                case _starting: return next._v == _started || (allowErrorTransition && next._v < _starting); //When in Exception, we can pass directly from starting to 'stopping' (and directly to 'stopped' ?)
+                case _starting: return next._v == _started || (allowErrorTransition && next._v < _starting); 
+                // When in Exception, we can pass directly from starting to 'stopping' (and directly to 'stopped' ?)
             }
             // When Started
             return next._v == _stopping;
