@@ -18,7 +18,12 @@ namespace Yodii.Engine.Tests.Mocks
         {
             _location = new Uri( assemblyUri );
         }
-
+        internal AssemblyInfo( string assemblyFullName, Uri location )
+        {
+            Debug.Assert( location != null );
+            _location = location;
+            _assemblyName = new AssemblyName( assemblyFullName );
+        }
         public Uri AssemblyLocation
         {
 	        get { return _location; }
