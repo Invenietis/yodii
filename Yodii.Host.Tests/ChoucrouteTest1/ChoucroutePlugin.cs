@@ -12,10 +12,11 @@ namespace Yodii.Host.Tests
     {
         IOptionalService<IAnotherService> _serviceOpt;
 
-        public static List<string> CalledMethods = new List<string>();
+        public List<string> CalledMethods;
 
         public ChoucroutePlugin( IOptionalService<IAnotherService> s)
         {
+            CalledMethods = new List<string>();
             _serviceOpt = s;
             _serviceOpt.ServiceStatusChanged += _serviceOpt_ServiceStatusChanged;
             CalledMethods.Add( "Constructor" );

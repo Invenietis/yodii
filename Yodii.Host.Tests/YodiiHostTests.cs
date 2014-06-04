@@ -30,10 +30,18 @@ namespace Yodii.Host.Tests
             engine.SetDiscoveredInfo(info);
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Yodii.Host.Tests.ChoucroutePlugin", ConfigurationStatus.Running );
+            cl.Items.Add( "Yodii.Host.Tests.ChoucroutePlugin", ConfigurationStatus.Optional );
                          
             var result = engine.Start();
+            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Start();
+            ChoucroutePlugin choucroute = (ChoucroutePlugin) host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).RealPluginObject;
+            Assert.That( choucroute.CalledMethods.Count == 3 );
+            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).Status == InternalRunningStatus.Started );
 
+            Assert.That(engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Capability.CanStop==true);
+            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Stop();
+            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).Status == InternalRunningStatus.Stopped );
+            Assert.That( choucroute.CalledMethods.Count == 5 );//plugin is stopped but we can still directly access it ?
         }
     }
 }
