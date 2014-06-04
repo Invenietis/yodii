@@ -10,6 +10,7 @@ namespace Yodii.Discoverer
     internal sealed class AssemblyInfo : IAssemblyInfo
     {
         readonly Uri _location;
+        readonly string _assemblyName;
         string _errorMessage;
         IReadOnlyList<ServiceInfo> _services;
         IReadOnlyList<PluginInfo> _plugins;
@@ -21,16 +22,22 @@ namespace Yodii.Discoverer
             _errorMessage = errorMessage;
         }
 
-        internal AssemblyInfo( Uri location )
+        internal AssemblyInfo(string assemblyName, Uri location )
+        {
+            Debug.Assert( location != null );
+            _location = location;
+            _assemblyName = assemblyName;
+        }
+        internal AssemblyInfo(Uri location )
         {
             Debug.Assert( location != null );
             _location = location;
         }
-
         public Uri AssemblyLocation
         {
             get { return _location; }
         }
+        public string AssemblyName { get { return _assemblyName; } }
 
         public bool HasErrorMessage { get { return _errorMessage != null; } }
 

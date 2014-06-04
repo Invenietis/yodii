@@ -28,6 +28,9 @@ namespace Yodii.Host.Tests
             PluginHost host = new PluginHost(); /*IYodiiEngineHost this is not enough, need access to PluginCreator & ServiceReferencesBinder*/
             YodiiEngine engine = new YodiiEngine( host);
             engine.SetDiscoveredInfo(info);
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Yodii.Host.Tests.ChoucroutePlugin", ConfigurationStatus.Running );
             
             host.PluginCreator = Runner.CreatePlugin;
 
@@ -99,7 +102,8 @@ namespace Yodii.Host.Tests
             {
                 //Assembly a = Assembly.Load( info.AssemblyInfo.AssemblyName );
                 Debug.Assert( info.AssemblyInfo.AssemblyLocation != null, "the assemblyLocation is null !" );
-                Assembly a = Assembly.LoadFile( info.AssemblyInfo.AssemblyLocation.ToString());
+                //Assembly a = Assembly.LoadFile( /*info.AssemblyInfo.AssemblyLocation.AbsolutePath*/ Path.GetFullPath("Yodii.Host.Tests.dll") );
+                Assembly a = Assembly.LoadFile(  Path.GetFullPath( info.AssemblyInfo.AssemblyName+".dll" ));//.dll
                 Type t = a.GetType( info.PluginFullName, true );
                 var cSP = t.GetConstructor( new Type[] { typeof( IServiceProvider ) } );
                 //if( cSP != null ) return (IYodiiPlugin)cSP.Invoke( new object[] { _contextObject } );

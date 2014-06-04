@@ -28,7 +28,7 @@ namespace Yodii.Discoverer
             public CachedAssemblyInfo( AssemblyDefinition cecilInfo )
             {
                 CecilInfo = cecilInfo;
-                YodiiInfo = new AssemblyInfo( new Uri( "assembly://test.dll/" + cecilInfo.FullName ) );
+                YodiiInfo = new AssemblyInfo( cecilInfo.Name.Name, new Uri( "assembly://test.dll/" + cecilInfo.FullName ) );
             }
 
             public void Discover( StandardDiscoverer d )

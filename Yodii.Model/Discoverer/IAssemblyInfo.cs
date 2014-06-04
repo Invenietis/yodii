@@ -13,7 +13,10 @@ namespace Yodii.Model
         /// Gets the assembly location.
         /// </summary>
         Uri AssemblyLocation { get; }
-
+        /// <summary>
+        /// The name of the assembly.
+        /// </summary>
+        string AssemblyName { get; }
         /// <summary>
         /// Gets the plugins located in this assembly.
         /// </summary>
