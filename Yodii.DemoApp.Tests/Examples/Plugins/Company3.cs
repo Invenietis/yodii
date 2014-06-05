@@ -10,8 +10,8 @@ namespace Yodii.DemoApp
         IDeliveryService _serviceRef2;
         ITimerService _timer;
 
-        public Company3( bool runningLifetimeWindow, IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2, ITimerService timer )
-            : base( runningLifetimeWindow )
+        public Company3( IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2, ITimerService timer, bool runningLifetimeWindow, Window window )
+            : base( runningLifetimeWindow, window )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;

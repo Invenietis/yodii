@@ -8,8 +8,8 @@ namespace Yodii.DemoApp
     {
         ITimerService _timer;
 
-        public Garage( bool runningLifetimeWindow, ITimerService timer )
-            : base( runningLifetimeWindow )
+        public Garage(  ITimerService timer, bool runningLifetimeWindow, Window window )
+            : base( runningLifetimeWindow, window )
         {
             _timer = timer;
         }

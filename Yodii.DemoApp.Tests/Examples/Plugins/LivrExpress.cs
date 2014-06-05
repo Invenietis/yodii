@@ -6,12 +6,12 @@ namespace Yodii.DemoApp
 {
     public class LivrExpress : MonoWindowPlugin, IDeliveryService
     {
-        ICarRepairService _serviceRef1;
-        IOutSourcingService _serviceRef2;
-        ITimerService _timer;
+        readonly ICarRepairService _serviceRef1;
+        readonly IOutSourcingService _serviceRef2;
+        readonly ITimerService _timer;
 
-        public LivrExpress( bool runningLifetimeWindow, ICarRepairService ServiceRef1, IOutSourcingService ServiceRef2, ITimerService timer )
-            : base( runningLifetimeWindow )
+        public LivrExpress( ICarRepairService ServiceRef1, IOutSourcingService ServiceRef2, ITimerService timer, bool runningLifetimeWindow, Window window )
+            : base( runningLifetimeWindow, window )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;

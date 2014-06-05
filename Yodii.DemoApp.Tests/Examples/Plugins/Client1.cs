@@ -1,24 +1,36 @@
 ﻿using System;
 using System.Windows;
+using Yodii.DemoApp.Examples.Plugins.Views;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
     public class Client1 : MonoWindowPlugin
     {
-        IMarketPlaceService _service;
-        ITimerService _timer;
+        readonly IMarketPlaceService _market;
+        readonly ITimerService _timer;
 
-        public Client1( bool runningLifetimeWindow, IMarketPlaceService service, ITimerService timer )
-            : base( runningLifetimeWindow )
+        public Client1( IMarketPlaceService market, ITimerService timer, bool runningLifetimeWindow, Client1View window )
+            : base( runningLifetimeWindow, window )
         {
             _timer = timer;
-            _service = service;
+            _market = market;
+        }
+
+        void BuyNewProduct()
+        {
+            _market.CheckNewProducts();
         }
 
         protected override Window CreateAndShowWindow()
         {
-            throw new NotImplementedException();
+            Client1View view = new Client1View()
+            {
+                DataContext = this
+            };
+
+            view.Show();
+            return view;
         }
 
         protected override void DestroyWindow()

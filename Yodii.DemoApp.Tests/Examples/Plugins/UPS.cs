@@ -6,10 +6,10 @@ namespace Yodii.DemoApp
 {
     public class UPS : MonoWindowPlugin, ISecuredDeliveryService
     {
-        ITimerService _timer;
+        readonly ITimerService _timer;
 
-        public UPS( bool runningLifetimeWindow, ITimerService timer )
-            : base( runningLifetimeWindow )
+        public UPS( ITimerService timer, bool runningLifetimeWindow, Window window )
+            : base( runningLifetimeWindow, window )
         {
             _timer = timer;
         }

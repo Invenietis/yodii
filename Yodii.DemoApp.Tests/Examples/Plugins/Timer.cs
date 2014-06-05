@@ -6,8 +6,8 @@ namespace Yodii.DemoApp
 {
     public class Timer : MonoWindowPlugin, ITimerService
     {
-        public Timer( bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public Timer( bool runningLifetimeWindow, Window window )
+            : base( runningLifetimeWindow, window )
         {
         }
 

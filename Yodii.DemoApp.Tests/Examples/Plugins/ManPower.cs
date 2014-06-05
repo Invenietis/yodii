@@ -6,10 +6,10 @@ namespace Yodii.DemoApp
 {
     public class ManPower : MonoWindowPlugin, IOutSourcingService
     {
-        ITimerService _timer;
+        readonly ITimerService _timer;
 
-        public ManPower( bool runningLifetimeWindow, ITimerService timer )
-            : base( runningLifetimeWindow )
+        public ManPower(  ITimerService timer, bool runningLifetimeWindow, Window window )
+            : base( runningLifetimeWindow, window )
         {
             _timer = timer;
         }

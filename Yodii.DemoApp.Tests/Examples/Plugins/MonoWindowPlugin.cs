@@ -12,9 +12,10 @@ namespace Yodii.DemoApp
         readonly bool _runningLifetimeWindow;
         Window _window;
  
-        protected MonoWindowPlugin( bool runningLifetimeWindow )
+        protected MonoWindowPlugin( bool runningLifetimeWindow, Window window )
         {
             _runningLifetimeWindow = runningLifetimeWindow;
+            _window = window;
         }
 
         bool IYodiiPlugin.Setup( PluginSetupInfo info )
