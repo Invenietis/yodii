@@ -1,8 +1,0 @@
-﻿<Window x:Class="Yodii.DemoApp.Plugin2.Plugin2Window"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Plugin2Window" Height="300" Width="300">
-    <Grid>
-        
-    </Grid>
-</Window>
