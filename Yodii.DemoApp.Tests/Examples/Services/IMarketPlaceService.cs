@@ -5,5 +5,6 @@ namespace Yodii.DemoApp
 {
     public interface IMarketPlaceService : IYodiiService
     {
+
     }
 }

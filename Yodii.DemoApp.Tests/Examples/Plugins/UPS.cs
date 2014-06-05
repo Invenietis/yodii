@@ -1,26 +1,25 @@
 ﻿using System;
+using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class UPS : IYodiiPlugin, ISecuredDeliveryService
+    public class UPS : MonoWindowPlugin, ISecuredDeliveryService
     {
-        public bool Setup( PluginSetupInfo info )
+        ITimerService _timer;
+
+        public UPS( bool runningLifetimeWindow, ITimerService timer )
+            : base( runningLifetimeWindow )
+        {
+            _timer = timer;
+        }
+
+        protected override Window CreateAndShowWindow()
         {
             throw new NotImplementedException();
         }
 
-        public void Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop()
+        protected override void DestroyWindow()
         {
             throw new NotImplementedException();
         }

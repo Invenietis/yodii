@@ -34,9 +34,8 @@
     <Reference Include="CK.Core">
       <HintPath>..\packages\CK.Core.3.0.19-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
-    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO">
@@ -48,11 +47,13 @@
     <Reference Include="System.Threading.Tasks">
       <HintPath>..\packages\Microsoft.Bcl.1.1.9\lib\net40\System.Threading.Tasks.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Presentation" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Examples\Plugins\Client1.cs" />
@@ -72,7 +73,7 @@
     <Compile Include="Examples\Services\IOutSourcingService.cs" />
     <Compile Include="Examples\Services\ISecuredDeliveryService.cs" />
     <Compile Include="Examples\Services\ITimerService.cs" />
-    <Compile Include="Tryout.cs" />
+    <Compile Include="Examples\Plugins\MonoWindowPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -80,14 +81,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Yodii.Discoverer\Yodii.Discoverer.csproj">
-      <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
-      <Name>Yodii.Discoverer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
-      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
-      <Name>Yodii.Engine</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>

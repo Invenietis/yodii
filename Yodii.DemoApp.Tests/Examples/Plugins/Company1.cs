@@ -1,37 +1,45 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Company1 : IYodiiPlugin
+    public class Company1 : MonoWindowPlugin
     {
         IMarketPlaceService _serviceRef1;
         IDeliveryService _serviceRef2;
+        ITimerService _timer;
+        List<string> _products;
 
-        [DependencyRequirementAttribute( DependencyRequirement.Running, "ServiceRef1" )]
-        [DependencyRequirementAttribute( DependencyRequirement.Running, "ServiceRef2" )]
-        public Company1(IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2)
+        public Company1( bool runningLifetimeWindow, IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2, ITimerService timer )
+            : base( runningLifetimeWindow )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;
+            _timer = timer;
+            _products = new List<string>();
         }
 
-        bool IYodiiPlugin.Setup( PluginSetupInfo info )
+        void ReleaseNewProduct( string name )
+        {
+            if( _products.Contains( name ) ) return;
+            _products.Add( name );
+
+            RaiseNewNotification( "New Product : " + name );
+        }
+
+        private void RaiseNewNotification( string p )
         {
             throw new NotImplementedException();
         }
 
-        void IYodiiPlugin.Start()
+        protected override Window CreateAndShowWindow()
         {
             throw new NotImplementedException();
         }
 
-        void IYodiiPlugin.Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IYodiiPlugin.Stop()
+        protected override void DestroyWindow()
         {
             throw new NotImplementedException();
         }

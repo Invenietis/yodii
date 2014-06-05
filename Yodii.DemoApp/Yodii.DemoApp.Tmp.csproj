@@ -67,7 +67,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="MainWindow.xaml">
+    <Compile Include="DemoAppManager.cs" />
+    <Compile Include="MainWindowPlugin\Plugin.cs" />
+    <Compile Include="MainWindowPlugin\RelayCommand.cs" />
+    <Compile Include="MainWindowPlugin\ViewModelBase.cs" />
+    <Page Include="MainWindowPlugin\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -75,12 +79,31 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="MainWindowPlugin\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Plugin1\Plugin1Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Plugin2\Plugin2Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainWindowPlugin\MainWindowViewModel.cs" />
+    <Compile Include="Plugin1\MainWindowViewModelPlugin1.cs" />
+    <Compile Include="Plugin1\Plugin1.cs" />
+    <Compile Include="Plugin1\Plugin1Window.xaml.cs">
+      <DependentUpon>Plugin1Window.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Plugin2\MainWindowViewModelPlugin2.cs" />
+    <Compile Include="Plugin2\Plugin2.cs" />
+    <Compile Include="Plugin2\Plugin2Window.xaml.cs">
+      <DependentUpon>Plugin2Window.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -111,11 +134,20 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Yodii.Discoverer\Yodii.Discoverer.csproj">
+      <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
+      <Name>Yodii.Discoverer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
+      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
+      <Name>Yodii.Engine</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

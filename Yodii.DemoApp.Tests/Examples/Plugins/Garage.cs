@@ -1,26 +1,25 @@
 ﻿using System;
+using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Garage : IYodiiPlugin, ICarRepairService
+    public class Garage : MonoWindowPlugin, ICarRepairService
     {
-        public bool Setup( PluginSetupInfo info )
+        ITimerService _timer;
+
+        public Garage( bool runningLifetimeWindow, ITimerService timer )
+            : base( runningLifetimeWindow )
+        {
+            _timer = timer;
+        }
+
+        protected override Window CreateAndShowWindow()
         {
             throw new NotImplementedException();
         }
 
-        public void Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop()
+        protected override void DestroyWindow()
         {
             throw new NotImplementedException();
         }

@@ -1,37 +1,29 @@
 ﻿using System;
+using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Company3 : IYodiiPlugin
+    public class Company3 : MonoWindowPlugin
     {
         IMarketPlaceService _serviceRef1;
         IDeliveryService _serviceRef2;
+        ITimerService _timer;
 
-        [DependencyRequirementAttribute( DependencyRequirement.Running, "ServiceRef1" )]
-        [DependencyRequirementAttribute( DependencyRequirement.Running, "ServiceRef2" )]
-        public Company3( IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2 )
+        public Company3( bool runningLifetimeWindow, IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2, ITimerService timer )
+            : base( runningLifetimeWindow )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;
+            _timer = timer;
         }
 
-        public bool Setup( PluginSetupInfo info )
+        protected override Window CreateAndShowWindow()
         {
             throw new NotImplementedException();
         }
 
-        public void Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop()
+        protected override void DestroyWindow()
         {
             throw new NotImplementedException();
         }

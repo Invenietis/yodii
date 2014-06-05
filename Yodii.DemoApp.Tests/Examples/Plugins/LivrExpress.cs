@@ -1,37 +1,29 @@
 ﻿using System;
+using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class LivrExpress : IYodiiPlugin, IDeliveryService
+    public class LivrExpress : MonoWindowPlugin, IDeliveryService
     {
         ICarRepairService _serviceRef1;
         IOutSourcingService _serviceRef2;
+        ITimerService _timer;
 
-        [DependencyRequirement( DependencyRequirement.Running, "ServiceRef1" )]
-        [DependencyRequirement( DependencyRequirement.Running, "ServiceRef2" )]
-        public LivrExpress( ICarRepairService ServiceRef1, IOutSourcingService ServiceRef2 )
+        public LivrExpress( bool runningLifetimeWindow, ICarRepairService ServiceRef1, IOutSourcingService ServiceRef2, ITimerService timer )
+            : base( runningLifetimeWindow )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;
+            _timer = timer;
         }
-        
-        public bool Setup( PluginSetupInfo info )
+
+        protected override Window CreateAndShowWindow()
         {
             throw new NotImplementedException();
         }
 
-        public void Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop()
+        protected override void DestroyWindow()
         {
             throw new NotImplementedException();
         }
