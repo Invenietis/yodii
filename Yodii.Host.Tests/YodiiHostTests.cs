@@ -34,7 +34,8 @@ namespace Yodii.Host.Tests
                          
             var result = engine.Start();
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Start();
-            ChoucroutePlugin choucroute = (ChoucroutePlugin) host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).RealPluginObject;
+            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false );
+            ChoucroutePlugin choucroute = (ChoucroutePlugin) pluginProxy.RealPluginObject;
             Assert.That( choucroute.CalledMethods.Count == 3 );
             Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).Status == InternalRunningStatus.Started );
 
@@ -42,6 +43,24 @@ namespace Yodii.Host.Tests
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Stop();
             Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).Status == InternalRunningStatus.Stopped );
             Assert.That( choucroute.CalledMethods.Count == 5 );//plugin is stopped but we can still directly access it ?
+
+            IChoucrouteService service= (IChoucrouteService)host.ServiceHost.GetProxy(typeof( IChoucrouteService) );
+            Assert.Throws<Yodii.Model.ServiceStoppedException>( (delegate() { int i =service.CalledMethods.Count; }) );
+
+            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Start();
+            Assert.That( service.CalledMethods.Count == 7 );
+
+            IDiscoveredInfo info2 = discoverer.GetDiscoveredInfo();
+            engine.SetDiscoveredInfo( info );
+            //test that the pluginproxy hasn't changed after a getDiscoveredInfo
+            IPluginProxy pluginProxy2 = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false );
+            ChoucroutePlugin choucroute2 = (ChoucroutePlugin)pluginProxy.RealPluginObject;
+
+            Assert.That( pluginProxy == pluginProxy2 );
+            Assert.That( choucroute == choucroute2 );
         }
+        //TODO (short term): see what happens if te plugin does not work properly
+        //Tester exception balancé au start
+        //Tester exception balancé au stop
     }
 }

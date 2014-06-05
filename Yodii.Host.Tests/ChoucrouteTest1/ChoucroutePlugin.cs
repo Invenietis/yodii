@@ -12,45 +12,46 @@ namespace Yodii.Host.Tests
     {
         IOptionalService<IAnotherService> _serviceOpt;
 
-        public List<string> CalledMethods;
+         List<string> _calledMethods;
+         public List<string> CalledMethods { get { return _calledMethods; } }
 
         public ChoucroutePlugin( IOptionalService<IAnotherService> s)
         {
-            CalledMethods = new List<string>();
+            _calledMethods = new List<string>();
             _serviceOpt = s;
             _serviceOpt.ServiceStatusChanged += _serviceOpt_ServiceStatusChanged;
-            CalledMethods.Add( "Constructor" );
+            _calledMethods.Add( "Constructor" );
         }
 
         void _serviceOpt_ServiceStatusChanged( object sender, ServiceStatusChangedEventArgs e )
         {
-            CalledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService = " + _serviceOpt.Status );
+            _calledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService = " + _serviceOpt.Status );
         }
 
         public bool Setup( PluginSetupInfo info )
         {
-            CalledMethods.Add( "Setup - IAnotherService = " + _serviceOpt.Status );
+            _calledMethods.Add( "Setup - IAnotherService = " + _serviceOpt.Status );
             return true;
         }
 
         public void Start()
         {
-            CalledMethods.Add( "Start - IAnotherService = " + _serviceOpt.Status );
+            _calledMethods.Add( "Start - IAnotherService = " + _serviceOpt.Status );
         }
 
         public void Teardown()
         {
-            CalledMethods.Add( "Teardown - IAnotherService = " + _serviceOpt.Status );
+            _calledMethods.Add( "Teardown - IAnotherService = " + _serviceOpt.Status );
         }
 
         public void Stop()
         {
-            CalledMethods.Add( "Stop - IAnotherService = " + _serviceOpt.Status );
+            _calledMethods.Add( "Stop - IAnotherService = " + _serviceOpt.Status );
         }
 
         void IChoucrouteService.DoSomething()
         {
-            CalledMethods.Add( "DoSomething - IAnotherService = " + _serviceOpt.Status );
+            _calledMethods.Add( "DoSomething - IAnotherService = " + _serviceOpt.Status );
         }
     }
 }

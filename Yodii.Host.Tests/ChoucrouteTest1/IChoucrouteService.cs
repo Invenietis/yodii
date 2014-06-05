@@ -9,5 +9,6 @@ namespace Yodii.Host.Tests
     public interface IChoucrouteService : IYodiiService
     {
         void DoSomething();
+        List<string> CalledMethods { get; }
     }
 }

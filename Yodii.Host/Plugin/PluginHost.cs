@@ -36,9 +36,8 @@ namespace Yodii.Host
     {
         static ILog _log = LogManager.GetLogger( typeof( PluginHost ) );
         readonly ServiceHost _serviceHost;
-        readonly Dictionary<IPluginInfo, PluginProxy> _plugins;
+        readonly Dictionary<string, PluginProxy> _plugins;
         readonly Dictionary<string, PluginProxy> _loadedPlugins;
-        readonly ICKReadOnlyCollection<IPluginProxy> _loadedPluginsEx;
         readonly List<PluginProxy> _newlyLoadedPlugins;
         Func<IPluginInfo,object[],IYodiiPlugin> _pluginCreator;
 
@@ -49,9 +48,8 @@ namespace Yodii.Host
 
         internal PluginHost( CatchExceptionGeneration catchMode )
         {
-            _plugins = new Dictionary<IPluginInfo, PluginProxy>();
+            _plugins = new Dictionary<string, PluginProxy>();
             _loadedPlugins = new Dictionary<string, PluginProxy>();
-            _loadedPluginsEx = new CKReadOnlyCollectionOnICollection<PluginProxy>( _loadedPlugins.Values );
             _serviceHost = new ServiceHost( catchMode );
             _newlyLoadedPlugins = new List<PluginProxy>();
             _pluginCreator = DefaultPluginCreator;
@@ -80,41 +78,34 @@ namespace Yodii.Host
             get { return _pluginCreator; }
             set { _pluginCreator = value ?? DefaultPluginCreator; } 
         }
-
+        /*
         /// <summary>
         /// Gets the <see cref="IPluginProxy"/> corresponding to the <see cref="IPluginInfo"/>.
         /// </summary>
         /// <param name="pluginInfo">Plugin info (typically provided by the <see cref="IDiscoverer"/>.</param>
         /// <returns>The plugin proxy (may be stopped or even not loaded).</returns>
-        public IPluginProxy FindPluginProxy( IPluginInfo pluginInfo )
+        public IPluginProxy FindPluginProxy( IPluginInfo pluginInfo )//A VIRER
         {
             return _plugins.GetValueWithDefault( pluginInfo, null );
         }
-
+        */
         /// <summary>
         /// Gets the <see cref="IPluginProxy"/> corresponding to the Plugin Guid set as parameter.
         /// </summary>
         /// <param name="pluginId">The Guid of the plugin</param>
         /// <param name="checkCurrentlyLoading">set to yes if you want to look for the right IPluginProxy in the plugin currently being loaded</param>
         /// <returns>The plugin proxy (may be stopped or even not loaded).</returns>
-        public IPluginProxy FindLoadedPlugin( /*Guid pluginId*/ string pluginFullName, bool checkCurrentlyLoading )
+        public IPluginProxy FindLoadedPlugin( string pluginFullName, bool checkCurrentlyLoading )
         {
-            //var p = _loadedPlugins.GetValueWithDefault( pluginId, null );
             var p = _loadedPlugins.GetValueWithDefault( pluginFullName, null );
-            //if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.UniqueId == pluginId );
             if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.PluginFullName == pluginFullName  );
             return p;
         }
 
-        /// <summary>
-        /// Gets the loaded plugins. This contains also the plugins that are currently disabled but have been loaded at least once.
-        /// </summary>
-        //public ICKReadOnlyCollection<IPluginProxy> LoadedPlugins { get { return _loadedPluginsEx; } }
-
-        public bool IsPluginRunning( IPluginInfo key )
+        public bool IsPluginRunning( IPluginInfo pluginInfo )
         {
             PluginProxy result;
-            if( !_plugins.TryGetValue( key, out result ) ) return false;
+            if( !_plugins.TryGetValue( pluginInfo.PluginFullName, out result ) ) return false; 
             return result.Status == InternalRunningStatus.Started;
         }
 
@@ -303,7 +294,6 @@ namespace Yodii.Host
             // aware of the existence of any new plugins and configure them to run.
             foreach( PluginProxy p in _newlyLoadedPlugins )
             {
-                //_loadedPlugins.Add( p.PluginKey.UniqueId, p );
                 _loadedPlugins.Add( p.PluginKey.PluginFullName, p );
             }
             _newlyLoadedPlugins.Clear();
@@ -383,13 +373,20 @@ namespace Yodii.Host
             set { _serviceHost.EventSender = value; }
         }
 
-        PluginProxy EnsureProxy( IPluginInfo key )
+        PluginProxy EnsureProxy( IPluginInfo pluginInfo )
         {
             PluginProxy result;
-            if( !_plugins.TryGetValue( key, out result ) )
+            if(_plugins.TryGetValue( pluginInfo.PluginFullName, out result ))
             {
-                result = new PluginProxy( key );
-                _plugins.Add( key, result );
+                if( result.PluginKey != pluginInfo )//If SetDiscoveredInfo is called, the pluginInfo will be new even if it is the same.
+                {
+                    result.PluginKey = pluginInfo; //TODO : figure out how to know and reload if the plugin really changes (example : different version)
+                }
+            }
+            else
+            {
+                result = new PluginProxy( pluginInfo );
+                _plugins.Add( pluginInfo.PluginFullName, result );
             }
             return result;
         }

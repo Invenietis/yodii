@@ -40,7 +40,7 @@ namespace Yodii.Host
             PluginKey = pluginKey;
         }
 
-        public IPluginInfo PluginKey { get; private set; }
+        public IPluginInfo PluginKey { get; internal set; }
 
         public string PublicName { get { return PluginKey.PluginFullName; } }
 
