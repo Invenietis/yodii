@@ -8,12 +8,9 @@ namespace Yodii.DemoApp
 {
     public class Timer : MonoWindowPlugin, ITimerService
     {
-        readonly ITimerService _timer;
-
-        public Timer( ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public Timer()
+            : base( true )
         {
-            _timer = timer;
         }
 
         protected override Window CreateAndShowWindow()
@@ -42,12 +39,12 @@ namespace Yodii.DemoApp
             throw new NotImplementedException();
         }
 
-        public void Stop()
+        public void StopTimer()
         {
             throw new NotImplementedException();
         }
 
-        public void Start()
+        public void StartTimer()
         {
             throw new NotImplementedException();
         }

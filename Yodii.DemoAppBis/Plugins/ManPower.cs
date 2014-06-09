@@ -5,19 +5,19 @@ using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class UPS : MonoWindowPlugin, ISecuredDeliveryService
+    public class ManPower : MonoWindowPlugin, IOutSourcingService
     {
         readonly ITimerService _timer;
 
-        public UPS( ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public ManPower(  ITimerService timer )
+            : base( true )
         {
             _timer = timer;
         }
 
         protected override Window CreateAndShowWindow()
         {
-            Window = new UPSView()
+            Window = new ManPowerView()
             {
                 DataContext = this
             };
@@ -28,7 +28,7 @@ namespace Yodii.DemoApp
 
         protected override void DestroyWindow()
         {
-            throw new NotImplementedException();
+            if( Window != null ) Window.Close();
         }
     }
 }

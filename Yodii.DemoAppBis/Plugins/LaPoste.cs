@@ -1,34 +1,33 @@
 ﻿using System;
 using System.Windows;
-using Yodii.DemoApp.Examples.Plugins.Views;
 using Yodii.Model;
+using Yodii.DemoApp.Examples.Plugins.Views;
 
 namespace Yodii.DemoApp
 {
-    public class ManPower : MonoWindowPlugin, IOutSourcingService
+    public class LaPoste : MonoWindowPlugin, ISecuredDeliveryService
     {
-        readonly ITimerService _timer;
+        ITimerService _timer;
 
-        public ManPower(  ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public LaPoste( ITimerService timer )
+            : base( true ) 
         {
             _timer = timer;
         }
 
         protected override Window CreateAndShowWindow()
         {
-            Window = new ManPowerView()
+            Window = new LaPosteView()
             {
                 DataContext = this
             };
-
             Window.Show();
             return Window;
         }
 
         protected override void DestroyWindow()
         {
-            if( Window != null ) Window.Close();
+            if( Window != null ) Window.Close();    
         }
     }
 }

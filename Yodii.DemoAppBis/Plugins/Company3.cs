@@ -5,19 +5,23 @@ using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Garage : MonoWindowPlugin, ICarRepairService
+    public class Company3 : MonoWindowPlugin
     {
+        IService<IMarketPlaceService> _serviceRef1;
+        IService<IDeliveryService> _serviceRef2;
         ITimerService _timer;
 
-        public Garage(  ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public Company3( IRunningService<IMarketPlaceService> ServiceRef1, IRunningService<IDeliveryService> ServiceRef2, ITimerService timer )
+            : base( true )
         {
+            _serviceRef1 = ServiceRef1;
+            _serviceRef2 = ServiceRef2;
             _timer = timer;
         }
 
         protected override Window CreateAndShowWindow()
         {
-            Window = new GarageView()
+            Window = new Company3View()
             {
                 DataContext = this
             };

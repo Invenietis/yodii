@@ -8,13 +8,13 @@ namespace Yodii.DemoApp
 {
     public class Company1 : MonoWindowPlugin
     {
-        readonly IService<IMarketPlaceService> _serviceRef1;
-        readonly IService<IDeliveryService> _serviceRef2;
+        readonly IMarketPlaceService _serviceRef1;
+        readonly IDeliveryService _serviceRef2;
         readonly ITimerService _timer;
         List<string> _products;
 
-        public Company1( IRunningService<IMarketPlaceService> ServiceRef1, IRunningService<IDeliveryService> ServiceRef2, ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public Company1( IMarketPlaceService ServiceRef1, IDeliveryService ServiceRef2, ITimerService timer )
+            : base( true )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;

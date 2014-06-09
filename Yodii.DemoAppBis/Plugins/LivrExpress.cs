@@ -5,14 +5,14 @@ using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Company2 : MonoWindowPlugin
+    public class LivrExpress : MonoWindowPlugin, IDeliveryService
     {
-        IService<IMarketPlaceService> _serviceRef1;
-        IService<IDeliveryService> _serviceRef2;
-        ITimerService _timer;
+        readonly ICarRepairService _serviceRef1;
+        readonly IOutSourcingService _serviceRef2;
+        readonly ITimerService _timer;
 
-        public Company2( IRunningService<IMarketPlaceService> ServiceRef1, IRunningService<IDeliveryService> ServiceRef2, ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public LivrExpress( ICarRepairService ServiceRef1, IOutSourcingService ServiceRef2, ITimerService timer )
+            : base( true )
         {
             _serviceRef1 = ServiceRef1;
             _serviceRef2 = ServiceRef2;
@@ -21,10 +21,11 @@ namespace Yodii.DemoApp
 
         protected override Window CreateAndShowWindow()
         {
-            Window = new Company2View()
+            Window = new LivrExpressView()
             {
                 DataContext = this
             };
+
             Window.Show();
             return Window;
         }

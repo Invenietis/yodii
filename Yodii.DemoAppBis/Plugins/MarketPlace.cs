@@ -7,15 +7,11 @@ namespace Yodii.DemoApp
 {
     public class MarketPlace : MonoWindowPlugin, IMarketPlaceService
     {
-        readonly Client1 _client;
-        readonly Company1 _company;
-        readonly IService<ITimerService> _timer;
+        readonly ITimerService _timer;
 
-        public MarketPlace( Client1 client, Company1 company, IRunningService<ITimerService> timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow ) 
+        public MarketPlace( ITimerService timer )
+            : base( true ) 
         {
-            _client = client;
-            _company = company;
             _timer = timer;
         }
 

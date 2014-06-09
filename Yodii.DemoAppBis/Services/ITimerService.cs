@@ -9,8 +9,8 @@ namespace Yodii.DemoApp
 
         void DecreaseSpeed();
 
-        void Stop();
+        void StopTimer();
 
-        void Start();
+        void StartTimer();
     }
 }

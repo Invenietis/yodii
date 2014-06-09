@@ -7,20 +7,15 @@ namespace Yodii.DemoApp
 {
     public class Client1 : MonoWindowPlugin
     {
-        readonly IService<IMarketPlaceService> _market;
+        readonly IMarketPlaceService _market;
         readonly ITimerService _timer;
 
-        public Client1( IRunningService<IMarketPlaceService> market, ITimerService timer, bool runningLifetimeWindow )
-            : base( runningLifetimeWindow )
+        public Client1( IMarketPlaceService market, ITimerService timer )
+            : base( true )
         {
             _timer = timer;
             _market = market;
         }
-
-        //void BuyNewProduct()
-        //{
-        //    _market.CheckNewProducts();
-        //}
 
         protected override Window CreateAndShowWindow()
         {
@@ -30,14 +25,8 @@ namespace Yodii.DemoApp
             };
 
             Window.Show();
-            RaiseNewNotification();
 
             return Window;
-        }
-
-        private void RaiseNewNotification()
-        {
-            throw new NotImplementedException();
         }
 
         protected override void DestroyWindow()

@@ -42,7 +42,7 @@ namespace Yodii.DemoApp
                 DestroyWindow();
             }
         }
-        
+
         void IYodiiPlugin.Teardown()
         {
             if( !_runningLifetimeWindow )
