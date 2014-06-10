@@ -1,0 +1,62 @@
+﻿using System;
+using System.Timers;
+using System.Windows;
+using Yodii.DemoApp.Examples.Plugins.Views;
+using Yodii.Model;
+
+namespace Yodii.DemoApp
+{
+    public class TimerHandler : MonoWindowPlugin, ITimerService
+    {
+        readonly Timer _timer;
+
+        public TimerHandler()
+            : base( true )
+        {
+            _timer = new Timer();
+        }
+
+        protected override Window CreateAndShowWindow()
+        {
+            Window = new TimerView()
+            {
+                DataContext = this
+            };
+
+            _timer.Start();
+            Window.Show();
+            return Window;
+        }
+
+        protected override void DestroyWindow()
+        {
+            if( Window != null ) Window.Close();
+        }
+
+        void ITimerService.IncreaseSpeed()
+        {
+            if( _timer.Interval >= 6 )
+                _timer.Interval -= 5;
+        }
+
+        void ITimerService.DecreaseSpeed()
+        {
+            _timer.Interval += 5;
+        }
+
+        void ITimerService.Stop()
+        {
+            _timer.Stop();
+        }
+
+        void ITimerService.Start()
+        {
+            _timer.Start();    
+        }
+
+        public Timer Timer
+        {
+            get { return _timer; }
+        }
+    }
+}

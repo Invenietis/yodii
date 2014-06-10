@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Discoverer.Tests", "Y
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp.Tests", "Yodii.DemoApp.Tests\Yodii.DemoApp.Tests.csproj", "{4F55EF6E-54ED-46F6-9B1E-FEA326464EA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp", "Yodii.DemoAppBis\Yodii.DemoApp.csproj", "{2122E7CC-8576-410B-9AA5-85D9DABB6F4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.DemoApp", "Yodii.DemoApp\Yodii.DemoApp.csproj", "{2122E7CC-8576-410B-9AA5-85D9DABB6F4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
