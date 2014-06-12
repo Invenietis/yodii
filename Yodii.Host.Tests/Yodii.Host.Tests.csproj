@@ -53,6 +53,15 @@
     <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
     <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
     <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
+    <Compile Include="ChoucrouteTest2\ChoucroutePlugin2.cs" />
+    <Compile Include="ChoucrouteTest2\IAnotherService2.cs" />
+    <Compile Include="ChoucrouteTest2\IChoucrouteService2.cs" />
+    <Compile Include="ChoucrouteTest3\ChoucroutePlugin3.cs" />
+    <Compile Include="ChoucrouteTest3\IAnotherService3.cs" />
+    <Compile Include="ChoucrouteTest3\IChoucrouteService3.cs" />
+    <Compile Include="ChoucrouteTest4\ChoucroutePlugin4.cs" />
+    <Compile Include="ChoucrouteTest4\IAnotherService4.cs" />
+    <Compile Include="ChoucrouteTest4\IChoucrouteService4.cs" />
     <Compile Include="Extensions\ConfigurationManagerExtensions.cs" />
     <Compile Include="Extensions\DynamicTestExtensions.cs" />
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
