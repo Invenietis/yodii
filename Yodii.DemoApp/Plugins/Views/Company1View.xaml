@@ -6,6 +6,6 @@
              mc:Ignorable="d" 
              Title="Company1" Height="350" Width="525">
     <Grid>
-            
+        <Image Source="/Plugins/Assets/Icons/company.png"></Image>
     </Grid>
 </Window>

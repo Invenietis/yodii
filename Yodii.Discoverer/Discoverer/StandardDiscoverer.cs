@@ -243,11 +243,7 @@ namespace Yodii.Discoverer
         {
             if( type.IsInterface )
             {
-                IEnumerable<TypeReference> target =
-                    from i in type.Interfaces
-                    where i.Resolve().Equals( _tDefIYodiiService )
-                    select i;
-                if( target.Any() ) return true;
+                return type.Interfaces.Any( i => i.Resolve().Equals( _tDefIYodiiService ) );
             }
             return false;
         }
@@ -256,13 +252,24 @@ namespace Yodii.Discoverer
         {
             if( type.IsClass && !type.IsAbstract )
             {
-                IEnumerable<TypeReference> target =
-                    from i in type.Interfaces
-                    where i.Resolve().Equals( _tDefIYodiiPlugin)
-                    select i;
-                if( target.Any() ) return true;
+                return HasIYodiiPluginInterface(type) || BaseIsYodiiPlugin( type );
             }
             return false;
+        }
+
+        bool BaseIsYodiiPlugin( TypeDefinition type )
+        {
+            Debug.Assert( type != null );
+            var baseType = type.BaseType;
+
+            if( baseType == null ) return false;
+            var resolvedBaseType = baseType.Resolve();
+            return HasIYodiiPluginInterface( resolvedBaseType ) || BaseIsYodiiPlugin( resolvedBaseType );
+        }
+
+        bool HasIYodiiPluginInterface( TypeDefinition type )
+        {
+            return type.Interfaces.Any( i => i.Resolve().Equals( _tDefIYodiiPlugin ) );
         }
 
         private bool IsDependencyRequirement( TypeDefinition wrapper, out DependencyRequirement req )

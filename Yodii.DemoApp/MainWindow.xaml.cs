@@ -12,7 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Yodii.Discoverer;
 using Yodii.Model;
+using System.IO;
 
 namespace Yodii.DemoApp
 {
@@ -48,13 +50,15 @@ namespace Yodii.DemoApp
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
+            //StandardDiscoverer sd = new StandardDiscoverer();
+            
+            //sd.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
+            //IDiscoveredInfo discoveredInfo = sd.GetDiscoveredInfo();
+            
             _mainTimer.Start();
             
-            for( int i = 0; i < _clients.Count; i++ )
-            {
-                ( (IYodiiPlugin)_clients[i] ).Start();
-                ( (IYodiiPlugin)_companies[i] ).Start();
-            }
+            ( (IYodiiPlugin)_clients[0] ).Start();
+            ( (IYodiiPlugin)_companies[0] ).Start();
         }
     }
 }
