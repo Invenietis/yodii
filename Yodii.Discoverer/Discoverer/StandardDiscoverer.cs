@@ -108,7 +108,7 @@ namespace Yodii.Discoverer
                     {
                         result = RegisterNewAssembly( a );
                     }
-                                Debug.Assert( result.YodiiInfo != null, "result.YodiiInfo is null" );
+                    Debug.Assert( result.YodiiInfo != null, "result.YodiiInfo is null" );
                 }
                 catch( Exception ex )
                 {
@@ -169,7 +169,7 @@ namespace Yodii.Discoverer
             p = new PluginInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
             _plugins.Add( t, p );
 
-            p.Service = GetImplementedService( p, t );
+            p.Service = GetDirectImplementedService( t );
 
             var ctors = t.Methods.Where( m => m.IsConstructor );
             var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
@@ -212,25 +212,13 @@ namespace Yodii.Discoverer
             return p;
         }
 
-    
-
-        //TypeReference GetService( TypeDefinition plugin )
-        //{
-        //    IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
-        //                                       where IsYodiiService( i.Resolve() )
-        //                                       select i;
-        //    if( query.Any() )
-        //        return query.ElementAt( 0 );
-        //    return null;
-        //}
-
-        ServiceInfo GetImplementedService( PluginInfo plugin, TypeDefinition pluginType )
+        ServiceInfo GetDirectImplementedService( TypeDefinition pluginType )
         {
             return pluginType.Interfaces
                             .Select( i => i.Resolve() )
                             .Where( i => IsYodiiService( i ) )
                             .Select( i => FindOrCreateService( i ) )
-                            .SingleOrDefault();
+                            .FirstOrDefault();
         }
 
         /// <summary>
