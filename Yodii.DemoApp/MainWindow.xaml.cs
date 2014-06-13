@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,6 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Yodii.Discoverer;
 using Yodii.Model;
-using System.IO;
 
 namespace Yodii.DemoApp
 {
@@ -31,6 +31,8 @@ namespace Yodii.DemoApp
 
         readonly List<Client1> _clients;
         readonly List<Company1> _companies;
+        readonly StandardDiscoverer _standardDiscoverer;
+        IDiscoveredInfo _discoveredInfo;
 
         public MainWindow()
         {
@@ -44,16 +46,14 @@ namespace Yodii.DemoApp
 
             _clients.Add( new Client1( _marketPlace, _mainTimer ) );
             _companies.Add( new Company1( _marketPlace, _delivery, _mainTimer ) );
-
+            _standardDiscoverer = new StandardDiscoverer();
             InitializeComponent();
         }
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
-            //StandardDiscoverer sd = new StandardDiscoverer();
-            
-            //sd.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
-            //IDiscoveredInfo discoveredInfo = sd.GetDiscoveredInfo();
+            _standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
+            _discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
             
             _mainTimer.Start();
             
