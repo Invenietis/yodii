@@ -147,8 +147,10 @@ namespace Yodii.Engine
                     }
                 }
                 ProcessDeferredPropagations();
-            }
 
+                SuicidePrevention();
+
+            }
             // Finalizes static resolution by computing final Runnable statuses per impact for Optional and Runnable plugins or services.
             Step = ConfigurationSolverStep.InitializeFinalStartableStatus;
             {
@@ -198,6 +200,26 @@ namespace Yodii.Engine
                 return new YodiiEngineResult( this, _engine );
             }
             return null;
+        }
+        /// <summary>
+        /// Goes through the plugin list to check for non-suported, running reference loops.
+        /// If a plugin was disabled during the process, it is repeated.
+        /// </summary>
+        private void SuicidePrevention()
+        {
+            bool atLeastOneFailed;
+            do
+            {
+                atLeastOneFailed = false;
+                foreach( var p in _orderedPlugins )
+                {
+                    if( !p.Disabled )
+                    {
+                        atLeastOneFailed |= !p.CheckInvalidLoop();
+                    }
+                }
+            }
+            while( atLeastOneFailed );
         }
 
         void ProcessDeferredPropagations()

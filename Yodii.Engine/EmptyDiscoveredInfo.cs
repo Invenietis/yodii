@@ -25,5 +25,10 @@ namespace Yodii.Engine
         {
             get { return CKReadOnlyListEmpty<IPluginInfo>.Empty; }
         }
+
+        public IReadOnlyList<IAssemblyInfo> AssemblyInfos
+        {
+            get { return CKReadOnlyListEmpty<IAssemblyInfo>.Empty; }
+        }
     }
 }

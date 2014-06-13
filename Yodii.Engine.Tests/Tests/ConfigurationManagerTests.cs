@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using NUnit.Framework;
 using Yodii.Model;
+using System.Diagnostics;
 
 namespace Yodii.Engine.Tests
 {
@@ -179,7 +180,7 @@ namespace Yodii.Engine.Tests
             layer.Items.AddSuccess( "p3", ConfigurationStatus.Runnable, ConfigurationStatus.Runnable );
             layer.Items.AddSuccess( "p4", ConfigurationStatus.Running, ConfigurationStatus.Running );
 
-            e.Configuration.CheckFinalConfigurationItems( "p1=Disabled", "p2=Optional", "p3=Runnable", "p4=Running" );
+            e.Configuration.CheckFinalConfigurationItemStatus( "p1=Disabled", "p2=Optional", "p3=Runnable", "p4=Running" );
 
             var layer2 = e.Configuration.Layers.Create();
             layer2.Items.AddSuccess( "p1", ConfigurationStatus.Optional, ConfigurationStatus.Disabled );
@@ -189,11 +190,11 @@ namespace Yodii.Engine.Tests
             layer2.Items.AddSuccess( "p3", ConfigurationStatus.Running, ConfigurationStatus.Running );
             layer2.Items.AddSuccess( "p4", ConfigurationStatus.Runnable, ConfigurationStatus.Running );
 
-            e.Configuration.CheckFinalConfigurationItems( "p1=Disabled", "p2=Runnable", "p3=Running", "p4=Running" );
+            e.Configuration.CheckFinalConfigurationItemStatus( "p1=Disabled", "p2=Runnable", "p3=Running", "p4=Running" );
 
             e.Configuration.Layers.Remove( layer );
 
-            e.Configuration.CheckFinalConfigurationItems( "p1=Optional", "p2=Runnable", "p3=Running", "p4=Runnable" );
+            e.Configuration.CheckFinalConfigurationItemStatus( "p1=Optional", "p2=Runnable", "p3=Running", "p4=Runnable" );
 
         }
 
@@ -252,5 +253,209 @@ namespace Yodii.Engine.Tests
 
         }
 
+        [Test]
+        public void FullStartImpactCombination()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
+
+            layer1.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStart );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStart );         
+            
+            IYodiiEngineResult result = layer2.Items["p1"].SetImpact( StartDependencyImpact.FullStop );   
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Item changing: FullStart and FullStop cannot be combined for p1" );
+
+            result = layer2.Items["p1"].SetImpact( StartDependencyImpact.Minimal );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+
+            layer2.Items["p1"].SetImpact( StartDependencyImpact.StartRecommended );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+
+            layer2.Items["p1"].SetImpact( StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+
+            layer2.Items["p1"].SetImpact( StartDependencyImpact.StopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+
+            layer2.Items["p1"].SetImpact( StartDependencyImpact.Unknown );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+        }
+
+        [Test]
+        public void FullStopImpactCombination()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
+
+            layer1.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+
+            IYodiiEngineResult result = layer2.Items["p1"].SetImpact( StartDependencyImpact.FullStart );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Item changing: FullStop and FullStart cannot be combined for p1" );
+            
+            result = layer2.Items["p1"].SetImpact( StartDependencyImpact.Minimal );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+            Assert.That( result.ConfigurationFailureResult, Is.Null );
+
+            result = layer2.Items["p1"].SetImpact( StartDependencyImpact.StartRecommended );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Item changing: FullStop and StartRecommended cannot be combined for p1" );
+            
+            result = layer2.Items["p1"].SetImpact( StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Item changing: FullStop and StartRecommendedAndStopOptionalAndRunnable cannot be combined for p1" );
+            
+            result = layer2.Items["p1"].SetImpact( StartDependencyImpact.StopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+            Assert.That( result.ConfigurationFailureResult, Is.Null );
+
+            result = layer2.Items["p1"].SetImpact( StartDependencyImpact.Unknown );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+            Assert.That( result.ConfigurationFailureResult, Is.Null );
+        }
+
+        [Test]
+        public void MinimalImpactCombination()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
+
+            layer1.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.Minimal );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.Minimal );
+
+            layer2.Items["p1"].SetImpact( StartDependencyImpact.FullStart );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+
+            layer2.Items.Remove( "p1" );
+            IYodiiEngineResult r = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+
+            layer2.Items.Remove( "p1" );
+            r = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommended" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+            
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StopOptionalAndRunnable" );
+            
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.Unknown );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=Minimal" );
+        }
+
+        [Test]
+        public void StartRecommendedImpactCombination()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
+
+            layer1.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+
+            layer2.Items["p1"].SetImpact( StartDependencyImpact.FullStart );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStart" );
+
+            layer2.Items.Remove( "p1" );
+            IYodiiEngineResult r = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommended" );
+            Assert.That( r.ConfigurationFailureResult.FailureReasons[0] == "Adding configuration item: StartRecommended and FullStop cannot be combined for p1" );
+
+            layer2.Items.Remove( "p1" );
+            r = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommended" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.Unknown );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommended" );
+        }
+
+        [Test]
+        public void StopOptionalAndRunnableImpactCombination()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
+
+            layer1.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+
+            IYodiiEngineResult result = layer2.Items["p1"].SetImpact( StartDependencyImpact.FullStart );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StopOptionalAndRunnable" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Item changing: StopOptionalAndRunnable and FullStart cannot be combined for p1" );
+
+            layer2.Items.Remove( "p1" );
+            result = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=FullStop" );
+
+            layer2.Items.Remove( "p1" );
+            result = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.Unknown );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );        
+        }
+
+        [Test]
+        public void StartRecommendedAndStopOptionalAndRunnableImpactCombination()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
+            IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
+
+            layer1.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+
+            IYodiiEngineResult result = layer2.Items["p1"].SetImpact( StartDependencyImpact.FullStart );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Item changing: StartRecommendedAndStopOptionalAndRunnable and FullStart cannot be combined for p1" );
+
+            layer2.Items.Remove( "p1" );
+            result = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.FullStop );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+            Assert.That( result.ConfigurationFailureResult.FailureReasons[0] == "Adding configuration item: StartRecommendedAndStopOptionalAndRunnable and FullStop cannot be combined for p1" );
+
+            layer2.Items.Remove( "p1" );
+            result = layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StopOptionalAndRunnable );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.Unknown );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+
+            layer2.Items.Remove( "p1" );
+            layer2.Items.Add( "p1", ConfigurationStatus.Optional, "", StartDependencyImpact.StartRecommended );
+            engine.Configuration.CheckFinalConfigurationItemImpact( "p1=StartRecommendedAndStopOptionalAndRunnable" );
+        }
     }
 }

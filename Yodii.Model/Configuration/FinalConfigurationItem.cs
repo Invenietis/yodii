@@ -120,7 +120,8 @@ namespace Yodii.Model
                         || i2 == StartDependencyImpact.TryStopOptionalAndRunnable
                         || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
                     if( i2 == StartDependencyImpact.FullStop || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    ///Impacts causing conflict: FullStart, StartRecommanded
+                    if( i2 == StartDependencyImpact.StartRecommended ) return StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable;
+                    ///Impacts causing conflict: FullStart
                     invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
                     break;
 
@@ -147,8 +148,9 @@ namespace Yodii.Model
                         || i2 == StartDependencyImpact.TryStartRecommended
                         || i2 == StartDependencyImpact.TryStopOptionalAndRunnable
                         || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
-                    else if( i2 == StartDependencyImpact.FullStart || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    ///Impacts causing conflicts: FullStop, StopOptionalAndRunnable
+                    if( i2 == StartDependencyImpact.FullStart || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
+                    if( i2 == StartDependencyImpact.StopOptionalAndRunnable ) return StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable;
+                    ///Impacts causing conflicts: FullStop
                     invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
                     break;
 

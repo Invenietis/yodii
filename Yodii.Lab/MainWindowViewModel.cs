@@ -68,6 +68,7 @@ namespace Yodii.Lab
         readonly ICommand _newFileCommand;
         readonly ICommand _revokeAllCommandsCommand;
         readonly ICommand _autoPositionCommand;
+        //readonly ICommand _revokeLastCommand;
 
         readonly ActivityMonitor _activityMonitor;
         readonly DispatcherTimer _autosaveTimer;

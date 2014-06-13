@@ -92,6 +92,9 @@
             PluginPropertiesTemplate="{StaticResource pluginVertexPropertiesTemplate}"
             ServicePropertiesTemplate="{StaticResource serviceVertexPropertiesTemplate}"
             x:Key="vertexPropertiesTemplateSelector" />
+
+        <BooleanToVisibilityConverter
+            x:Key="boolToVisibilityConverter" />
     </Fluent:RibbonWindow.Resources>
     <DockPanel>
         <Fluent:Ribbon

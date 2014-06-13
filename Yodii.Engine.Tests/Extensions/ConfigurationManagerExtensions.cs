@@ -17,13 +17,13 @@ namespace Yodii.Engine.Tests
             return r;
         }
 
-        public static void CheckFinalConfigurationItems( this IConfigurationManager @this, params string[] segment )
+        public static void CheckFinalConfigurationItemStatus( this IConfigurationManager @this, params string[] segment )
         {
             for( int i = 0; i < segment.Length ; i++) segment[i] += ",";
-            CheckFinalConfigurationItems( @this, String.Concat( segment ) );
+            CheckFinalConfigurationItemStatus( @this, String.Concat( segment ) );
         }
 
-        public static void CheckFinalConfigurationItems( this IConfigurationManager @this, string segment )
+        public static void CheckFinalConfigurationItemStatus( this IConfigurationManager @this, string segment )
         {
             var items = segment.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( s => s.Trim() );
             foreach( var i in items )
@@ -31,6 +31,23 @@ namespace Yodii.Engine.Tests
                 var split = i.Split( new[] { '=' }, StringSplitOptions.RemoveEmptyEntries );
                 if( split.Length > 2 ) Assert.Fail( "expected [serviceOrPluginName]=[status]" );
                 Assert.That( @this.FinalConfiguration.GetStatus( split[0] ).ToString(), Is.EqualTo( split[1] ) );
+            }
+        }
+
+        public static void CheckFinalConfigurationItemImpact( this IConfigurationManager @this, params string[] segment )
+        {
+            for( int i = 0; i < segment.Length; i++ ) segment[i] += ",";
+            CheckFinalConfigurationItemImpact( @this, String.Concat( segment ) );
+        }
+
+        public static void CheckFinalConfigurationItemImpact( this IConfigurationManager @this, string segment )
+        {
+            var items = segment.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( s => s.Trim() );
+            foreach( var i in items )
+            {
+                var split = i.Split( new[] { '=' }, StringSplitOptions.RemoveEmptyEntries );
+                if( split.Length > 2 ) Assert.Fail( "expected [serviceOrPluginName]=[impact]" );
+                Assert.That( @this.FinalConfiguration.GetImpact( split[0] ).ToString(), Is.EqualTo( split[1] ) );
             }
         }
     }

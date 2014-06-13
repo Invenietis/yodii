@@ -760,5 +760,10 @@ namespace Yodii.Lab
         }
 
         #endregion
+
+        public IReadOnlyList<IAssemblyInfo> AssemblyInfos
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }

@@ -130,6 +130,17 @@ namespace Yodii.Engine
             _propagation.Refresh();
             return _propagation;
         }
-        
+
+        public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
+        {
+            if( !set.Add( this ) ) return;
+            var propagation = GetUsefulPropagationInfo();
+            if( propagation == null ) return;
+            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
+            {
+                s.FillTransitiveIncludedServices( set );
+            }
+        }
+
     }
 }

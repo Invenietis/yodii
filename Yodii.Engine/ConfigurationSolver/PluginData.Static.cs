@@ -64,6 +64,19 @@ namespace Yodii.Engine
                 {
                     _configDisabledReason = PluginDisabledReason.AnotherRunningPluginExistsInFamilyByConfig;
                 }
+                else
+                {
+                    ServiceData siblingService = Service.FirstSpecialization;
+                    while( siblingService != null )
+                    {
+                        if( siblingService.ConfigSolvedStatus == SolvedConfigurationStatus.Running )
+                        {
+                             _configDisabledReason = PluginDisabledReason.ServiceSpecializationRunning;
+                             break;
+                        }
+                        siblingService = siblingService.NextSpecialization;
+                    }
+                }
             }
             // Immediately check for Runnable references to Disabled Services: this disables us.
             if( !Disabled )
@@ -87,7 +100,10 @@ namespace Yodii.Engine
                     }
                 }
             }
-            if( Service != null ) Service.AddPlugin( this );
+            if( Service != null )
+            {
+                Service.AddPlugin( this );
+            }
             if( !Disabled  )
             {
                 // If the plugin is not yet disabled, we register it:
@@ -292,6 +308,62 @@ namespace Yodii.Engine
             return PluginDisabledReason.None;
         }
 
+        public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
+        {
+            if( !set.Add( this ) ) return;
+
+            foreach( var s in GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
+            {
+                s.FillTransitiveIncludedServices( set );
+            }
+        }
+
+        public bool CheckInvalidLoop()
+        {
+            Debug.Assert( !Disabled );
+            HashSet<IYodiiItemData> running = new HashSet<IYodiiItemData>();
+            foreach( var sRef in PluginInfo.ServiceReferences )
+            {
+                if( sRef.Requirement == DependencyRequirement.Running )
+                {
+                    ServiceData service = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                    service.FillTransitiveIncludedServices( running );
+                }
+            }
+            if( running.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
+            {
+                SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                return false;
+            }
+            //BELOW : code garenting the use of ONE runnable. Was deemed confusing to the user.
+            /*else
+            {
+                HashSet<IYodiiItemData> runnable = new HashSet<IYodiiItemData>();
+                
+                foreach( var sRef in PluginInfo.ServiceReferences )
+                {
+                    if( sRef.Requirement == DependencyRequirement.Runnable )
+                    {
+                        runnable.Clear();
+                        runnable.AddRange(running);
+                        ServiceData service2 = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                        service2.FillTransitiveIncludedServices( runnable );
+                        if( runnable.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
+                        {
+                            SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                            return false;
+                        }
+                    }
+                }
+                //TODO: for each reference other than running. 
+                //          Clone HashSet, 
+                //          adds FillTransitiveIncludedServices for each reference other than running.
+                // As soon as one intersects, SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+            }*/
+            return true;
+        }
+
+
         public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
         {
             if( _runningIncludedServices == null )
@@ -305,7 +377,10 @@ namespace Yodii.Engine
                 bool newRunnableAdded = false;
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
-                    if( sRef.Requirement == DependencyRequirement.Runnable ) newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                    if( sRef.Requirement == DependencyRequirement.Runnable || sRef.Requirement == DependencyRequirement.RunnableRecommended )
+                    {
+                        newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                    }
                 }
                 _runnableIncludedServices = newRunnableAdded ? running.ToReadOnlyList() : _runningIncludedServices;
             }
@@ -374,7 +449,13 @@ namespace Yodii.Engine
             IReadOnlyList<ServiceData> e = _exclServices[(int)impact-1];
             if( e == null )
             {
-                HashSet<ServiceData> excl = new HashSet<ServiceData>();
+                HashSet<ServiceData> excl;
+                if( Service != null )
+                {
+                    excl = new HashSet<ServiceData>( Service.Family.AvailableServices );
+                    excl.ExceptWith( Service.InheritedServicesWithThis );
+                }
+                else excl = new HashSet<ServiceData>();
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
                     ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );

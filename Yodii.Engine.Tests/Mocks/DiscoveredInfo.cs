@@ -51,5 +51,10 @@ namespace Yodii.Engine.Tests.Mocks
         {
             get { return _services.AsReadOnlyList(); }
         }
+
+        public IReadOnlyList<IAssemblyInfo> AssemblyInfos
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }
