@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows;
 using Yodii.DemoApp.Examples.Plugins.Views;
-using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
@@ -10,25 +9,29 @@ namespace Yodii.DemoApp
     {
         readonly IMarketPlaceService _marketPlace;
         readonly IDeliveryService _deliveryService;
-        List<ProductCompany1> _products;
+        ObservableCollection<ProductCompany1> _products;
 
         public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService )
             : base( true )
         {
             _marketPlace = marketPlace;
             _deliveryService = deliveryService;
-            _products = new List<ProductCompany1>();
+            _products = new ObservableCollection<ProductCompany1>();
         }
 
-        void AddNewProduct( string name )
+        public void AddNewProduct( string name, ProductCategory category, int price )
         {
-            _marketPlace.AddNewProducts( name );
-            RaiseNewNotification( "New Product: " + name );
+            Debug.Assert( !string.IsNullOrEmpty( name ) );
+            Debug.Assert( price != null && price > 0 );
+            ProductCompany1 p = new ProductCompany1( name, category, price );
+            //_marketPlace.AddNewProducts( name, category, price );
+            _products.Add( p );
+            //RaiseNewNotification( "New Product: " + name );
         }
 
-        private void RaiseNewNotification( string p )
+        public ObservableCollection<ProductCompany1> Products
         {
-            throw new NotImplementedException();
+            get { return _products; }
         }
 
         protected override Window CreateWindow()
@@ -43,9 +46,11 @@ namespace Yodii.DemoApp
 
         public class ProductCompany1 : Yodii.DemoApp.MarketPlace.Product
         {
-            public ProductCompany1()
+            public ProductCompany1( string name, ProductCategory category, int price )
             {
-                Name = "ProductCompany1";
+                Name = name;
+                ProductCategory = category;
+                Price = price;
             }
         }
     }

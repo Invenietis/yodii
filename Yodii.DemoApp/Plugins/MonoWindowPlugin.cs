@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public abstract class MonoWindowPlugin : IYodiiPlugin, INotifyPropertyChanged
+    public abstract class MonoWindowPlugin : NotifyPropertyChangedBase, IYodiiPlugin
     {
         readonly bool _isQuickLifeTimeManagement;
         Window _window;
@@ -70,8 +65,6 @@ namespace Yodii.DemoApp
             }
         }
 
-        //protected abstract Window CreateAndShowWindow();
-
         protected abstract Window CreateWindow();
 
         private void HideWindow()
@@ -97,7 +90,5 @@ namespace Yodii.DemoApp
                 DestroyWindow();
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

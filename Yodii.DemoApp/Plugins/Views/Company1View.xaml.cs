@@ -19,9 +19,22 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// </summary>
     public partial class Company1View : Window
     {
+        public Company1 ViewModel
+        {
+            get
+            {
+                return (Company1)this.DataContext;
+            }
+        }
+
         public Company1View()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click( object sender, RoutedEventArgs e )
+        {
+            //ViewModel.AddNewProduct( "ergrgrgr" );
         }
     }
 }
