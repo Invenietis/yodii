@@ -7,12 +7,9 @@ namespace Yodii.DemoApp
 {
     public class Garage : MonoWindowPlugin, ICarRepairService
     {
-        ITimerService _timer;
-
-        public Garage(  ITimerService timer )
+        public Garage()
             : base( true )
         {
-            _timer = timer;
         }
 
         public void Repair()
@@ -20,20 +17,14 @@ namespace Yodii.DemoApp
 
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new GarageView()
             {
                 DataContext = this
             };
 
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
     }
 }

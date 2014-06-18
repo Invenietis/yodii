@@ -3,7 +3,7 @@ using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public interface ISecuredDeliveryService : IYodiiService, IDeliveryService
+    public interface ISecuredDeliveryService : IDeliveryService
     {
         void DeliverSecurely();
     }

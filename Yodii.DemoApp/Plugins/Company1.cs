@@ -10,14 +10,14 @@ namespace Yodii.DemoApp
     {
         readonly IMarketPlaceService _marketPlace;
         readonly IDeliveryService _deliveryService;
-        readonly ITimerService _timer;
+        List<ProductCompany1> _products;
 
-        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService, ITimerService timer )
+        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService )
             : base( true )
         {
             _marketPlace = marketPlace;
             _deliveryService = deliveryService;
-            _timer = timer;
+            _products = new List<ProductCompany1>();
         }
 
         void AddNewProduct( string name )
@@ -31,20 +31,22 @@ namespace Yodii.DemoApp
             throw new NotImplementedException();
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new Company1View()
             {
                 DataContext = this
             };
 
-            Window.Show();
             return Window;
         }
 
-        protected override void DestroyWindow()
+        public class ProductCompany1 : Yodii.DemoApp.MarketPlace.Product
         {
-            if( Window != null ) Window.Close();
+            public ProductCompany1()
+            {
+                Name = "ProductCompany1";
+            }
         }
     }
 }

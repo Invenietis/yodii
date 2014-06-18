@@ -7,27 +7,18 @@ namespace Yodii.DemoApp
 {
     public class LaPoste : MonoWindowPlugin, ISecuredDeliveryService
     {
-        ITimerService _timer;
-
-        public LaPoste( ITimerService timer )
+        public LaPoste()
             : base( true ) 
         {
-            _timer = timer;
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new LaPosteView()
             {
                 DataContext = this
             };
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();    
         }
 
         void ISecuredDeliveryService.DeliverSecurely()
