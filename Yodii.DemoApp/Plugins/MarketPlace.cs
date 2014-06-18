@@ -8,30 +8,22 @@ namespace Yodii.DemoApp
 {
     public class MarketPlace : MonoWindowPlugin, IMarketPlaceService
     {
-        readonly ITimerService _timer;
         ObservableCollection<string> _products;
-
-        public MarketPlace( ITimerService timer )
+        
+        public MarketPlace()
             : base( true ) 
         {
-            _timer = timer;
             _products = new ObservableCollection<string>();
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new MarketPlaceView()
             {
                 DataContext = this
             };
-            Window.Show();
 
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
 
         void IMarketPlaceService.CheckNewProducts()
@@ -54,6 +46,11 @@ namespace Yodii.DemoApp
         public ObservableCollection<string> Products
         {
             get { return _products; }
+        }
+
+        public abstract class Product
+        {
+            public string Name;
         }
     }
 }

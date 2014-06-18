@@ -39,13 +39,13 @@ namespace Yodii.DemoApp
             _clients = new List<Client1>();
             _companies = new List<Company1>();
             _mainTimer = new TimerHandler();
-            _marketPlace = new MarketPlace( _mainTimer );
-            _carRepair = new Garage( _mainTimer );
-            _outsourcing = new ManPower( _mainTimer );
-            _delivery = new LivrExpress( _carRepair, _outsourcing, _mainTimer );
+            _marketPlace = new MarketPlace( );
+            _carRepair = new Garage( );
+            _outsourcing = new ManPower(  );
+            _delivery = new LivrExpress( _carRepair, _outsourcing );
 
-            _clients.Add( new Client1( _marketPlace, _mainTimer ) );
-            _companies.Add( new Company1( _marketPlace, _delivery, _mainTimer ) );
+            _clients.Add( new Client1( _marketPlace ) );
+            _companies.Add( new Company1( _marketPlace, _delivery ) );
             _standardDiscoverer = new StandardDiscoverer();
             InitializeComponent();
         }

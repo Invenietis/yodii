@@ -16,21 +16,14 @@ namespace Yodii.DemoApp
             _timer = new Timer();
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new TimerView()
             {
                 DataContext = this
             };
 
-            _timer.Start();
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
 
         void ITimerService.IncreaseSpeed()

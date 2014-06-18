@@ -7,28 +7,18 @@ namespace Yodii.DemoApp
 {
     public class ManPower : MonoWindowPlugin, IOutSourcingService
     {
-        readonly ITimerService _timer;
-
-        public ManPower(  ITimerService timer )
+        public ManPower()
             : base( true )
         {
-            _timer = timer;
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new ManPowerView()
             {
                 DataContext = this
             };
-
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
 
         public void GetEmployees()

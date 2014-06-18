@@ -9,30 +9,22 @@ namespace Yodii.DemoApp
     {
         readonly ICarRepairService _carRepairService;
         readonly IOutSourcingService _outsourcingService;
-        readonly ITimerService _timer;
 
-        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService, ITimerService timer )
+        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService )
             : base( true )
         {
             _carRepairService = carRepairService;
             _outsourcingService = outsourcingService;
-            _timer = timer;
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new LivrExpressView()
             {
                 DataContext = this
             };
 
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
 
         public void Repair()
@@ -44,7 +36,8 @@ namespace Yodii.DemoApp
         {
             _outsourcingService.GetEmployees();
         }
-
+        
+        
         void IDeliveryService.Deliver()
         {
             

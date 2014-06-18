@@ -8,13 +8,12 @@ namespace Yodii.DemoApp
     public class Client1 : MonoWindowPlugin
     {
         readonly IMarketPlaceService _market;
-        readonly ITimerService _timer;
 
-        public Client1( IMarketPlaceService market, ITimerService timer )
+        public Client1( IMarketPlaceService market )
             : base( true )
         {
-            _timer = timer;
             _market = market;
+
         }
 
         void CheckNewProducts()
@@ -22,22 +21,14 @@ namespace Yodii.DemoApp
             _market.CheckNewProducts();
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new Client1View()
             {
                 DataContext = this
             };
 
-            Window.Show();
-
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null )
-                Window.Close();
         }
     }
 }

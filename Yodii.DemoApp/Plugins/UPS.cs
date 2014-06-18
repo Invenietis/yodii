@@ -7,28 +7,19 @@ namespace Yodii.DemoApp
 {
     public class UPS : MonoWindowPlugin, ISecuredDeliveryService
     {
-        readonly ITimerService _timer;
-
-        public UPS( ITimerService timer )
+        public UPS()
             : base( true )
         {
-            _timer = timer;
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new UPSView()
             {
                 DataContext = this
             };
 
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
 
         void ISecuredDeliveryService.DeliverSecurely()

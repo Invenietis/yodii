@@ -9,30 +9,21 @@ namespace Yodii.DemoApp
     {
         IService<IMarketPlaceService> _marketPlace;
         IService<IDeliveryService> _delivery;
-        ITimerService _timer;
 
-        public Company3( IRunningService<IMarketPlaceService> marketPlace, IRunningService<IDeliveryService> delivery, ITimerService timer )
+        public Company3( IRunningService<IMarketPlaceService> marketPlace, IRunningService<IDeliveryService> delivery )
             : base( true )
         {
             _marketPlace = marketPlace;
             _delivery = delivery;
-            _timer = timer;
         }
 
-        protected override Window CreateAndShowWindow()
+        protected override Window CreateWindow()
         {
             Window = new Company3View()
             {
                 DataContext = this
             };
-
-            Window.Show();
             return Window;
-        }
-
-        protected override void DestroyWindow()
-        {
-            if( Window != null ) Window.Close();
         }
     }
 }
