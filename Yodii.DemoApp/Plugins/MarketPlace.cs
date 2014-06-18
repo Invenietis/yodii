@@ -26,21 +26,19 @@ namespace Yodii.DemoApp
             return Window;
         }
 
-        void IMarketPlaceService.CheckNewProducts()
+        public void CheckNewProducts( IConsumer client )
         {
-            throw new NotImplementedException();
+            //Check in local market list
+            //AND/OR
+            //Ask companies for new products
+            //Get a product
+            //Throw it to delivery services
         }
-
         void IMarketPlaceService.AddNewProducts( string name )
         {
             if( _products.Contains( name ) ) return;
             _products.Add( name );
-            RaiseNewNotification( "product added: " + name );
-        }
-
-        private void RaiseNewNotification( string p )
-        {
-            throw new NotImplementedException();
+            RaisePropertyChanged();
         }
 
         public ObservableCollection<string> Products
@@ -48,9 +46,50 @@ namespace Yodii.DemoApp
             get { return _products; }
         }
 
-        public abstract class Product
+        public abstract class Product : NotifyPropertyChangedBase
         {
-            public string Name;
+            string _name;
+            ProductCategory _productCategory;
+            int _price;
+
+            public string Name
+            {
+                get
+                {
+                    return _name;
+                }
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public ProductCategory ProductCategory 
+            {
+                get 
+                {
+                    return _productCategory;
+                }
+                set
+                {
+                    _productCategory = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public int Price
+            {
+                get
+                {
+                    return _price;
+                }
+                set
+                {
+                    _price = value;
+                    RaisePropertyChanged();
+                }
+            }
         }
     }
 }

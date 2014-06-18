@@ -5,7 +5,7 @@ namespace Yodii.DemoApp
 {
     public interface IMarketPlaceService : IYodiiService
     {
-        void CheckNewProducts();
+        void CheckNewProducts( IConsumer client );
 
         void AddNewProducts( string name );
     }
