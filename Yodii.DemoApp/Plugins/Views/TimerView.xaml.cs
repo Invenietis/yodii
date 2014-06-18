@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Timers;
 
 namespace Yodii.DemoApp.Examples.Plugins.Views
 {
@@ -19,9 +20,42 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// </summary>
     public partial class TimerView : Window
     {
-        public TimerView()
+        TimerHandler _timer;
+        TimeSpan _defaultIntervalValue;
+        public TimerView(TimerHandler timer)
         {
+            _timer = timer;
+            _defaultIntervalValue = new TimeSpan(_timer.Timer.Interval.Milliseconds);
+            _timer.Timer.Tick += heartbeat;
+            _timer.Timer.Start();
             InitializeComponent();
+        }
+
+
+       /* public void SliderChanged( object sender, RoutedPropertyChangedEventArgs<double> e )
+        {
+            if (e.NewValue!=0)
+              _timer.SetSpeed( e.NewValue );
+            if (intervalValue!=null)
+                intervalValue.Content = e.NewValue.ToString();
+        }
+
+        private void intervalvalueInitialized( object sender, EventArgs e )
+        {
+            intervalValue.Content = _timer.Timer.Interval.ToString();
+        }
+
+        private void sliderInitialized( object sender, EventArgs e )
+        {
+            slider.Value = _defaultIntervalValue;
+        }*/
+
+        private void heartbeat(object sender, EventArgs a)
+        {
+            if( heart.Visibility != System.Windows.Visibility.Visible )
+                heart.Visibility = System.Windows.Visibility.Visible;
+            else
+                heart.Visibility = System.Windows.Visibility.Hidden;
         }
     }
 }
