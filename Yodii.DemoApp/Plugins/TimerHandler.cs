@@ -15,6 +15,7 @@ namespace Yodii.DemoApp
             : base( true )
         {
             _timer = new DispatcherTimer();
+            _timer.Interval = new TimeSpan( 0, 0, 0, 0, 1 );
 
         }
 
@@ -74,7 +75,7 @@ namespace Yodii.DemoApp
                 _timer.Stop();
                 _timer.Interval = new TimeSpan( 0, 0, 0, 0, Convert.ToInt32(value) );
                 _timer.Start();
-                //RaisePropertyChanged();
+                RaisePropertyChanged();
             }
         }
     }
