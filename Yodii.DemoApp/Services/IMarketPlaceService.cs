@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
@@ -7,6 +8,8 @@ namespace Yodii.DemoApp
     {
         void CheckNewProducts( IConsumer client );
 
-        void AddNewProducts( string name );
+        void AddNewProduct( MarketPlace.Product product );
+
+        ObservableCollection<MarketPlace.Product> Products { get; }
     }
 }

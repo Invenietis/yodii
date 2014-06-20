@@ -27,14 +27,14 @@ namespace Yodii.DemoApp
             return Window;
         }
 
-        public void Repair()
+        public bool Repair()
         {
-            _carRepairService.Repair();
+            return _carRepairService.Repair();
         }
 
-        public void GetEmployees()
+        public bool GetEmployees()
         {
-            _outsourcingService.GetEmployees();
+            return _outsourcingService.GetEmployees();
         }
         
         

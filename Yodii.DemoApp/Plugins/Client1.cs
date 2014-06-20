@@ -10,20 +10,32 @@ namespace Yodii.DemoApp
     {
         readonly IMarketPlaceService _market;
         readonly string _name;
+        readonly string _adress;
         ObservableCollection<MarketPlace.Product> _purchasedProducts;
 
-        public Client1( IMarketPlaceService market, string name )
+        public Client1( IMarketPlaceService market, string name, string adress )
             : base( true )
         {
             _market = market;
             _name = name;
+            _adress = adress;
             _purchasedProducts = new ObservableCollection<MarketPlace.Product>();
         }
 
-        public void BuyNewProducts()
+        public void Buy()
         {
             _market.CheckNewProducts( this );
         }
+
+        public void ReceiveDelivery( MarketPlace.Product purchasedProduct )
+        {
+            _purchasedProducts.Add( purchasedProduct );
+            RaisePropertyChanged();
+        }
+
+        public string Name { get { return _name; } }
+
+        public string Adress { get { return _adress; } }
 
         protected override Window CreateWindow()
         {

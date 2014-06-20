@@ -5,6 +5,6 @@ namespace Yodii.DemoApp
 {
     public interface IOutSourcingService : IYodiiService
     {
-        void GetEmployees();
+        bool GetEmployees();
     }
 }

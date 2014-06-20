@@ -12,9 +12,9 @@ namespace Yodii.DemoApp
         {
         }
 
-        public void Repair()
+        public bool Repair()
         {
-
+            return true;
         }
 
         protected override Window CreateWindow()

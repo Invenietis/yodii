@@ -21,9 +21,9 @@ namespace Yodii.DemoApp
             return Window;
         }
 
-        public void GetEmployees()
+        public bool GetEmployees()
         {
-
+            return true;
         }
     }
 }

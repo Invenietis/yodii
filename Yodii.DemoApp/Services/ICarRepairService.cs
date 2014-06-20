@@ -5,6 +5,6 @@ namespace Yodii.DemoApp
 {
     public interface ICarRepairService : IYodiiService
     {
-        void Repair();
+        bool Repair();
     }
 }

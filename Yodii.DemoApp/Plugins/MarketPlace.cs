@@ -1,19 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using Yodii.DemoApp.Examples.Plugins.Views;
-using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
     public class MarketPlace : MonoWindowPlugin, IMarketPlaceService
     {
-        ObservableCollection<string> _products;
-        
+        ObservableCollection<Product> _products;
+        List<IConsumer> _consumers;
+        List<IBusiness> _companies;
+
         public MarketPlace()
             : base( true ) 
         {
-            _products = new ObservableCollection<string>();
+            _products = new ObservableCollection<Product>();
+            _consumers = new List<IConsumer>();
+            _companies = new List<IBusiness>();
         }
 
         protected override Window CreateWindow()
@@ -28,22 +32,38 @@ namespace Yodii.DemoApp
 
         public void CheckNewProducts( IConsumer client )
         {
-            //Check in local market list
-            //AND/OR
-            //Ask companies for new products
-            //Get a product
-            //Throw it to delivery services
+            if( !_consumers.Contains( client ) )
+            {
+                _consumers.Add( client );
+            }
+
+            foreach( IBusiness company in _companies )
+            {
+                company.AddNewClientOrder( client );
+            }
         }
-        void IMarketPlaceService.AddNewProducts( string name )
+
+       public void AddNewProduct( Product p )
         {
-            if( _products.Contains( name ) ) return;
-            _products.Add( name );
+            if( _products.Contains( p ) ) return;
+            _products.Add( p );
             RaisePropertyChanged();
         }
 
-        public ObservableCollection<string> Products
+        public ObservableCollection<Product> Products
         {
             get { return _products; }
+        }
+
+        public List<IConsumer> Consumers
+        {
+            get { return _consumers; }
+        }
+
+        public List<IBusiness> Companies
+        {
+
+            get { return _companies; }
         }
 
         public abstract class Product : NotifyPropertyChangedBase
@@ -51,6 +71,7 @@ namespace Yodii.DemoApp
             string _name;
             ProductCategory _productCategory;
             int _price;
+            DateTime _creationDate;
 
             public string Name
             {
@@ -87,6 +108,19 @@ namespace Yodii.DemoApp
                 set
                 {
                     _price = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+            public DateTime CreationDate
+            {
+                get
+                {
+                    return _creationDate;
+                }
+                set
+                {
+                    _creationDate = value;
                     RaisePropertyChanged();
                 }
             }

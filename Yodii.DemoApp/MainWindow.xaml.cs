@@ -44,7 +44,7 @@ namespace Yodii.DemoApp
             _outsourcing = new ManPower(  );
             _delivery = new LivrExpress( _carRepair, _outsourcing );
 
-            _clients.Add( new Client1( _marketPlace, String.Empty ) );
+            _clients.Add( new Client1( _marketPlace, "Chuck Norris", "15th Street" ) );
             _companies.Add( new Company1( _marketPlace, _delivery ) );
             _standardDiscoverer = new StandardDiscoverer();
             InitializeComponent();
@@ -57,9 +57,9 @@ namespace Yodii.DemoApp
             
             _mainTimer.Start();
 
-            //_companies[0].AddNewProduct( "COUCOU" );
+            //_companies[0].AddNewProduct( );
 
-            _companies[0].Products[0].Name = "COUCOU";
+            //_companies[0].Products[0].Name = "COUCOU";
 
             ( (IYodiiPlugin)_clients[0] ).Start();
             ( (IYodiiPlugin)_companies[0] ).Start();
