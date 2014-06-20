@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Yodii.Model;
+using System.Collections.Generic;
 
 namespace Yodii.DemoApp
 {
     public interface IMarketPlaceService : IYodiiService
     {
-        void CheckNewProducts( IConsumer client );
+        bool CheckNewProducts( IConsumer client );
 
-        void AddNewProduct( MarketPlace.Product product );
+        bool PlaceOrder( IClientInfo clientInfo, IProductInfo product);
 
-        ObservableCollection<MarketPlace.Product> Products { get; }
+        void AddNewProduct( IProductInfo product /*, IBusiness ? on verra*/);
+
+        ObservableCollection<IProductInfo> Products { get; }
     }
 }

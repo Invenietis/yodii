@@ -5,9 +5,9 @@ namespace Yodii.DemoApp
 {
     public interface IBusiness
     {
-        void AddNewProduct( string name, ProductCategory category, int price );
+        void AddNewClientOrder( IConsumer client );//je serais pour l'enlever au profit de celui du dessous, à voir.
 
-        void AddNewClientOrder( IConsumer client );
+        bool NewOrder( IClientInfo clientInfo, IProductInfo product);
 
         void AddNewDeliveryOrder();            
     }

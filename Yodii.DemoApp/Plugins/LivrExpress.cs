@@ -36,11 +36,9 @@ namespace Yodii.DemoApp
         {
             return _outsourcingService.GetEmployees();
         }
-        
-        
-        void IDeliveryService.Deliver()
+
+        void IDeliveryService.Deliver( IProductInfo product, IClientInfo client )
         {
-            
         }
     }
 }

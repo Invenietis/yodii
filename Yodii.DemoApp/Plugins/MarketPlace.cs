@@ -66,12 +66,14 @@ namespace Yodii.DemoApp
             get { return _companies; }
         }
 
-        public abstract class Product : NotifyPropertyChangedBase
+        public abstract class Product : NotifyPropertyChangedBase, IProductInfo
         {
             string _name;
             ProductCategory _productCategory;
             int _price;
             DateTime _creationDate;
+
+            public string Producer { get; set; }// juste pour etre conforme à IproductInfo
 
             public string Name
             {

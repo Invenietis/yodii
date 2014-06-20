@@ -37,6 +37,8 @@ namespace Yodii.DemoApp
 
         public string Adress { get { return _adress; } }
 
+        public IClientInfo Info { get { return new ClientInfo( _name, _adress ); } }
+
         protected override Window CreateWindow()
         {
             Window = new Client1View()

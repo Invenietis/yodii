@@ -5,6 +5,6 @@ namespace Yodii.DemoApp
 {
     public interface IDeliveryService : IYodiiService
     {
-        void Deliver();
+        void Deliver(IProductInfo product, IClientInfo destination);
     }
 }

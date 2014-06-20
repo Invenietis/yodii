@@ -21,11 +21,11 @@ namespace Yodii.DemoApp
             return Window;
         }
 
-        void ISecuredDeliveryService.DeliverSecurely()
+        void ISecuredDeliveryService.DeliverSecurely( IProductInfo product, IClientInfo client )
         {
         }
 
-        void IDeliveryService.Deliver()
+        void IDeliveryService.Deliver( IProductInfo product, IClientInfo client )
         {
         }
     }

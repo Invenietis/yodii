@@ -12,5 +12,7 @@ namespace Yodii.DemoApp
         void Stop();
 
         void Start();
+
+        //ici va falloir ajouter de quoi s'inscrire à l'event du timer, sinon ca sert pas à grd chose.
     }
 }
