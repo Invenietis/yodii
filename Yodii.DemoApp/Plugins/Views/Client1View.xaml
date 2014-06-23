@@ -3,9 +3,32 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Yodii.DemoApp"
              mc:Ignorable="d" 
              Title="{Binding Path=Name}"  Height="350" Width="525">
     <Grid>
-        <Image Source="/Plugins/Assets/Icons/client.png"></Image>
+        <Image Source="/Plugins/Assets/Icons/client.png" Height="200" Width="200" HorizontalAlignment="Left"></Image>
+
+        <ItemsControl ItemsSource="{Binding Path=AvailableProducts}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"></ColumnDefinition>
+                            <ColumnDefinition Width="1*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{Binding }" Grid.Column="0"></TextBlock>
+                        <TextBlock Text="{Binding }" Grid.Column="1"></TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        
+        <StackPanel HorizontalAlignment="Right">
+            <Button Click="Buy_Button_Click" Width="109">Buy</Button>
+        </StackPanel>
+
     </Grid>
+
 </Window>

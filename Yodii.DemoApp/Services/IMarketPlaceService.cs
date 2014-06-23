@@ -7,12 +7,12 @@ namespace Yodii.DemoApp
 {
     public interface IMarketPlaceService : IYodiiService
     {
-        bool CheckNewProducts( IConsumer client );
+        bool PlaceOrder( IClientInfo clientInfo, MarketPlace.Product product = null );
 
-        bool PlaceOrder( IClientInfo clientInfo, IProductInfo product);
+        void AddNewProduct( MarketPlace.Product product );
 
-        void AddNewProduct( IProductInfo product /*, IBusiness ? on verra*/);
+        ObservableCollection<MarketPlace.Product> Products { get; }
 
-        ObservableCollection<IProductInfo> Products { get; }
+        List<IConsumer> Consumers { get; }
     }
 }

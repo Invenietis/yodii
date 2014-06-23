@@ -5,6 +5,6 @@ namespace Yodii.DemoApp
 {
     public interface ISecuredDeliveryService : IDeliveryService
     {
-        void DeliverSecurely(IProductInfo product, IClientInfo destination);
+        void DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order );
     }
 }

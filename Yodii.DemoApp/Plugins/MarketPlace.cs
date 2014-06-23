@@ -8,14 +8,14 @@ namespace Yodii.DemoApp
 {
     public class MarketPlace : MonoWindowPlugin, IMarketPlaceService
     {
-        ObservableCollection<Product> _products;
+        ObservableCollection<MarketPlace.Product> _products;
         List<IConsumer> _consumers;
         List<IBusiness> _companies;
 
         public MarketPlace()
             : base( true ) 
         {
-            _products = new ObservableCollection<Product>();
+            _products = new ObservableCollection<MarketPlace.Product>();
             _consumers = new List<IConsumer>();
             _companies = new List<IBusiness>();
         }
@@ -30,27 +30,14 @@ namespace Yodii.DemoApp
             return Window;
         }
 
-        public void CheckNewProducts( IConsumer client )
-        {
-            if( !_consumers.Contains( client ) )
-            {
-                _consumers.Add( client );
-            }
-
-            foreach( IBusiness company in _companies )
-            {
-                company.AddNewClientOrder( client );
-            }
-        }
-
-       public void AddNewProduct( Product p )
+        public void AddNewProduct( MarketPlace.Product p )
         {
             if( _products.Contains( p ) ) return;
             _products.Add( p );
             RaisePropertyChanged();
         }
 
-        public ObservableCollection<Product> Products
+        public ObservableCollection<MarketPlace.Product> Products
         {
             get { return _products; }
         }
@@ -66,14 +53,13 @@ namespace Yodii.DemoApp
             get { return _companies; }
         }
 
-        public abstract class Product : NotifyPropertyChangedBase, IProductInfo
+        public abstract class Product : NotifyPropertyChangedBase
         {
             string _name;
             ProductCategory _productCategory;
             int _price;
             DateTime _creationDate;
-
-            public string Producer { get; set; }// juste pour etre conforme à IproductInfo
+            IBusiness _company;
 
             public string Name
             {
@@ -126,6 +112,31 @@ namespace Yodii.DemoApp
                     RaisePropertyChanged();
                 }
             }
+
+            public IBusiness Company 
+            {
+                get
+                {
+                    return _company;
+                }
+                set
+                { 
+                    _company = value;
+                    RaisePropertyChanged();
+                }
+            }
+
+        }
+
+        public bool PlaceOrder( IClientInfo clientInfo, MarketPlace.Product productInfo = null )
+        {
+            productInfo.Company.NewOrder( clientInfo, productInfo );
+            return true;
+        }
+
+        ObservableCollection<MarketPlace.Product> IMarketPlaceService.Products
+        {
+            get { return _products; }
         }
     }
 }

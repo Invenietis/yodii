@@ -7,9 +7,12 @@ namespace Yodii.DemoApp
 {
     public class LaPoste : MonoWindowPlugin, ISecuredDeliveryService
     {
-        public LaPoste()
+        readonly IMarketPlaceService _marketPlace;
+
+        public LaPoste( IMarketPlaceService market )
             : base( true ) 
         {
+            _marketPlace = market;
         }
 
         protected override Window CreateWindow()
@@ -21,12 +24,22 @@ namespace Yodii.DemoApp
             return Window;
         }
 
-        void ISecuredDeliveryService.DeliverSecurely( IProductInfo product, IClientInfo client )
+        void ISecuredDeliveryService.DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order )
         {
+            IConsumer client = _marketPlace.Consumers.Find( c => c.Info == order.Item1 );
+            if( client != null )
+            {
+                client.ReceiveDelivery( order.Item2 );
+            }
         }
 
-        void IDeliveryService.Deliver( IProductInfo product, IClientInfo client )
+        void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )
         {
+            IConsumer client = _marketPlace.Consumers.Find( c => c.Info == order.Item1 );
+            if( client != null )
+            {
+                client.ReceiveDelivery( order.Item2 );
+            }
         }
     }
 }

@@ -9,12 +9,14 @@ namespace Yodii.DemoApp
     {
         readonly ICarRepairService _carRepairService;
         readonly IOutSourcingService _outsourcingService;
+        readonly IMarketPlaceService _marketPlace;
 
-        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService )
+        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService, IMarketPlaceService market )
             : base( true )
         {
             _carRepairService = carRepairService;
             _outsourcingService = outsourcingService;
+            _marketPlace = market;
         }
 
         protected override Window CreateWindow()
@@ -37,8 +39,13 @@ namespace Yodii.DemoApp
             return _outsourcingService.GetEmployees();
         }
 
-        void IDeliveryService.Deliver( IProductInfo product, IClientInfo client )
+        void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )
         {
+            IConsumer client = _marketPlace.Consumers.Find( c => c.Info == order.Item1 );
+            if( client != null )
+            {
+                client.ReceiveDelivery( order.Item2 );
+            }
         }
     }
 }

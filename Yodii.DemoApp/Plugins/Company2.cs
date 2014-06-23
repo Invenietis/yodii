@@ -12,6 +12,7 @@ namespace Yodii.DemoApp
         readonly IMarketPlaceService _marketPlace;
         readonly IDeliveryService _delivery;
         ObservableCollection<ProductCompany2> _products;
+        ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
 
         public Company2( IMarketPlaceService marketPlace, IDeliveryService delivery )
             : base( true )
@@ -19,6 +20,7 @@ namespace Yodii.DemoApp
             _marketPlace = marketPlace;
             _delivery = delivery;
             _products = new ObservableCollection<ProductCompany2>();
+            _orders = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
         }
 
         protected override Window CreateWindow()
@@ -32,32 +34,49 @@ namespace Yodii.DemoApp
 
         public class ProductCompany2 : Yodii.DemoApp.MarketPlace.Product
         {
-            public ProductCompany2( string name, ProductCategory category, int price, DateTime creationDate )
+            public ProductCompany2( string name, ProductCategory category, int price, DateTime creationDate, Company2 company )
             {
                 Name = name;
                 ProductCategory = category;
                 Price = price;
                 CreationDate = creationDate;
+                Company = company;
             }
         }
 
-        public void AddNewProduct( string name, ProductCategory category, int price )
+        internal void AddNewProduct( string name, ProductCategory category, int price )
         {
             Debug.Assert( !string.IsNullOrEmpty( name ) );
             Debug.Assert( price > 0 );
 
-            ProductCompany2 p = new ProductCompany2( name, category, price, DateTime.Now );
+            ProductCompany2 p = new ProductCompany2( name, category, price, DateTime.Now, this );
             _marketPlace.AddNewProduct( p );
             _products.Add( p );
         }
 
-        public void AddNewClientOrder( IConsumer client )
+        public bool NewOrder( IClientInfo clientInfo, MarketPlace.Product product )
         {
+            Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
+            if( _orders.Contains( order ) ) return false;
+            _orders.Add( order );
+            HandleOrders();
+            return true;
         }
 
-        public void AddNewDeliveryOrder()
+        public void HandleOrders()
         {
-
+            if( _orders.Count >= 3 )
+            {
+                foreach( Tuple<IClientInfo, MarketPlace.Product> order in _orders )
+                {
+                    _delivery.Deliver( order );
+                }
+                _orders.Clear();
+            }
         }
+
+        public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Orders { get { return _orders; } }
+
+        public ObservableCollection<ProductCompany2> Products { get { return _products; } }
     }
 }

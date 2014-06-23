@@ -63,12 +63,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="other\ClientInfo.cs" />
-    <Compile Include="other\ProductInfo.cs" />
+    <Compile Include="Plugins\ClientInfo.cs" />
     <Compile Include="Plugins\NotifyPropertyChangedBase.cs" />
     <Compile Include="Plugins\ProductCategory.cs" />
     <Compile Include="Services\IBusiness.cs" />
     <Compile Include="Services\ICarRepairService.cs" />
+    <Compile Include="Services\IClientInfo.cs" />
     <Compile Include="Services\IConsumer.cs" />
     <Compile Include="Services\IDeliveryService.cs" />
     <Compile Include="Services\IMarketPlaceService.cs" />

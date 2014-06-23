@@ -9,22 +9,20 @@ namespace Yodii.DemoApp
     public class Client1 : MonoWindowPlugin, IConsumer
     {
         readonly IMarketPlaceService _market;
-        readonly string _name;
-        readonly string _adress;
+        readonly ClientInfo _clientInfo;
         ObservableCollection<MarketPlace.Product> _purchasedProducts;
 
         public Client1( IMarketPlaceService market, string name, string adress )
             : base( true )
         {
             _market = market;
-            _name = name;
-            _adress = adress;
+            _clientInfo = new ClientInfo( name, adress );
             _purchasedProducts = new ObservableCollection<MarketPlace.Product>();
         }
 
-        public void Buy()
+        public void Buy( MarketPlace.Product product = null )
         {
-            _market.CheckNewProducts( this );
+            _market.PlaceOrder( _clientInfo, product );
         }
 
         public void ReceiveDelivery( MarketPlace.Product purchasedProduct )
@@ -33,11 +31,11 @@ namespace Yodii.DemoApp
             RaisePropertyChanged();
         }
 
-        public string Name { get { return _name; } }
+        public IClientInfo Info { get { return _clientInfo; } }
 
-        public string Adress { get { return _adress; } }
+        public ObservableCollection<MarketPlace.Product> PurchasedProducts { get { return _purchasedProducts; } }
 
-        public IClientInfo Info { get { return new ClientInfo( _name, _adress ); } }
+        public ObservableCollection<MarketPlace.Product> AvailableProducts { get { return _market.Products; } }
 
         protected override Window CreateWindow()
         {
