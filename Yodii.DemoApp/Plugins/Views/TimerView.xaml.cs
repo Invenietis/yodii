@@ -32,30 +32,26 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
         }
 
 
-       /* public void SliderChanged( object sender, RoutedPropertyChangedEventArgs<double> e )
-        {
-            if (e.NewValue!=0)
-              _timer.SetSpeed( e.NewValue );
-            if (intervalValue!=null)
-                intervalValue.Content = e.NewValue.ToString();
-        }
-
-        private void intervalvalueInitialized( object sender, EventArgs e )
-        {
-            intervalValue.Content = _timer.Timer.Interval.ToString();
-        }
-
-        private void sliderInitialized( object sender, EventArgs e )
-        {
-            slider.Value = _defaultIntervalValue;
-        }*/
-
         private void heartbeat(object sender, EventArgs a)
         {
             if( heart.Visibility != System.Windows.Visibility.Visible )
                 heart.Visibility = System.Windows.Visibility.Visible;
             else
                 heart.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void Button_Click( object sender, RoutedEventArgs e )
+        {
+                if(  _timer.Timer.IsEnabled )
+                {
+                        _timer.Timer.Stop();
+                    ButtonPause.Content="Start";
+                }
+                  else
+                {
+                        _timer.Timer.Start();
+                    ButtonPause.Content="Stop";
+                }
         }
     }
 }
