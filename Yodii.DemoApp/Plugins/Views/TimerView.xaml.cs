@@ -29,6 +29,12 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
             _timer.Timer.Tick += heartbeat;
             _timer.Timer.Start();
             InitializeComponent();
+
+            //Binding myBinding = new Binding( "StartStop" );
+
+            //myBinding.Source = timer;
+            //ButtonPause.SetBinding( Button.ContentProperty, myBinding );
+
         }
 
 
@@ -45,13 +51,14 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
                 if(  _timer.Timer.IsEnabled )
                 {
                         _timer.Timer.Stop();
-                    ButtonPause.Content="Start";
+                        _timer.StartStop = "";
                 }
                   else
                 {
                         _timer.Timer.Start();
-                    ButtonPause.Content="Stop";
+                        _timer.StartStop = "";
                 }
         }
+
     }
 }

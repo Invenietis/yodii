@@ -10,10 +10,11 @@ namespace Yodii.DemoApp
 
         protected void RaisePropertyChanged( [CallerMemberName] string caller = null )
         {
+            var h =PropertyChanged;
             Debug.Assert( caller != null );
-            if( PropertyChanged != null )
+            if( h != null )
             {
-                PropertyChanged( this, new PropertyChangedEventArgs( caller ) );
+                h( this, new PropertyChangedEventArgs( caller ) );
             }
         }
     }

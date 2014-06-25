@@ -57,6 +57,7 @@ namespace Yodii.DemoApp
         {
             _timer.Stop();
             if( Window != null ) Window.Close();
+            StartStop = "0";
         }
 
         void ITimerService.Start()
@@ -67,6 +68,7 @@ namespace Yodii.DemoApp
                 DataContext = this
             };
             Window.Show();
+            StartStop = "0";
         }
 
         public DispatcherTimer Timer
@@ -85,9 +87,23 @@ namespace Yodii.DemoApp
                 _timer.Stop();
                 _timer.Interval = new TimeSpan( 0, 0, 0, 0, Convert.ToInt32(value) );
                 _timer.Start();
+                StartStop = "0";
                 RaisePropertyChanged();
             }
         }
-
+        string _startStop;
+        public string StartStop
+        {
+            get
+            {
+               // return _timer.IsEnabled ? "Stop" : "Start";
+                return _startStop;
+            }
+            set
+            {
+                _startStop = value + "a";
+                RaisePropertyChanged();
+            }
+        }
     }
 }

@@ -15,6 +15,6 @@
             <Image Height="37" Width="81"/>
                 <Image x:Name="heart" Height="161" Width="272" Source="/Yodii.DemoApp;component/Plugins/Assets/Icons/heart.bmp" ToolTip="heart"/>
             </Grid>
-            <Button x:Name="ButtonPause" Width="75" Content="Stop" Click="Button_Click"  />        </StackPanel>
+            <Button x:Name="ButtonPause" Width="75" Content="{Binding Path=StartStop , UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Click="Button_Click" />        </StackPanel>
      </Grid>
 </Window>
