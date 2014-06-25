@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Yodii.DemoApp
 {
-    public abstract class NotifyPropertyChangedBase
+    public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
