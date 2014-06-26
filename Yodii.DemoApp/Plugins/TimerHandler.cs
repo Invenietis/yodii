@@ -25,8 +25,18 @@ namespace Yodii.DemoApp
             {
                 DataContext = this
             };
-
             return Window;
+        }
+        public void SubscribeToTimerEvent( Action<object, EventArgs> methodToAdd )
+        {           
+            EventHandler handler = new EventHandler(methodToAdd);
+            _timer.Tick += handler;
+            
+        }
+        public void UnsubscribeToTimerEvent( Action<object, EventArgs> methodToRemove )
+        {
+            EventHandler handler = new EventHandler( methodToRemove );
+            _timer.Tick -= handler;
         }
 
         void ITimerService.IncreaseSpeed()
@@ -78,5 +88,6 @@ namespace Yodii.DemoApp
                 RaisePropertyChanged();
             }
         }
+
     }
 }

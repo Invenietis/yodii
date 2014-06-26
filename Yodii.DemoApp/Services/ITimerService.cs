@@ -13,6 +13,7 @@ namespace Yodii.DemoApp
 
         void Start();
 
-        //ici va falloir ajouter de quoi s'inscrire à l'event du timer, sinon ca sert pas à grd chose.
+        void SubscribeToTimerEvent( Action<object, EventArgs>  methodToAdd );
+        void UnsubscribeToTimerEvent( Action<object, EventArgs>  methodToRemove );
     }
 }
