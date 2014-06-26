@@ -59,6 +59,7 @@ namespace Yodii.DemoApp
             Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
             if( _orders.Contains( order ) ) return false;
             _orders.Add( order );
+            RaisePropertyChanged( "newOrder" );
             HandleOrders();
             return true;
         }

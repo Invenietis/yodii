@@ -23,46 +23,43 @@ namespace Yodii.DemoApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        readonly ITimerService _mainTimer;
-        readonly IMarketPlaceService _marketPlace;
-        readonly ICarRepairService _carRepair;
-        readonly IOutSourcingService _outsourcing;
-        readonly IDeliveryService _delivery;
+        //readonly ITimerService _mainTimer;
+        //readonly IMarketPlaceService _marketPlace;
+        //readonly ICarRepairService _carRepair;
+        //readonly IOutSourcingService _outsourcing;
+        //readonly IDeliveryService _delivery;
 
-        readonly List<Client1> _clients;
-        readonly List<Company1> _companies;
-        readonly StandardDiscoverer _standardDiscoverer;
-        IDiscoveredInfo _discoveredInfo;
+        //readonly List<Client1> _clients;
+        //readonly List<Company1> _companies;
+        //readonly StandardDiscoverer _standardDiscoverer;
+        //IDiscoveredInfo _discoveredInfo;
+        readonly DemoManager _manager;
 
         public MainWindow()
         {
-            _clients = new List<Client1>();
-            _companies = new List<Company1>();
-            _mainTimer = new TimerHandler();
-            _marketPlace = new MarketPlace( );
-            _carRepair = new Garage( );
-            _outsourcing = new ManPower(  );
-            _delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
-
-            _clients.Add( new Client1( _marketPlace, "Chuck Norris", "15th Street" ) );
-            _companies.Add( new Company1( _marketPlace, _delivery ) );
-            _standardDiscoverer = new StandardDiscoverer();
+            _manager = new DemoManager();
+            _manager.Initialize();
             InitializeComponent();
         }
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
-            _standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
-            _discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
+            _manager.Start();
+            //_standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
+            //_discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
+            //_companies[0].AddNewProduct( "lol", ProductCategory.Entertainment, 10 );
+            //_companies[0].AddNewProduct( "lal", ProductCategory.Entertainment, 10 );
+            //_companies[0].AddNewProduct( "lul", ProductCategory.Entertainment, 10 );
+
             
-            _mainTimer.Start();
+            //_mainTimer.Start();
 
             //_companies[0].AddNewProduct( );
 
             //_companies[0].Products[0].Name = "COUCOU";
 
-            ( (IYodiiPlugin)_clients[0] ).Start();
-            ( (IYodiiPlugin)_companies[0] ).Start();
+            //( (IYodiiPlugin)_clients[0] ).Start();
+            //( (IYodiiPlugin)_companies[0] ).Start();
         }
     }
 }

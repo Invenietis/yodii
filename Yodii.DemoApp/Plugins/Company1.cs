@@ -10,14 +10,16 @@ namespace Yodii.DemoApp
     {
         readonly IMarketPlaceService _marketPlace;
         readonly IDeliveryService _delivery;
+        readonly string _name;
         ObservableCollection<ProductCompany1> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
 
-        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService )
+        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService, string name )
             : base( true )
         {
             _marketPlace = marketPlace;
             _delivery = deliveryService;
+            _name = name;
             _products = new ObservableCollection<ProductCompany1>();
             _orders = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
         }
@@ -30,7 +32,6 @@ namespace Yodii.DemoApp
             ProductCompany1 p = new ProductCompany1( name, category, price, DateTime.Now, this );
             _marketPlace.AddNewProduct( p );
             _products.Add( p );
-            //RaiseNewNotification( "New Product: " + name );
         }
       
         public ObservableCollection<ProductCompany1> Products
@@ -41,6 +42,14 @@ namespace Yodii.DemoApp
         public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Orders
         {
             get { return _orders; }
+        }
+
+        public string Name 
+        { 
+            get 
+            { 
+                return _name; 
+            } 
         }
 
         protected override Window CreateWindow()
@@ -67,22 +76,20 @@ namespace Yodii.DemoApp
 
         public void HandleOrders()
         {
-            if( _orders.Count >= 3 )
+            foreach( Tuple<IClientInfo, MarketPlace.Product> order in _orders )
             {
-                foreach( Tuple<IClientInfo, MarketPlace.Product> order in _orders )
-                {
-                    _delivery.Deliver( order );
-                }
-                _orders.Clear();
+                _delivery.Deliver( order );
             }
         }
         
-        public bool NewOrder( IClientInfo clientInfo, MarketPlace.Product product )
+        public bool NewOrder( IClientInfo clientInfo, MarketPlace.Product product = null )
         {
             Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
             if( _orders.Contains( order ) ) return false;
             _orders.Add( order );
-            HandleOrders();
+            RaisePropertyChanged( "newOrder" );
+            if( _orders.Count >= 3 )
+                HandleOrders();
             return true;
         }
     }

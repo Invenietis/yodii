@@ -130,8 +130,7 @@ namespace Yodii.DemoApp
 
         public bool PlaceOrder( IClientInfo clientInfo, MarketPlace.Product productInfo = null )
         {
-            productInfo.Company.NewOrder( clientInfo, productInfo );
-            return true;
+            return productInfo.Company.NewOrder( clientInfo, productInfo );
         }
 
         ObservableCollection<MarketPlace.Product> IMarketPlaceService.Products

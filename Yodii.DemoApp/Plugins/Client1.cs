@@ -16,13 +16,15 @@ namespace Yodii.DemoApp
             : base( true )
         {
             _market = market;
+            _market.Consumers.Add( this );
             _clientInfo = new ClientInfo( name, adress );
             _purchasedProducts = new ObservableCollection<MarketPlace.Product>();
         }
 
         public void Buy( MarketPlace.Product product = null )
         {
-            _market.PlaceOrder( _clientInfo, product );
+            if( product != null && _market.Products.Contains( product ) )
+                _market.PlaceOrder( _clientInfo, product );
         }
 
         public void ReceiveDelivery( MarketPlace.Product purchasedProduct )

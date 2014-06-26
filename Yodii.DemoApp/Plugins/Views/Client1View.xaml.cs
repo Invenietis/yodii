@@ -10,11 +10,17 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
         public Client1View()
         {
             InitializeComponent();
+
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Top = 0;
+            Left = 0;
+            MinHeight = MinWidth = MaxHeight = MaxWidth = 550;
         }
 
         private void Buy_Button_Click( object sender, RoutedEventArgs e )
         {
-            ( (Client1)DataContext ).Buy();
+            MarketPlace.Product p = ( MarketPlace.Product )ProductGrid.SelectedItem;
+            ( (Client1)DataContext ).Buy( p );
         }
     }
 }
