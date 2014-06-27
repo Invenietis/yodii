@@ -14,7 +14,7 @@ namespace Yodii.DemoApp
         //string[,,] _data;
         List<Client1> _clients;
         List<Company1> _companies;
-        
+
         string[,] _clientsData;
         string[] _companyData;
         List<Tuple<string,string>> _test;
@@ -30,12 +30,12 @@ namespace Yodii.DemoApp
             _carRepair = new Garage();
             _outsourcing = new ManPower();
             //_delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
-            _delivery = new LaPoste( _marketPlace, _mainTimer,_outsourcing );
+            _delivery = new LaPoste( _marketPlace, _mainTimer, _outsourcing );
             _r = new Random();
         }
 
         public void Initialize()
-        {            
+        {
             _clientsData = new string[,]
             {             
                 {"Buyer One","1st Street"},
@@ -74,7 +74,7 @@ namespace Yodii.DemoApp
                 "LG",
                 //...
             };
-           
+
             //_standardDiscoverer = new StandardDiscoverer();
         }
 
@@ -85,7 +85,7 @@ namespace Yodii.DemoApp
 
         public bool Start( int nbCompanies, int nbClients )
         {
-            if( !( nbClients > 0 || nbCompanies > 0 ) ) return false;
+            if( !(nbClients > 0 || nbCompanies > 0) ) return false;
 
             for( int i = 0; i < nbClients; i++ )
             {
@@ -110,9 +110,10 @@ namespace Yodii.DemoApp
 
             //_companies[0].Products[0].Name = "COUCOU";
 
-            ( (IYodiiPlugin)_clients[0] ).Start();
-            ( (IYodiiPlugin)_companies[0] ).Start();
-            ((IYodiiPlugin) _delivery).Start();
+            ((IYodiiPlugin)_clients[0]).Start();
+            ((IYodiiPlugin)_companies[0]).Start();
+            ((IYodiiPlugin)_delivery).Start();
+            ((IYodiiPlugin)_outsourcing).Start();
 
             return true;
         }

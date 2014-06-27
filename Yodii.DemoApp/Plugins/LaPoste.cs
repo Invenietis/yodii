@@ -44,6 +44,7 @@ namespace Yodii.DemoApp
             _toBeDelivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
             _toBeDeliveredSecurely = new ObservableCollection<ToBeDeliveredSecurely>();
             _timer.SubscribeToTimerEvent( TimeElapsed );
+            _tmpEmployees = 0;
         }
 
         protected override Window CreateWindow()
@@ -66,19 +67,24 @@ namespace Yodii.DemoApp
             IConsumer client = _marketPlace.Consumers.Find( c => c.Info == order.Item1 );
             _toBeDelivered.Add( order );
         }
+        int _tmpEmployees;
         void TimeElapsed( object sender, EventArgs e )
         {
-            int tmpEmployees=0;
-            while( _toBeDeliveredSecurely.Count > _permanentEmployees+tmpEmployees )
+            if( _toBeDeliveredSecurely.Count < _permanentEmployees )
+            {
+                _outsourcingService.ReturnEmployees( _tmpEmployees );
+                _tmpEmployees = 0;
+            }
+            while( _toBeDeliveredSecurely.Count > _permanentEmployees+_tmpEmployees )
             {
                 if( _outsourcingService.GetEmployees() )
-                    tmpEmployees++;
+                    _tmpEmployees++;
                 else
                     break;
             }
 
             int count=_toBeDeliveredSecurely.Count;
-            int i=tmpEmployees+_permanentEmployees;
+            int i=_tmpEmployees+_permanentEmployees;
             int j=0;
             while(i>0 && j<count)
             {

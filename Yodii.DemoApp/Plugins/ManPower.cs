@@ -10,8 +10,11 @@ namespace Yodii.DemoApp
         public ManPower()
             : base( true )
         {
+            _nbEmployees = _maxAvailable;
         }
-
+        const int _maxAvailable=20;
+        int _nbEmployees;
+        public int NBemployees { get { return _nbEmployees; } set { _nbEmployees = value; RaisePropertyChanged(); } }
         protected override Window CreateWindow()
         {
             Window = new ManPowerView()
@@ -23,7 +26,12 @@ namespace Yodii.DemoApp
 
         public bool GetEmployees()
         {
+            NBemployees--;
             return true;
+        }
+        public void  ReturnEmployees(int nbReturned)
+        {
+
         }
     }
 }

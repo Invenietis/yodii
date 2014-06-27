@@ -4,8 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             Title="Manpower" Height="350" Width="525">
+             Title="Manpower" Height="144.03" Width="245.895">
     <Grid>
-            
+        <Label Content="Current number of available workers" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="32" Width="213"/>
+        <Label Content="{Binding Path=NBemployees}" HorizontalAlignment="Left" Margin="104,42,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.312,0.292"/>
+
     </Grid>
 </Window>
