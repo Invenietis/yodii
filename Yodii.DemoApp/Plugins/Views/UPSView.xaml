@@ -5,7 +5,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              Title="UPS" Height="350" Width="525">
-    <Grid>
-            
-    </Grid>
+    <Border Background="#A0F0FF" BorderThickness="5px" BorderBrush="Black" Opacity="1">
+        <StackPanel Background="#F2C539">
+            <Label Content="Delivered" HorizontalAlignment="Left"  VerticalAlignment="Top" RenderTransformOrigin="-0.324,-0.117" Height="30"/>
+
+            <DataGrid x:Name="NonSecure" ItemsSource="{Binding Delivered}" AutoGenerateColumns="False" Height="121"   HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True"  VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Item1.Name}" Header="Client to be delivered" Width="*"/>
+                    <DataGridTextColumn Binding="{Binding Item2.Name}" Header="Product name" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+        </StackPanel>
+    </Border>
 </Window>
