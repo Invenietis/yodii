@@ -13,7 +13,7 @@ namespace Yodii.DemoApp
         readonly string _name;
         ObservableCollection<ProductCompany1> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
-
+        
         public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService, string name )
             : base( true )
         {
@@ -43,6 +43,8 @@ namespace Yodii.DemoApp
         {
             get { return _orders; }
         }
+
+        public IMarketPlaceService MarketPlace { get { return _marketPlace; } }
 
         public string Name 
         { 

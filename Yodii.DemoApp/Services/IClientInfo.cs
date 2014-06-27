@@ -6,6 +6,6 @@ namespace Yodii.DemoApp
     {
         string Name { get; }
 
-        string Adress { get; }
+        string Address { get; }
     }
 }

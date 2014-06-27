@@ -8,8 +8,10 @@
              Title="{Binding Path=Info.Name}" Height="350" Width="525">
     <Grid>
         <Image Source="/Plugins/Assets/Icons/client.png" Height="50" Width="50" HorizontalAlignment="Left" Margin="10,10,0,260"></Image>
-        <Label Content="Currently Available Products" Margin="170,10,177,281"></Label>
-        <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=AvailableProducts}" AutoGenerateColumns="False" Height="200" Width="400"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="60,57,57,63" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+        <Label Content="Currently Available Products" Margin="175,113,172,178"></Label>
+        <Label Content="{Binding Path=Info.Name}" HorizontalAlignment="Left" Margin="77,11,0,0" VerticalAlignment="Top"/>
+        <Label Content="{Binding Path=Info.Address}" HorizontalAlignment="Left" Margin="77,42,0,0" VerticalAlignment="Top"/>
+        <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=AvailableProducts}" AutoGenerateColumns="False" Height="118" Width="400"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="61,147,56,55" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="*">
                 </DataGridTextColumn>
