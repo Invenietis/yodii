@@ -17,20 +17,22 @@ namespace Yodii.DemoApp
         readonly IOutSourcingService _outsourcingService;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _toBeDelivered;
         ObservableCollection<ToBeDeliveredSecurely> _toBeDeliveredSecurely;
-        ObservableCollection<ToBeDeliveredSecurely> SecuredDelivery { get { return _toBeDeliveredSecurely; } }
+        public ObservableCollection<ToBeDeliveredSecurely> SecuredDelivery { get { return _toBeDeliveredSecurely; } }
+        public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Delivery { get { return _toBeDelivered; } }
+
         const int _permanentEmployees=5;
         
         
-        class ToBeDeliveredSecurely
+        public class ToBeDeliveredSecurely
         {
             public ToBeDeliveredSecurely( IClientInfo clientInfo, MarketPlace.Product product)
             {
                 ClientInfo = clientInfo;
                 Product = product;
             }
-            public readonly IClientInfo ClientInfo;
-            public readonly MarketPlace.Product Product;
-            public int NbBeforeReturned;
+            public  IClientInfo ClientInfo { get; private set; }
+            public  MarketPlace.Product Product { get; private set; }
+            public int NbBeforeReturned{get; set;}
         }
 
         public LaPoste( IMarketPlaceService market, ITimerService timer, IOutSourcingService outSourcingService )
@@ -38,10 +40,10 @@ namespace Yodii.DemoApp
         {
             _marketPlace = market;
             _timer = timer;
+            _outsourcingService = outSourcingService;
             _toBeDelivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
             _toBeDeliveredSecurely = new ObservableCollection<ToBeDeliveredSecurely>();
             _timer.SubscribeToTimerEvent( TimeElapsed );
-            CreateWindow();
         }
 
         protected override Window CreateWindow()

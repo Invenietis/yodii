@@ -29,7 +29,8 @@ namespace Yodii.DemoApp
             _marketPlace = new MarketPlace();
             _carRepair = new Garage();
             _outsourcing = new ManPower();
-            _delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
+            //_delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
+            _delivery = new LaPoste( _marketPlace, _mainTimer,_outsourcing );
             _r = new Random();
         }
 
@@ -111,6 +112,7 @@ namespace Yodii.DemoApp
 
             ( (IYodiiPlugin)_clients[0] ).Start();
             ( (IYodiiPlugin)_companies[0] ).Start();
+            ((IYodiiPlugin) _delivery).Start();
 
             return true;
         }

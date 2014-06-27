@@ -6,12 +6,25 @@
              mc:Ignorable="d" 
              Title="LaPoste" Height="350" Width="525">
     <Grid Background="#FFFDFD3A">
-        <ListView  x:Name="NonSecureList"   ItemsSource="{Binding Path=_toBeDeliveredSecurely , UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" HorizontalAlignment="Left" Height="226" Margin="10,84,0,0" VerticalAlignment="Top" Width="100">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=SecuredDelivery}" AutoGenerateColumns="False" Height="107" Width="400"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="60,42,57,171" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding ClientInfo.Name}" Header="Client to be delivered" Width="*">
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Product.Name}" Header="Product name" Width="*">
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding NBBeforeReturned}" Header="Delivery Tries Before Return" Width="*">
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DataGrid x:Name="NonSecure" ItemsSource="{Binding Path=Delivery}" AutoGenerateColumns="False" Height="121" Width="400"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="60,189,57,10" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Item1.Name}" Header="Client to be delivered" Width="*">
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Item2.Name}" Header="Product name" Width="*">
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Label Content="Secured Delivery" HorizontalAlignment="Left" Margin="211,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.123,-0.644" Height="27"/>
+        <Label Content="Non Secured Delivery" HorizontalAlignment="Left" Margin="199,154,0,0" VerticalAlignment="Top" RenderTransformOrigin="-0.324,-0.117" Height="30"/>
     </Grid>
 </Window>
