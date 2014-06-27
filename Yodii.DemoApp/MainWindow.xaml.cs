@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -44,22 +45,21 @@ namespace Yodii.DemoApp
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
-            _manager.Start();
-            //_standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
-            //_discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
-            //_companies[0].AddNewProduct( "lol", ProductCategory.Entertainment, 10 );
-            //_companies[0].AddNewProduct( "lal", ProductCategory.Entertainment, 10 );
-            //_companies[0].AddNewProduct( "lul", ProductCategory.Entertainment, 10 );
+            if( !( string.IsNullOrEmpty( nbClients.Text ) && ( string.IsNullOrEmpty( nbCompanies.Text ) ) ) )
+            {
+                int clientCount = int.Parse( nbClients.Text );
+                int companyCount = int.Parse( nbCompanies.Text );
+                if( clientCount > 0 && clientCount < _manager.ClientFactoryCount && companyCount > 0 && companyCount < _manager.CompanyFactoryCount )
+                    _manager.Start( companyCount, clientCount );
+            }
+            else
+                _manager.Start();
+        }
 
-            
-            //_mainTimer.Start();
-
-            //_companies[0].AddNewProduct( );
-
-            //_companies[0].Products[0].Name = "COUCOU";
-
-            //( (IYodiiPlugin)_clients[0] ).Start();
-            //( (IYodiiPlugin)_companies[0] ).Start();
+        private void NumberValidationTextBox( object sender, TextCompositionEventArgs e )
+        {
+            Regex r = new Regex( "[^0-9]+" );
+            e.Handled = r.IsMatch( e.Text );
         }
     }
 }

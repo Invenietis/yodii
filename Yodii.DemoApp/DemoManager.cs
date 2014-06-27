@@ -73,15 +73,19 @@ namespace Yodii.DemoApp
 
             Generate( nbClients, nbCompanies );
 
+            #region DiscovererCode
             //_standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
             //_discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
-           
-            //_mainTimer.Start();
+            #endregion
 
-            //_companies[0].AddNewProduct( );
-
-            //_companies[0].Products[0].Name = "COUCOU";
-
+            //for( int i = 0; i < _clients.Count; i++ )
+            //{
+            //    ( (IYodiiPlugin)_clients[i] ).Start();
+            //}
+            //for( int y = 0; y < _companies.Count; y++ )
+            //{
+            //    ( (IYodiiPlugin)_companies[y] ).Start();
+            //}
             ( (IYodiiPlugin)_clients[0] ).Start();
             ( (IYodiiPlugin)_companies[0] ).Start();
 
@@ -101,8 +105,8 @@ namespace Yodii.DemoApp
             }
         }
 
-        public int CompaniesCount { get { return _companies.Count; } }
+        public int CompanyFactoryCount { get { return _companyData.GetLength( 0 ); } }
 
-        public int ClientsCount { get { return _clients.Count; } }
+        public int ClientFactoryCount { get { return _clientsData.Count; } }
     }
 }
