@@ -5,7 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              Title="LaPoste" Height="350" Width="525">
-    <Grid>
-            
+    <Grid Background="#FFFDFD3A">
+        <ListView  x:Name="NonSecureList"   ItemsSource="{Binding Path=_toBeDeliveredSecurely , UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" HorizontalAlignment="Left" Height="226" Margin="10,84,0,0" VerticalAlignment="Top" Width="100">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>

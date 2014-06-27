@@ -42,8 +42,8 @@ namespace Yodii.DemoApp
             _marketPlace = new MarketPlace( );
             _carRepair = new Garage( );
             _outsourcing = new ManPower(  );
-            _delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
-
+            //_delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
+            _delivery = new LaPoste( _marketPlace, _mainTimer, _outsourcing );
             _clients.Add( new Client1( _marketPlace, "Chuck Norris", "15th Street" ) );
             _companies.Add( new Company1( _marketPlace, _delivery ) );
             _standardDiscoverer = new StandardDiscoverer();

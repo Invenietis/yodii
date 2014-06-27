@@ -25,10 +25,11 @@ namespace Yodii.DemoApp
             _market.PlaceOrder( _clientInfo, product );
         }
 
-        public void ReceiveDelivery( MarketPlace.Product purchasedProduct )
+        public bool ReceiveDelivery( MarketPlace.Product purchasedProduct )
         {
             _purchasedProducts.Add( purchasedProduct );
             RaisePropertyChanged();
+            return true;
         }
 
         public IClientInfo Info { get { return _clientInfo; } }
