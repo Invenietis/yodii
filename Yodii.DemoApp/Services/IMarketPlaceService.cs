@@ -13,6 +13,8 @@ namespace Yodii.DemoApp
 
         ObservableCollection<MarketPlace.Product> Products { get; }
 
+        List<IBusiness> Companies { get; }
+
         List<IConsumer> Consumers { get; }
     }
 }

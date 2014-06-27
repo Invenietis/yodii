@@ -28,12 +28,17 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
             _defaultIntervalValue = new TimeSpan(_timer.Timer.Interval.Milliseconds);
             _timer.Timer.Tick += heartbeat;
             _timer.Timer.Start();
+
             InitializeComponent();
 
             //Binding myBinding = new Binding( "StartStop" );
 
             //myBinding.Source = timer;
             //ButtonPause.SetBinding( Button.ContentProperty, myBinding );
+            //Start up top right corner.
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Top = 0;
+            Left = SystemParameters.PrimaryScreenWidth - this.Width;
 
         }
 

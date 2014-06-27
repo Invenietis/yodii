@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Yodii.DemoApp.Plugins.Views;
 
 namespace Yodii.DemoApp.Examples.Plugins.Views
 {
@@ -30,11 +31,19 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
         public Company1View()
         {
             InitializeComponent();
+
+            WindowStartupLocation = WindowStartupLocation.Manual;
+
+            Left = SystemParameters.PrimaryScreenWidth - ( Width + 450 );
+            Top = SystemParameters.FullPrimaryScreenHeight - ( Height + 350 );
+            MinHeight = MinWidth = MaxHeight = MaxWidth = 550;
         }
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
-            //ViewModel.AddNewProduct( "ergrgrgr" );
+            Window w = new AddProductWindow();
+            w.DataContext = DataContext;
+            w.Show();
         }
     }
 }

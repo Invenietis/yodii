@@ -4,31 +4,22 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Yodii.DemoApp"
-             mc:Ignorable="d" 
-             Title="{Binding Path=Name}"  Height="350" Width="525">
+             mc:Ignorable="d"
+             Title="{Binding Path=Info.Name}" Height="350" Width="525">
     <Grid>
-        <Image Source="/Plugins/Assets/Icons/client.png" Height="200" Width="200" HorizontalAlignment="Left"></Image>
-
-        <ItemsControl ItemsSource="{Binding Path=AvailableProducts}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"></ColumnDefinition>
-                            <ColumnDefinition Width="1*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Text="{Binding }" Grid.Column="0"></TextBlock>
-                        <TextBlock Text="{Binding }" Grid.Column="1"></TextBlock>
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        
-        <StackPanel HorizontalAlignment="Right">
-            <Button Click="Buy_Button_Click" Width="109">Buy</Button>
-        </StackPanel>
-
+        <Image Source="/Plugins/Assets/Icons/client.png" Height="50" Width="50" HorizontalAlignment="Left" Margin="10,10,0,260"></Image>
+        <Label Content="Currently Available Products" Margin="170,10,177,281"></Label>
+        <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=AvailableProducts}" AutoGenerateColumns="False" Height="200" Width="400"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="60,57,57,63" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="*">
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding ProductCategory}" Header="Product Category" Width="*">
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Price}" Header="Price" Width="*">
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Click="Buy_Button_Click" Content="Buy" Width="50" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
     </Grid>
 
 </Window>
