@@ -24,7 +24,8 @@ namespace Yodii.Model
         /// <param name="pluginId">Plugin identifier.</param>
         /// <param name="checkCurrentlyLoading">True to take into account plugins beeing loaded during an <see cref="Execute"/> phasis.</param>
         /// <returns>Null if not found.</returns>
-        IPluginProxy FindLoadedPlugin( Guid pluginId, bool checkCurrentlyLoading );
+        //IPluginProxy FindLoadedPlugin( Guid pluginId, bool checkCurrentlyLoading );
+        IPluginProxy FindLoadedPlugin( string pluginFullName, bool checkCurrentlyLoading );
 
         /// <summary>
         /// Gets the loaded plugins. This contains also the plugins that are currently disabled but have been loaded at least once.

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 using CK.Core;
 using Yodii.Model;
 
@@ -12,6 +13,7 @@ namespace Yodii.Lab.Mocks
     internal class MockAssemblyInfo : IAssemblyInfo
     {
         readonly string _assemblyFileName;
+        readonly AssemblyName _assemblyName;
         readonly List<IPluginInfo> _plugins;
         readonly List<IServiceInfo> _services;
 
@@ -46,6 +48,10 @@ namespace Yodii.Lab.Mocks
             get { return _services.AsReadOnlyList(); }
         }
 
+        public AssemblyName AssemblyName 
+        { 
+            get { return _assemblyName; } 
+        }
         #endregion
 
         public Uri AssemblyLocation

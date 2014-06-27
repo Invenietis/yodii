@@ -58,5 +58,13 @@ namespace Yodii.Model
         /// <param name="currentImplementation">Implementation to use.</param>
         /// <returns>The proxy object.</returns>
         object InjectExternalService( Type interfaceType, object currentImplementation );
+
+        /// <summary>
+        /// Ensures that a proxy exists for the given <see cref="IDynamicService"/> interface.
+        /// COMMES FROM CK.Core
+        /// </summary>
+        /// <param name="interfaceType">Type of the interface. Must extend <see cref="IDynamicService"/>.</param>
+        /// <returns>The proxy object.</returns>
+        object EnsureProxyForDynamicService( Type interfaceType );
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using CK.Core;
 
 namespace Yodii.Model
@@ -13,6 +14,11 @@ namespace Yodii.Model
         /// Gets the assembly location.
         /// </summary>
         Uri AssemblyLocation { get; }
+        
+        /// <summary>
+        /// The name of the assembly.
+        /// </summary>
+        AssemblyName AssemblyName { get; }
 
         /// <summary>
         /// Gets the plugins located in this assembly.
