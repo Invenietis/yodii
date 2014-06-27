@@ -35,16 +35,22 @@ namespace Yodii.DemoApp
             public int NbBeforeReturned{get; set;}
         }
 
-        public LaPoste( IMarketPlaceService market, ITimerService timer, IOutSourcingService outSourcingService )
+        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService )
             : base( true ) 
         {
             _marketPlace = market;
             _timer = timer;
-            _outsourcingService = outSourcingService;
+            _outsourcingService = outSourcingService/*.Service*/;
+            //outSourcingService.ServiceStatusChanged += outSourcingService_ServiceStatusChanged;
             _toBeDelivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
             _toBeDeliveredSecurely = new ObservableCollection<ToBeDeliveredSecurely>();
             _timer.SubscribeToTimerEvent( TimeElapsed );
             _tmpEmployees = 0;
+        }
+
+        void outSourcingService_ServiceStatusChanged( object sender, ServiceStatusChangedEventArgs e )
+        {
+            _outsourcingService.ReturnEmployees( _tmpEmployees );
         }
 
         protected override Window CreateWindow()
@@ -70,17 +76,20 @@ namespace Yodii.DemoApp
         int _tmpEmployees;
         void TimeElapsed( object sender, EventArgs e )
         {
-            if( _toBeDeliveredSecurely.Count < _permanentEmployees )
+            if( _outsourcingService != null )
             {
-                _outsourcingService.ReturnEmployees( _tmpEmployees );
-                _tmpEmployees = 0;
-            }
-            while( _toBeDeliveredSecurely.Count > _permanentEmployees+_tmpEmployees )
-            {
-                if( _outsourcingService.GetEmployees() )
-                    _tmpEmployees++;
-                else
-                    break;
+                if( _toBeDeliveredSecurely.Count < _permanentEmployees )
+                {
+                    _outsourcingService.ReturnEmployees( _tmpEmployees );
+                    _tmpEmployees = 0;
+                }
+                while( _toBeDeliveredSecurely.Count > _permanentEmployees + _tmpEmployees )
+                {
+                    if( _outsourcingService.GetEmployees() )
+                        _tmpEmployees++;
+                    else
+                        break;
+                }
             }
 
             int count=_toBeDeliveredSecurely.Count;

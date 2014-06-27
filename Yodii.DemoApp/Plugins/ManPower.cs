@@ -31,7 +31,7 @@ namespace Yodii.DemoApp
         }
         public void  ReturnEmployees(int nbReturned)
         {
-
+            NBemployees += nbReturned;
         }
     }
 }
