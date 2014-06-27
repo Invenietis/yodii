@@ -14,12 +14,12 @@ namespace Yodii.DemoApp
         ObservableCollection<ProductCompany1> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
         
-        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService, string name )
+        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService/*, string name*/ )
             : base( true )
         {
             _marketPlace = marketPlace;
             _delivery = deliveryService;
-            _name = name;
+            _name = /*name*/ "toto";
             _products = new ObservableCollection<ProductCompany1>();
             _orders = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
         }

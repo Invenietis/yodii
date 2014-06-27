@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Yodii.Model;
+using Yodii.Engine;
+using Yodii.Discoverer;
+using Yodii.Host;
+using System.IO;
 
 namespace Yodii.DemoApp
 {
@@ -21,19 +25,19 @@ namespace Yodii.DemoApp
 
         public DemoManager()
         {
-            _clients = new List<Client1>();
+            /*_clients = new List<Client1>();
             _companies = new List<Company1>();
             _mainTimer = new TimerHandler();
             _marketPlace = new MarketPlace();
             _carRepair = new Garage();
             _outsourcing = new ManPower();
             //_delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
-            _delivery = new LaPoste( _marketPlace, _mainTimer, _outsourcing );
+            _delivery = new LaPoste( _marketPlace, _mainTimer, _outsourcing );*/
         }
 
         public void Initialize()
         {
-           _clientsData = new List<Tuple<string, string>>
+          /* _clientsData = new List<Tuple<string, string>>
            {
                 new Tuple<string,string>("Buyer One","1st Street"),
                 new Tuple<string,string>("Buyer Two","2nd Street"),
@@ -57,9 +61,21 @@ namespace Yodii.DemoApp
                 "IBM",
                 "LG",
                 //...
-            };
+            };*/
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.DemoApp.exe" ) );
+            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
 
-            //_standardDiscoverer = new StandardDiscoverer();
+            PluginHost host = new PluginHost();
+            YodiiEngine engine = new YodiiEngine( host );
+            engine.SetDiscoveredInfo( info );
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
+            cl.Items.Add( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
+            engine.Start();
+            //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Client1" ).Start();
+            //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Company1" ).Start();
+
         }
 
         public bool Start()
@@ -70,7 +86,7 @@ namespace Yodii.DemoApp
 
         public bool Start( int nbCompanies, int nbClients )
         {
-            if( !(nbClients > 0 || nbCompanies > 0) ) return false;
+            /*if( !(nbClients > 0 || nbCompanies > 0) ) return false;
 
             Generate( nbClients, nbCompanies );
 
@@ -91,13 +107,13 @@ namespace Yodii.DemoApp
             ((IYodiiPlugin)_companies[0]).Start();
             ((IYodiiPlugin)_delivery).Start();
             ((IYodiiPlugin)_outsourcing).Start();
-
+            */
             return true;
         }
 
         private void Generate( int nbClients, int nbCompanies )
         {
-            for( int i = 0; i < nbClients; i++ )
+           /* for( int i = 0; i < nbClients; i++ )
             {
                 _clients.Add( new Client1( _marketPlace, _clientsData[i].Item1, _clientsData[i].Item2 ) );
             }
@@ -105,7 +121,7 @@ namespace Yodii.DemoApp
             for( int i = 0; i < nbCompanies; i++ )
             {
                 _companies.Add( new Company1( _marketPlace, _delivery, _companyData[i] ) );
-            }
+            }*/
         }
 
         public int CompanyFactoryCount { get { return _companyData.GetLength( 0 ); } }

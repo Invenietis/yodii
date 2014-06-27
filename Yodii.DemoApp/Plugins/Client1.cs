@@ -12,12 +12,12 @@ namespace Yodii.DemoApp
         readonly ClientInfo _clientInfo;
         ObservableCollection<MarketPlace.Product> _purchasedProducts;
 
-        public Client1( IMarketPlaceService market, string name, string adress )
+        public Client1( IMarketPlaceService market/*, string name, string adress*/ )
             : base( true )
         {
             _market = market;
-            _market.Consumers.Add( this );
-            _clientInfo = new ClientInfo( name, adress );
+            //_market.Consumers.Add( this );
+            _clientInfo = new ClientInfo( /*name*/"Client1", /*adress*/"aba" );
             _purchasedProducts = new ObservableCollection<MarketPlace.Product>();
         }
 
@@ -46,7 +46,7 @@ namespace Yodii.DemoApp
             {
                 DataContext = this
             };
-
+            _market.Consumers.Add( this );
             return Window;
         }
     }
