@@ -5,15 +5,15 @@ namespace Yodii.DemoApp
     public class ClientInfo: IClientInfo
     {
         readonly string _name;
-        readonly string _adress;
+        readonly string _address;
 
-        public ClientInfo( string name, string adress )
+        public ClientInfo( string name, string address )
         {
             _name = name;
-            _adress = adress;
+            _address = address;
         }
         
         public string Name { get { return _name; } }
-        public string Adress { get { return _adress; } }
+        public string Address { get { return _address; } }
     }
 }

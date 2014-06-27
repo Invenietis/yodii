@@ -15,10 +15,8 @@ namespace Yodii.DemoApp
         List<Client1> _clients;
         List<Company1> _companies;
 
-        string[,] _clientsData;
         string[] _companyData;
-        List<Tuple<string,string>> _test;
-        readonly Random _r;
+        List<Tuple<string, string>> _clientsData;
         //StandardDiscoverer _standardDiscoverer;
 
         public DemoManager()
@@ -31,38 +29,24 @@ namespace Yodii.DemoApp
             _outsourcing = new ManPower();
             //_delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
             _delivery = new LaPoste( _marketPlace, _mainTimer, _outsourcing );
-            _r = new Random();
         }
 
         public void Initialize()
         {
-            _clientsData = new string[,]
-            {             
-                {"Buyer One","1st Street"},
-                {"Buyer Two","2nd Street"},
-                {"Buyer Three","3rd Street"},
-                {"Buyer Four","4th Street"},
-                {"Buyer Five","5th Street"},
-                {"Buyer Six","6th Street"},
-                {"Buyer Seven","7th Street"},
-                {"Buyer Height","8th Street"},
-                {"Buyer Nine","9th Street"},
-                {"Buyer Ten","10th Street"},             
+           _clientsData = new List<Tuple<string, string>>
+           {
+                new Tuple<string,string>("Buyer One","1st Street"),
+                new Tuple<string,string>("Buyer Two","2nd Street"),
+                new Tuple<string,string>("Buyer Three","3rd Street"),
+                new Tuple<string,string>("Buyer Four","4th Street"),
+                new Tuple<string,string>("Buyer Five","5th Street"),
+                new Tuple<string,string>("Buyer Six","6th Street"),
+                new Tuple<string,string>("Buyer Seven","7th Street"),
+                new Tuple<string,string>("Buyer Height","8th Street"),
+                new Tuple<string,string>("Buyer Nine","9th Street"),
+                new Tuple<string,string>("Buyer Ten","10th Street"),      
             };
 
-            //_test = new List<Tuple<string,string>>
-            //{
-            //    "Buyer One","1st Street",
-            //    {"Buyer Two","2nd Street"},
-            //    {"Buyer Three","3rd Street"},
-            //    {"Buyer Four","4th Street"},
-            //    {"Buyer Five","5th Street"},
-            //    {"Buyer Six","6th Street"},
-            //    {"Buyer Seven","7th Street"},
-            //    {"Buyer Height","8th Street"},
-            //    {"Buyer Nine","9th Street"},
-            //    {"Buyer Ten","10th Street"},             
-            //};
             _companyData = new string[]
             {
                 "Amazon",
@@ -80,36 +64,29 @@ namespace Yodii.DemoApp
 
         public bool Start()
         {
-            return Start( _r.Next( 2, 5 ), _r.Next( 5, 10 ) );
+            Random r = new Random();
+            return Start( r.Next( 2, 5 ), r.Next( 1, 7 ) );
         }
 
         public bool Start( int nbCompanies, int nbClients )
         {
             if( !(nbClients > 0 || nbCompanies > 0) ) return false;
 
-            for( int i = 0; i < nbClients; i++ )
-            {
-                //_clients.Add( new Client1( _marketPlace, _clientsData.GetValue(i)., _clientsData.GetValue(i)
-            }
-            _clients.Add( new Client1( _marketPlace, "Chuck Norris", "15th Street" ) );
-            _companies.Add( new Company1( _marketPlace, _delivery, "MyCompany" ) );
+            Generate( nbClients, nbCompanies );
 
-
-
-
+            #region DiscovererCode
             //_standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
             //_discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
-            _companies[0].AddNewProduct( "lol", ProductCategory.Entertainment, 10 );
-            _companies[0].AddNewProduct( "lal", ProductCategory.Entertainment, 10 );
-            _companies[0].AddNewProduct( "lul", ProductCategory.Entertainment, 10 );
+            #endregion
 
-
-            //_mainTimer.Start();
-
-            //_companies[0].AddNewProduct( );
-
-            //_companies[0].Products[0].Name = "COUCOU";
-
+            //for( int i = 0; i < _clients.Count; i++ )
+            //{
+            //    ( (IYodiiPlugin)_clients[i] ).Start();
+            //}
+            //for( int y = 0; y < _companies.Count; y++ )
+            //{
+            //    ( (IYodiiPlugin)_companies[y] ).Start();
+            //}
             ((IYodiiPlugin)_clients[0]).Start();
             ((IYodiiPlugin)_companies[0]).Start();
             ((IYodiiPlugin)_delivery).Start();
@@ -118,8 +95,21 @@ namespace Yodii.DemoApp
             return true;
         }
 
-        public int CompaniesCount { get { return _companies.Count; } }
+        private void Generate( int nbClients, int nbCompanies )
+        {
+            for( int i = 0; i < nbClients; i++ )
+            {
+                _clients.Add( new Client1( _marketPlace, _clientsData[i].Item1, _clientsData[i].Item2 ) );
+            }
 
-        public int ClientsCount { get { return _clients.Count; } }
+            for( int i = 0; i < nbCompanies; i++ )
+            {
+                _companies.Add( new Company1( _marketPlace, _delivery, _companyData[i] ) );
+            }
+        }
+
+        public int CompanyFactoryCount { get { return _companyData.GetLength( 0 ); } }
+
+        public int ClientFactoryCount { get { return _clientsData.Count; } }
     }
 }
