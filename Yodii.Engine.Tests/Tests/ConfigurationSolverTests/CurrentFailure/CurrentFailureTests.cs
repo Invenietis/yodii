@@ -11,6 +11,48 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
     [TestFixture]
     class CurrentFailureTests
     {
+        [Test]
+        public void DynamicInvalidLoop()
+        {
+            #region graph
+            /*
+            *                  +--------+  
+            *      +-----------|Service1|  
+            *      |           |Running |  
+            *      |           +---+----+  
+            *  +---+---------+        | 
+            *  |Service1.1   |        |    
+            *  |Optional     |  +---+-----+
+            *  +------------++  |Plugin1.2|
+            *      |        |   |Optional |-----------------------+ 
+            *      |        |   +---------+                       |
+            *   +--+------+ |                                     |
+            *   |Plugin1.1| |                                     |Running
+            *   |Optional | |                                     |
+            *   +---------+ |                      +---------+    | 
+            *               |            +---------+Service2 |<---+ 
+            *               |         +--+------+  |Optional |      
+            *               +---------+Plugin2.1|  +----+----+      
+            *                         |Optional |       |           
+            *                         +---------+       |           
+            *                                        +--+------+    
+            *                                        |Plugin2.2|    
+            *                                        |Optional |    
+            *                                        +---------+
+            */
+            #endregion
+
+            StaticConfigurationTests.CreateDynamicInvalidLoop().FullStart( ( engine, res ) =>
+            {
+                engine.LiveInfo.FindService( "Service1" ).Start( "caller", StartDependencyImpact.Minimal );
+                engine.LiveInfo.FindPlugin( "Plugin1.2" ).Start( "caller", StartDependencyImpact.Minimal );
+                engine.LiveInfo.FindPlugin( "Plugin2.2" ).Start( "caller", StartDependencyImpact.Minimal );
+
+                engine.LiveInfo.FindPlugin( "Plugin2.2" ).Stop( "caller" );
+
+                engine.CheckAllPluginsStopped( "Plugin2.2, Plugin1.2" );
+            } );
+        }
         #region Invalid Loops with runnable/optionnal references which we don't want to solve for the moment.
         [Test]
         public void InvalidInternalLoop1WithARunnableReference()
@@ -41,30 +83,30 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             var d = new DiscoveredInfo();
-            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
-            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service1.1", d.DefaultAssembly ) );
+            d.FindService( "Service1.1" ).Generalization = d.FindService( "Service1" );
 
-            d.PluginInfos.Add(new PluginInfo("Plugin1", d.DefaultAssembly));
-            d.FindPlugin("Plugin1").Service = d.FindService("Service1");
-            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
-            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin1.1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1.1" ).Service = d.FindService( "Service1.1" );
 
-            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Runnable);
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service1.1" ), DependencyRequirement.Runnable );
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
-            engine.SetDiscoveredInfo(d);
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( d );
 
 
 
             var result = engine.Start();
-            engine.FullStaticResolutionOnly(res =>
+            engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
-                res.CheckPluginsDisabled("Plugin1");
-                res.CheckAllPluginsRunnable("Plugin1.1");
-                res.CheckAllServicesRunnable("Service1,Service1.1");
-            });
+                res.CheckPluginsDisabled( "Plugin1" );
+                res.CheckAllPluginsRunnable( "Plugin1.1" );
+                res.CheckAllServicesRunnable( "Service1,Service1.1" );
+            } );
         }
         [Test]
         public void InvalidLoop2WithARunnableReference()
@@ -101,42 +143,42 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             var d = new DiscoveredInfo();
-            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service1.1", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service2", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service3", d.DefaultAssembly));
-            d.FindService("Service1.1").Generalization = d.FindService("Service1");
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service1.1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3", d.DefaultAssembly ) );
+            d.FindService( "Service1.1" ).Generalization = d.FindService( "Service1" );
 
-            d.PluginInfos.Add(new PluginInfo("Plugin1", d.DefaultAssembly));
-            d.FindPlugin("Plugin1").Service = d.FindService("Service1");
-            d.PluginInfos.Add(new PluginInfo("Plugin1bis", d.DefaultAssembly));
-            d.FindPlugin("Plugin1bis").Service = d.FindService("Service1");
-            d.PluginInfos.Add(new PluginInfo("Plugin1.1", d.DefaultAssembly));
-            d.FindPlugin("Plugin1.1").Service = d.FindService("Service1.1");
-            d.PluginInfos.Add(new PluginInfo("Plugin2", d.DefaultAssembly));
-            d.FindPlugin("Plugin2").Service = d.FindService("Service2");
-            d.PluginInfos.Add(new PluginInfo("Plugin3", d.DefaultAssembly));
-            d.FindPlugin("Plugin3").Service = d.FindService("Service3");
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin1bis", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1bis" ).Service = d.FindService( "Service1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin1.1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1.1" ).Service = d.FindService( "Service1.1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service2" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service3" );
 
-            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service2"), DependencyRequirement.Runnable);
-            d.FindPlugin("Plugin1bis").AddServiceReference(d.FindService("Service3"), DependencyRequirement.Running);
-            d.FindPlugin("Plugin2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
-            d.FindPlugin("Plugin3").AddServiceReference(d.FindService("Service2"), DependencyRequirement.Running);
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2" ), DependencyRequirement.Runnable );
+            d.FindPlugin( "Plugin1bis" ).AddServiceReference( d.FindService( "Service3" ), DependencyRequirement.Running );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service1.1" ), DependencyRequirement.Running );
+            d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service2" ), DependencyRequirement.Running );
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
-            engine.SetDiscoveredInfo(d);
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( d );
 
 
 
             var result = engine.Start();
-            engine.FullStaticResolutionOnly(res =>
+            engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
-                res.CheckPluginsDisabled("Plugin1,Plugin1bis");
-                res.CheckAllPluginsRunnable("Plugin2,Plugin1.1,Plugin3");
-                System.Diagnostics.Debug.WriteLine(res.StaticSolvedConfiguration.FindPlugin("Plugin2").FinalConfigSolvedStatus.ToString());
-                res.CheckAllServicesRunnable("Service1,Service1.1,Service2,Service3");
-            });
+                res.CheckPluginsDisabled( "Plugin1,Plugin1bis" );
+                res.CheckAllPluginsRunnable( "Plugin2,Plugin1.1,Plugin3" );
+                System.Diagnostics.Debug.WriteLine( res.StaticSolvedConfiguration.FindPlugin( "Plugin2" ).FinalConfigSolvedStatus.ToString() );
+                res.CheckAllServicesRunnable( "Service1,Service1.1,Service2,Service3" );
+            } );
         }
         [Test]
         public void InvalidLoop3WithARunnableReference()
@@ -186,39 +228,39 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             var d = new DiscoveredInfo();
-            d.ServiceInfos.Add(new ServiceInfo("Service1", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service2", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service2.1", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service2.2", d.DefaultAssembly));
-            d.ServiceInfos.Add(new ServiceInfo("Service3", d.DefaultAssembly));
-            d.FindService("Service2.1").Generalization = d.FindService("Service2");
-            d.FindService("Service2.2").Generalization = d.FindService("Service2");
+            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2.1", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service2.2", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "Service3", d.DefaultAssembly ) );
+            d.FindService( "Service2.1" ).Generalization = d.FindService( "Service2" );
+            d.FindService( "Service2.2" ).Generalization = d.FindService( "Service2" );
 
-            d.PluginInfos.Add(new PluginInfo("Plugin1", d.DefaultAssembly));
-            d.FindPlugin("Plugin1").Service = d.FindService("Service1");
-            d.PluginInfos.Add(new PluginInfo("Plugin2.1", d.DefaultAssembly));
-            d.FindPlugin("Plugin2.1").Service = d.FindService("Service2.1");
-            d.PluginInfos.Add(new PluginInfo("Plugin2.2", d.DefaultAssembly));
-            d.FindPlugin("Plugin2.2").Service = d.FindService("Service2.2");
-            d.PluginInfos.Add(new PluginInfo("Plugin3", d.DefaultAssembly));
-            d.FindPlugin("Plugin3").Service = d.FindService("Service3");
+            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin2.1", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2.1" ).Service = d.FindService( "Service2.1" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin2.2", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin2.2" ).Service = d.FindService( "Service2.2" );
+            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
+            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service3" );
 
-            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service2.1"), DependencyRequirement.Running);
-            d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service3"), DependencyRequirement.Runnable);
-            d.FindPlugin("Plugin3").AddServiceReference(d.FindService("Service2.2"), DependencyRequirement.Running);
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2.1" ), DependencyRequirement.Running );
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service3" ), DependencyRequirement.Runnable );
+            d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.Running );
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
-            engine.SetDiscoveredInfo(d);
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( d );
 
             var result = engine.Start();
-            engine.FullStaticResolutionOnly(res =>
+            engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
-                res.CheckPluginsDisabled("Plugin1");
-                res.CheckAllPluginsRunnable("Plugin2.1,Plugin2.2,Plugin3");
-                res.CheckAllServicesRunnable("Service2,Service2.1,Service2.2,Service3");
-                res.CheckAllServicesDisabled("Service1");
-            });
+                res.CheckPluginsDisabled( "Plugin1" );
+                res.CheckAllPluginsRunnable( "Plugin2.1,Plugin2.2,Plugin3" );
+                res.CheckAllServicesRunnable( "Service2,Service2.1,Service2.2,Service3" );
+                res.CheckAllServicesDisabled( "Service1" );
+            } );
         }
         #endregion
     }

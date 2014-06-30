@@ -138,7 +138,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.LiveInfo.FindPlugin( "Plugin1" ).Start();
                 engine.CheckAllPluginsStopped( "Plugin7, Plugin3, Plugin2, Plugin6" );
                 engine.CheckAllPluginsRunning( "Plugin4, Plugin8, Plugin1, Plugin5" );
-                
+
                 engine.LiveInfo.FindPlugin( "Plugin2" ).Start();
             } );
         }
@@ -192,7 +192,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
 
-            StaticConfigurationTests.CreateValidCommonReferences4().FullStart( (engine,res) =>
+            StaticConfigurationTests.CreateValidCommonReferences4().FullStart( ( engine, res ) =>
                 {
                     engine.LiveInfo.FindPlugin( "Plugin4" ).Start( "caller", StartDependencyImpact.Minimal );
                     engine.LiveInfo.FindPlugin( "Plugin1" ).Start( "caller", StartDependencyImpact.Minimal );
@@ -211,10 +211,10 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             StaticConfigurationTests.CreateValidRunnableReferences().FullStart( ( engine, res ) =>
             {
                 engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
-                
+
                 engine.LiveInfo.FindPlugin( "Plugin5" ).Stop();
                 engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
-                
+
                 engine.LiveInfo.FindPlugin( "Plugin5" ).Start();
                 engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin6, Plugin7, Plugin8, Plugin9" );
                 engine.CheckAllPluginsRunning( "Plugin5 " );
@@ -247,7 +247,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 engine.CheckAllServicesStopped( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
 
                 engine.LiveInfo.FindPlugin( "Plugin1" ).Start();
-                
+
                 engine.CheckAllServicesStopped( "Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
                 engine.CheckAllServicesRunning( "Service1, Service1.1" );
                 engine.CheckAllPluginsStopped( "Plugin2, Plugin3, Plugin4, Plugin5" );
@@ -370,7 +370,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
                 engine.CheckAllPluginsRunning( "Plugin1, Plugin3" );
                 engine.CheckAllPluginsStopped( "Plugin2, Plugin4" );
-                engine.CheckAllServicesRunning("Service2.1, Service2");
+                engine.CheckAllServicesRunning( "Service2.1, Service2" );
                 engine.CheckAllServicesStopped( "Service2.2" );
 
                 engine.LiveInfo.FindPlugin( "Plugin1" ).Stop();
