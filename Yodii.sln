@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Model", "Yodii.Model\Yodii.Model.csproj", "{DB68716F-9883-433A-928D-AA597D377C9C}"
 EndProject
@@ -29,6 +29,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Host", "Yodii.Host\Yodii.Host.csproj", "{C9FCBF26-371B-48C2-AA78-06292EE30B9D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Host.Tests", "Yodii.Host.Tests\Yodii.Host.Tests.csproj", "{ECEB91C0-D028-4B19-8721-2E1B4469267F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ObjectExplorer", "ObjectExplorer", "{965EFEDB-CC98-4644-ADD6-9EBB5F072CEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.ObjectExplorer.HostTest", "Yodii.ObjectExplorer.HostTest\Yodii.ObjectExplorer.HostTest.csproj", "{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.ObjectExplorer.Wpf", "Yodii.ObjectExplorer.Wpf\Yodii.ObjectExplorer.Wpf.csproj", "{3F156BFA-610E-4061-BC31-25178B14D499}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -310,8 +316,60 @@ Global
 		{ECEB91C0-D028-4B19-8721-2E1B4469267F}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECEB91C0-D028-4B19-8721-2E1B4469267F}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECEB91C0-D028-4B19-8721-2E1B4469267F}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_2_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_2_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_2_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_2_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_3_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_3_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_3_5_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_3_5_Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_4_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_4_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_4_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.net_4_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.silverlight_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.silverlight_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.silverlight_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.silverlight_Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.winphone_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_2_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_2_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_2_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_2_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_3_5_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_3_5_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_3_5_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_3_5_Release|Any CPU.Build.0 = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_4_0_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_4_0_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_4_0_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.net_4_0_Release|Any CPU.Build.0 = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.silverlight_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.silverlight_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.silverlight_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.silverlight_Release|Any CPU.Build.0 = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.winphone_Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.winphone_Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.winphone_Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F156BFA-610E-4061-BC31-25178B14D499}.winphone_Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F6BD13E1-DEBA-4835-9E21-D4370B19FB1B} = {965EFEDB-CC98-4644-ADD6-9EBB5F072CEB}
+		{3F156BFA-610E-4061-BC31-25178B14D499} = {965EFEDB-CC98-4644-ADD6-9EBB5F072CEB}
 	EndGlobalSection
 EndGlobal
