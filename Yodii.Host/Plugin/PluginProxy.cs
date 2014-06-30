@@ -44,11 +44,15 @@ namespace Yodii.Host
 
         public string PublicName { get { return PluginKey.PluginFullName; } }
 
-        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo,object[],IYodiiPlugin> pluginCreator )
+        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, object[], IYodiiPlugin> pluginCreator )
         {
             var serviceReferences = PluginKey.ServiceReferences;
 
-            object[] ctorParameters = new object[serviceReferences.Max(x => x.ConstructorParameterIndex)];
+            int paramCount = 0;
+
+            if( serviceReferences.Count > 0 ) paramCount = serviceReferences.Max( x => x.ConstructorParameterIndex );
+
+            object[] ctorParameters = new object[paramCount];
 
             for( int i = 0; i < serviceReferences.Count; ++i )
             {

@@ -6,52 +6,48 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using Yodii.Discoverer;
 using Yodii.Engine;
 using Yodii.Host;
 using Yodii.Model;
 
-namespace Yodii.ObjectExplorer.HostTest
+namespace Yodii.ObjectExplorer.ConsoleDemo
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    class ObjectExplorerManager
     {
         readonly YodiiEngine _engine;
+        readonly StandardDiscoverer _discoverer;
+        readonly PluginHost _host;
 
-        public MainWindow()
+        public ObjectExplorerManager()
         {
-            StandardDiscoverer discoverer = new StandardDiscoverer();
+            _discoverer = new StandardDiscoverer();
+            _host = new PluginHost();
+            _engine = new YodiiEngine( _host );
 
-            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.Wpf.dll" ) );
-            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-
-            PluginHost host = new PluginHost();
-
-            _engine = new YodiiEngine( host );
-
-            host.PluginCreator = CustomPluginCreator;
-
-            IYodiiEngineResult result1 = _engine.SetDiscoveredInfo( info );
-
-            Debug.Assert( result1.Success );
+            _host.PluginCreator = CustomPluginCreator;
 
             IConfigurationLayer cl = _engine.Configuration.Layers.Create();
             cl.Items.Add( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin", ConfigurationStatus.Running );
+        }
 
+        public IYodiiEngine Engine { get { return _engine; } }
+        public IYodiiEngineHost EngineHost { get { return _host; } }
+
+        public void Run()
+        {
+            // Load plugin.service assemblies
+            IAssemblyInfo ia = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.Wpf.dll" ) );
+            IAssemblyInfo ia2 = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.ConsoleDemo.exe" ) );
+
+            IDiscoveredInfo info = _discoverer.GetDiscoveredInfo();
+
+            IYodiiEngineResult discoveredInfoResult = _engine.SetDiscoveredInfo( info );
+            Debug.Assert( discoveredInfoResult.Success );
+
+            // Run engine
             IYodiiEngineResult result = _engine.Start();
             Debug.Assert( result.Success );
-
-            InitializeComponent();
         }
 
         IYodiiPlugin CustomPluginCreator( IPluginInfo pluginInfo, object[] ctorServiceParameters )
@@ -85,10 +81,8 @@ namespace Yodii.ObjectExplorer.HostTest
 
         object ResolveUnknownType( Type t )
         {
-            if( typeof( IYodiiEngine ).IsAssignableFrom( t ) )
-            {
-                return _engine;
-            }
+            if( typeof( IYodiiEngine ).IsAssignableFrom( t ) ) return _engine;
+
             throw new InvalidOperationException( String.Format( "Could not resolve unknown type '{0}'", t.FullName ) );
         }
     }

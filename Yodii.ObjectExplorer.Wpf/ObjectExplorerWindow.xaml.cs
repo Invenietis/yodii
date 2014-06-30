@@ -15,12 +15,9 @@ using System.Windows.Shapes;
 
 namespace Yodii.ObjectExplorer.Wpf
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    internal partial class ObjectExplorerWindow : Window
     {
-        public MainWindow()
+        public ObjectExplorerWindow()
         {
             InitializeComponent();
         }
