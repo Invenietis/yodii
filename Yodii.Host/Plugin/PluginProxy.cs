@@ -48,7 +48,8 @@ namespace Yodii.Host
         {
             var serviceReferences = PluginKey.ServiceReferences;
 
-            object[] ctorParameters = new object[serviceReferences.Count];
+            object[] ctorParameters = new object[serviceReferences.Max(x => x.ConstructorParameterIndex)];
+
             for( int i = 0; i < serviceReferences.Count; ++i )
             {
                 ctorParameters[serviceReferences[i].ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( serviceReferences[i].Reference );

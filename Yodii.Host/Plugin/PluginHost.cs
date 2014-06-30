@@ -39,7 +39,6 @@ namespace Yodii.Host
         readonly Dictionary<string, PluginProxy> _plugins;
         readonly Dictionary<string, PluginProxy> _loadedPlugins;
         readonly List<PluginProxy> _newlyLoadedPlugins;
-        Func<Type,object> _resolver;
         Func<IPluginInfo,object[],IYodiiPlugin> _pluginCreator;
 
         public PluginHost()
@@ -56,42 +55,12 @@ namespace Yodii.Host
             _pluginCreator = DefaultPluginCreator;
         }
 
-        IYodiiPlugin DefaultPluginCreator( IPluginInfo pluginInfo, object[] ctorServiceParameters )
+        static IYodiiPlugin DefaultPluginCreator( IPluginInfo pluginInfo, object[] ctorParameters )
         {
             var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
             var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
 
-
-            if( Resolver != null )
-            {
-                ParameterInfo[] parameters = ctor.GetParameters();
-
-                object[] ctorParameters = new object[parameters.Length];
-
-                int j = 0; // Index for Service parameters
-                for( int i = 0; i < parameters.Length; i++ )
-                {
-                    ParameterInfo p = parameters[i];
-                    if( typeof( IServiceInfo ).IsAssignableFrom( p.ParameterType ) )
-                    {
-                        // For Service parameters, use the given Service parameters array
-                        ctorParameters[i] = ctorServiceParameters[j];
-                        j++;
-                    }
-                    else
-                    {
-                        // Use the resolver (not null here) to try and get missing types
-                        ctorParameters[i] = Resolver( p.ParameterType );
-                    }
-                }
-
-                return (IYodiiPlugin)ctor.Invoke( ctorParameters );
-            }
-            else
-            {
-                return (IYodiiPlugin)ctor.Invoke( ctorServiceParameters );
-            }
-
+            return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
 
         /// <summary>
@@ -403,17 +372,6 @@ namespace Yodii.Host
         {
             get { return _serviceHost.EventSender; }
             set { _serviceHost.EventSender = value; }
-        }
-
-        /// <summary>
-        /// Adds a custom type-to-instance resolver during constructor injection.
-        /// Called when trying to load a Plugin constructor that contains unknown types (ie. not Yodii Services or Plugins).
-        /// Defaults to null (will fail to load constructors with unknown types).
-        /// </summary>
-        public Func<Type, object> Resolver
-        {
-            get { return _resolver; }
-            set { _resolver = value; }
         }
 
         PluginProxy EnsureProxy( IPluginInfo pluginInfo )
