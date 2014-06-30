@@ -21,6 +21,7 @@ namespace Yodii.ObjectExplorer.Wpf
     {
         IYodiiEngine _activeEngine;
         ObjectExplorerWindow _window;
+        ObjectExplorerWindowViewModel _vm;
 
         public ObjectExplorerPlugin( IYodiiEngine e )
         {
@@ -62,7 +63,7 @@ namespace Yodii.ObjectExplorer.Wpf
             {
                 Action action = delegate()
                 {
-                    _window = new ObjectExplorerWindow();
+                    _window = new ObjectExplorerWindow( _activeEngine );
                     _window.Show();
                 };
                 Application.Current.Dispatcher.Invoke( action );
@@ -76,9 +77,15 @@ namespace Yodii.ObjectExplorer.Wpf
         void CreateApp()
         {
             var app = new Application();
-            _window = new ObjectExplorerWindow();
 
-            app.Run( _window );
+            Action action = delegate()
+            {
+                _window = new ObjectExplorerWindow( _activeEngine );
+                _window.Show();
+
+                app.Run( _window );
+            };
+            app.Dispatcher.Invoke( action );
         }
 
         void IYodiiPlugin.Stop()

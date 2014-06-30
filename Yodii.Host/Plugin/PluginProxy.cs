@@ -50,7 +50,7 @@ namespace Yodii.Host
 
             int paramCount = 0;
 
-            if( serviceReferences.Count > 0 ) paramCount = serviceReferences.Max( x => x.ConstructorParameterIndex );
+            if( serviceReferences.Count > 0 ) paramCount = serviceReferences.Max( x => x.ConstructorParameterIndex ) + 1;
 
             object[] ctorParameters = new object[paramCount];
 
