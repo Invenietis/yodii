@@ -44,11 +44,21 @@ namespace Yodii.Host
 
         public string PublicName { get { return PluginKey.PluginFullName; } }
 
-        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo,object[],IYodiiPlugin> pluginCreator )
+        internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, object[], IYodiiPlugin> pluginCreator )
         {
             var serviceReferences = PluginKey.ServiceReferences;
 
-            object[] ctorParameters = new object[serviceReferences.Count];
+            int paramCount = 0;
+
+            // Fixes potential Array Out of Bounds for constructors with params ordered like ( MyType, IYodiiService ).
+            // Unknown constructor parameters (here index 0) will be null.
+            // Non-service parameters present after the last service (like ( IYodiiService, MyType )) will still be out of bounds :
+            // we don't know the actual size or contents of the constructor.
+            // So if you're injecting and/or allow unknown types, pluginCreator should check that it's neither null nor out-of-bounds.
+            if( serviceReferences.Count > 0 ) paramCount = serviceReferences.Max( x => x.ConstructorParameterIndex ) + 1;
+
+            object[] ctorParameters = new object[paramCount];
+
             for( int i = 0; i < serviceReferences.Count; ++i )
             {
                 ctorParameters[serviceReferences[i].ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( serviceReferences[i].Reference );

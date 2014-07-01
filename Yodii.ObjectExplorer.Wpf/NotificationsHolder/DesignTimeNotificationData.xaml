@@ -1,0 +1,29 @@
+﻿<Notifications
+    xmlns="clr-namespace:Yodii.ObjectExplorer.Wpf">
+    <Notification
+        Id="0"
+        Title="Plugin running"
+        Message="Plugin 'Plugin.A1' is now running."
+        ImageUrl="/Yodii.ObjectExplorer.Wpf;component/Assets/RunningStatusRunning.png"/>
+    <Notification
+        Id="1"
+        Title="Notification #1"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+    <Notification
+        Id="2"
+        Title="Notification #2"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+    <Notification
+        Id="3"
+        Title="Notification #3"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+    <Notification
+        Id="4"
+        Title="Notification #4"
+        ImageUrl="pack://application:,,,/Icons/PropertyIcon.png"
+        Message="Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." />
+
+</Notifications>

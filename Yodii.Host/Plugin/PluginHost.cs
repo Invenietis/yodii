@@ -59,6 +59,7 @@ namespace Yodii.Host
         {
             var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
             var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
+
             return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
 
@@ -73,10 +74,10 @@ namespace Yodii.Host
         /// of <see cref="IServiceReferenceInfo.ConstructorParameterIndex">ConstructorParameterIndex</see> property 
         /// of <see cref="IPluginInfo.ServiceReferences">PluginInfo.ServiceReferences</see> objects.
         /// </summary>
-        public Func<IPluginInfo,object[],IYodiiPlugin> PluginCreator 
+        public Func<IPluginInfo, object[], IYodiiPlugin> PluginCreator
         {
             get { return _pluginCreator; }
-            set { _pluginCreator = value ?? DefaultPluginCreator; } 
+            set { _pluginCreator = value ?? DefaultPluginCreator; }
         }
         /*
         /// <summary>
@@ -98,14 +99,14 @@ namespace Yodii.Host
         public IPluginProxy FindLoadedPlugin( string pluginFullName, bool checkCurrentlyLoading )
         {
             var p = _loadedPlugins.GetValueWithDefault( pluginFullName, null );
-            if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.PluginFullName == pluginFullName  );
+            if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.PluginFullName == pluginFullName );
             return p;
         }
 
         public bool IsPluginRunning( IPluginInfo pluginInfo )
         {
             PluginProxy result;
-            if( !_plugins.TryGetValue( pluginInfo.PluginFullName, out result ) ) return false; 
+            if( !_plugins.TryGetValue( pluginInfo.PluginFullName, out result ) ) return false;
             return result.Status == InternalRunningStatus.Started;
         }
 
@@ -116,7 +117,7 @@ namespace Yodii.Host
         /// <param name="stoppedPluginKeys">Plugins that must be stopped.</param>
         /// <param name="runningPluginKeys">Plugins that must be running.</param>
         /// <returns>A <see cref="IExecutionPlanError"/> that details the error if any.</returns>
-        public IEnumerable<Tuple<IPluginInfo, Exception>> Apply( IEnumerable<IPluginInfo> disabledPluginKeys, IEnumerable<IPluginInfo> stoppedPluginKeys, IEnumerable<IPluginInfo> runningPluginKeys )    
+        public IEnumerable<Tuple<IPluginInfo, Exception>> Apply( IEnumerable<IPluginInfo> disabledPluginKeys, IEnumerable<IPluginInfo> stoppedPluginKeys, IEnumerable<IPluginInfo> runningPluginKeys )
         {
             if( PluginCreator == null ) throw new InvalidOperationException( R.PluginCreatorIsNull );
 
@@ -168,7 +169,7 @@ namespace Yodii.Host
                         Debug.Assert( p.LoadError != null, "Error is catched by the PluginHost itself." );
                         _serviceHost.LogMethodError( PluginCreator.Method, p.LoadError );
                         // Unable to load the plugin: leave now.
-                        return executionPlanResult.Append(new Tuple<IPluginInfo, Exception>(p.PluginKey,p.LoadError));
+                        return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, p.LoadError ) );
                     }
                     Debug.Assert( p.LoadError == null );
                     Debug.Assert( p.Status == InternalRunningStatus.Disabled );
@@ -286,7 +287,7 @@ namespace Yodii.Host
                     }
 
                     info.Error = ex;
-                   return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
+                    return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                 }
             }
 
@@ -376,7 +377,7 @@ namespace Yodii.Host
         PluginProxy EnsureProxy( IPluginInfo pluginInfo )
         {
             PluginProxy result;
-            if(_plugins.TryGetValue( pluginInfo.PluginFullName, out result ))
+            if( _plugins.TryGetValue( pluginInfo.PluginFullName, out result ) )
             {
                 if( result.PluginKey != pluginInfo )//If SetDiscoveredInfo is called, the pluginInfo will be new even if it is the same.
                 {
@@ -447,6 +448,6 @@ namespace Yodii.Host
             get { return _serviceHost; }
         }
 
-        
+
     }
 }

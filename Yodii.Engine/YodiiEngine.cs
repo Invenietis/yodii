@@ -21,7 +21,7 @@ namespace Yodii.Engine
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _currentSolver;
-        
+
         class YodiiCommandList : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
         {
             public void Merge( IReadOnlyList<YodiiCommand> newCommands )
@@ -60,12 +60,12 @@ namespace Yodii.Engine
             _liveInfo = new LiveInfo( this );
         }
 
-        internal SuccessYodiiEngineResult SuccessResult 
-        { 
-            get { return _successResult; } 
+        internal SuccessYodiiEngineResult SuccessResult
+        {
+            get { return _successResult; }
         }
 
-        internal Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> StaticResolutionByConfigurationManager( FinalConfiguration finalConfiguration )
+        internal Tuple<IYodiiEngineStaticOnlyResult, ConfigurationSolver> StaticResolutionByConfigurationManager( FinalConfiguration finalConfiguration )
         {
             Debug.Assert( IsRunning );
             return ConfigurationSolver.CreateAndApplyStaticResolution( this, finalConfiguration, _discoveredInfo, false, false, false );
@@ -87,7 +87,7 @@ namespace Yodii.Engine
             if( _currentSolver != solver ) _currentSolver = solver;
 
             _liveInfo.UpdateFrom( _currentSolver );
-                        
+
             _yodiiCommands.Merge( dynResult.Commands );
             if( wasStopped ) RaisePropertyChanged( "IsRunning" );
             return _successResult;
@@ -120,6 +120,9 @@ namespace Yodii.Engine
         {
             if( IsRunning )
             {
+                // Stopping the engine disables all plugins.
+                _host.Apply( _discoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>() );
+
                 _liveInfo.Clear();
                 _currentSolver = null;
                 RaisePropertyChanged( "IsRunning" );
@@ -180,7 +183,7 @@ namespace Yodii.Engine
         /// </returns>
         public IYodiiEngineStaticOnlyResult StaticResolutionOnly( bool revertServices, bool revertPlugins )
         {
-            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, createStaticSolvedConfigOnSuccess:true );
+            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, createStaticSolvedConfigOnSuccess: true );
             Debug.Assert( r.Item1 != null, "Either an error or a successful static resolution." );
             return r.Item1;
         }
