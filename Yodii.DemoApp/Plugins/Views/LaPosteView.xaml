@@ -1,0 +1,30 @@
+﻿<Window x:Class="Yodii.DemoApp.Examples.Plugins.Views.LaPosteView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             Title="LaPoste" Height="350" Width="525" MinHeight="350" MinWidth="125">
+    <Border Background="#A0F0FF" BorderThickness="5px" BorderBrush="#A0A0FF" Opacity="1">
+        <StackPanel Background="#FFF142">
+            <Label Content="Secured Delivery" HorizontalAlignment="Left"  VerticalAlignment="Top" RenderTransformOrigin="0.123,-0.644" Height="27"/>
+
+            <DataGrid x:Name="ProductGrid" ItemsSource="{Binding SecuredDelivery}" AutoGenerateColumns="False" Height="107" SelectionUnit="FullRow" IsReadOnly="True" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding ClientInfo.Name}" Header="Client to be delivered" Width="*"/>
+                    <DataGridTextColumn Binding="{Binding Product.Name}" Header="Product name" Width="*"/>
+                    <DataGridTextColumn Binding="{Binding NBBeforeReturned}" Header="Delivery Tries Before Return" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Label Content="Non Secured Delivery" HorizontalAlignment="Left"  VerticalAlignment="Top" RenderTransformOrigin="-0.324,-0.117" Height="30"/>
+
+            <DataGrid x:Name="NonSecure" ItemsSource="{Binding Delivery}" AutoGenerateColumns="False" Height="121"   HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True"  VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding Item1.Name}" Header="Client to be delivered" Width="*"/>
+                    <DataGridTextColumn Binding="{Binding Item2.Name}" Header="Product name" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+    </StackPanel>
+    </Border>
+</Window>

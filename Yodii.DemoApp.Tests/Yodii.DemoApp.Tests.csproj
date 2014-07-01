@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8902FBD5-3E76-47C4-92B1-60E808156D30}</ProjectGuid>
+    <ProjectGuid>{4F55EF6E-54ED-46F6-9B1E-FEA326464EA8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Yodii.DemoApp.Tests</RootNamespace>
@@ -31,7 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core">
+    <Reference Include="CK.Core, Version=3.0.19.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.3.0.19-develop\lib\net40\CK.Core.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
@@ -55,43 +56,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Examples\Plugins\Client1.cs" />
-    <Compile Include="Examples\Plugins\Company1.cs" />
-    <Compile Include="Examples\Plugins\Company2.cs" />
-    <Compile Include="Examples\Plugins\Company3.cs" />
-    <Compile Include="Examples\Plugins\Garage.cs" />
-    <Compile Include="Examples\Plugins\LaPoste.cs" />
-    <Compile Include="Examples\Plugins\LivrExpress.cs" />
-    <Compile Include="Examples\Plugins\ManPower.cs" />
-    <Compile Include="Examples\Plugins\MarketPlace.cs" />
-    <Compile Include="Examples\Plugins\Timer.cs" />
-    <Compile Include="Examples\Plugins\UPS.cs" />
-    <Compile Include="Examples\Services\ICarRepairService.cs" />
-    <Compile Include="Examples\Services\IDeliveryService.cs" />
-    <Compile Include="Examples\Services\IMarketPlaceService.cs" />
-    <Compile Include="Examples\Services\IOutSourcingService.cs" />
-    <Compile Include="Examples\Services\ISecuredDeliveryService.cs" />
-    <Compile Include="Examples\Services\ITimerService.cs" />
-    <Compile Include="Tryout.cs" />
+    <Compile Include="DemoAppTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Yodii.Discoverer\Yodii.Discoverer.csproj">
-      <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
-      <Name>Yodii.Discoverer</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
-      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
-      <Name>Yodii.Engine</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

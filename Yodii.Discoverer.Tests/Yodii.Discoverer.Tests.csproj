@@ -56,17 +56,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
-    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
     <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
-    <Compile Include="ChoucrouteTest2\Plugin1.cs" />
+    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
     <Compile Include="ChoucrouteTest2\IService1.cs" />
     <Compile Include="ChoucrouteTest2\IService2.cs" />
-    <Compile Include="ChoucrouteTest3\Plugin1Bis.cs" />
-    <Compile Include="DiscovererTests.cs" />
+    <Compile Include="ChoucrouteTest2\Plugin1.cs" />
+    <Compile Include="ChoucrouteTest2\UntaggedPlugin.cs" />
     <Compile Include="ChoucrouteTest3\ITest3Service1.cs" />
     <Compile Include="ChoucrouteTest3\ITest3Service2.cs" />
+    <Compile Include="ChoucrouteTest3\Plugin1Bis.cs" />
+    <Compile Include="ChoucrouteTest4\AbstractClass.cs" />
+    <Compile Include="ChoucrouteTest4\DerivedClass.cs" />
+    <Compile Include="DiscovererTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ChoucrouteTest2\UntaggedPlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -85,13 +87,16 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
     <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
   </Target>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
