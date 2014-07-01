@@ -10,6 +10,7 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     x:Name="MainWindowRoot"
+        Closing="MainWindowRoot_Closing"
     Title="Yodii Object Explorer" Height="350" Width="525">
     <Window.Resources>
         <BooleanToVisibilityConverter

@@ -24,11 +24,14 @@ namespace Yodii.ObjectExplorer.Wpf
         readonly ObjectExplorerWindowViewModel _vm;
         readonly YodiiLayout _graphLayout;
 
+        public bool AllowClose { get; set; }
+
         /// <summary>
         /// Creates the main window.
         /// </summary>
         public ObjectExplorerWindow( IYodiiEngine engine )
         {
+            AllowClose = false;
             BindingErrorListener.Listen( m => MessageBox.Show( m ) );
 
             _vm = new ObjectExplorerWindowViewModel( engine );
@@ -126,11 +129,12 @@ namespace Yodii.ObjectExplorer.Wpf
             {
                 updateTimer.Enabled = false;
 
-                Action a = new Action( () => {
+                Action a = new Action( () =>
+                {
                     _graphLayout.NextRecomputeForcesPositions = true;
                     GraphArea.RelayoutGraph();
                 } );
-                Application.Current.Dispatcher.Invoke(a);
+                Application.Current.Dispatcher.Invoke( a );
             };
             updateTimer.Enabled = true;
         }
@@ -187,6 +191,11 @@ namespace Yodii.ObjectExplorer.Wpf
         private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
         {
             GraphArea.ExportAsPNG( true );
+        }
+
+        private void MainWindowRoot_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            if( !AllowClose ) e.Cancel = true;
         }
     }
 

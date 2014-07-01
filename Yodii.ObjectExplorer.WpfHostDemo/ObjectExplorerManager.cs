@@ -5,51 +5,57 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Yodii.Discoverer;
 using Yodii.Engine;
 using Yodii.Host;
 using Yodii.Model;
 
-namespace Yodii.ObjectExplorer.ConsoleDemo
+namespace Yodii.ObjectExplorer.WpfHostDemo
 {
+    /// <summary>
+    /// The actual ObjectExplorer host. Handles
+    /// </summary>
     class ObjectExplorerManager
     {
         readonly YodiiEngine _engine;
         readonly StandardDiscoverer _discoverer;
         readonly PluginHost _host;
 
-        public ObjectExplorerManager()
+        internal ObjectExplorerManager()
         {
             _discoverer = new StandardDiscoverer();
             _host = new PluginHost();
             _engine = new YodiiEngine( _host );
 
             _host.PluginCreator = CustomPluginCreator;
-
-            IConfigurationLayer cl = _engine.Configuration.Layers.Create();
-            cl.Items.Add( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin", ConfigurationStatus.Running );
         }
 
-        public IYodiiEngine Engine { get { return _engine; } }
-        public IYodiiEngineHost EngineHost { get { return _host; } }
+        internal IYodiiEngine Engine { get { return _engine; } }
 
-        public void Run()
+        /// <summary>
+        /// Sets the discovered info. Once done, start the engine with Engine.Start().
+        /// </summary>
+        internal void SetDiscoveredInfo()
         {
             // Load plugin.service assemblies
             IAssemblyInfo ia = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.Wpf.dll" ) );
-            IAssemblyInfo ia2 = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.ConsoleDemo.exe" ) );
+            IAssemblyInfo ia2 = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.WpfHostDemo.exe" ) );
+
+            IConfigurationLayer cl = _engine.Configuration.Layers.Create();
+            cl.Items.Add( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin", ConfigurationStatus.Running );
 
             IDiscoveredInfo info = _discoverer.GetDiscoveredInfo();
 
             IYodiiEngineResult discoveredInfoResult = _engine.SetDiscoveredInfo( info );
             Debug.Assert( discoveredInfoResult.Success );
-
-            // Run engine
-            IYodiiEngineResult result = _engine.Start();
-            Debug.Assert( result.Success );
         }
 
+        /// <summary>
+        /// Custom plugin instanciator. Can resolve the IYodiiEngine type to the actual engine.
+        /// </summary>
+        /// <param name="pluginInfo"></param>
+        /// <param name="ctorServiceParameters"></param>
+        /// <returns></returns>
         IYodiiPlugin CustomPluginCreator( IPluginInfo pluginInfo, object[] ctorServiceParameters )
         {
             var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
@@ -58,20 +64,19 @@ namespace Yodii.ObjectExplorer.ConsoleDemo
             ParameterInfo[] parameters = ctor.GetParameters();
 
             object[] ctorParameters = new object[parameters.Length];
+            Debug.Assert( ctorParameters.Length >= ctorServiceParameters.Length );
 
-            int j = 0; // Index for Service parameters
             for( int i = 0; i < parameters.Length; i++ )
             {
                 ParameterInfo p = parameters[i];
-                if( typeof( IServiceInfo ).IsAssignableFrom( p.ParameterType ) )
+                object instance = ctorServiceParameters.Length >= (i + 1) ? ctorServiceParameters[i] : null;
+
+                if( instance != null )
                 {
-                    // For Service parameters, use the given Service parameters array
-                    ctorParameters[i] = ctorServiceParameters[j];
-                    j++;
+                    ctorParameters[i] = instance;
                 }
                 else
                 {
-                    // Use the resolver (not null here) to try and get missing types
                     ctorParameters[i] = ResolveUnknownType( p.ParameterType );
                 }
             }
@@ -79,6 +84,11 @@ namespace Yodii.ObjectExplorer.ConsoleDemo
             return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
 
+        /// <summary>
+        /// Custom, hard-coded type resolver. Can resolve the IYodiiEngine type to the actual engine.
+        /// </summary>
+        /// <param name="t"></param>
+        /// <returns></returns>
         object ResolveUnknownType( Type t )
         {
             if( typeof( IYodiiEngine ).IsAssignableFrom( t ) ) return _engine;
