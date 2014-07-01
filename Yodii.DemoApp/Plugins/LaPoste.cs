@@ -21,7 +21,7 @@ namespace Yodii.DemoApp
         public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Delivery { get { return _toBeDelivered; } }
 
         const int _permanentEmployees=5;
-        
+        EventHandler _handler; //test
         
         public class ToBeDeliveredSecurely
         {
@@ -41,10 +41,8 @@ namespace Yodii.DemoApp
             _marketPlace = market;
             _timer = timer;
             _outsourcingService = outSourcingService/*.Service*/;
-            //outSourcingService.ServiceStatusChanged += outSourcingService_ServiceStatusChanged;
             _toBeDelivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
             _toBeDeliveredSecurely = new ObservableCollection<ToBeDeliveredSecurely>();
-            _timer.SubscribeToTimerEvent( TimeElapsed );
             _tmpEmployees = 0;
         }
 
@@ -55,12 +53,19 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
+            _handler = new EventHandler( TimeElapsed );
+            //outSourcingService.ServiceStatusChanged += outSourcingService_ServiceStatusChanged;
+            _timer.SubscribeToTimerEvent( _handler );
             Window = new LaPosteView()
             {
                 DataContext = this
             };
             Window.Show();
             return Window;
+        }
+        protected override void Stopping()
+        {
+            _timer.UnsubscribeToTimerEvent( _handler );
         }
 
         void ISecuredDeliveryService.DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order )
@@ -76,7 +81,8 @@ namespace Yodii.DemoApp
         int _tmpEmployees;
         void TimeElapsed( object sender, EventArgs e )
         {
-            if( _outsourcingService != null )
+            //IPluginProxy proxy = (IPluginProxy)_outsourcingService;
+            if( _outsourcingService != null /*&& proxy.Status == InternalRunningStatus.Started*/)
             {
                 if( _toBeDeliveredSecurely.Count < _permanentEmployees )
                 {

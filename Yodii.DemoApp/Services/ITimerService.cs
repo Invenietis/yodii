@@ -13,7 +13,7 @@ namespace Yodii.DemoApp
 
         void Start();
 
-        void SubscribeToTimerEvent( Action<object, EventArgs>  methodToAdd );
-        void UnsubscribeToTimerEvent( Action<object, EventArgs>  methodToRemove );
+        void SubscribeToTimerEvent( EventHandler handler );
+        void UnsubscribeToTimerEvent( EventHandler handler );
     }
 }

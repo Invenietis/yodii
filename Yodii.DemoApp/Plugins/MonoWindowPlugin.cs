@@ -43,7 +43,10 @@ namespace Yodii.DemoApp
                 HideWindow();
             else
                 HideAndDestroyWindow();
+            Stopping();
         }
+
+        protected virtual void Stopping(){}
 
         void IYodiiPlugin.Teardown()
         {

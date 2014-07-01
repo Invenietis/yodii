@@ -38,6 +38,15 @@ namespace Yodii.DemoApp
             EventHandler handler = new EventHandler( methodToRemove );
             _timer.Tick -= handler;
         }
+        public void SubscribeToTimerEvent( EventHandler handler )
+        {
+            _timer.Tick += handler;
+
+        }
+        public void UnsubscribeToTimerEvent( EventHandler handler )
+        {
+            _timer.Tick -= handler;
+        }
 
         void ITimerService.IncreaseSpeed()
         {

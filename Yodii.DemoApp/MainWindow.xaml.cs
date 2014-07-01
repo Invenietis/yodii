@@ -41,19 +41,64 @@ namespace Yodii.DemoApp
             _manager = new DemoManager();
             _manager.Initialize();
             InitializeComponent();
+            DataContext = _manager;
         }
 
         private void Button_Click( object sender, RoutedEventArgs e )
         {
-            if( !( string.IsNullOrEmpty( nbClients.Text ) && ( string.IsNullOrEmpty( nbCompanies.Text ) ) ) )
+            //if( !( string.IsNullOrEmpty( nbClients.Text ) && ( string.IsNullOrEmpty( nbCompanies.Text ) ) ) )
             {
-                int clientCount = int.Parse( nbClients.Text );
-                int companyCount = int.Parse( nbCompanies.Text );
-                if( clientCount > 0 && clientCount < _manager.ClientFactoryCount && companyCount > 0 && companyCount < _manager.CompanyFactoryCount )
-                    _manager.Start( companyCount, clientCount );
+                //int clientCount = int.Parse( nbClients.Text );
+                //int companyCount = int.Parse( nbCompanies.Text );
+                //if( clientCount > 0 && clientCount < _manager.ClientFactoryCount && companyCount > 0 && companyCount < _manager.CompanyFactoryCount )
+                    _manager.Start();
             }
-            else
-                _manager.Start();
+            //else
+               // _manager.Start();
+        }
+        private void Button_Click2( object sender, RoutedEventArgs e )
+        {
+
+        }
+        private void Button_Click2( object sender, RoutedEventArgs e )
+        {
+            _manager.Stop();
+        }
+        private void TryStartPlugin_Clicked( object sender, RoutedEventArgs e )
+        {
+            Button cmd = (Button)sender;
+            if( cmd.DataContext is string )
+            {
+                string plugin = (string)cmd.DataContext;
+                _manager.StartPlugin( plugin );
+            }
+        }
+        private void TryStopPlugin_Clicked( object sender, RoutedEventArgs e )
+        {
+            Button cmd = (Button)sender;
+            if( cmd.DataContext is string )
+            {
+                string plugin = (string)cmd.DataContext;
+                _manager.StopPlugin( plugin );
+            }
+        }
+        private void TryStartService_Clicked( object sender, RoutedEventArgs e )
+        {
+            Button cmd = (Button)sender;
+            if( cmd.DataContext is string )
+            {
+                string plugin = (string)cmd.DataContext;
+                _manager.StartService( plugin );
+            }
+        }
+        private void TryStopService_Clicked( object sender, RoutedEventArgs e )
+        {
+            Button cmd = (Button)sender;
+            if( cmd.DataContext is string )
+            {
+                string plugin = (string)cmd.DataContext;
+                _manager.StopService( plugin );
+            }
         }
 
         private void NumberValidationTextBox( object sender, TextCompositionEventArgs e )
