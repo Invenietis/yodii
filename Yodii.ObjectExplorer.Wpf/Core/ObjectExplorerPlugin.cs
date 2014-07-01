@@ -62,6 +62,12 @@ namespace Yodii.ObjectExplorer.Wpf
             Shutdown();
         }
 
+        void IYodiiPlugin.Teardown()
+        {
+        }
+
+        #endregion
+
         void Shutdown()
         {
             Debug.Assert( Application.Current != null, "A WPF context (Application.Current) must exist for this plugin." );
@@ -75,11 +81,5 @@ namespace Yodii.ObjectExplorer.Wpf
                 }
             } ) );
         }
-
-        void IYodiiPlugin.Teardown()
-        {
-        }
-
-        #endregion
     }
 }
