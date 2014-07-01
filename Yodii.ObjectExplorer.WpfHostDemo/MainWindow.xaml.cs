@@ -80,20 +80,19 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             ParameterInfo[] parameters = ctor.GetParameters();
 
             object[] ctorParameters = new object[parameters.Length];
+            Debug.Assert( ctorParameters.Length >= ctorServiceParameters.Length );
 
-            int j = 0; // Index for Service parameters
             for( int i = 0; i < parameters.Length; i++ )
             {
                 ParameterInfo p = parameters[i];
-                if( typeof( IServiceInfo ).IsAssignableFrom( p.ParameterType ) )
+                object instance = ctorServiceParameters.Length >= (i + 1) ? ctorServiceParameters[i] : null;
+
+                if( instance != null )
                 {
-                    // For Service parameters, use the given Service parameters array
-                    ctorParameters[i] = ctorServiceParameters[j];
-                    j++;
+                    ctorParameters[i] = instance;
                 }
                 else
                 {
-                    // Use the resolver (not null here) to try and get missing types
                     ctorParameters[i] = ResolveUnknownType( p.ParameterType );
                 }
             }
