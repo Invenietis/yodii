@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Yodii.Model;
 
-namespace Yodii.ObjectExplorer.ConsoleDemo.DummyYodiiItems
+namespace Yodii.DummyItems
 {
     public class MyPlugin3 : IYodiiPlugin, IMyService2
     {

@@ -61,6 +61,7 @@
                 </CollectionViewSource>
             </TreeView.Resources>
             <TreeViewItem
+                IsExpanded="True"
                 Header="Assemblies"
                 ItemsSource="{Binding Source={StaticResource assemblies}}">
                 <TreeViewItem.ItemTemplate>
@@ -71,6 +72,7 @@
                 </TreeViewItem.ItemTemplate>
             </TreeViewItem>
             <TreeViewItem
+                IsExpanded="True"
                 Header="Plugins"
                 ItemsSource="{Binding Source={StaticResource plugins}}">
                 <TreeViewItem.ItemTemplate>
@@ -98,6 +100,7 @@
                 </TreeViewItem.ItemTemplate>
             </TreeViewItem>
             <TreeViewItem
+                IsExpanded="True"
                 Header="Services"
                 ItemsSource="{Binding Source={StaticResource services}}">
                 <TreeViewItem.ItemTemplate>
