@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.ObjectExplorer.ConsoleDemo.DummyYodiiItems
 {
-    public class MyPlugin2 : IYodiiService, IMyService1
+    public class MyPlugin2 : IYodiiPlugin, IMyService1
     {
         public bool Setup( PluginSetupInfo info )
         {
