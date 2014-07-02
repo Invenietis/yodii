@@ -5,6 +5,8 @@ using Yodii.Engine;
 using Yodii.Discoverer;
 using Yodii.Host;
 using System.IO;
+using System.Reflection;
+using System.Linq;
 using System.Collections.ObjectModel;
 
 namespace Yodii.DemoApp
@@ -36,9 +38,9 @@ namespace Yodii.DemoApp
 
         public void Initialize()
         {
-            for(int i=0; i<_discoveredInfo.PluginInfos.Count; i++ )
+            for( int i=0; i < _discoveredInfo.PluginInfos.Count; i++ )
             {
-                PluginNameList.Add(_discoveredInfo.PluginInfos[i].PluginFullName);
+                PluginNameList.Add( _discoveredInfo.PluginInfos[i].PluginFullName );
             }
             for( int i=0; i < _discoveredInfo.ServiceInfos.Count; i++ )
             {
@@ -50,6 +52,7 @@ namespace Yodii.DemoApp
 
         public bool Start()
         {
+            _host.PluginCreator = PluginCreator2;
             _engine.SetDiscoveredInfo( _discoveredInfo );
             IConfigurationLayer cl = _engine.Configuration.Layers.Create();
             cl.Items.Add( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
@@ -65,13 +68,53 @@ namespace Yodii.DemoApp
             return true;
         }
 
+
+        public IYodiiPlugin PluginCreator2( IPluginInfo pluginInfo, object[] ctorParameters )
+        {
+            var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
+            var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
+
+            //compte le nombre de IYodiiEngine
+            //si Existe, créer nouveau tableau de bonne taille
+            //mettre les autres param dans le tablau tout en insérant IYodiiEngine au bon endroit
+            int a= (from y in ctor.GetParameters() where (y.ParameterType == typeof( IYodiiEngine )) select y).Count();
+            if( a > 0 )
+            {
+                object[] newCtorParameters = new object[ctorParameters.Count() + a];
+                List<int> indexList= new List<int>();
+                for( int i=0; i < ctor.GetParameters().Count(); i++ )
+                {
+                    if( ctor.GetParameters()[i].ParameterType == typeof( IYodiiEngine ) )
+                    {
+                        indexList.Add( i );
+                    }
+                }
+                int j=0;
+                for( int i=0; i < newCtorParameters.Count(); i++ )
+                {
+                    if( j < indexList.Count && i == indexList[j] )
+                    {
+                        newCtorParameters[i] = _engine;
+                        j++;
+                    }
+                    else
+                    {
+                        newCtorParameters[i] = ctorParameters[i + j];
+                    }
+                }
+                ctorParameters = newCtorParameters;
+            }
+            return (IYodiiPlugin)ctor.Invoke( ctorParameters );
+        }
+
+
         private void Generate()
         {
 
         }
-        public void StartPlugin(string pluginName)
+        public void StartPlugin( string pluginName )
         {
-            if( _engine.LiveInfo.FindPlugin( pluginName )!=null )
+            if( _engine.LiveInfo.FindPlugin( pluginName ) != null )
             {
                 if( _engine.LiveInfo.FindPlugin( pluginName ).Capability.CanStart == true )
                     _engine.LiveInfo.FindPlugin( pluginName ).Start( "DemoManager", StartDependencyImpact.Minimal );
@@ -102,6 +145,10 @@ namespace Yodii.DemoApp
                 if( _engine.LiveInfo.FindService( serviceName ).Capability.CanStop == true )
                     _engine.LiveInfo.FindService( serviceName ).Stop( "DemoManager" );
             }
+        }
+        public void MainWindowClosing()
+        {
+            _engine.Stop();
         }
     }
 }

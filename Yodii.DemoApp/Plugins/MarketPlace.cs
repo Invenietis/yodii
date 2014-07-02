@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using Yodii.DemoApp.Examples.Plugins.Views;
+using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
@@ -12,8 +13,8 @@ namespace Yodii.DemoApp
         List<IConsumer> _consumers;
         List<IBusiness> _companies;
 
-        public MarketPlace()
-            : base( true ) 
+        public MarketPlace( IYodiiEngine engine )
+            : base( true, engine )
         {
             _products = new ObservableCollection<MarketPlace.Product>();
             _consumers = new List<IConsumer>();
@@ -74,9 +75,9 @@ namespace Yodii.DemoApp
                 }
             }
 
-            public ProductCategory ProductCategory 
+            public ProductCategory ProductCategory
             {
-                get 
+                get
                 {
                     return _productCategory;
                 }
@@ -113,14 +114,14 @@ namespace Yodii.DemoApp
                 }
             }
 
-            public IBusiness Company 
+            public IBusiness Company
             {
                 get
                 {
                     return _company;
                 }
                 set
-                { 
+                {
                     _company = value;
                     RaisePropertyChanged();
                 }

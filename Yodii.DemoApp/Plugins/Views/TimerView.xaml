@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Yodii.DemoApp"
              mc:Ignorable="d" 
-             Title="Timer" Height="350" Width="525">
+             Title="Timer" Height="350" Width="525" Closing="Window_Closing">
 
     <Grid x:Name="___No_Name_">
         <StackPanel HorizontalAlignment="Center">

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Yodii.DemoApp"
              mc:Ignorable="d"
-             Title="{Binding Path=Info.Name}" Height="350" Width="525">
+             Title="{Binding Path=Info.Name}" Height="350" Width="525" Closing="Window_Closing">
     <Grid>
         <Image Source="/Plugins/Assets/Icons/client.png" Height="50" Width="50" HorizontalAlignment="Left" Margin="10,10,0,260"></Image>
         <Label Content="Currently Available Products" Margin="175,113,172,178"></Label>

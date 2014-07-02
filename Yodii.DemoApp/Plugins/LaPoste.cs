@@ -22,21 +22,21 @@ namespace Yodii.DemoApp
 
         const int _permanentEmployees=5;
         EventHandler _handler; //test
-        
+
         public class ToBeDeliveredSecurely
         {
-            public ToBeDeliveredSecurely( IClientInfo clientInfo, MarketPlace.Product product)
+            public ToBeDeliveredSecurely( IClientInfo clientInfo, MarketPlace.Product product )
             {
                 ClientInfo = clientInfo;
                 Product = product;
             }
-            public  IClientInfo ClientInfo { get; private set; }
-            public  MarketPlace.Product Product { get; private set; }
-            public int NbBeforeReturned{get; set;}
+            public IClientInfo ClientInfo { get; private set; }
+            public MarketPlace.Product Product { get; private set; }
+            public int NbBeforeReturned { get; set; }
         }
 
-        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService )
-            : base( true ) 
+        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService, IYodiiEngine engine )
+            : base( true, engine )
         {
             _marketPlace = market;
             _timer = timer;
@@ -56,7 +56,7 @@ namespace Yodii.DemoApp
             _handler = new EventHandler( TimeElapsed );
             //outSourcingService.ServiceStatusChanged += outSourcingService_ServiceStatusChanged;
             _timer.SubscribeToTimerEvent( _handler );
-            Window = new LaPosteView()
+            Window = new LaPosteView( this )
             {
                 DataContext = this
             };
@@ -70,7 +70,7 @@ namespace Yodii.DemoApp
 
         void ISecuredDeliveryService.DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order )
         {
-            _toBeDeliveredSecurely.Add(new ToBeDeliveredSecurely(order.Item1, order.Item2));
+            _toBeDeliveredSecurely.Add( new ToBeDeliveredSecurely( order.Item1, order.Item2 ) );
         }
 
         void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )
@@ -99,13 +99,13 @@ namespace Yodii.DemoApp
             }
 
             int count=_toBeDeliveredSecurely.Count;
-            int i=_tmpEmployees+_permanentEmployees;
+            int i=_tmpEmployees + _permanentEmployees;
             int j=0;
-            while(i>0 && j<count)
+            while( i > 0 && j < count )
             {
                 if( _marketPlace.Consumers.Find( c => c.Info == _toBeDeliveredSecurely[j].ClientInfo ) != null )
                 {
-                    if( _marketPlace.Consumers.Find( c => c.Info == _toBeDeliveredSecurely[j].ClientInfo ).ReceiveDelivery( _toBeDeliveredSecurely[j].Product ) ) 
+                    if( _marketPlace.Consumers.Find( c => c.Info == _toBeDeliveredSecurely[j].ClientInfo ).ReceiveDelivery( _toBeDeliveredSecurely[j].Product ) )
                     {
                         _toBeDeliveredSecurely.Remove( _toBeDeliveredSecurely[j] );
                     }

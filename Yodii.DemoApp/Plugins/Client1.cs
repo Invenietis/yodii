@@ -12,8 +12,8 @@ namespace Yodii.DemoApp
         readonly ClientInfo _clientInfo;
         ObservableCollection<MarketPlace.Product> _purchasedProducts;
 
-        public Client1( IMarketPlaceService market/*, string name, string adress*/ )
-            : base( true )
+        public Client1( IMarketPlaceService market/*, string name, string adress*/, IYodiiEngine engine )
+            : base( true, engine )
         {
             _market = market;
             //_market.Consumers.Add( this );
@@ -42,7 +42,7 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new Client1View()
+            Window = new Client1View( this )
             {
                 DataContext = this
             };

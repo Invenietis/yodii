@@ -23,5 +23,9 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
         {
             InitializeComponent();
         }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            e.Cancel = !((ManPower)this.DataContext).WindowClosed();
+        }
     }
 }

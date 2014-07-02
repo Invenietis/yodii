@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using Yodii.DemoApp.Examples.Plugins.Views;
+using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
@@ -14,8 +15,8 @@ namespace Yodii.DemoApp
         ObservableCollection<ProductCompany1> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
         
-        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService/*, string name*/ )
-            : base( true )
+        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService/*, string name*/, IYodiiEngine engine )
+            : base( true, engine )
         {
             _marketPlace = marketPlace;
             _delivery = deliveryService;

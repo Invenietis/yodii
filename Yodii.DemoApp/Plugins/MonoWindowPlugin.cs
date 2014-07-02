@@ -8,10 +8,31 @@ namespace Yodii.DemoApp
     {
         readonly bool _isQuickLifeTimeManagement;
         Window _window;
+        readonly IYodiiEngine _engine;
 
-        protected MonoWindowPlugin( bool isQuickLifeTimeManagement )
+        protected MonoWindowPlugin( bool isQuickLifeTimeManagement, IYodiiEngine engine )
         {
             _isQuickLifeTimeManagement = isQuickLifeTimeManagement;
+            _engine = engine;
+        }
+        int _windowClosed;
+        public bool WindowClosed()//there MUST be a better way to do this.
+        {
+            if( _windowClosed == 0 )
+            {
+                string plugin = this.GetType().ToString();
+                if( _engine != null && _engine.IsRunning )
+                {
+
+                    if( _engine.LiveInfo.FindPlugin( plugin ).Capability.CanStop )
+                    {
+                        _engine.LiveInfo.FindPlugin( plugin ).Stop();
+                        return true;
+                    }
+                    return false;
+                }
+            }
+            return true;
         }
 
         bool IYodiiPlugin.Setup( PluginSetupInfo info )
@@ -20,6 +41,7 @@ namespace Yodii.DemoApp
             {
                 _window = CreateWindow();
             }
+            _windowClosed = 0;
             return true;
         }
 
@@ -35,6 +57,7 @@ namespace Yodii.DemoApp
                 _window = CreateWindow();
                 _window.Show();
             }
+            _windowClosed = 0;
         }
 
         void IYodiiPlugin.Stop()
@@ -46,7 +69,7 @@ namespace Yodii.DemoApp
             Stopping();
         }
 
-        protected virtual void Stopping(){}
+        protected virtual void Stopping() { }
 
         void IYodiiPlugin.Teardown()
         {
@@ -58,12 +81,12 @@ namespace Yodii.DemoApp
 
         protected bool IsQuickLifeTimeManagement { get { return _isQuickLifeTimeManagement; } }
 
-        protected Window Window 
-        { 
+        protected Window Window
+        {
             get { return _window; }
-            set 
+            set
             {
-                if( value == null ) throw new ArgumentNullException("value");
+                if( value == null ) throw new ArgumentNullException( "value" );
                 _window = value;
             }
         }
@@ -87,6 +110,7 @@ namespace Yodii.DemoApp
 
         private void HideAndDestroyWindow()
         {
+            _windowClosed++;
             if( _window != null )
             {
                 HideWindow();

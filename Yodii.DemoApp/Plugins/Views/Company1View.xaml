@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Yodii.DemoApp"
              mc:Ignorable="d" 
-             Title="{Binding Path=Name}" Height="200" Width="100">
+             Title="{Binding Path=Name}" Height="200" Width="100" Closing="Window_Closing">
     <StackPanel>
         <Image Source="/Plugins/Assets/Icons/company.png" Height="50" Width="50" HorizontalAlignment="Left"></Image>
         <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=Products}" AutoGenerateColumns="False" Height="200" Width="400"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="60,57,57,63" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">

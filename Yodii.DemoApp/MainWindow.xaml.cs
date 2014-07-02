@@ -51,19 +51,19 @@ namespace Yodii.DemoApp
                 //int clientCount = int.Parse( nbClients.Text );
                 //int companyCount = int.Parse( nbCompanies.Text );
                 //if( clientCount > 0 && clientCount < _manager.ClientFactoryCount && companyCount > 0 && companyCount < _manager.CompanyFactoryCount )
-                    _manager.Start();
+                _manager.Start();
             }
             //else
-               // _manager.Start();
+            // _manager.Start();
         }
         private void Button_Click2( object sender, RoutedEventArgs e )
         {
 
         }
-        private void Button_Click2( object sender, RoutedEventArgs e )
-        {
-            _manager.Stop();
-        }
+        //private void Button_Click2( object sender, RoutedEventArgs e )
+        //{
+        //   _manager.Stop();
+        //}
         private void TryStartPlugin_Clicked( object sender, RoutedEventArgs e )
         {
             Button cmd = (Button)sender;
@@ -105,6 +105,10 @@ namespace Yodii.DemoApp
         {
             Regex r = new Regex( "[^0-9]+" );
             e.Handled = r.IsMatch( e.Text );
+        }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            _manager.MainWindowClosing();
         }
     }
 }

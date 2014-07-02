@@ -13,8 +13,8 @@ namespace Yodii.DemoApp
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _delivered;
         public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Delivered { get { return _delivered; } }
 
-        public UPS( IMarketPlaceService market )
-            : base( true )
+        public UPS( IMarketPlaceService market, IYodiiEngine engine )
+            : base( true, engine )
         {
             _marketPlace = market;
             _delivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
@@ -22,7 +22,7 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new UPSView()
+            Window = new UPSView( this )
             {
                 DataContext = this
             };
