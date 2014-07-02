@@ -69,7 +69,7 @@ namespace Yodii.ObjectExplorer.Wpf
 
             _activityMonitor.OpenTrace().Send( "Hello world" );
 
-            _graph = new YodiiGraph( _engine.Configuration, _engine );
+            _graph = new YodiiGraph( _engine );
 
             _reorderGraphLayoutCommand = new RelayCommand( ReorderGraphLayoutExecute );
             _autoPositionCommand = new RelayCommand( AutoPositionExecute );
@@ -113,6 +113,16 @@ namespace Yodii.ObjectExplorer.Wpf
                     ChangedSinceLastSave == true ? " *" : String.Empty
                     );
             }
+        }
+
+        public IYodiiEngine Engine
+        {
+            get { return _engine; }
+        }
+
+        public IEnumerable<IAssemblyInfo> YodiiAssemblies
+        {
+            get { return _engine.DiscoveredInfo.AssemblyInfos.Where( a => a.Plugins.Count > 0 || a.Services.Count > 0 ); }
         }
 
         public IObservableReadOnlyList<ILiveServiceInfo> ServiceInfos
@@ -305,7 +315,7 @@ namespace Yodii.ObjectExplorer.Wpf
             RaiseNewNotification( n );
         }
 
-        private IDictionary<YodiiGraphVertex,Point> RaisePositionRequest()
+        private IDictionary<YodiiGraphVertex, Point> RaisePositionRequest()
         {
             var v = VertexPositionRequest;
             VertexPositionEventArgs args = new VertexPositionEventArgs();

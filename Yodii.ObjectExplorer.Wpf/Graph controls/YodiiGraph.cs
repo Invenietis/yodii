@@ -34,23 +34,34 @@ namespace Yodii.ObjectExplorer.Wpf
         public YodiiGraph()
         { }
 
-        internal YodiiGraph( IConfigurationManager configManager, IYodiiEngine engine )
+        internal YodiiGraph( IYodiiEngine engine )
             : base()
         {
             Debug.Assert( engine != null );
-            Debug.Assert( configManager != null );
 
             _serviceInfos = engine.LiveInfo.Services;
             _pluginInfos = engine.LiveInfo.Plugins;
-            _configurationManager = configManager;
+            _configurationManager = engine.Configuration;
 
             _serviceInfos.CollectionChanged += _serviceInfos_CollectionChanged;
             _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
             _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
 
-            UpdateVerticesWithConfiguration( _configurationManager.FinalConfiguration );
+            BuildInitialGraph();
         }
         #endregion Constructor
+
+        void BuildInitialGraph()
+        {
+            this.Clear();
+
+            foreach( var service in _serviceInfos ) CreateServiceVertex( service );
+            foreach( var plugin in _pluginInfos ) CreatePluginVertex( plugin );
+
+            RaiseGraphUpdateRequested();
+
+            ReprocessVerticesWithConfiguration( _configurationManager.FinalConfiguration );
+        }
 
         #region Properties
         internal IConfigurationManager ConfigurationManager
@@ -60,50 +71,43 @@ namespace Yodii.ObjectExplorer.Wpf
             {
                 Debug.Assert( value != null );
                 _configurationManager = value;
-                UpdateVerticesWithConfiguration( _configurationManager.FinalConfiguration );
+                ReprocessVerticesWithConfiguration( _configurationManager.FinalConfiguration );
                 _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
             }
         }
 
         void _configurationManager_ConfigurationChanged( object sender, ConfigurationChangedEventArgs e )
         {
-            UpdateVerticesWithConfiguration( e.FinalConfiguration );
+            ReprocessVerticesWithConfiguration( e.FinalConfiguration );
         }
         #endregion
 
         #region Private methods
-        private void UpdateVerticesWithConfiguration( FinalConfiguration config )
+        private void ReprocessVerticesWithConfiguration( FinalConfiguration config )
+        {
+            foreach( var v in Vertices ) SetVertexConfiguration( v, config );
+        }
+
+        static void SetVertexConfiguration( YodiiGraphVertex v, FinalConfiguration config = null )
         {
             if( config == null )
             {
-                foreach( var v in Vertices )
-                {
-                    v.HasConfiguration = false;
-                    v.ConfigurationStatus = ConfigurationStatus.Optional;
-                }
+                v.HasConfiguration = false;
+                v.ConfigurationStatus = ConfigurationStatus.Optional;
             }
             else
             {
+                FinalConfigurationItem item = config.Items.Where( x => x.ServiceOrPluginFullName == v.LiveObject.FullName ).SingleOrDefault();
 
-                foreach( var v in Vertices )
+                if( item.ServiceOrPluginFullName != null )
                 {
-                    string identifier;
-                    if( v.IsService )
-                        identifier = v.LiveServiceInfo.ServiceInfo.ServiceFullName;
-                    else
-                        identifier = v.LivePluginInfo.PluginInfo.PluginFullName;
-
-                    var items = config.Items.Where( x => x.ServiceOrPluginFullName == identifier );
-                    if( items.Count() > 0 )
-                    {
-                        v.HasConfiguration = true;
-                        v.ConfigurationStatus = items.First().Status;
-                    }
-                    else
-                    {
-                        v.HasConfiguration = false;
-                        v.ConfigurationStatus = ConfigurationStatus.Optional;
-                    }
+                    v.HasConfiguration = true;
+                    v.ConfigurationStatus = item.Status;
+                }
+                else
+                {
+                    v.HasConfiguration = false;
+                    v.ConfigurationStatus = ConfigurationStatus.Optional;
                 }
             }
         }
@@ -119,6 +123,7 @@ namespace Yodii.ObjectExplorer.Wpf
         YodiiGraphVertex CreateServiceVertex( ILiveServiceInfo liveService )
         {
             YodiiGraphVertex serviceVertex = new YodiiGraphVertex( this, liveService ) { ID = currentId++ };
+            SetVertexConfiguration( serviceVertex, _configurationManager.FinalConfiguration );
             this.AddVertex( serviceVertex );
 
 
@@ -155,6 +160,7 @@ namespace Yodii.ObjectExplorer.Wpf
         YodiiGraphVertex CreatePluginVertex( ILivePluginInfo livePlugin )
         {
             YodiiGraphVertex pluginVertex = new YodiiGraphVertex( this, livePlugin ) { ID = this.currentId++ };
+            SetVertexConfiguration( pluginVertex, _configurationManager.FinalConfiguration );
             this.AddVertex( pluginVertex );
 
             if( livePlugin.PluginInfo.Service != null )

@@ -28,6 +28,8 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             _engine = new YodiiEngine( _host );
 
             _host.PluginCreator = CustomPluginCreator;
+
+            ResetConfiguration();
         }
 
         internal IYodiiEngine Engine { get { return _engine; } }
@@ -40,14 +42,16 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             // Load plugin.service assemblies
             IAssemblyInfo ia = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.Wpf.dll" ) );
             IAssemblyInfo ia2 = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.WpfHostDemo.exe" ) );
-
-            IConfigurationLayer cl = _engine.Configuration.Layers.Create();
-            cl.Items.Add( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin", ConfigurationStatus.Running );
-
             IDiscoveredInfo info = _discoverer.GetDiscoveredInfo();
-
             IYodiiEngineResult discoveredInfoResult = _engine.SetDiscoveredInfo( info );
             Debug.Assert( discoveredInfoResult.Success );
+        }
+
+        internal void ResetConfiguration()
+        {
+            _engine.Configuration.Layers.Clear();
+            IConfigurationLayer cl = _engine.Configuration.Layers.Create( "ObjectExplorerManager" );
+            cl.Items.Add( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin", ConfigurationStatus.Running );
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -10,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -23,15 +26,16 @@ namespace Yodii.ObjectExplorer.Wpf
     {
         readonly ObjectExplorerWindowViewModel _vm;
         readonly YodiiLayout _graphLayout;
-
-        public bool AllowClose { get; set; }
+        readonly IYodiiEngine _engine;
+        ILivePluginInfo _objectExplorerLiveInfo;
 
         /// <summary>
         /// Creates the main window.
         /// </summary>
         public ObjectExplorerWindow( IYodiiEngine engine )
         {
-            AllowClose = false;
+            _engine = engine;
+
             BindingErrorListener.Listen( m => MessageBox.Show( m ) );
 
             _vm = new ObjectExplorerWindowViewModel( engine );
@@ -122,6 +126,11 @@ namespace Yodii.ObjectExplorer.Wpf
 
         void MainWindow_Loaded( object sender, RoutedEventArgs e )
         {
+            _objectExplorerLiveInfo = _engine.LiveInfo.FindPlugin( typeof( ObjectExplorerPlugin ).FullName );
+            if( _objectExplorerLiveInfo != null ) _objectExplorerLiveInfo.Capability.PropertyChanged += Capability_PropertyChanged;
+            _engine.LiveInfo.Plugins.CollectionChanged += Plugins_CollectionChanged;
+
+            UpdateStatus();
             GraphArea.GenerateGraph( _vm.Graph );
 
             Timer updateTimer = new Timer( 500 );
@@ -137,6 +146,32 @@ namespace Yodii.ObjectExplorer.Wpf
                 Application.Current.Dispatcher.Invoke( a );
             };
             updateTimer.Enabled = true;
+        }
+
+        void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            if( e.Action == NotifyCollectionChangedAction.Add
+                && e.NewItems.Count > 0
+                && e.NewItems[0] is ILivePluginInfo
+                && ((ILivePluginInfo)e.NewItems[0]).FullName == typeof( ObjectExplorerPlugin ).FullName )
+            {
+                // We were added to the run plugins.
+                _objectExplorerLiveInfo = _engine.LiveInfo.FindPlugin( typeof( ObjectExplorerPlugin ).FullName );
+                _objectExplorerLiveInfo.Capability.PropertyChanged += Capability_PropertyChanged;
+                UpdateStatus();
+                Debug.Assert( _objectExplorerLiveInfo != null );
+            }
+        }
+
+        void Capability_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "CanStop" ) UpdateStatus();
+        }
+
+        void UpdateStatus()
+        {
+            bool enable = _objectExplorerLiveInfo != null ? _objectExplorerLiveInfo.Capability.CanStop : false;
+            SetSysMenu( enable );
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )
@@ -188,14 +223,16 @@ namespace Yodii.ObjectExplorer.Wpf
             _vm.SelectedVertex = null;
         }
 
-        private void ExportToPngButton_Click( object sender, RoutedEventArgs e )
+        private void SetSysMenu( bool enable )
         {
-            GraphArea.ExportAsPNG( true );
-        }
-
-        private void MainWindowRoot_Closing( object sender, System.ComponentModel.CancelEventArgs e )
-        {
-            if( !AllowClose ) e.Cancel = true;
+            if( enable )
+            {
+                this.ShowSysMenu();
+            }
+            else
+            {
+                this.HideSysMenu();
+            }
         }
     }
 
@@ -212,5 +249,32 @@ namespace Yodii.ObjectExplorer.Wpf
         {
             logAction( message );
         }
+    }
+
+    public static class WindowExtensions
+    {
+        #region Win32 imports
+
+        private const int GWL_STYLE = -16;
+        private const int WS_SYSMENU = 0x80000;
+        [DllImport( "user32.dll", SetLastError = true )]
+        private static extern int GetWindowLong( IntPtr hWnd, int nIndex );
+        [DllImport( "user32.dll" )]
+        private static extern int SetWindowLong( IntPtr hWnd, int nIndex, int dwNewLong );
+
+        #endregion
+
+        internal static void HideSysMenu( this Window w )
+        {
+            var hwnd = new WindowInteropHelper( w ).Handle;
+            SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) & ~WS_SYSMENU );
+        }
+
+        internal static void ShowSysMenu( this Window w )
+        {
+            var hwnd = new WindowInteropHelper( w ).Handle;
+            SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) | WS_SYSMENU );
+        }
+
     }
 }
