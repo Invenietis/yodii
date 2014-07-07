@@ -6,6 +6,7 @@ namespace Yodii.DemoApp
     {
         Retail,
         Service,
+        OilAndGas,
         Entertainment
     }
 }
