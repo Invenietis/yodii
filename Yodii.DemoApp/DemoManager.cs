@@ -18,15 +18,15 @@ namespace Yodii.DemoApp
         readonly IDiscoveredInfo _discoveredInfo;
         readonly PluginHost _host;
         readonly YodiiEngine _engine;
-        public ObservableCollection<string> PluginNameList { get; private set; }//va falloir créer des ptit nobjets
-        public ObservableCollection<string> ServiceNameList { get; private set; }
+        ObservableCollection<IPluginInfo> _plugins;
+        ObservableCollection<IServiceInfo> _services;
 
         public IDiscoveredInfo DiscoveredInfo { get { return _discoveredInfo; } }
 
         public DemoManager()
         {
-            PluginNameList = new ObservableCollection<string>();
-            ServiceNameList = new ObservableCollection<string>();
+            //_plugins = new ObservableCollection<IPluginInfo>();
+            //_services = new ObservableCollection<IServiceInfo>();
 
             _discoverer = new StandardDiscoverer();
             _assemblyInfo = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.DemoApp.exe" ) );
@@ -38,17 +38,9 @@ namespace Yodii.DemoApp
 
         public void Initialize()
         {
-            for( int i=0; i < _discoveredInfo.PluginInfos.Count; i++ )
-            {
-                PluginNameList.Add( _discoveredInfo.PluginInfos[i].PluginFullName );
-            }
-            for( int i=0; i < _discoveredInfo.ServiceInfos.Count; i++ )
-            {
-                ServiceNameList.Add( _discoveredInfo.ServiceInfos[i].ServiceFullName );
-            }
+            _plugins = new ObservableCollection<IPluginInfo>( _discoveredInfo.PluginInfos );
+            _services = new ObservableCollection<IServiceInfo>( _discoveredInfo.ServiceInfos );
         }
-
-
 
         public bool Start()
         {
@@ -146,9 +138,24 @@ namespace Yodii.DemoApp
                     _engine.LiveInfo.FindService( serviceName ).Stop( "DemoManager" );
             }
         }
+
+        internal bool IsRunningPlugin( string pluginName )
+        {
+            return _engine.LiveInfo.FindPlugin( pluginName ).IsRunning;
+        }
+
+        internal bool IsRunningService( string serviceName )
+        {
+            return _engine.LiveInfo.FindService( serviceName ).IsRunning;
+        }
+
         public void MainWindowClosing()
         {
             _engine.Stop();
         }
+
+        public ObservableCollection<IPluginInfo> Plugins { get { return _plugins; } }
+
+        public ObservableCollection<IServiceInfo> Services { get { return _services; } }
     }
 }

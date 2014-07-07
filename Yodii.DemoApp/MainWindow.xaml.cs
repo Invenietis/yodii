@@ -106,9 +106,11 @@ namespace Yodii.DemoApp
             Regex r = new Regex( "[^0-9]+" );
             e.Handled = r.IsMatch( e.Text );
         }
+
         private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
         {
             _manager.MainWindowClosing();
+            Application.Current.Shutdown();
         }
     }
 }

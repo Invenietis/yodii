@@ -5,23 +5,25 @@
     <StackPanel>
         <Button Click="Button_Click" Content="Start"/>
         <Label Content="Plugin List"/>
-        <ListBox ItemsSource="{Binding PluginNameList}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
+        <ListBox ItemsSource="{Binding Plugins}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" >
-                        <TextBlock Text="{Binding}" FontWeight="Bold" Width="250" />
+                        <TextBlock Text="{Binding PluginFullName}" FontWeight="Bold" Width="250"/>
                         <Button Content="TryStart" Click="TryStartPlugin_Clicked"/>
                         <Button Content="TryStop" Click="TryStopPlugin_Clicked"/>
                     </StackPanel>
+                    
                 </DataTemplate>
+                
             </ListBox.ItemTemplate>
         </ListBox>
         <Label Content="Service List"/>
-        <ListBox ItemsSource="{Binding ServiceNameList}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
+        <ListBox ItemsSource="{Binding Services}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" >
-                        <TextBlock Text="{Binding}" FontWeight="Bold" Width="250" />
+                        <TextBlock Text="{Binding ServiceFullName}" FontWeight="Bold" Width="250"/>
                         <Button Content="TryStart" Click="TryStartService_Clicked"/>
                         <Button Content="TryStop" Click="TryStopService_Clicked"/>
                     </StackPanel>
