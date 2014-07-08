@@ -5,11 +5,24 @@
     <StackPanel>
         <Button Click="Button_Click" Content="Start"/>
         <Label Content="Plugin List"/>
-        <ListBox ItemsSource="{Binding Plugins}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
+        <ListBox Name="ListBox" ItemsSource="{Binding Engine.LiveInfo.Plugins}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" >
-                        <TextBlock Text="{Binding PluginFullName}" FontWeight="Bold" Width="250"/>
+                        <TextBlock Name="pluginText" Text="{Binding FullName}" FontWeight="Bold" Width="250">
+                            <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Foreground" Value="Green"/>
+                                            </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="False">
+                                            <Setter Property="Foreground" Value="Red"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                    </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                         <Button Content="TryStart" Click="TryStartPlugin_Clicked"/>
                         <Button Content="TryStop" Click="TryStopPlugin_Clicked"/>
                     </StackPanel>
@@ -19,11 +32,24 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Label Content="Service List"/>
-        <ListBox ItemsSource="{Binding Services}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
+        <ListBox ItemsSource="{Binding Engine.LiveInfo.Services}"  BorderBrush="Transparent" HorizontalContentAlignment="Stretch">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" >
-                        <TextBlock Text="{Binding ServiceFullName}" FontWeight="Bold" Width="250"/>
+                        <TextBlock Text="{Binding FullName}" FontWeight="Bold" Width="250">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                            <Setter Property="Foreground" Value="Green"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="False">
+                                            <Setter Property="Foreground" Value="Red"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                         <Button Content="TryStart" Click="TryStartService_Clicked"/>
                         <Button Content="TryStop" Click="TryStopService_Clicked"/>
                     </StackPanel>

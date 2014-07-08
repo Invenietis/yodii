@@ -67,29 +67,29 @@ namespace Yodii.DemoApp
         private void TryStartPlugin_Clicked( object sender, RoutedEventArgs e )
         {
             Button cmd = (Button)sender;
-            IPluginInfo p = (IPluginInfo)cmd.DataContext;
-            _manager.StartPlugin( p.PluginFullName );
+            ILivePluginInfo p = (ILivePluginInfo)cmd.DataContext;
+            _manager.StartPlugin( p.FullName );
         }
 
         private void TryStopPlugin_Clicked( object sender, RoutedEventArgs e )
         {
             Button cmd = (Button)sender;
-            IPluginInfo p = (IPluginInfo)cmd.DataContext;
-            _manager.StopPlugin( p.PluginFullName );
+            ILivePluginInfo p = (ILivePluginInfo)cmd.DataContext;
+            _manager.StopPlugin( p.FullName );
         }
 
         private void TryStartService_Clicked( object sender, RoutedEventArgs e )
         {
             Button cmd = (Button)sender;
-            IServiceInfo s = (IServiceInfo)cmd.DataContext;
-            _manager.StartService( s.ServiceFullName );
+            ILiveServiceInfo s = (ILiveServiceInfo)cmd.DataContext;
+            _manager.StartService( s.FullName );
         }
 
         private void TryStopService_Clicked( object sender, RoutedEventArgs e )
         {
             Button cmd = (Button)sender;
-            IServiceInfo s = (IServiceInfo)cmd.DataContext;
-            _manager.StopService( s.ServiceFullName );
+            ILiveServiceInfo s = (ILiveServiceInfo)cmd.DataContext;
+            _manager.StopService( s.FullName );
         }
 
         private void NumberValidationTextBox( object sender, TextCompositionEventArgs e )
