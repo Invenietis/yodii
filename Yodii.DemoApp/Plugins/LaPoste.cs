@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace Yodii.DemoApp
 {
-    public class LaPoste : MonoWindowPlugin, ISecuredDeliveryService
+    public class LaPoste : MonoWindowPlugin, IDeliveryService
     {
         readonly IMarketPlaceService _marketPlace;
         readonly ITimerService _timer;
@@ -66,11 +66,6 @@ namespace Yodii.DemoApp
         protected override void Stopping()
         {
             _timer.UnsubscribeToTimerEvent( _handler );
-        }
-
-        void ISecuredDeliveryService.DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order )
-        {
-            _toBeDeliveredSecurely.Add( new ToBeDeliveredSecurely( order.Item1, order.Item2 ) );
         }
 
         void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )

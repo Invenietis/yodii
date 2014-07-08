@@ -13,12 +13,14 @@ namespace Yodii.DemoApp
         List<IConsumer> _consumers;
         List<IBusiness> _companies;
 
-        public MarketPlace( IYodiiEngine engine )
+        public MarketPlace( IBusiness b, IConsumer c, IYodiiEngine engine )
             : base( true, engine )
         {
             _products = new ObservableCollection<MarketPlace.Product>();
             _consumers = new List<IConsumer>();
+            _consumers.Add( c );
             _companies = new List<IBusiness>();
+            _companies.Add( b );
         }
 
         protected override Window CreateWindow()

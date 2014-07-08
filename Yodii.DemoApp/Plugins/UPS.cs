@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace Yodii.DemoApp
 {
-    public class UPS : MonoWindowPlugin, ISecuredDeliveryService
+    public class UPS : MonoWindowPlugin, IDeliveryService
     {
         readonly IMarketPlaceService _marketPlace;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _delivered;
@@ -28,16 +28,6 @@ namespace Yodii.DemoApp
             };
 
             return Window;
-        }
-
-        void ISecuredDeliveryService.DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order )
-        {
-            IConsumer client = _marketPlace.Consumers.Find( c => c.Info == order.Item1 );
-            if( client != null )
-            {
-                client.ReceiveDelivery( order.Item2 );
-                _delivered.Add( order );
-            }
         }
 
         void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )

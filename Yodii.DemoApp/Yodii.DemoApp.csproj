@@ -81,7 +81,6 @@
     <Compile Include="Services\IDeliveryService.cs" />
     <Compile Include="Services\IMarketPlaceService.cs" />
     <Compile Include="Services\IOutSourcingService.cs" />
-    <Compile Include="Services\ISecuredDeliveryService.cs" />
     <Compile Include="Services\ITimerService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

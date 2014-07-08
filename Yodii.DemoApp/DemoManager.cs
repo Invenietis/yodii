@@ -49,7 +49,7 @@ namespace Yodii.DemoApp
             IConfigurationLayer cl = _engine.Configuration.Layers.Create();
             cl.Items.Add( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
             cl.Items.Add( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
-            _engine.Start();
+            IYodiiEngineResult r = _engine.Start();
             //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Client1" ).Start();
             //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Company1" ).Start();
             return true;
@@ -148,6 +148,8 @@ namespace Yodii.DemoApp
         {
             _engine.Stop();
         }
+
+        internal IYodiiEngine Engine { get { return _engine; } }
 
         public ObservableCollection<IPluginInfo> Plugins { get { return _plugins; } }
 

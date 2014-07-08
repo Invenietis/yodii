@@ -1,128 +1,123 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Yodii.Lab>
   <Services>
+    <Service FullName="IBusiness">
+      <Generalization />
+      <X>-409.699015003973</X>
+      <Y>30.2073589910266</Y>
+    </Service>
     <Service FullName="ICarRepairService">
       <Generalization />
-      <X>-322.90256627442</X>
-      <Y>411.810639770257</Y>
+      <X>-423.106923189878</X>
+      <Y>458.850034605447</Y>
+    </Service>
+    <Service FullName="IConsumer">
+      <Generalization />
+      <X>19.9816919681708</X>
+      <Y>32.9033732798644</Y>
     </Service>
     <Service FullName="IDeliveryService">
       <Generalization />
-      <X>216.00432450896</X>
-      <Y>400.568311583519</Y>
+      <X>-188.589507478655</X>
+      <Y>310.102874968213</Y>
     </Service>
     <Service FullName="IMarketPlaceService">
       <Generalization />
-      <X>0</X>
-      <Y>0</Y>
+      <X>-195.015839619164</X>
+      <Y>30.0607804083979</Y>
     </Service>
     <Service FullName="IOutSourcingService">
       <Generalization />
-      <X>-111.308207032319</X>
-      <Y>541.599385159438</Y>
-    </Service>
-    <Service FullName="ISecuredDeliveryService">
-      <Generalization>IDeliveryService</Generalization>
-      <X>207.540212500397</X>
-      <Y>575.801174306276</Y>
+      <X>-190.158824953477</X>
+      <Y>448.833000332748</Y>
     </Service>
     <Service FullName="ITimerService">
       <Generalization />
-      <X>465.456340287103</X>
-      <Y>230.117359582774</Y>
+      <X>51.8618590007405</X>
+      <Y>449.562523043832</Y>
     </Service>
   </Services>
   <Plugins>
     <Plugin>
       <FullName>Client1</FullName>
-      <Service />
+      <Service>IConsumer</Service>
       <ServiceReferences>
         <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
       </ServiceReferences>
-      <X>423.586979062769</X>
-      <Y>5.17382947981469</Y>
+      <X>20.2431638490976</X>
+      <Y>161.865632641567</Y>
     </Plugin>
     <Plugin>
       <FullName>Company1</FullName>
-      <Service />
+      <Service>IBusiness</Service>
       <ServiceReferences>
         <ServiceReference Service="IDeliveryService" Requirement="Running" />
         <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
       </ServiceReferences>
-      <X>-139.247717843324</X>
-      <Y>225.9524702854</Y>
-    </Plugin>
-    <Plugin>
-      <FullName>Company2</FullName>
-      <Service />
-      <ServiceReferences>
-        <ServiceReference Service="IDeliveryService" Requirement="Running" />
-        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
-      </ServiceReferences>
-      <X>-0.993764006741117</X>
-      <Y>225.394111871924</Y>
-    </Plugin>
-    <Plugin>
-      <FullName>Company3</FullName>
-      <Service />
-      <ServiceReferences>
-        <ServiceReference Service="IDeliveryService" Requirement="Running" />
-        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
-      </ServiceReferences>
-      <X>129.100767344101</X>
-      <Y>228.430782664237</Y>
+      <X>-413.12193260684</X>
+      <Y>150.295810019921</Y>
     </Plugin>
     <Plugin>
       <FullName>Garage</FullName>
       <Service>ICarRepairService</Service>
       <ServiceReferences />
-      <X>-574.947191450851</X>
-      <Y>429.499685217279</Y>
+      <X>-421.812669334683</X>
+      <Y>579.233640890842</Y>
     </Plugin>
     <Plugin>
       <FullName>LaPoste</FullName>
-      <Service>ISecuredDeliveryService</Service>
-      <ServiceReferences />
-      <X>292.144571825582</X>
-      <Y>745.074854912525</Y>
+      <Service>IDeliveryService</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
+        <ServiceReference Service="IOutSourcingService" Requirement="Running" />
+        <ServiceReference Service="ITimerService" Requirement="Running" />
+      </ServiceReferences>
+      <X>32.3757386397315</X>
+      <Y>308.708323429232</Y>
     </Plugin>
     <Plugin>
       <FullName>LivrExpress</FullName>
       <Service>IDeliveryService</Service>
       <ServiceReferences>
         <ServiceReference Service="ICarRepairService" Requirement="Running" />
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
         <ServiceReference Service="IOutSourcingService" Requirement="Running" />
       </ServiceReferences>
-      <X>-27.4330153421001</X>
-      <Y>437.300550435528</Y>
+      <X>-413.843405568749</X>
+      <Y>310.65396532639</Y>
     </Plugin>
     <Plugin>
       <FullName>ManPower</FullName>
       <Service>IOutSourcingService</Service>
       <ServiceReferences />
-      <X>-412.895755181912</X>
-      <Y>590.997268169726</Y>
+      <X>-190.053018380986</X>
+      <Y>584.592314784405</Y>
     </Plugin>
     <Plugin>
       <FullName>MarketPlace</FullName>
       <Service>IMarketPlaceService</Service>
-      <ServiceReferences />
-      <X>-0.952637833913741</X>
-      <Y>-102.941007489913</Y>
+      <ServiceReferences>
+        <ServiceReference Service="IBusiness" Requirement="Running" />
+        <ServiceReference Service="IConsumer" Requirement="Running" />
+      </ServiceReferences>
+      <X>-198.755099829843</X>
+      <Y>-97.2299401863759</Y>
     </Plugin>
     <Plugin>
       <FullName>Timer</FullName>
       <Service>ITimerService</Service>
       <ServiceReferences />
-      <X>461.854361785822</X>
-      <Y>156.323101340324</Y>
+      <X>53.0428065363037</X>
+      <Y>575.296453326558</Y>
     </Plugin>
     <Plugin>
       <FullName>UPS</FullName>
-      <Service>ISecuredDeliveryService</Service>
-      <ServiceReferences />
-      <X>75.519700687199</X>
-      <Y>730.33710398591</Y>
+      <Service>IDeliveryService</Service>
+      <ServiceReferences>
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
+      </ServiceReferences>
+      <X>-190.687590733642</X>
+      <Y>207.545794229549</Y>
     </Plugin>
   </Plugins>
   <Configuration>

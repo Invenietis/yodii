@@ -66,30 +66,42 @@ namespace Yodii.DemoApp
         //}
         private void TryStartPlugin_Clicked( object sender, RoutedEventArgs e )
         {
-            Button cmd = (Button)sender;
-            IPluginInfo p = (IPluginInfo)cmd.DataContext;
-            _manager.StartPlugin( p.PluginFullName );
+            if( _manager.Engine.IsRunning )
+            {
+                Button cmd = (Button)sender;
+                IPluginInfo p = (IPluginInfo)cmd.DataContext;
+                _manager.StartPlugin( p.PluginFullName );
+            }
         }
 
         private void TryStopPlugin_Clicked( object sender, RoutedEventArgs e )
         {
-            Button cmd = (Button)sender;
-            IPluginInfo p = (IPluginInfo)cmd.DataContext;
-            _manager.StopPlugin( p.PluginFullName );
+            if( _manager.Engine.IsRunning )
+            {
+                Button cmd = (Button)sender;
+                IPluginInfo p = (IPluginInfo)cmd.DataContext;
+                _manager.StopPlugin( p.PluginFullName );
+            }
         }
 
         private void TryStartService_Clicked( object sender, RoutedEventArgs e )
         {
-            Button cmd = (Button)sender;
-            IServiceInfo s = (IServiceInfo)cmd.DataContext;
-            _manager.StartService( s.ServiceFullName );
+            if( _manager.Engine.IsRunning )
+            {
+                Button cmd = (Button)sender;
+                IServiceInfo s = (IServiceInfo)cmd.DataContext;
+                _manager.StartService( s.ServiceFullName );
+            }
         }
 
         private void TryStopService_Clicked( object sender, RoutedEventArgs e )
         {
-            Button cmd = (Button)sender;
-            IServiceInfo s = (IServiceInfo)cmd.DataContext;
-            _manager.StopService( s.ServiceFullName );
+            if( _manager.Engine.IsRunning )
+            {
+                Button cmd = (Button)sender;
+                IServiceInfo s = (IServiceInfo)cmd.DataContext;
+                _manager.StopService( s.ServiceFullName );
+            }
         }
 
         private void NumberValidationTextBox( object sender, TextCompositionEventArgs e )
