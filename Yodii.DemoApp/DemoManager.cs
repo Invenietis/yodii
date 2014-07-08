@@ -1,112 +1,161 @@
 ﻿using System;
 using System.Collections.Generic;
 using Yodii.Model;
+using Yodii.Engine;
+using Yodii.Discoverer;
+using Yodii.Host;
+using System.IO;
+using System.Reflection;
+using System.Linq;
+using System.Collections.ObjectModel;
 
 namespace Yodii.DemoApp
 {
     public sealed class DemoManager
     {
-        ITimerService _mainTimer;
-        IMarketPlaceService _marketPlace;
-        ICarRepairService _carRepair;
-        IOutSourcingService _outsourcing;
-        IDeliveryService _delivery;
-        //string[,,] _data;
-        List<Client1> _clients;
-        List<Company1> _companies;
-        
-        string[] _companyData;
-        List<Tuple<string, string>> _clientsData;
-        //StandardDiscoverer _standardDiscoverer;
+        readonly StandardDiscoverer _discoverer;
+        readonly IAssemblyInfo _assemblyInfo;
+        readonly IDiscoveredInfo _discoveredInfo;
+        readonly PluginHost _host;
+        readonly YodiiEngine _engine;
+        ObservableCollection<IPluginInfo> _plugins;
+        ObservableCollection<IServiceInfo> _services;
+
+        public IDiscoveredInfo DiscoveredInfo { get { return _discoveredInfo; } }
 
         public DemoManager()
         {
-            _clients = new List<Client1>();
-            _companies = new List<Company1>();
-            _mainTimer = new TimerHandler();
-            _marketPlace = new MarketPlace();
-            _carRepair = new Garage();
-            _outsourcing = new ManPower();
-            _delivery = new LivrExpress( _carRepair, _outsourcing, _marketPlace );
+            //_plugins = new ObservableCollection<IPluginInfo>();
+            //_services = new ObservableCollection<IServiceInfo>();
+
+            _discoverer = new StandardDiscoverer();
+            _assemblyInfo = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.DemoApp.exe" ) );
+            _discoveredInfo = _discoverer.GetDiscoveredInfo();
+
+            _host = new PluginHost();
+            _engine = new YodiiEngine( _host );
         }
 
         public void Initialize()
-        {            
-           _clientsData = new List<Tuple<string, string>>
-           {
-                new Tuple<string,string>("Buyer One","1st Street"),
-                new Tuple<string,string>("Buyer Two","2nd Street"),
-                new Tuple<string,string>("Buyer Three","3rd Street"),
-                new Tuple<string,string>("Buyer Four","4th Street"),
-                new Tuple<string,string>("Buyer Five","5th Street"),
-                new Tuple<string,string>("Buyer Six","6th Street"),
-                new Tuple<string,string>("Buyer Seven","7th Street"),
-                new Tuple<string,string>("Buyer Height","8th Street"),
-                new Tuple<string,string>("Buyer Nine","9th Street"),
-                new Tuple<string,string>("Buyer Ten","10th Street"),      
-            };
-
-            _companyData = new string[]
-            {
-                "Amazon",
-                "eBay",
-                "Google",
-                "Apple",
-                "Microsoft",
-                "IBM",
-                "LG",
-                //...
-            };
-           
-            //_standardDiscoverer = new StandardDiscoverer();
+        {
+            _plugins = new ObservableCollection<IPluginInfo>( _discoveredInfo.PluginInfos );
+            _services = new ObservableCollection<IServiceInfo>( _discoveredInfo.ServiceInfos );
         }
 
         public bool Start()
         {
-            Random r = new Random();
-            return Start( r.Next( 2, 5 ), r.Next( 1, 7 ) );
+            _host.PluginCreator = PluginCreator2;
+            _engine.SetDiscoveredInfo( _discoveredInfo );
+            IConfigurationLayer cl = _engine.Configuration.Layers.Create();
+            cl.Items.Add( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
+            cl.Items.Add( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
+            _engine.Start();
+            //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Client1" ).Start();
+            //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Company1" ).Start();
+            return true;
         }
-
-        public bool Start( int nbCompanies, int nbClients )
+        public bool Stop()
         {
-            if( !( nbClients > 0 || nbCompanies > 0 ) ) return false;
-
-            Generate( nbClients, nbCompanies );
-
-            #region DiscovererCode
-            //_standardDiscoverer.ReadAssembly( System.IO.Path.GetFullPath( "Yodii.DemoApp.exe" ) );
-            //_discoveredInfo = _standardDiscoverer.GetDiscoveredInfo();
-            #endregion
-
-            //for( int i = 0; i < _clients.Count; i++ )
-            //{
-            //    ( (IYodiiPlugin)_clients[i] ).Start();
-            //}
-            //for( int y = 0; y < _companies.Count; y++ )
-            //{
-            //    ( (IYodiiPlugin)_companies[y] ).Start();
-            //}
-            ( (IYodiiPlugin)_clients[0] ).Start();
-            ( (IYodiiPlugin)_companies[0] ).Start();
-
+            _engine.Stop();
             return true;
         }
 
-        private void Generate( int nbClients, int nbCompanies )
-        {
-            for( int i = 0; i < nbClients; i++ )
-            {
-                _clients.Add( new Client1( _marketPlace, _clientsData[i].Item1, _clientsData[i].Item2 ) );
-            }
 
-            for( int i = 0; i < nbCompanies; i++ )
+        public IYodiiPlugin PluginCreator2( IPluginInfo pluginInfo, object[] ctorParameters )
+        {
+            var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
+            var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
+
+            //compte le nombre de IYodiiEngine
+            //si Existe, créer nouveau tableau de bonne taille
+            //mettre les autres param dans le tablau tout en insérant IYodiiEngine au bon endroit
+            int a= (from y in ctor.GetParameters() where (y.ParameterType == typeof( IYodiiEngine )) select y).Count();
+            if( a > 0 )
             {
-                _companies.Add( new Company1( _marketPlace, _delivery, _companyData[i] ) );
+                object[] newCtorParameters = new object[ctorParameters.Count() + a];
+                List<int> indexList= new List<int>();
+                for( int i=0; i < ctor.GetParameters().Count(); i++ )
+                {
+                    if( ctor.GetParameters()[i].ParameterType == typeof( IYodiiEngine ) )
+                    {
+                        indexList.Add( i );
+                    }
+                }
+                int j=0;
+                for( int i=0; i < newCtorParameters.Count(); i++ )
+                {
+                    if( j < indexList.Count && i == indexList[j] )
+                    {
+                        newCtorParameters[i] = _engine;
+                        j++;
+                    }
+                    else
+                    {
+                        newCtorParameters[i] = ctorParameters[i + j];
+                    }
+                }
+                ctorParameters = newCtorParameters;
+            }
+            return (IYodiiPlugin)ctor.Invoke( ctorParameters );
+        }
+
+
+        private void Generate()
+        {
+
+        }
+        public void StartPlugin( string pluginName )
+        {
+            if( _engine.LiveInfo.FindPlugin( pluginName ) != null )
+            {
+                if( _engine.LiveInfo.FindPlugin( pluginName ).Capability.CanStart == true )
+                    _engine.LiveInfo.FindPlugin( pluginName ).Start( "DemoManager", StartDependencyImpact.Minimal );
+            }
+        }
+        public void StopPlugin( string pluginName )
+        {
+            if( _engine.LiveInfo.FindPlugin( pluginName ) != null )
+            {
+                if( _engine.LiveInfo.FindPlugin( pluginName ).Capability.CanStop == true )
+                    _engine.LiveInfo.FindPlugin( pluginName ).Stop( "DemoManager" );
             }
         }
 
-        public int CompanyFactoryCount { get { return _companyData.GetLength( 0 ); } }
+        internal void StartService( string serviceName )
+        {
+            if( _engine.LiveInfo.FindService( serviceName ) != null )
+            {
+                if( _engine.LiveInfo.FindService( serviceName ).Capability.CanStart == true )
+                    _engine.LiveInfo.FindService( serviceName ).Start( "DemoManager", StartDependencyImpact.Minimal );
+            }
+        }
 
-        public int ClientFactoryCount { get { return _clientsData.Count; } }
+        internal void StopService( string serviceName )
+        {
+            if( _engine.LiveInfo.FindService( serviceName ) != null )
+            {
+                if( _engine.LiveInfo.FindService( serviceName ).Capability.CanStop == true )
+                    _engine.LiveInfo.FindService( serviceName ).Stop( "DemoManager" );
+            }
+        }
+
+        internal bool IsRunningPlugin( string pluginName )
+        {
+            return _engine.LiveInfo.FindPlugin( pluginName ).IsRunning;
+        }
+
+        internal bool IsRunningService( string serviceName )
+        {
+            return _engine.LiveInfo.FindService( serviceName ).IsRunning;
+        }
+
+        public void MainWindowClosing()
+        {
+            _engine.Stop();
+        }
+
+        public ObservableCollection<IPluginInfo> Plugins { get { return _plugins; } }
+
+        public ObservableCollection<IServiceInfo> Services { get { return _services; } }
     }
 }

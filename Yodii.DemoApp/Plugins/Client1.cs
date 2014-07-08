@@ -12,12 +12,12 @@ namespace Yodii.DemoApp
         readonly ClientInfo _clientInfo;
         ObservableCollection<MarketPlace.Product> _purchasedProducts;
 
-        public Client1( IMarketPlaceService market, string name, string adress )
-            : base( true )
+        public Client1( IMarketPlaceService market/*, string name, string adress*/, IYodiiEngine engine )
+            : base( true, engine )
         {
             _market = market;
-            _market.Consumers.Add( this );
-            _clientInfo = new ClientInfo( name, adress );
+            //_market.Consumers.Add( this );
+            _clientInfo = new ClientInfo( /*name*/"Client1", /*adress*/"aba" );
             _purchasedProducts = new ObservableCollection<MarketPlace.Product>();
         }
 
@@ -27,10 +27,11 @@ namespace Yodii.DemoApp
                 _market.PlaceOrder( _clientInfo, product );
         }
 
-        public void ReceiveDelivery( MarketPlace.Product purchasedProduct )
+        public bool ReceiveDelivery( MarketPlace.Product purchasedProduct )
         {
             _purchasedProducts.Add( purchasedProduct );
             RaisePropertyChanged();
+            return true;
         }
 
         public IClientInfo Info { get { return _clientInfo; } }
@@ -41,11 +42,11 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new Client1View()
+            Window = new Client1View( this )
             {
                 DataContext = this
             };
-
+            _market.Consumers.Add( this );
             return Window;
         }
     }

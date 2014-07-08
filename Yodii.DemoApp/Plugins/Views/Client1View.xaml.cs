@@ -7,8 +7,10 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// </summary>
     public partial class Client1View : Window
     {
-        public Client1View()
+        Client1 _client;
+        public Client1View( Client1 client )
         {
+            _client = client;
             InitializeComponent();
 
             WindowStartupLocation = WindowStartupLocation.Manual;
@@ -19,8 +21,12 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
 
         private void Buy_Button_Click( object sender, RoutedEventArgs e )
         {
-            MarketPlace.Product p = ( MarketPlace.Product )ProductGrid.SelectedItem;
-            ( (Client1)DataContext ).Buy( p );
+            MarketPlace.Product p = (MarketPlace.Product)ProductGrid.SelectedItem;
+            ((Client1)DataContext).Buy( p );
+        }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            e.Cancel = !_client.WindowClosed();
         }
     }
 }

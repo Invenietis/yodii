@@ -6,6 +6,6 @@ namespace Yodii.DemoApp
     {
         IClientInfo Info { get; }
     
-        void ReceiveDelivery( MarketPlace.Product purchasedProduct );
+        bool ReceiveDelivery( MarketPlace.Product purchasedProduct );
     }
 }

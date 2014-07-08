@@ -108,7 +108,6 @@ namespace Yodii.Discoverer
                     {
                         result = RegisterNewAssembly( a );
                     }
-                    Debug.Assert( result.YodiiInfo != null, "result.YodiiInfo is null" );
                 }
                 catch( Exception ex )
                 {
@@ -121,7 +120,7 @@ namespace Yodii.Discoverer
                     _assemblies.Add( path, result );
                 }
             }
-
+            Debug.Assert( result.YodiiInfo != null, "result.YodiiInfo is NEVER null." );
             return result.YodiiInfo;
         }
 

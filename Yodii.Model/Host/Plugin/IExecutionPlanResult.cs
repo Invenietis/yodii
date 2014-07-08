@@ -2,6 +2,7 @@
 
 namespace Yodii.Model
 {
+
     /// <summary>
     /// Defines the return of the <see cref="IPluginHost.Execute"/> method.
     /// </summary>

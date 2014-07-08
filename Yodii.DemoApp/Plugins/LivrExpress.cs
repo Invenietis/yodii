@@ -11,8 +11,8 @@ namespace Yodii.DemoApp
         readonly IOutSourcingService _outsourcingService;
         readonly IMarketPlaceService _marketPlace;
 
-        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService, IMarketPlaceService market )
-            : base( true )
+        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService, IMarketPlaceService market, IYodiiEngine engine )
+            : base( true, engine )
         {
             _carRepairService = carRepairService;
             _outsourcingService = outsourcingService;

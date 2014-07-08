@@ -19,9 +19,15 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// </summary>
     public partial class GarageView : Window
     {
-        public GarageView()
+        Garage _monoWindowPlugin;
+        public GarageView(Garage monoWindowPlugin)
         {
+            _monoWindowPlugin = monoWindowPlugin;
             InitializeComponent();
+        }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            e.Cancel = !_monoWindowPlugin.WindowClosed();
         }
     }
 }

@@ -14,8 +14,8 @@ namespace Yodii.DemoApp
         ObservableCollection<ProductCompany2> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
 
-        public Company2( IMarketPlaceService marketPlace, IDeliveryService delivery )
-            : base( true )
+        public Company2( IMarketPlaceService marketPlace, IDeliveryService delivery, IYodiiEngine engine )
+            : base( true, engine )
         {
             _marketPlace = marketPlace;
             _delivery = delivery;
@@ -25,7 +25,7 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new Company2View()
+            Window = new Company2View( this )
             {
                 DataContext = this
             };

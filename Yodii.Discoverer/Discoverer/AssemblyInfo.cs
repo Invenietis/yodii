@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Yodii.Model;
 
@@ -10,6 +11,7 @@ namespace Yodii.Discoverer
     internal sealed class AssemblyInfo : IAssemblyInfo
     {
         readonly Uri _location;
+        readonly AssemblyName _assemblyName;
         string _errorMessage;
         IReadOnlyList<ServiceInfo> _services;
         IReadOnlyList<PluginInfo> _plugins;
@@ -21,16 +23,19 @@ namespace Yodii.Discoverer
             _errorMessage = errorMessage;
         }
 
-        internal AssemblyInfo( Uri location )
+        internal AssemblyInfo( string assemblyFullName, Uri location )
         {
             Debug.Assert( location != null );
             _location = location;
+            _assemblyName = new AssemblyName( assemblyFullName );
         }
 
         public Uri AssemblyLocation
         {
             get { return _location; }
         }
+
+        public AssemblyName AssemblyName { get { return _assemblyName; } }
 
         public bool HasErrorMessage { get { return _errorMessage != null; } }
 

@@ -11,12 +11,12 @@ namespace Yodii.DemoApp
     {
         readonly DispatcherTimer _timer;
 
-        public TimerHandler()
-            : base( true )
+
+        public TimerHandler( IYodiiEngine engine )
+            : base( true, engine )
         {
             _timer = new DispatcherTimer();
             _timer.Interval = new TimeSpan( 0, 0, 0, 0, 1 );
-
         }
 
         protected override Window CreateWindow()
@@ -28,14 +28,23 @@ namespace Yodii.DemoApp
             return Window;
         }
         public void SubscribeToTimerEvent( Action<object, EventArgs> methodToAdd )
-        {           
-            EventHandler handler = new EventHandler(methodToAdd);
+        {
+            EventHandler handler = new EventHandler( methodToAdd );
             _timer.Tick += handler;
-            
+
         }
         public void UnsubscribeToTimerEvent( Action<object, EventArgs> methodToRemove )
         {
             EventHandler handler = new EventHandler( methodToRemove );
+            _timer.Tick -= handler;
+        }
+        public void SubscribeToTimerEvent( EventHandler handler )
+        {
+            _timer.Tick += handler;
+
+        }
+        public void UnsubscribeToTimerEvent( EventHandler handler )
+        {
             _timer.Tick -= handler;
         }
 
@@ -57,6 +66,7 @@ namespace Yodii.DemoApp
         {
             _timer.Stop();
             if( Window != null ) Window.Close();
+            StartStop = "0";
         }
 
         void ITimerService.Start()
@@ -67,6 +77,7 @@ namespace Yodii.DemoApp
                 DataContext = this
             };
             Window.Show();
+            StartStop = "";
         }
 
         public DispatcherTimer Timer
@@ -83,11 +94,23 @@ namespace Yodii.DemoApp
             set
             {
                 _timer.Stop();
-                _timer.Interval = new TimeSpan( 0, 0, 0, 0, Convert.ToInt32(value) );
+                _timer.Interval = new TimeSpan( 0, 0, 0, 0, Convert.ToInt32( value ) );
                 _timer.Start();
+                StartStop = "";
                 RaisePropertyChanged();
             }
         }
+        public string StartStop
+        {
+            get
+            {
+                return _timer.IsEnabled ? "Stop" : "Start";
 
+            }
+            set
+            {
+                RaisePropertyChanged();
+            }
+        }
     }
 }

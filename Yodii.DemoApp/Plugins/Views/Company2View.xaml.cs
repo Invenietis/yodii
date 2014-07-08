@@ -19,9 +19,15 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// </summary>
     public partial class Company2View : Window
     {
-        public Company2View()
+        Company2 _company;
+        public Company2View( Company2 company )
         {
+            _company = company;
             InitializeComponent();
+        }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            e.Cancel = !_company.WindowClosed();
         }
     }
 }
