@@ -57,23 +57,20 @@ namespace Yodii.DemoApp
         public bool NewOrder( IClientInfo clientInfo, MarketPlace.Product product )
         {
             Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
-            if( _orders.Contains( order ) ) return false;
             _orders.Add( order );
             RaisePropertyChanged( "newOrder" );
-            HandleOrders();
+            if( _orders.Count >= 3 )
+                HandleOrders();
             return true;
         }
 
         public void HandleOrders()
         {
-            if( _orders.Count >= 3 )
+            foreach( Tuple<IClientInfo, MarketPlace.Product> order in _orders )
             {
-                foreach( Tuple<IClientInfo, MarketPlace.Product> order in _orders )
-                {
-                    _delivery.Deliver( order );
-                }
-                _orders.Clear();
+                _delivery.Deliver( order );
             }
+            _orders.Clear();          
         }
 
         public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Orders { get { return _orders; } }

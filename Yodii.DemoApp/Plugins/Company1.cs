@@ -83,16 +83,16 @@ namespace Yodii.DemoApp
             {
                 _delivery.Deliver( order );
             }
+            _orders.Clear();
         }
         
         public bool NewOrder( IClientInfo clientInfo, MarketPlace.Product product = null )
         {
             Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
-            if( _orders.Contains( order ) ) return false;
             _orders.Add( order );
-            RaisePropertyChanged( "newOrder" );
+            RaisePropertyChanged( "newOrder" ); //Set popup "New order"
             if( _orders.Count >= 3 )
-                HandleOrders();
+                HandleOrders(); //Set popup "Orders dispatched"
             return true;
         }
     }

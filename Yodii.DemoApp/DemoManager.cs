@@ -99,11 +99,6 @@ namespace Yodii.DemoApp
             return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
 
-
-        private void Generate()
-        {
-
-        }
         public void StartPlugin( string pluginName )
         {
             if( _engine.LiveInfo.FindPlugin( pluginName ) != null )
