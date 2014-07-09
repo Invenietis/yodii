@@ -168,7 +168,7 @@ namespace Yodii.Discoverer
             p = new PluginInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
             _plugins.Add( t, p );
 
-            p.Service = GetImplementedService( p, t );
+            p.Service = GetDirectImplementedService( t );
 
             var ctors = t.Methods.Where( m => m.IsConstructor );
             var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
@@ -211,25 +211,13 @@ namespace Yodii.Discoverer
             return p;
         }
 
-    
-
-        //TypeReference GetService( TypeDefinition plugin )
-        //{
-        //    IEnumerable<TypeReference> query = from TypeReference i in plugin.Interfaces
-        //                                       where IsYodiiService( i.Resolve() )
-        //                                       select i;
-        //    if( query.Any() )
-        //        return query.ElementAt( 0 );
-        //    return null;
-        //}
-
-        ServiceInfo GetImplementedService( PluginInfo plugin, TypeDefinition pluginType )
+        ServiceInfo GetDirectImplementedService( TypeDefinition pluginType )
         {
             return pluginType.Interfaces
                             .Select( i => i.Resolve() )
                             .Where( i => IsYodiiService( i ) )
                             .Select( i => FindOrCreateService( i ) )
-                            .SingleOrDefault();
+                            .FirstOrDefault();
         }
 
         /// <summary>
@@ -242,11 +230,7 @@ namespace Yodii.Discoverer
         {
             if( type.IsInterface )
             {
-                IEnumerable<TypeReference> target =
-                    from i in type.Interfaces
-                    where i.Resolve().Equals( _tDefIYodiiService )
-                    select i;
-                if( target.Any() ) return true;
+                return type.Interfaces.Any( i => i.Resolve().Equals( _tDefIYodiiService ) );
             }
             return false;
         }
@@ -255,13 +239,24 @@ namespace Yodii.Discoverer
         {
             if( type.IsClass && !type.IsAbstract )
             {
-                IEnumerable<TypeReference> target =
-                    from i in type.Interfaces
-                    where i.Resolve().Equals( _tDefIYodiiPlugin)
-                    select i;
-                if( target.Any() ) return true;
+                return HasIYodiiPluginInterface(type) || BaseIsYodiiPlugin( type );
             }
             return false;
+        }
+
+        bool BaseIsYodiiPlugin( TypeDefinition type )
+        {
+            Debug.Assert( type != null );
+            var baseType = type.BaseType;
+
+            if( baseType == null ) return false;
+            var resolvedBaseType = baseType.Resolve();
+            return HasIYodiiPluginInterface( resolvedBaseType ) || BaseIsYodiiPlugin( resolvedBaseType );
+        }
+
+        bool HasIYodiiPluginInterface( TypeDefinition type )
+        {
+            return type.Interfaces.Any( i => i.Resolve().Equals( _tDefIYodiiPlugin ) );
         }
 
         private bool IsDependencyRequirement( TypeDefinition wrapper, out DependencyRequirement req )
@@ -293,6 +288,6 @@ namespace Yodii.Discoverer
             return false;
         }
 
-        public IAssemblyInfo currentIfNotYetLoaded { get; set; }
+        private IAssemblyInfo currentIfNotYetLoaded { get; set; }
     }
 }
