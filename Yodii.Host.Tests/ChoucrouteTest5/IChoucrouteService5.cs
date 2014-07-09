@@ -6,10 +6,8 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
-    public interface IChoucrouteService5 : IYodiiService
+    public interface IChoucrouteService5 : IChoucrouteService5Generalization
     {
-        void DoSomethingElse();
         void DoSomethingElse2();
-        List<string> CalledMethods { get; }
     }
 }

@@ -47,7 +47,6 @@ namespace Yodii.Host
         internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo,object[],IYodiiPlugin> pluginCreator )
         {
             var serviceReferences = PluginKey.ServiceReferences;
-
             object[] ctorParameters = new object[serviceReferences.Count];
             for( int i = 0; i < serviceReferences.Count; ++i )
             {

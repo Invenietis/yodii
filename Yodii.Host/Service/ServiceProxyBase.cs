@@ -139,12 +139,17 @@ namespace Yodii.Host
             }
         }
 
-        public void SetPluginImplementation( PluginProxyBase implementation )
+        public void SetPluginImplementation( PluginProxyBase implementation, IServiceInfo serviceInfo )
         {
             if( _isExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName ); 
             _impl = implementation;
             Debug.Assert( _impl == null || (_impl.RealPlugin != null || _impl.Status == InternalRunningStatus.Disabled), "Plugin.RealPlugin == null ==> Plugin.Status == Disabled" );
             ConfigureRawImplFromPlugin();
+            if( serviceInfo != null && serviceInfo.Generalization != null )
+            {
+                var proxy = _serviceHost.EnsureProxyForDynamicService( serviceInfo.Generalization );
+                proxy.SetPluginImplementation(implementation, serviceInfo.Generalization );
+            }
         }
 
         void ConfigureRawImplFromPlugin()
