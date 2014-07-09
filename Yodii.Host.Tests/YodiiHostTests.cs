@@ -153,5 +153,45 @@ namespace Yodii.Host.Tests
             Assert.That( choucroute.CalledMethods.Count == 9 );//+setup, start (execption), stop, teardown.
             Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4", false ).Status == InternalRunningStatus.Stopped );
         }
+        /// <summary>
+        /// Making sure the _impl of the generalized service updates itself.
+        /// </summary>
+        [Test]
+        public void ServiceGeneralizationChoucrouteTest5()
+        {
+
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
+            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
+
+            PluginHost host = new PluginHost();
+            YodiiEngine engine = new YodiiEngine( host );
+            engine.SetDiscoveredInfo( info );
+
+            var result = engine.Start();
+
+            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.AnotherPlugin5" ).Start();
+            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.AnotherPlugin5", false );
+            AnotherPlugin5 anotherPlugin = (AnotherPlugin5)pluginProxy.RealPluginObject;
+
+            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5" ).Start();
+                IPluginProxy pluginProxySimple = host.FindLoadedPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5", false );
+            SimpleChoucroutePlugin5 SimpleChoucroutePlugin = (SimpleChoucroutePlugin5)pluginProxySimple.RealPluginObject;
+
+            //Don't hesitate to put the next line in the watch and look at _impl
+            //(ServiceProxyBase)host.ServiceHost.GetProxy( typeof( IChoucrouteService5Generalization ) );
+
+            int nbSimpleCalls = SimpleChoucroutePlugin.CalledMethods.Count;
+            anotherPlugin.DoSomething();
+            Assert.That( nbSimpleCalls+1 == SimpleChoucroutePlugin.CalledMethods.Count, "making sure SimpleChoucroutePlugin was called" );
+
+            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5" ).Start();
+            IPluginProxy pluginProxyElaborate = host.FindLoadedPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5", false );
+            ElaborateChoucroutePlugin5 ElaborateChoucroutePlugin = (ElaborateChoucroutePlugin5)pluginProxyElaborate.RealPluginObject;
+
+            int nbElaborateCalls = ElaborateChoucroutePlugin.CalledMethods.Count;
+            anotherPlugin.DoSomething();
+            Assert.That( nbElaborateCalls+1 == ElaborateChoucroutePlugin.CalledMethods.Count, "making sure ElaborateChoucroutePlugin was called" );
+        }
     }
 }

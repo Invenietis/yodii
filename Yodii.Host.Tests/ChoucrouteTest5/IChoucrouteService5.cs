@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Yodii.Model;
+
+namespace Yodii.Host.Tests
+{
+    public interface IChoucrouteService5 : IYodiiService
+    {
+        void DoSomethingElse();
+        void DoSomethingElse2();
+        List<string> CalledMethods { get; }
+    }
+}
