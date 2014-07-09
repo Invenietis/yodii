@@ -237,7 +237,7 @@ namespace Yodii.Host
                 if( service != null )
                 {
                     Debug.Assert( service.Status <= InternalRunningStatus.Stopped );
-                    service.SetPluginImplementation( p );
+                    service.SetPluginImplementation( p, p.PluginKey.Service );
                 }
                 // This call will trigger an update of the service status.
                 if( p.Status == InternalRunningStatus.Disabled ) SetPluginStatus( p, InternalRunningStatus.Stopped );
