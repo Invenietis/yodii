@@ -72,8 +72,8 @@
         <ServiceReference Service="IOutSourcingService" Requirement="Running" />
         <ServiceReference Service="ITimerService" Requirement="Running" />
       </ServiceReferences>
-      <X>32.3757386397315</X>
-      <Y>308.708323429232</Y>
+      <X>32.1364751529777</X>
+      <Y>308.417885320754</Y>
     </Plugin>
     <Plugin>
       <FullName>LivrExpress</FullName>
@@ -83,8 +83,8 @@
         <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
         <ServiceReference Service="IOutSourcingService" Requirement="Running" />
       </ServiceReferences>
-      <X>-413.843405568749</X>
-      <Y>310.65396532639</Y>
+      <X>-414.936017809247</X>
+      <Y>310.594989411764</Y>
     </Plugin>
     <Plugin>
       <FullName>ManPower</FullName>
@@ -108,7 +108,7 @@
       <Service>ITimerService</Service>
       <ServiceReferences />
       <X>53.0428065363037</X>
-      <Y>575.296453326558</Y>
+      <Y>575.478689973943</Y>
     </Plugin>
     <Plugin>
       <FullName>UPS</FullName>
@@ -116,12 +116,14 @@
       <ServiceReferences>
         <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
       </ServiceReferences>
-      <X>-190.687590733642</X>
-      <Y>207.545794229549</Y>
+      <X>-190.744724245135</X>
+      <Y>207.191475294303</Y>
     </Plugin>
   </Plugins>
   <Configuration>
     <ConfigurationLayer Name="DefaultLayer">
+      <ConfigurationItem ServiceOrPluginId="Client1" Status="Running" Reason="Right-click change" />
+      <ConfigurationItem ServiceOrPluginId="Company1" Status="Running" Reason="Right-click change" />
       <ConfigurationItem ServiceOrPluginId="MarketPlace" Status="Running" Reason="Right-click change" />
     </ConfigurationLayer>
   </Configuration>

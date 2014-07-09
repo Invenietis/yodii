@@ -121,10 +121,9 @@ namespace Yodii.DemoApp
             {
                 foreach( Tuple<IClientInfo, MarketPlace.Product> order in _toBeDelivered )
                 {
-                    if( _marketPlace.Consumers.Find( c => c.Info == order.Item1 ) != null )
-                    {
-                        _marketPlace.Consumers.Find( c => c.Info == order.Item1 ).ReceiveDelivery( order.Item2 );
-                    }
+                    IConsumer ic = _marketPlace.Consumers.FirstOrDefault( c => c.Info == order.Item1 );
+                    if( ic != null )
+                        ic.ReceiveDelivery( order.Item2 );
                     _toBeDelivered.Remove( order );
                 }
             }
