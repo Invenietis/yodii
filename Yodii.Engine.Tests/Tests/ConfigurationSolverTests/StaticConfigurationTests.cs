@@ -2047,5 +2047,16 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 res.CheckAllServicesRunnable("Service2,Service2.1,Service2.2,Service3, Service3.1, Service4");
             });
         }
+
+        internal static YodiiEngine CreateDynamicInvalidLoop()
+        {
+            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraphDynamicInvalidLoop() );
+
+            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+
+            return engine;
+        }
     }
 }

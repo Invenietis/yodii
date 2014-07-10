@@ -138,7 +138,7 @@ namespace Yodii.Host
             if( _proxies.TryGetValue( interfaceType, out current ) )
             {
                 _proxies[interfaceType] = proxy;
-                proxy.SetPluginImplementation( current.Implementation );
+                proxy.SetPluginImplementation( current.Implementation, null );//Emilie : don't know what to do here.
             }
             else
             {
