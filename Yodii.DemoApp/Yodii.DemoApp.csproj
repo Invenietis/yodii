@@ -106,14 +106,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Plugins\Views\Company2View.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Plugins\Views\Company3View.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Plugins\Views\GarageView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -146,8 +138,6 @@
   <ItemGroup>
     <Compile Include="Plugins\Client1.cs" />
     <Compile Include="Plugins\Company1.cs" />
-    <Compile Include="Plugins\Company2.cs" />
-    <Compile Include="Plugins\Company3.cs" />
     <Compile Include="Plugins\Garage.cs" />
     <Compile Include="Plugins\LaPoste.cs" />
     <Compile Include="Plugins\LivrExpress.cs" />
@@ -161,12 +151,6 @@
     </Compile>
     <Compile Include="Plugins\Views\Company1View.xaml.cs">
       <DependentUpon>Company1View.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Plugins\Views\Company2View.xaml.cs">
-      <DependentUpon>Company2View.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Plugins\Views\Company3View.xaml.cs">
-      <DependentUpon>Company3View.xaml</DependentUpon>
     </Compile>
     <Compile Include="Plugins\Views\GarageView.xaml.cs">
       <DependentUpon>GarageView.xaml</DependentUpon>
