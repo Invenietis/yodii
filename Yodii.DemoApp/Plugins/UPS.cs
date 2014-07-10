@@ -7,14 +7,14 @@ using System.Collections.ObjectModel;
 
 namespace Yodii.DemoApp
 {
-    public class UPS : MonoWindowPlugin, IDeliveryService
+    public class UPS : MonoWindowPlugin, ISecuredDeliveryService
     {
         IOptionalService<IConsumer> _client;
         readonly IMarketPlaceService _marketPlace;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _delivered;
         public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Delivered { get { return _delivered; } }
 
-        public UPS( IMarketPlaceService market, IYodiiEngine engine, IOptionalService<IConsumer> client )
+        public UPS( IMarketPlaceService market, IOptionalService<IConsumer> client, IYodiiEngine engine )
             : base( true, engine )
         {
             _client = client;

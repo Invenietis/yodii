@@ -21,8 +21,6 @@ namespace Yodii.DemoApp
         ObservableCollection<IPluginInfo> _plugins;
         ObservableCollection<IServiceInfo> _services;
 
-        public YodiiEngine Engine { get { return _engine; } }
-
         public IDiscoveredInfo DiscoveredInfo { get { return _discoveredInfo; } }
 
         public DemoManager()
