@@ -5,10 +5,10 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// <summary>
     /// Interaction logic for Client1.xaml
     /// </summary>
-    public partial class Client1View : Window
+    public partial class ClientView : Window
     {
-        Client1 _client;
-        public Client1View( Client1 client )
+        Client _client;
+        public ClientView( Client client )
         {
             _client = client;
             InitializeComponent();
@@ -22,7 +22,7 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
         private void Buy_Button_Click( object sender, RoutedEventArgs e )
         {
             MarketPlace.Product p = (MarketPlace.Product)ProductGrid.SelectedItem;
-            ((Client1)DataContext).Buy( p );
+            ((Client)DataContext).Buy( p );
         }
         private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
         {

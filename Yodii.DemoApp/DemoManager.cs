@@ -47,8 +47,8 @@ namespace Yodii.DemoApp
             _host.PluginCreator = PluginCreator2;
             _engine.SetDiscoveredInfo( _discoveredInfo );
             IConfigurationLayer cl = _engine.Configuration.Layers.Create();
-            cl.Items.Add( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
-            cl.Items.Add( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
+            cl.Items.Add( "Yodii.DemoApp.Client", ConfigurationStatus.Running );
+            cl.Items.Add( "Yodii.DemoApp.Company", ConfigurationStatus.Running );
             IYodiiEngineResult r = _engine.Start();
             //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Client1" ).Start();
             //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Company1" ).Start();

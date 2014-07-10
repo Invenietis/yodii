@@ -7,7 +7,7 @@ using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Company1 : MonoWindowPlugin, IBusiness
+    public class Company : MonoWindowPlugin, IBusiness
     {
         readonly IMarketPlaceService _marketPlace;
         readonly IDeliveryService _delivery;
@@ -15,12 +15,12 @@ namespace Yodii.DemoApp
         ObservableCollection<ProductCompany1> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
         
-        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService/*, string name*/, IYodiiEngine engine )
+        public Company( IMarketPlaceService marketPlace, IDeliveryService deliveryService, IYodiiEngine engine )
             : base( true, engine )
         {
             _marketPlace = marketPlace;
             _delivery = deliveryService;
-            _name = /*name*/ "toto";
+            _name = "Company";
             _products = new ObservableCollection<ProductCompany1>();
             _orders = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
         }
@@ -57,7 +57,7 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new Company1View()
+            Window = new CompanyView()
             {
                 DataContext = this
             };
@@ -67,7 +67,7 @@ namespace Yodii.DemoApp
 
         public class ProductCompany1 : Yodii.DemoApp.MarketPlace.Product
         {
-            public ProductCompany1( string name, ProductCategory category, int price, DateTime creationDate, Company1 company )
+            public ProductCompany1( string name, ProductCategory category, int price, DateTime creationDate, Company company )
             {
                 Name = name;
                 ProductCategory = category;

@@ -1,4 +1,4 @@
-﻿<Window x:Class="Yodii.DemoApp.Examples.Plugins.Views.Client1View"
+﻿<Window x:Class="Yodii.DemoApp.Examples.Plugins.Views.ClientView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -8,16 +8,16 @@
              Title="{Binding Path=Info.Name}" Height="350" Width="525" Closing="Window_Closing">
     <Grid>
         <Image Source="/Plugins/Assets/Icons/client.png" Width="77" HorizontalAlignment="Left" Margin="10,11,0,234"/>
-        <Label Content="Products on Market" Margin="59,122,343,169"></Label>
+        <Label Content="Products on Market" Margin="195,106,195,185" FontWeight="Bold"></Label>
         <Label Content="{Binding Path=Info.Name}" HorizontalAlignment="Left" Margin="77,11,0,0" VerticalAlignment="Top"/>
         <Label Content="{Binding Path=Info.Address}" HorizontalAlignment="Left" Margin="77,42,0,0" VerticalAlignment="Top"/>
-        <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=AvailableProducts}" AutoGenerateColumns="False" Height="108" Width="214"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="22,158,283,56" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
+        <DataGrid x:Name="ProductGrid" ItemsSource="{Binding Path=AvailableProducts}" AutoGenerateColumns="False" Height="91" Width="470"  HorizontalAlignment="Center" SelectionUnit="FullRow" IsReadOnly="True" Margin="22,158,27,73" VerticalAlignment="Center" IsSynchronizedWithCurrentItem="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="Auto">
+                <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="*">
                 </DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding ProductCategory}" Header="Product Category" Width="Auto">
+                <DataGridTextColumn Binding="{Binding ProductCategory}" Header="Product Category" Width="*">
                 </DataGridTextColumn>
-                <DataGridTextColumn Binding="{Binding Price}" Header="Price" Width="Auto">
+                <DataGridTextColumn Binding="{Binding Price}" Header="Price" Width="*">
                 </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>

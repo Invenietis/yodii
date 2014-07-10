@@ -43,7 +43,7 @@ namespace Yodii.DemoApp.Plugins.Views
             }
             else
             {
-                ( (Company1)DataContext ).AddNewProduct( ProductName.Text, (ProductCategory)ProductCategoryComboBox.SelectedValue, int.Parse( ProductPrice.Text ) );
+                ( (Company)DataContext ).AddNewProduct( ProductName.Text, (ProductCategory)ProductCategoryComboBox.SelectedValue, int.Parse( ProductPrice.Text ) );
                 Close();
             }
         }
@@ -56,7 +56,7 @@ namespace Yodii.DemoApp.Plugins.Views
 
         private bool CheckIfProductAlreadyExists( string productName )
         {
-            return ( (Company1)DataContext ).MarketPlace.Products.Any( p => p.Name == productName );
+            return ( (Company)DataContext ).MarketPlace.Products.Any( p => p.Name == productName );
         }
 
         private void Button_Click_Cancel( object sender, RoutedEventArgs e )

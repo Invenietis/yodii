@@ -18,17 +18,17 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// <summary>
     /// Interaction logic for Client1.xaml
     /// </summary>
-    public partial class Company1View : Window
+    public partial class CompanyView : Window
     {
-        public Company1 ViewModel
+        public Company ViewModel
         {
             get
             {
-                return (Company1)this.DataContext;
+                return (Company)this.DataContext;
             }
         }
 
-        public Company1View()
+        public CompanyView()
         {
             InitializeComponent();
 
