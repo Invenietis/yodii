@@ -45,7 +45,7 @@ namespace Yodii.DemoApp
             {
                 DataContext = this
             };
-            _market.Consumers.Add( this );
+            //_market.Consumers.Add( this );
             return Window;
         }
     }

@@ -91,7 +91,7 @@ namespace Yodii.DemoApp
             Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
             _orders.Add( order );
             RaisePropertyChanged( "newOrder" ); //Set popup "New order"
-            if( _orders.Count >= 3 )
+            if( _orders.Count == 1 )
                 HandleOrders(); //Set popup "Orders dispatched"
             return true;
         }

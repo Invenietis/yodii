@@ -228,6 +228,12 @@
   <ItemGroup>
     <Resource Include="Plugins\Assets\Icons\heart.bmp" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Plugins\Assets\Icons\garage.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Plugins\Assets\Icons\marketplace.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

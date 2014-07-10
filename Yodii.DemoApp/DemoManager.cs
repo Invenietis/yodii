@@ -149,7 +149,7 @@ namespace Yodii.DemoApp
             _engine.Stop();
         }
 
-        internal IYodiiEngine Engine { get { return _engine; } }
+        public IYodiiEngine Engine { get { return _engine; } }
 
         public ObservableCollection<IPluginInfo> Plugins { get { return _plugins; } }
 
