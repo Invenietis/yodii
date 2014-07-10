@@ -16,10 +16,12 @@ namespace Yodii.DemoApp
         readonly StandardDiscoverer _discoverer;
         readonly IAssemblyInfo _assemblyInfo;
         readonly IDiscoveredInfo _discoveredInfo;
-        readonly PluginHost _host;
+        public readonly PluginHost _host;
         readonly YodiiEngine _engine;
         ObservableCollection<IPluginInfo> _plugins;
         ObservableCollection<IServiceInfo> _services;
+
+        public YodiiEngine Engine { get { return _engine; } }
 
         public IDiscoveredInfo DiscoveredInfo { get { return _discoveredInfo; } }
 

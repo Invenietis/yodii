@@ -12,6 +12,7 @@ namespace Yodii.DemoApp
 {
     public class LaPoste : MonoWindowPlugin, IDeliveryService
     {
+        IOptionalService<IConsumer> _client;
         readonly IMarketPlaceService _marketPlace;
         readonly ITimerService _timer;
         readonly IOutSourcingService _outsourcingService;
@@ -35,11 +36,12 @@ namespace Yodii.DemoApp
             public int NbBeforeReturned { get; set; }
         }
 
-        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService, IYodiiEngine engine )
+        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService, IOptionalService<IConsumer> client, IYodiiEngine engine )
             : base( true, engine )
         {
             _marketPlace = market;
             _timer = timer;
+            _client = client;
             _outsourcingService = outSourcingService/*.Service*/;
             _toBeDelivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
             _toBeDeliveredSecurely = new ObservableCollection<ToBeDeliveredSecurely>();
@@ -76,6 +78,8 @@ namespace Yodii.DemoApp
         int _tmpEmployees;
         void TimeElapsed( object sender, EventArgs e )
         {
+            if( !(_client.Status == InternalRunningStatus.Started) )
+                return;
             //IPluginProxy proxy = (IPluginProxy)_outsourcingService;
             if( _outsourcingService != null /*&& proxy.Status == InternalRunningStatus.Started*/)
             {

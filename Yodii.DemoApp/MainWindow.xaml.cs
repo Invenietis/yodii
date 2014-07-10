@@ -69,8 +69,8 @@ namespace Yodii.DemoApp
             if( _manager.Engine.IsRunning )
             {
                 Button cmd = (Button)sender;
-                IPluginInfo p = (IPluginInfo)cmd.DataContext;
-                _manager.StartPlugin( p.PluginFullName );
+            ILivePluginInfo p = (ILivePluginInfo)cmd.DataContext;
+            _manager.StartPlugin( p.FullName );
             }
         }
 
@@ -79,8 +79,8 @@ namespace Yodii.DemoApp
             if( _manager.Engine.IsRunning )
             {
                 Button cmd = (Button)sender;
-                IPluginInfo p = (IPluginInfo)cmd.DataContext;
-                _manager.StopPlugin( p.PluginFullName );
+            ILivePluginInfo p = (ILivePluginInfo)cmd.DataContext;
+            _manager.StopPlugin( p.FullName );
             }
         }
 
@@ -89,8 +89,8 @@ namespace Yodii.DemoApp
             if( _manager.Engine.IsRunning )
             {
                 Button cmd = (Button)sender;
-                IServiceInfo s = (IServiceInfo)cmd.DataContext;
-                _manager.StartService( s.ServiceFullName );
+            ILiveServiceInfo s = (ILiveServiceInfo)cmd.DataContext;
+            _manager.StartService( s.FullName );
             }
         }
 
@@ -99,8 +99,8 @@ namespace Yodii.DemoApp
             if( _manager.Engine.IsRunning )
             {
                 Button cmd = (Button)sender;
-                IServiceInfo s = (IServiceInfo)cmd.DataContext;
-                _manager.StopService( s.ServiceFullName );
+            ILiveServiceInfo s = (ILiveServiceInfo)cmd.DataContext;
+            _manager.StopService( s.FullName );
             }
         }
 

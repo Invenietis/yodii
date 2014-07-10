@@ -16,7 +16,7 @@ namespace Yodii.DemoApp
             : base( true, engine )
         {
             _timer = new DispatcherTimer();
-            _timer.Interval = new TimeSpan( 0, 0, 0, 0, 1 );
+            _timer.Interval = new TimeSpan( 0, 0, 0, 2, 0 );
         }
 
         protected override Window CreateWindow()
