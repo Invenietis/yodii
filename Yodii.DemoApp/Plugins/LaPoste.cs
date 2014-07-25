@@ -10,8 +10,9 @@ using System.Collections.ObjectModel;
 
 namespace Yodii.DemoApp
 {
-    public class LaPoste : MonoWindowPlugin, ISecuredDeliveryService
+    public class LaPoste : MonoWindowPlugin, IDeliveryService
     {
+        IOptionalService<IConsumer> _client;
         readonly IMarketPlaceService _marketPlace;
         readonly ITimerService _timer;
         readonly IOutSourcingService _outsourcingService;
@@ -21,30 +22,29 @@ namespace Yodii.DemoApp
         public ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> Delivery { get { return _toBeDelivered; } }
 
         const int _permanentEmployees=5;
-        
-        
+        EventHandler _handler; //test
+
         public class ToBeDeliveredSecurely
         {
-            public ToBeDeliveredSecurely( IClientInfo clientInfo, MarketPlace.Product product)
+            public ToBeDeliveredSecurely( IClientInfo clientInfo, MarketPlace.Product product )
             {
                 ClientInfo = clientInfo;
                 Product = product;
             }
-            public  IClientInfo ClientInfo { get; private set; }
-            public  MarketPlace.Product Product { get; private set; }
-            public int NbBeforeReturned{get; set;}
+            public IClientInfo ClientInfo { get; private set; }
+            public MarketPlace.Product Product { get; private set; }
+            public int NbBeforeReturned { get; set; }
         }
 
-        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService )
-            : base( true ) 
+        public LaPoste( IMarketPlaceService market, ITimerService timer, /*IOptionalService<*/IOutSourcingService/*>*/ outSourcingService, IOptionalService<IConsumer> client, IYodiiEngine engine )
+            : base( true, engine )
         {
             _marketPlace = market;
             _timer = timer;
+            _client = client;
             _outsourcingService = outSourcingService/*.Service*/;
-            //outSourcingService.ServiceStatusChanged += outSourcingService_ServiceStatusChanged;
             _toBeDelivered = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
             _toBeDeliveredSecurely = new ObservableCollection<ToBeDeliveredSecurely>();
-            _timer.SubscribeToTimerEvent( TimeElapsed );
             _tmpEmployees = 0;
         }
 
@@ -55,17 +55,19 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new LaPosteView()
+            _handler = new EventHandler( TimeElapsed );
+            //outSourcingService.ServiceStatusChanged += outSourcingService_ServiceStatusChanged;
+            _timer.SubscribeToTimerEvent( _handler );
+            Window = new LaPosteView( this )
             {
                 DataContext = this
             };
             Window.Show();
             return Window;
         }
-
-        void ISecuredDeliveryService.DeliverSecurely( Tuple<IClientInfo, MarketPlace.Product> order )
+        protected override void Stopping()
         {
-            _toBeDeliveredSecurely.Add(new ToBeDeliveredSecurely(order.Item1, order.Item2));
+            _timer.UnsubscribeToTimerEvent( _handler );
         }
 
         void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )
@@ -76,7 +78,10 @@ namespace Yodii.DemoApp
         int _tmpEmployees;
         void TimeElapsed( object sender, EventArgs e )
         {
-            if( _outsourcingService != null )
+            if( !(_client.Status == InternalRunningStatus.Started) )
+                return;
+            //IPluginProxy proxy = (IPluginProxy)_outsourcingService;
+            if( _outsourcingService != null /*&& proxy.Status == InternalRunningStatus.Started*/)
             {
                 if( _toBeDeliveredSecurely.Count < _permanentEmployees )
                 {
@@ -93,13 +98,13 @@ namespace Yodii.DemoApp
             }
 
             int count=_toBeDeliveredSecurely.Count;
-            int i=_tmpEmployees+_permanentEmployees;
+            int i=_tmpEmployees + _permanentEmployees;
             int j=0;
-            while(i>0 && j<count)
+            while( i > 0 && j < count )
             {
                 if( _marketPlace.Consumers.Find( c => c.Info == _toBeDeliveredSecurely[j].ClientInfo ) != null )
                 {
-                    if( _marketPlace.Consumers.Find( c => c.Info == _toBeDeliveredSecurely[j].ClientInfo ).ReceiveDelivery( _toBeDeliveredSecurely[j].Product ) ) 
+                    if( _marketPlace.Consumers.Find( c => c.Info == _toBeDeliveredSecurely[j].ClientInfo ).ReceiveDelivery( _toBeDeliveredSecurely[j].Product ) )
                     {
                         _toBeDeliveredSecurely.Remove( _toBeDeliveredSecurely[j] );
                     }
@@ -120,12 +125,11 @@ namespace Yodii.DemoApp
             {
                 foreach( Tuple<IClientInfo, MarketPlace.Product> order in _toBeDelivered )
                 {
-                    if( _marketPlace.Consumers.Find( c => c.Info == order.Item1 ) != null )
-                    {
-                        _marketPlace.Consumers.Find( c => c.Info == order.Item1 ).ReceiveDelivery( order.Item2 );
-                    }
-                    _toBeDelivered.Remove( order );
+                    IConsumer ic = _marketPlace.Consumers.FirstOrDefault( c => c.Info == order.Item1 );
+                    if( ic != null )
+                        ic.ReceiveDelivery( order.Item2 );
                 }
+                _toBeDelivered.Clear();
             }
         }
     }

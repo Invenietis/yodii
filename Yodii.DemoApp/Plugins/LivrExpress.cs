@@ -10,10 +10,14 @@ namespace Yodii.DemoApp
         readonly ICarRepairService _carRepairService;
         readonly IOutSourcingService _outsourcingService;
         readonly IMarketPlaceService _marketPlace;
+        IOptionalService<IConsumer> _client;
+        int _parcelNB;
+        public int ParcelNB { get { return _parcelNB; } private set { _parcelNB = value; RaisePropertyChanged(); } }
 
-        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService, IMarketPlaceService market )
-            : base( true )
+        public LivrExpress( ICarRepairService carRepairService, IOutSourcingService outsourcingService, IMarketPlaceService market, IOptionalService<IConsumer> client, IYodiiEngine engine )
+            : base( true, engine )
         {
+            _client = client;
             _carRepairService = carRepairService;
             _outsourcingService = outsourcingService;
             _marketPlace = market;
@@ -42,9 +46,10 @@ namespace Yodii.DemoApp
         void IDeliveryService.Deliver( Tuple<IClientInfo, MarketPlace.Product> order )
         {
             IConsumer client = _marketPlace.Consumers.Find( c => c.Info == order.Item1 );
-            if( client != null )
+            if( client != null && _client.Status == InternalRunningStatus.Started)
             {
                 client.ReceiveDelivery( order.Item2 );
+                ParcelNB++;
             }
         }
     }

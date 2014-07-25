@@ -18,24 +18,24 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// <summary>
     /// Interaction logic for Client1.xaml
     /// </summary>
-    public partial class Company1View : Window
+    public partial class CompanyView : Window
     {
-        public Company1 ViewModel
+        public Company ViewModel
         {
             get
             {
-                return (Company1)this.DataContext;
+                return (Company)this.DataContext;
             }
         }
 
-        public Company1View()
+        public CompanyView()
         {
             InitializeComponent();
 
             WindowStartupLocation = WindowStartupLocation.Manual;
 
-            Left = SystemParameters.PrimaryScreenWidth - ( Width + 450 );
-            Top = SystemParameters.FullPrimaryScreenHeight - ( Height + 350 );
+            Left = SystemParameters.PrimaryScreenWidth - (Width + 450);
+            Top = SystemParameters.FullPrimaryScreenHeight - (Height + 350);
             MinHeight = MinWidth = MaxHeight = MaxWidth = 550;
         }
 
@@ -44,6 +44,10 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
             Window w = new AddProductWindow();
             w.DataContext = DataContext;
             w.Show();
+        }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            e.Cancel = !ViewModel.WindowClosed();
         }
     }
 }

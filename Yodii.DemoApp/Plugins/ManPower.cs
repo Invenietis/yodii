@@ -7,8 +7,8 @@ namespace Yodii.DemoApp
 {
     public class ManPower : MonoWindowPlugin, IOutSourcingService
     {
-        public ManPower()
-            : base( true )
+        public ManPower( IYodiiEngine engine )
+            : base( true, engine )
         {
             _nbEmployees = _maxAvailable;
         }
@@ -29,7 +29,7 @@ namespace Yodii.DemoApp
             NBemployees--;
             return true;
         }
-        public void  ReturnEmployees(int nbReturned)
+        public void ReturnEmployees( int nbReturned )
         {
             NBemployees += nbReturned;
         }

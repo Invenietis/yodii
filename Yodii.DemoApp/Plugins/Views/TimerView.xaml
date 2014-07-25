@@ -5,11 +5,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Yodii.DemoApp"
              mc:Ignorable="d" 
-             Title="Timer" Height="350" Width="525">
+             Title="Timer" Height="350" Width="525" Closing="Window_Closing">
 
     <Grid x:Name="___No_Name_">
         <StackPanel HorizontalAlignment="Center">
-            <Slider x:Name="slider"  Width="190" Minimum="1" Interval="1"  Maximum="2000" Value="{Binding Path=Interval}"/>
+            <Slider x:Name="slider"  Width="190" Minimum="1" Interval="1"  Maximum="5000" Value="{Binding Path=Interval}"/>
             <Label x:Name="intervalValue" Content="{Binding Path=Interval}"  />
             <Grid>
                 <Image Height="37" Width="81"/>

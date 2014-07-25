@@ -47,7 +47,6 @@ namespace Yodii.Host
         internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, object[], IYodiiPlugin> pluginCreator )
         {
             var serviceReferences = PluginKey.ServiceReferences;
-
             int paramCount = 0;
 
             // Fixes potential Array Out of Bounds for constructors with params ordered like ( MyType, IYodiiService ).

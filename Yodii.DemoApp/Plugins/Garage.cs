@@ -7,8 +7,8 @@ namespace Yodii.DemoApp
 {
     public class Garage : MonoWindowPlugin, ICarRepairService
     {
-        public Garage()
-            : base( true )
+        public Garage( IYodiiEngine engine )
+            : base( true, engine )
         {
         }
 
@@ -19,7 +19,7 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new GarageView()
+            Window = new GarageView( this )
             {
                 DataContext = this
             };

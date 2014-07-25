@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             Title="LaPoste" Height="350" Width="525" MinHeight="350" MinWidth="125">
+             Title="LaPoste" Height="350" Width="525" MinHeight="350" MinWidth="125" Closing="Window_Closing">
     <Border Background="#A0F0FF" BorderThickness="5px" BorderBrush="#A0A0FF" Opacity="1">
         <StackPanel Background="#FFF142">
             <Label Content="Secured Delivery" HorizontalAlignment="Left"  VerticalAlignment="Top" RenderTransformOrigin="0.123,-0.644" Height="27"/>

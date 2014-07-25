@@ -3,10 +3,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using Yodii.DemoApp.Examples.Plugins.Views;
+using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public class Company1 : MonoWindowPlugin, IBusiness
+    public class Company : MonoWindowPlugin, IBusiness
     {
         readonly IMarketPlaceService _marketPlace;
         readonly IDeliveryService _delivery;
@@ -14,12 +15,12 @@ namespace Yodii.DemoApp
         ObservableCollection<ProductCompany1> _products;
         ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>> _orders;
         
-        public Company1( IMarketPlaceService marketPlace, IDeliveryService deliveryService/*, string name*/ )
-            : base( true )
+        public Company( IMarketPlaceService marketPlace, IDeliveryService deliveryService, IYodiiEngine engine )
+            : base( true, engine )
         {
             _marketPlace = marketPlace;
             _delivery = deliveryService;
-            _name = /*name*/ "toto";
+            _name = "Company";
             _products = new ObservableCollection<ProductCompany1>();
             _orders = new ObservableCollection<Tuple<IClientInfo, MarketPlace.Product>>();
         }
@@ -56,7 +57,7 @@ namespace Yodii.DemoApp
 
         protected override Window CreateWindow()
         {
-            Window = new Company1View()
+            Window = new CompanyView()
             {
                 DataContext = this
             };
@@ -66,7 +67,7 @@ namespace Yodii.DemoApp
 
         public class ProductCompany1 : Yodii.DemoApp.MarketPlace.Product
         {
-            public ProductCompany1( string name, ProductCategory category, int price, DateTime creationDate, Company1 company )
+            public ProductCompany1( string name, ProductCategory category, int price, DateTime creationDate, Company company )
             {
                 Name = name;
                 ProductCategory = category;
@@ -82,16 +83,16 @@ namespace Yodii.DemoApp
             {
                 _delivery.Deliver( order );
             }
+            _orders.Clear();
         }
         
         public bool NewOrder( IClientInfo clientInfo, MarketPlace.Product product = null )
         {
             Tuple<IClientInfo, MarketPlace.Product> order = new Tuple<IClientInfo, MarketPlace.Product>( clientInfo, product );
-            if( _orders.Contains( order ) ) return false;
             _orders.Add( order );
-            RaisePropertyChanged( "newOrder" );
-            if( _orders.Count >= 3 )
-                HandleOrders();
+            RaisePropertyChanged( "newOrder" ); //Set popup "New order"
+            if( _orders.Count == 1 )
+                HandleOrders(); //Set popup "Orders dispatched"
             return true;
         }
     }

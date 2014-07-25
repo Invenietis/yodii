@@ -3,9 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             Title="MarketPlace" Height="350" Width="525">
+             xmlns:local="clr-namespace:Yodii.DemoApp"
+             mc:Ignorable="d" ResizeMode="NoResize"
+             Title="MarketPlace" Height="350" Width="525" Closing="Window_Closing">
     <Grid>
-            
+        <Image Source="/Plugins/Assets/Icons/marketplace.png" Width="200" Height="50" Margin="160,34,159,238"/>
+        <Label Content="Number of clients" HorizontalAlignment="Left" Margin="52,128,0,0" VerticalAlignment="Top"/>
+        <Label Content="Number of companies" HorizontalAlignment="Left" Margin="40,208,0,0" VerticalAlignment="Top"/>
+        <Label Content="Number of products available" HorizontalAlignment="Left" Margin="293,128,0,0" VerticalAlignment="Top"/>
+        <Label HorizontalAlignment="Left" Margin="99,167,0,0" VerticalAlignment="Top" Content="{Binding Path=Consumers.Count}"/>
+        <Label HorizontalAlignment="Left" Margin="99,256,0,0" VerticalAlignment="Top" Content="{Binding Path=Companies.Count}"/>
+        <Label HorizontalAlignment="Left" Margin="362,167,0,0" VerticalAlignment="Top" Content="{Binding Path=Products.Count}"/>
     </Grid>
 </Window>

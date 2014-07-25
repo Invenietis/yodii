@@ -19,9 +19,15 @@ namespace Yodii.DemoApp.Examples.Plugins.Views
     /// </summary>
     public partial class UPSView : Window
     {
-        public UPSView()
+        UPS _ups;
+        public UPSView(UPS ups)
         {
+            _ups = ups;
             InitializeComponent();
+        }
+        private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
+        {
+            e.Cancel = !_ups.WindowClosed();
         }
     }
 }
