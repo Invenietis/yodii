@@ -78,19 +78,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Yodii.Discoverer\Yodii.Discoverer.csproj">
+    <ProjectReference Include="..\..\Yodii.Discoverer\Yodii.Discoverer.csproj">
       <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
       <Name>Yodii.Discoverer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
+    <ProjectReference Include="..\..\Yodii.Engine\Yodii.Engine.csproj">
       <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
       <Name>Yodii.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.Host\Yodii.Host.csproj">
+    <ProjectReference Include="..\..\Yodii.Host\Yodii.Host.csproj">
       <Project>{c9fcbf26-371b-48c2-aa78-06292ee30b9d}</Project>
       <Name>Yodii.Host</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
+    <ProjectReference Include="..\..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>

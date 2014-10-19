@@ -174,7 +174,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
+    <ProjectReference Include="..\..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>

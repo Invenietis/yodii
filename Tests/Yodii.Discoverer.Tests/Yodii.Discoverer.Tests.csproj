@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{36DFB4AA-4478-47F7-B30E-AF89CA20D3F7}</ProjectGuid>
+    <ProjectGuid>{0087ED95-38B2-4EE1-A64A-77AF09CA13DE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Yodii.Lab.Tests</RootNamespace>
-    <AssemblyName>Yodii.Lab.Tests</AssemblyName>
+    <RootNamespace>Yodii.Discoverer.Tests</RootNamespace>
+    <AssemblyName>Yodii.Discoverer.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>a0a04ca0</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>a7b4b696</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -23,7 +22,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -38,24 +36,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Core.4.0.1\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CK.GraphX, Version=1.0.5.0, Culture=neutral, PublicKeyToken=731c291b31fb8d27, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CK.GraphX.1.0.5\lib\net40\CK.GraphX.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework">
+    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="QuickGraph">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.dll</HintPath>
-    </Reference>
-    <Reference Include="QuickGraph.Data">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="QuickGraph.Graphviz">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Graphviz.dll</HintPath>
-    </Reference>
-    <Reference Include="QuickGraph.Serialization">
-      <HintPath>..\packages\QuickGraph.3.6.61119.7\lib\net4\QuickGraph.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -73,29 +55,33 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="YAXLib">
-      <HintPath>..\packages\YAXLib.2.12\lib\YAXLib.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainWindowViewModelTests.cs" />
+    <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
+    <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
+    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
+    <Compile Include="ChoucrouteTest2\IService1.cs" />
+    <Compile Include="ChoucrouteTest2\IService2.cs" />
+    <Compile Include="ChoucrouteTest2\Plugin1.cs" />
+    <Compile Include="ChoucrouteTest2\UntaggedPlugin.cs" />
+    <Compile Include="ChoucrouteTest3\ITest3Service1.cs" />
+    <Compile Include="ChoucrouteTest3\ITest3Service2.cs" />
+    <Compile Include="ChoucrouteTest3\Plugin1Bis.cs" />
+    <Compile Include="ChoucrouteTest4\AbstractClass.cs" />
+    <Compile Include="ChoucrouteTest4\DerivedClass.cs" />
+    <Compile Include="DiscovererTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="EquivalenceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
-      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
-      <Name>Yodii.Engine</Name>
+    <ProjectReference Include="..\..\Yodii.Discoverer\Yodii.Discoverer.csproj">
+      <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
+      <Name>Yodii.Discoverer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.Lab\Yodii.Lab.csproj">
-      <Project>{8b15f02b-a67e-4d2d-a068-6f1a00a2813b}</Project>
-      <Name>Yodii.Lab</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
+    <ProjectReference Include="..\..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>
@@ -104,6 +90,10 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -96,11 +96,11 @@
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Yodii.Engine\Yodii.Engine.csproj">
+    <ProjectReference Include="..\..\Yodii.Engine\Yodii.Engine.csproj">
       <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
       <Name>Yodii.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
+    <ProjectReference Include="..\..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>
