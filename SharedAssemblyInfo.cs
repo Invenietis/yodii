@@ -1,4 +1,4 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (SharedAssemblyInfo.cs) is part of Yodii. 
 *  
@@ -28,10 +28,13 @@ using System.Reflection;
 [assembly: AssemblyTrademark( "" )]
 //[assembly: CLSCompliant( true )] //TODO : fix this
 [assembly: AssemblyVersion( "0.0.2" )]
-[assembly: AssemblyFileVersion( "0.0.2" )]
+
 
 #if DEBUG
     [assembly: AssemblyConfiguration("Debug")]
 #else
     [assembly: AssemblyConfiguration( "Release" )]
 #endif
+
+// Added by CKReleaser.
+[assembly: AssemblyInformationalVersion( "%ck-standard%" )]
