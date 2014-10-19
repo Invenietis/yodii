@@ -735,7 +735,7 @@ namespace Yodii.Lab
         readonly IReadOnlyList<IServiceInfo> _serviceInfos;
         readonly IReadOnlyList<IPluginInfo> _pluginInfos;
 
-        internal DiscoveredInfoClone(IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins)
+        internal DiscoveredInfoClone( IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins )
         {
             _serviceInfos = new List<IServiceInfo>( services ).AsReadOnlyList();
             _pluginInfos = new List<IPluginInfo>( plugins ).AsReadOnlyList();

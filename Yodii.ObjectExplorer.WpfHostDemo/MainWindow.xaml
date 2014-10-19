@@ -1,0 +1,33 @@
+﻿<Window
+    x:Class="Yodii.ObjectExplorer.WpfHostDemo.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Yodii.ObjectExplorer.WpfHostDemo"
+    Closing="Window_Closing"
+    Title="ObjectExplorer demo host"
+    Height="350"
+    Width="525">
+    <Window.Resources>
+        <local:InverseBooleanConverter
+            x:Key="InverseBooleanConverter" />
+    </Window.Resources>
+    <Grid
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+        <StackPanel>
+            <Button
+                Click="Start_Click"
+                IsEnabled="{Binding Engine.IsRunning, Converter={StaticResource InverseBooleanConverter}}">Start engine</Button>
+            <Button
+                Click="Stop_Click"
+                IsEnabled="{Binding Engine.IsRunning}">Stop engine</Button>
+            <Button
+                Click="StartOE_Click"
+                IsEnabled="{Binding ObjectExplorerPlugin.IsRunning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=false, TargetNullValue=false}">Start Object Explorer</Button>
+            <Button
+                Click="StopOE_Click"
+                IsEnabled="{Binding ObjectExplorerPlugin.IsRunning, FallbackValue=false, TargetNullValue=false}">Stop Object Explorer</Button>
+            <Button
+                Click="ResetConfig_Click">Reset engine configuration</Button>
+        </StackPanel>
+    </Grid>
+</Window>
