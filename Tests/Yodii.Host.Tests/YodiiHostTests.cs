@@ -11,6 +11,7 @@ using Yodii.Engine;
 using Yodii.Discoverer;
 using CK.Core;
 using System.IO;
+using Yodii.Host.Tests.PluginParameterTests;
 
 namespace Yodii.Host.Tests
 {
@@ -175,7 +176,7 @@ namespace Yodii.Host.Tests
             AnotherPlugin5 anotherPlugin = (AnotherPlugin5)pluginProxy.RealPluginObject;
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5" ).Start();
-                IPluginProxy pluginProxySimple = host.FindLoadedPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5", false );
+            IPluginProxy pluginProxySimple = host.FindLoadedPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5", false );
             SimpleChoucroutePlugin5 SimpleChoucroutePlugin = (SimpleChoucroutePlugin5)pluginProxySimple.RealPluginObject;
 
             //Don't hesitate to put the next line in the watch and look at _impl
@@ -183,7 +184,7 @@ namespace Yodii.Host.Tests
 
             int nbSimpleCalls = SimpleChoucroutePlugin.CalledMethods.Count;
             anotherPlugin.DoSomething();
-            Assert.That( nbSimpleCalls+1 == SimpleChoucroutePlugin.CalledMethods.Count, "making sure SimpleChoucroutePlugin was called" );
+            Assert.That( nbSimpleCalls + 1 == SimpleChoucroutePlugin.CalledMethods.Count, "making sure SimpleChoucroutePlugin was called" );
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5" ).Start();
             IPluginProxy pluginProxyElaborate = host.FindLoadedPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5", false );
@@ -191,7 +192,89 @@ namespace Yodii.Host.Tests
 
             int nbElaborateCalls = ElaborateChoucroutePlugin.CalledMethods.Count;
             anotherPlugin.DoSomething();
-            Assert.That( nbElaborateCalls+1 == ElaborateChoucroutePlugin.CalledMethods.Count, "making sure ElaborateChoucroutePlugin was called" );
+            Assert.That( nbElaborateCalls + 1 == ElaborateChoucroutePlugin.CalledMethods.Count, "making sure ElaborateChoucroutePlugin was called" );
+        }
+
+
+
+        [Test]
+        public void Host_ThrowsException_OnUnknownPluginCtorParameters()
+        {
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
+            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
+
+            PluginHost host = new PluginHost();
+            YodiiEngine engine = new YodiiEngine( host );
+            engine.SetDiscoveredInfo( info );
+            IYodiiEngineResult result = engine.Start();
+
+            var testPlugin = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.PluginParameterTests.ParameterTestPlugin" );
+
+            Assert.That( testPlugin, Is.Not.Null );
+
+            // Try to start when MyCustomClass cannot be resolved
+            testPlugin.Start();
+
+            Assert.That( testPlugin.IsRunning, Is.False );
+            Assert.That( testPlugin.CurrentError, Is.InstanceOf( typeof( InvalidPluginDefinitionException ) ) );
+
+            engine.Stop();
+
+            // Set a PluginCreator able to resolve MyCustomClass
+            host.PluginCreator = CustomPluginCreator;
+
+            // Try to start when MyCustomClass can be resolved
+            result = engine.Start();
+
+            testPlugin = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.PluginParameterTests.ParameterTestPlugin" );
+
+            Assert.That( testPlugin, Is.Not.Null );
+
+            testPlugin.Start();
+
+            Assert.That( testPlugin.IsRunning, Is.True );
+        }
+
+        static object ResolveUnknownType( Type t )
+        {
+            if( t == typeof( MyCustomClass ) )
+            {
+                return new MyCustomClass();
+            }
+            return null;
+        }
+
+        static IYodiiPlugin CustomPluginCreator( IPluginInfo pluginInfo, object[] ctorServiceParameters )
+        {
+            // Get the plugin Type
+            var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
+
+            // Pick the constructor used (always the lengthiest one)
+            var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
+
+            ParameterInfo[] parameters = ctor.GetParameters();
+
+            // Create the parameters array, copying resolved services as needed from ctorServiceParameters
+            object[] ctorParameters = new object[parameters.Length];
+            Debug.Assert( ctorParameters.Length >= ctorServiceParameters.Length );
+
+            for( int i = 0; i < parameters.Length; i++ )
+            {
+                ParameterInfo p = parameters[i];
+                object serviceInstance = ctorServiceParameters.Length >= (i + 1) ? ctorServiceParameters[i] : null;
+
+                if( serviceInstance != null )
+                {
+                    ctorParameters[i] = serviceInstance;
+                }
+                else
+                {
+                    ctorParameters[i] = ResolveUnknownType( p.ParameterType );
+                }
+            }
+
+            return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
     }
 }

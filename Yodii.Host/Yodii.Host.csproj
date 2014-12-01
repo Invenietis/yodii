@@ -78,6 +78,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="InvalidPluginDefinitionException.cs" />
     <Compile Include="Plugin\PluginProxyBase.cs" />
     <Compile Include="Plugin\PluginProxy.cs" />
     <Compile Include="Plugin\PluginHost.cs" />

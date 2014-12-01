@@ -60,6 +60,11 @@ namespace Yodii.Host
             var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
             var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
 
+            if( ctorParameters.Length != ctor.GetParameters().Length || ctorParameters.Any( p => p == null ) )
+            {
+                throw new InvalidPluginDefinitionException( @"Some parameters for the plugin constructor could not be resolved. Ensure that all plugin constructor parameters are either Yodii services (interfaces implementing IYodiiService) or IService<T> where T : IYodiiService. If you need to inject other types through more standard dependency injection, you should set your own PluginCreator." );
+            }
+
             return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
 
