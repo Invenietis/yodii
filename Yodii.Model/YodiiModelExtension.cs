@@ -49,5 +49,11 @@ namespace Yodii.Model
         {
             return @this.Stop( null );
         }
+
+        public static void TryStart<T>( this ServiceStatusChangedEventArgs @this, IService<T> service, Action<T> onStarted ) where T : IYodiiService
+        {
+            @this.TryStart( service, StartDependencyImpact.Unknown, onStarted );
+        }
+
     }
 }

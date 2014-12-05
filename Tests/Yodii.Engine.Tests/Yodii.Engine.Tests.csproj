@@ -94,6 +94,7 @@
     <Compile Include="Tests\YodiiEngineTests.cs" />
     <Compile Include="XmlDeserializationTests.cs" />
     <Compile Include="TestHelper.cs" />
+    <Compile Include="YodiiEngineHostMock.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Yodii.Engine\Yodii.Engine.csproj">

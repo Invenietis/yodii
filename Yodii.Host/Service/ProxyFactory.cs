@@ -732,7 +732,6 @@ namespace Yodii.Host
 		/// Creates a proxyfied interface according to the given definition.
 		/// </summary>
 		/// <param name="definition">Definition of the proxy to build.</param>
-		/// <param name="initialImplementation">Optional first and available implementation.</param>
 		/// <returns></returns>
 		internal static ServiceProxyBase CreateProxy( IProxyDefinition definition )
 		{

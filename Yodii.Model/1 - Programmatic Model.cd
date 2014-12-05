@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Yodii.Model.InternalRunningStatus">
+    <Position X="9" Y="1" Width="3.5" />
+    <Members>
+      <Field Name="_disabled" Hidden="true" />
+      <Field Name="_started" Hidden="true" />
+      <Field Name="_starting" Hidden="true" />
+      <Field Name="_stopped" Hidden="true" />
+      <Field Name="_stopping" Hidden="true" />
+      <Field Name="_v" Hidden="true" />
+      <Field Name="Disabled" Hidden="true" />
+      <Method Name="InternalRunningStatus" Hidden="true" />
+      <Method Name="IsValidTransition" Hidden="true" />
+      <Method Name="operator &lt;" Hidden="true" />
+      <Method Name="operator &lt;=" Hidden="true" />
+      <Method Name="operator &gt;" Hidden="true" />
+      <Method Name="operator &gt;=" Hidden="true" />
+      <Field Name="Started" Hidden="true" />
+      <Field Name="Starting" Hidden="true" />
+      <Field Name="Stopped" Hidden="true" />
+      <Field Name="Stopping" Hidden="true" />
+      <Method Name="ToString" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AgAABAQAEAIAAABEAICBMgAAAAIBAAAgkAAAAAAABQQ=</HashCode>
+      <FileName>LiveModel\InternalRunningStatus.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Yodii.Model.ServiceStatusChangedEventArgs">
+    <Position X="2" Y="5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAgAAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Host\Service\ServiceStatusChangedEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="Yodii.Model.IOptionalRecommendedService&lt;T&gt;" Collapsed="true">
+    <Position X="3" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discoverer\Attributes\IOptionalRecommendedService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IOptionalService&lt;T&gt;" Collapsed="true">
+    <Position X="0.75" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discoverer\Attributes\IOptionalService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IRunnableRecommendedService&lt;T&gt;" Collapsed="true">
+    <Position X="7.25" Y="3.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discoverer\Attributes\IRunnableRecommendedService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IRunnableService&lt;T&gt;" Collapsed="true">
+    <Position X="5.25" Y="3.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discoverer\Attributes\IRunnableService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IRunningService&lt;T&gt;" Collapsed="true">
+    <Position X="10.25" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discoverer\Attributes\IRunningService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IService&lt;T&gt;">
+    <Position X="5.75" Y="1.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAAAAAAAAAAQAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Discoverer\Attributes\IService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IYodiiService" Collapsed="true">
+    <Position X="0.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Host\Service\IYodiiService.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IYodiiPlugin">
+    <Position X="0.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAACCAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Host\Plugin\IYodiiPlugin.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="Yodii.Model.DependencyRequirement">
+    <Position X="2.75" Y="1" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAAAAAAAAQAAAAAAAKACAAAAAAAAA=</HashCode>
+      <FileName>DependencyRequirement.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

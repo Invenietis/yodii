@@ -16,9 +16,9 @@ namespace Yodii.Model
         T Service { get; }
 
         /// <summary>
-        /// Gets the current <see cref="InternalRunningStatus"/> of the service.
+        /// Gets the current <see cref="ServiceStatus"/> of the service.
         /// </summary>
-        InternalRunningStatus Status { get; }
+        ServiceStatus Status { get; }
 
         /// <summary>
         /// Fires whenever the <see cref="Status"/> changed.

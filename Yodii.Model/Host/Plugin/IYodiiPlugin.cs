@@ -1,37 +1,46 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Yodii.Model
 {
     /// <summary>
     /// This interface defines the minimal properties and behavior of a plugin.
+    /// It implements a two-phases transition: plugin that should stop or start
+    /// can accept or reject the transition thanks to <see cref="PresStop"/> and <see cref="PreStart"/>.
+    /// If all of them aggreed, then <see cref="Stop"/> and <see cref="Start"/> are called.
     /// </summary>
     public interface IYodiiPlugin
     {
         /// <summary>
-        /// This method initializes the plugin: own resources must be acquired and running conditions should be tested.
-        /// No interaction with other plugins must occur (interactions must be in <see cref="Start"/>).
+        /// Called before the actual <see cref="Stop"/> method.
+        /// Implementations must validate that this plugin can be stoppped: if not, the transition must 
+        /// be canceled by calling <see cref="IPreStopContext.Cancel"/>.
         /// </summary>
-        /// <param name="info">Enables the implementation to give detailed information in case of error.</param>
-        /// <returns>True on success. When returning false, <see cref="PluginSetupInfo"/> should be used to return detailed explanations.</returns>
-        bool Setup( PluginSetupInfo info );
+        /// <param name="c">The context to use.</param>
+        void PreStop( IPreStopContext c );
 
         /// <summary>
-        /// This method must start the plugin: it is called only if <see cref="Setup"/> returned true.
-        /// Implementations can interact with other components (such as subscribing to their events).
+        /// Called before the actual <see cref="Start"/> method.
+        /// Implementations must validate that the start is possible and, if unable 
+        /// to start, cancels it by calling <see cref="IPreStartContext.Cancel"/> .
         /// </summary>
-        void Start();
+        /// <param name="c">The context to use.</param>
+        void PreStart( IPreStartContext c );
 
         /// <summary>
-        /// This method uninitializes the plugin (it is called after <see cref="Stop"/>).
-        /// Implementations MUST NOT interact with any other external components: only internal resources should be freed.
+        /// Called after successful calls to all <see cref="PreStop"/> and <see cref="PreStart"/>.
+        /// This may also be called to cancel a previous call to <see cref="PreStart"/> if another
+        /// plugin rejected the transition.
         /// </summary>
-        void Teardown();
+        /// <param name="c">The context to use.</param>
+        void Stop( IStopContext c );
 
         /// <summary>
-        /// This method is called by the host when the plugin must not be running anymore.
-        /// Implementations can interact with other components (such as unsubscribing to their events). 
-        /// <see cref="Teardown"/> will be called to finalize the stop.
+        /// Called after successful calls to all <see cref="PreStop"/> and <see cref="PreStart"/>.
+        /// This may also be called to cancel a previous call to <see cref="PreStop"/> if another
+        /// plugin rejected the transition.
         /// </summary>
-        void Stop();
+        /// <param name="c">The context to use.</param>
+        void Start( IStartContext c );
     }
 }

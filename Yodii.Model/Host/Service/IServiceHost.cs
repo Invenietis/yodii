@@ -12,21 +12,21 @@ namespace Yodii.Model
         /// Gets a <see cref="ISimpleServiceHostConfiguration"/> that is always taken into account (one can not <see cref="Remove"/> it).
         /// Any change to it must be followed by a call to <see cref="ApplyConfiguration"/>.
         /// </summary>
-        //ISimpleServiceHostConfiguration DefaultConfiguration { get; }
+        ISimpleServiceHostConfiguration DefaultConfiguration { get; }
 
         /// <summary>
         /// Adds a configuration layer.
         /// The <see cref="ApplyConfiguration"/> must be called to actually update the 
         /// internal configuration.
         /// </summary>
-        //void Add( IServiceHostConfiguration configurator );
+        void Add( IServiceHostConfiguration configurator );
 
         /// <summary>
         /// Removes a configuration layer.
         /// The <see cref="ApplyConfiguration"/> must be called to actually update the 
         /// internal configuration.
         /// </summary>
-        //void Remove( IServiceHostConfiguration configurator );
+        void Remove( IServiceHostConfiguration configurator );
 
         /// <summary>
         /// Applies the configuration: the <see cref="IServiceHostConfiguration"/> that have been <see cref="Add"/>ed are challenged
@@ -60,10 +60,9 @@ namespace Yodii.Model
         object InjectExternalService( Type interfaceType, object currentImplementation );
 
         /// <summary>
-        /// Ensures that a proxy exists for the given <see cref="IDynamicService"/> interface.
-        /// COMMES FROM CK.Core
+        /// Ensures that a proxy exists for the given <see cref="IYodiiService"/> interface.
         /// </summary>
-        /// <param name="interfaceType">Type of the interface. Must extend <see cref="IDynamicService"/>.</param>
+        /// <param name="interfaceType">Type of the interface that must extend <see cref="IYodiiService"/>.</param>
         /// <returns>The proxy object.</returns>
         object EnsureProxyForDynamicService( Type interfaceType );
     }

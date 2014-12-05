@@ -40,10 +40,9 @@ namespace Yodii.Host
 
         internal PluginProxyBase()
         {
-            Status = InternalRunningStatus.Disabled;
         }
 
-        public InternalRunningStatus Status { get; set; }
+        public PluginStatus Status { get; set; }
 
         /// <summary>
         /// Gets the implemented service.
@@ -61,24 +60,24 @@ namespace Yodii.Host
         { 
             get 
             {
-                Debug.Assert( _instance != null || Status == InternalRunningStatus.Disabled, "_instance == null ==> Status == Disabled" );
+                Debug.Assert( _instance != null || Status == PluginStatus.Disabled, "_instance == null ==> Status == Disabled" );
                 return _loadError; 
             } 
         }
 
         public object RealPluginObject { get { return RealPlugin; } }
 
-        internal MethodInfo GetImplMethodInfoSetup() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Setup" ); }
+        internal MethodInfo GetImplMethodInfoPreStop() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "PreStop" ); }
 
-        internal MethodInfo GetImplMethodInfoStart() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Start" ); }
+        internal MethodInfo GetImplMethodInfoPreStart() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "PreStart" ); }
 
         internal MethodInfo GetImplMethodInfoStop() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Stop" ); }
 
-        internal MethodInfo GetImplMethodInfoTeardown() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Teardown" ); }
+        internal MethodInfo GetImplMethodInfoStart() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "Start" ); }
         
         internal MethodInfo GetImplMethodInfoDispose() { return GetImplMethodInfo( typeof( IDisposable ), "Dispose" ); }
 
-        internal MethodInfo GetImplMethodInfo( Type interfaceType, string methodName ) 
+        MethodInfo GetImplMethodInfo( Type interfaceType, string methodName ) 
         {
             Debug.Assert( RealPlugin != null );
             MethodInfo m = RealPlugin.GetType().GetMethod( interfaceType.FullName + '.' + methodName );
@@ -90,7 +89,7 @@ namespace Yodii.Host
         { 
             get 
             { 
-                Debug.Assert( _instance != null || Status == InternalRunningStatus.Disabled, "_instance == null ==> Status == Disabled" ); 
+                Debug.Assert( _instance != null || Status == PluginStatus.Disabled, "_instance == null ==> Status == Disabled" ); 
                 return _instance; 
             } 
         }
@@ -103,7 +102,7 @@ namespace Yodii.Host
         /// </summary>
         internal void DisposeIfDisposable()
         {
-            Debug.Assert( Status == InternalRunningStatus.Disabled, "Status has already been set to Disabled." );
+            Debug.Assert( Status == PluginStatus.Disabled, "Status has already been set to Disabled." );
             if( _instance != null )
             {
                 IDisposable di = _instance as IDisposable;
@@ -145,7 +144,6 @@ namespace Yodii.Host
             }
             return true;
         }
-
 
     }
 }

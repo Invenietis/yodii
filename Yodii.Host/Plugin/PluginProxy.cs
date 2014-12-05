@@ -33,7 +33,7 @@ using System.Reflection;
 namespace Yodii.Host
 {
 
-    class PluginProxy : PluginProxyBase, IPluginProxy
+    class PluginProxy : PluginProxyBase
     {
         public PluginProxy( IPluginInfo pluginKey )
         {
@@ -63,7 +63,7 @@ namespace Yodii.Host
             {
                 ctorParameters[serviceReferences[i].ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( serviceReferences[i].Reference );
             }
-            return TryLoad( serviceHost, () => pluginCreator( PluginKey, ctorParameters ), PluginKey );
+            return TryLoad( serviceHost, () => pluginCreator( PluginKey, ctorParameters ), PluginKey.PluginFullName );
         }
 
     }

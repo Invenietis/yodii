@@ -33,7 +33,7 @@ namespace Yodii.Model
         static public readonly InternalRunningStatus Stopped = new InternalRunningStatus( _stopped );
 
         /// <summary>
-        /// Service or plugin is is currently stopping.
+        /// Service or plugin is currently stopping.
         /// </summary>
         static public readonly InternalRunningStatus Stopping = new InternalRunningStatus( _stopping );
 
@@ -60,7 +60,6 @@ namespace Yodii.Model
         /// <returns>True if the next status is a valid next one (like <see cref="Starting"/> to <see cref="Started"/>). False otherwise.</returns>
         public bool IsValidTransition( InternalRunningStatus next, bool allowErrorTransition )
         {
-
             switch( _v )
             {
                 case _disabled: return next._v == _stopped;

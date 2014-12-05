@@ -66,7 +66,7 @@ namespace Yodii.Host
         }
 
         private IList<ILogErrorCaught> _untrackedErrors;
-        public ICKReadOnlyList<ILogErrorCaught> UntrackedErrors { get; private set; }
+        public IReadOnlyList<ILogErrorCaught> UntrackedErrors { get; private set; }
 
         public void Add( IServiceHostConfiguration configurator )
         {
@@ -138,7 +138,7 @@ namespace Yodii.Host
             if( _proxies.TryGetValue( interfaceType, out current ) )
             {
                 _proxies[interfaceType] = proxy;
-                proxy.SetPluginImplementation( current.Implementation, null );//Emilie : don't know what to do here.
+                proxy.SetPluginImplementation( current.Implementation, null );
             }
             else
             {
@@ -401,7 +401,7 @@ namespace Yodii.Host
         {
             ServiceProxyBase proxy;
             if( _proxies.TryGetValue( interfaceType, out proxy ) 
-                && (!interfaceType.IsGenericType && proxy.Status == InternalRunningStatus.Disabled) )
+                && (!interfaceType.IsGenericType && proxy.Status == ServiceStatus.Disabled) )
             {
                 proxy = null;
             }
@@ -411,7 +411,7 @@ namespace Yodii.Host
         object IServiceHost.GetRunningProxy( Type interfaceType )
         {
             ServiceProxyBase proxy;
-            if( _proxies.TryGetValue( interfaceType, out proxy ) && proxy.Status <= InternalRunningStatus.Stopped )
+            if( _proxies.TryGetValue( interfaceType, out proxy ) && proxy.Status <= ServiceStatus.Stopped )
             {
                 proxy = null;
             }

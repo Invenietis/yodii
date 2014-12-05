@@ -52,14 +52,13 @@ namespace Yodii.Host
         PluginProxyBase _impl;
         object _unavailableImpl;
         ServiceHost _serviceHost;
-        InternalRunningStatus _status;
+        ServiceStatus _status;
         bool _isExternalService;
 
 		protected ServiceProxyBase( object unavailableImpl, Type typeInterface, IList<MethodInfo> mRefs, IList<EventInfo> eRefs )
 		{
             Debug.Assert( mRefs.All( r => r != null ) && mRefs.Distinct().SequenceEqual( mRefs ) );
             _typeInterface = typeInterface;
-            _status = InternalRunningStatus.Disabled;
             RawImpl = _unavailableImpl = unavailableImpl;
             _mRefs = new MEntry[mRefs.Count];
             for( int i = 0; i < mRefs.Count; i++ )
@@ -77,7 +76,7 @@ namespace Yodii.Host
         {
             _serviceHost = serviceHost;
             _isExternalService = isExternalService;
-            if( isExternalService ) _status = InternalRunningStatus.Started;
+            if( isExternalService ) _status = ServiceStatus.Started;
         }
 
         internal MEntry[] MethodEntries
@@ -90,30 +89,71 @@ namespace Yodii.Host
             get { return _eRefs; }
         }
 
-        internal void SetStatusChanged( InternalRunningStatus newOne )
+        class Event : ServiceStatusChangedEventArgs
         {
-            SetStatusChanged( newOne, false );
-        }
+            readonly IList<Action<IYodiiEngine>> _postStart;
+            readonly ServiceProxyBase _service;
+            readonly PluginProxyBase _originalImpl;
+            readonly PluginProxyBase _swappingPlugin;
 
-        internal void SetStatusChanged( InternalRunningStatus newOne, bool allowErrorTransition )
-		{
-            Debug.Assert( _status.IsValidTransition( newOne, allowErrorTransition ) );
-            InternalRunningStatus previous = _status;
-            _status = newOne;
-            ConfigureRawImplFromPlugin();
-            var h = ServiceStatusChanged;
-            if( h != null )
-			{
-                ServiceStatusChangedEventArgs ev = new ServiceStatusChangedEventArgs( previous, _status, allowErrorTransition );
-				h( this, ev );
-			}
-		}
+            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, IList<Action<IYodiiEngine>> postStart )
+                : base( swappingPlugin != null )
+            {
+                Debug.Assert( s._status != ServiceStatus.Swapping || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
+                _service = s;
+                _originalImpl = s._impl;
+                _swappingPlugin = swappingPlugin;
+                _postStart = postStart;
+            }
+
+            public override void BindToStartingPlugin()
+            {
+                if( _service._status != ServiceStatus.Swapping ) throw new InvalidOperationException( R.BindToStartingPluginMustBeSwapping );
+                _service._impl = _swappingPlugin;
+            }
+
+            internal void RestoreImplementation()
+            {
+                if( _swappingPlugin != null ) _service._impl = _originalImpl;
+            }
+
+            public override void TryStart<T>( IService<T> service, StartDependencyImpact impact, Action<T> onStarted )
+            {
+                var serviceFullName = service.Service.GetType().FullName;
+                Action<IYodiiEngine> a = e => 
+                {
+                    ILiveServiceInfo s = e.LiveInfo.FindService( serviceFullName );
+                    if( s != null && s.Capability.CanStartWith( impact ) )
+                    {
+                        s.Start( null, impact );
+                        if( onStarted != null ) onStarted( service.Service );
+                    }
+                };
+                _postStart.Add( a );
+            }
+        }
 
 		public event EventHandler<ServiceStatusChangedEventArgs> ServiceStatusChanged;
 
-		public InternalRunningStatus Status
+		public ServiceStatus Status
 		{
             get { return _status; }
+            internal set { _status = value; }
+		}
+
+        internal void RaiseStatusChanged( IList<Action<IYodiiEngine>> postStart, PluginProxyBase swappingPlugin = null )
+		{
+            SetUnavailableImplIfNeeded();
+            var h = ServiceStatusChanged;
+            if( h != null )
+			{
+                Event ev = new Event( this, swappingPlugin, postStart );
+                foreach( EventHandler<ServiceStatusChangedEventArgs> f in h.GetInvocationList() )
+                {
+                    f( this, ev );
+                    ev.RestoreImplementation();
+                }
+			}
 		}
 
 		protected abstract object RawImpl { get; set; }
@@ -121,11 +161,11 @@ namespace Yodii.Host
         internal PluginProxyBase Implementation { get { return _impl; } }
 
         /// <summary>
-        /// Currently, injection of external services must be totally independant of
+        /// Currently, injection of external services must be totally independent of
         /// any Dynamic services: a Service is either a dynamic one, implemented by one (or more) plugin, 
         /// or an external one that is considered to be persistent and always available and started.
         /// </summary>
-        /// <param name="implementation"></param>
+        /// <param name="implementation">Plugin implementation.</param>
         public void SetExternalImplementation( object implementation )
         {
             if( !_isExternalService ) throw new CKException( R.ServiceIsPluginBased, _typeInterface );
@@ -139,22 +179,22 @@ namespace Yodii.Host
             }
         }
 
-        public void SetPluginImplementation( PluginProxyBase implementation, IServiceInfo serviceInfo )
+        internal void SetPluginImplementation( PluginProxyBase implementation, IServiceInfo serviceInfo )
         {
-            if( _isExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName ); 
+            if( _isExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName );
             _impl = implementation;
-            Debug.Assert( _impl == null || (_impl.RealPlugin != null || _impl.Status == InternalRunningStatus.Disabled), "Plugin.RealPlugin == null ==> Plugin.Status == Disabled" );
-            ConfigureRawImplFromPlugin();
+            Debug.Assert( _impl == null || (_impl.RealPlugin != null || _impl.Status == PluginStatus.Disabled), "Plugin.RealPlugin == null ==> Plugin.Status == Disabled" );
+            SetUnavailableImplIfNeeded();
             if( serviceInfo != null && serviceInfo.Generalization != null )
             {
                 var proxy = _serviceHost.EnsureProxyForDynamicService( serviceInfo.Generalization );
-                proxy.SetPluginImplementation(implementation, serviceInfo.Generalization );
+                proxy.SetPluginImplementation( implementation, serviceInfo.Generalization );
             }
         }
 
-        void ConfigureRawImplFromPlugin()
+        void SetUnavailableImplIfNeeded()
         {
-            if( _impl == null || _status == InternalRunningStatus.Disabled )
+            if( _impl == null || _status == ServiceStatus.Disabled )
             {
                 RawImpl = _unavailableImpl;
             }
@@ -172,11 +212,11 @@ namespace Yodii.Host
         [DebuggerNonUserCodeAttribute]
         protected ServiceLogMethodOptions GetLoggerForRunningCall( int iMethodMRef, out LogMethodEntry logger )
         {
-            if( _impl == null || _impl.Status == InternalRunningStatus.Disabled )
+            if( _impl == null || _impl.Status == PluginStatus.Disabled )
             {
                 throw new ServiceNotAvailableException( _typeInterface );
             }
-            if( _impl.Status == InternalRunningStatus.Stopped )
+            if( _impl.Status == PluginStatus.Stopped )
             {
                 throw new ServiceStoppedException( _typeInterface );
             }
@@ -194,7 +234,7 @@ namespace Yodii.Host
         [DebuggerNonUserCodeAttribute]
         protected ServiceLogMethodOptions GetLoggerForNotDisabledCall( int iMethodMRef, out LogMethodEntry logger )
         {
-            if( _impl == null || _impl.Status == InternalRunningStatus.Disabled )
+            if( _impl == null || _impl.Status == PluginStatus.Disabled )
             {
                 throw new ServiceNotAvailableException( _typeInterface );
             }
@@ -259,8 +299,8 @@ namespace Yodii.Host
         {
             EEntry e = _eRefs[iEventMRef];
             logOptions = e.LogOptions;
-            bool isDisabled = _impl == null || _impl.Status == InternalRunningStatus.Disabled;
-            if( isDisabled || _impl.Status == InternalRunningStatus.Stopped )
+            bool isDisabled = _impl == null || _impl.Status == PluginStatus.Disabled;
+            if( isDisabled || _impl.Status == PluginStatus.Stopped )
             {
                 if( (logOptions & ServiceLogEventOptions.SilentEventRunningStatusError) != 0 )
                 {
@@ -282,7 +322,7 @@ namespace Yodii.Host
         {
             EEntry e = _eRefs[iEventMRef];
             logOptions = e.LogOptions & ServiceLogEventOptions.CreateEntryMask;
-            if( _impl == null || _impl.Status == InternalRunningStatus.Disabled )
+            if( _impl == null || _impl.Status == PluginStatus.Disabled )
             {
                 if( (logOptions & ServiceLogEventOptions.SilentEventRunningStatusError) != 0 )
                 {

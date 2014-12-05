@@ -67,7 +67,7 @@ namespace Yodii.Model
         LogReturnValue = 32,
       
         /// <summary>
-        /// Log when the method is called. (Info type)
+        /// Mask that covers both <see cref="Enter"/> and <see cref="Leave"/>.
         /// </summary>
         CreateEntryMask = Leave | Enter
     }

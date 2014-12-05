@@ -1,6 +1,6 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Model\Discoverer\IDiscoveredInfo.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\IPluginSetupInfo.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -29,20 +29,39 @@ using System.Text;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Discovered item.
+    /// Exposes cancellation information when <see cref="IYodiiPlugin.PreStart"/> 
+    /// or <see cref="IYodiiPlugin.PreStop"/> failed or refused to start or stop.
     /// </summary>
-    public interface IDiscoveredItem
+    public interface IPluginHostApplyCancellationInfo
     {
         /// <summary>
-        /// Whether this item is on error.
-        /// Typically an error occurred during the discovery phase.
+        /// Gets the plugin that failed to start or stop.
         /// </summary>
-        bool HasError { get; }
+        IPluginInfo Plugin { get; }
 
         /// <summary>
-        /// Gets the error message associated to this item.
-        /// Typically an error that happened during the discovery phase.
+        /// Gets whether the <see cref="Error"/> occurred while creating a new plugin instance.
+        /// </summary>
+        bool IsLoadError { get; }
+
+        /// <summary>
+        /// Gets whether it is <see cref="IYodiiPlugin.PreStart"/> that failed.
+        /// </summary>
+        bool IsStartCanceled { get; }
+
+        /// <summary>
+        /// Gets whether it is <see cref="IYodiiPlugin.PreStop"/> that failed.
+        /// </summary>
+        bool IsStopCanceled { get; }
+
+        /// <summary>
+        /// Gets the message.
         /// </summary>
         string ErrorMessage { get; }
+
+        /// <summary>
+        /// Gets an optional exception that occurred during the operation.
+        /// </summary>
+        Exception Error { get; }
     }
 }

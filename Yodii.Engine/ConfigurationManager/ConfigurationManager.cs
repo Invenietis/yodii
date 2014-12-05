@@ -103,7 +103,7 @@ namespace Yodii.Engine
             final.Add( item.ServiceOrPluginFullName, data );
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Item changing", final, c => c != item );
-            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine);
+            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine );
 
             if(item.Status != data.Status) return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.StatusChanged, item ) );
             return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ImpactChanged, item ) );

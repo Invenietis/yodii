@@ -7,33 +7,43 @@ using System.Text;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Event argument when a service <see cref="RunningStatus">status</see> changed.
+    /// Event argument when a <see cref="IService{T}.Status"/> changed.
     /// This event is available on the generic <see cref="IService{T}"/>.<see cref="IService{T}.ServiceStatusChanged">ServiceStatusChanged</see>.
     /// </summary>
-    public class ServiceStatusChangedEventArgs : EventArgs
+    public abstract class ServiceStatusChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// Gets the previous status.
+        /// Gets whether the implementation is swapping or has been swapped:
+        /// it is true if <see cref="IService{T}.Status"/> is <see cref="ServiceStatus.Swapping"/> or <see cref="ServiceStatus.Started"/> and
+        /// a new plugin implements it.
         /// </summary>
-        public InternalRunningStatus Previous { get; private set; }
-
-        /// <summary>
-        /// Gets the current status of the service.
-        /// </summary>
-        public InternalRunningStatus Current { get; private set; }
+        public bool Swap { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of a <see cref="ServiceStatusChangedEventArgs"/>.
         /// </summary>
-        /// <param name="previous">The previous running status.</param>
+        /// <param name="swap">True if the <see cref=""/>.</param>
         /// <param name="current">The current running Status</param>
-        /// <param name="allowErrorTransition">True if the next status is a valid next one (like <see cref="RunningStatus.Starting"/> to <see cref="RunningStatus.Started"/>). False otherwise.</param>
-        public ServiceStatusChangedEventArgs( InternalRunningStatus previous, InternalRunningStatus current, bool allowErrorTransition )
+        protected ServiceStatusChangedEventArgs( bool swap )
         {
-            //Debug.Assert( previous.IsValidTransition( current, allowErrorTransition ) );
-            Previous = previous;
-            Current = current;
+            Swap = swap;
         }
+
+        /// <summary>
+        /// Plugins can call this method only when <see cref="IService{T}.Status"/> is <see cref="ServiceStatus.Swapping"/>.
+        /// By calling this method, the <see cref="IService{T}"/> is bound to the new plugin that implements the service.
+        /// </summary>
+        public abstract void BindToStartingPlugin();
+
+        /// <summary>
+        /// This method can be used to dynamically start a service. There is no guaranty of success here: this is a deffered action
+        /// that may not be applicable.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the service to start.</typeparam>
+        /// <param name="service">Reference to the service that should be started.</param>
+        /// <param name="impact">Impact of the start.</param>
+        /// <param name="onStarted">Action that will be executed when and if the service starts.</param>
+        public abstract void TryStart<T>( IService<T> service, StartDependencyImpact impact, Action<T> onStarted ) where T : IYodiiService;
 
     }
 }

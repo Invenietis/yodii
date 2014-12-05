@@ -117,17 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DisabledAndRunningPluginsIntersect" xml:space="preserve">
-    <value>Disabled and Running list share {0} plugin(s).</value>
+  <data name="BindToStartingPluginMustBeSwapping" xml:space="preserve">
+    <value>Calling BindToStartingPlugin is possible only when service is  Swapping.</value>
   </data>
-  <data name="DisabledAndStoppedPluginsIntersect" xml:space="preserve">
-    <value>Disabled and Stopped list share {0} plugin(s).</value>
+  <data name="ErrorWhileCreatingPluginInstance" xml:space="preserve">
+    <value>An error occurred while creating a new plugin instance.</value>
   </data>
   <data name="ExternalImplRequiredAsANonNullObject" xml:space="preserve">
     <value>External Service implementation must be provided.</value>
   </data>
   <data name="ExternalLogErrorMissException" xml:space="preserve">
     <value>Missing Exception object in call to ExternalLogError.</value>
+  </data>
+  <data name="HostApplyInvalidGeneralizationMismatchStart" xml:space="preserve">
+    <value>Invalid generalization mismatch: 2 plugins implementing the same Service must both start.</value>
+  </data>
+  <data name="HostApplyInvalidGeneralizationMismatchStopped" xml:space="preserve">
+    <value>Invalid generalization mismatch: 2 plugins implementing the same Service must both stop.</value>
+  </data>
+  <data name="HostApplyPluginAlreadyDisabled" xml:space="preserve">
+    <value>Plugin '{0}' must be disabled but is already disabled.</value>
+  </data>
+  <data name="HostApplyStartPluginAlreadyStarted" xml:space="preserve">
+    <value>Plugin '{0}' must start but is already started.</value>
+  </data>
+  <data name="HostApplyStopPluginAlreadyDisabled" xml:space="preserve">
+    <value>Plugin '{0}' must stop but is currently disabled.</value>
+  </data>
+  <data name="HostApplyStopPluginAlreadyStopped" xml:space="preserve">
+    <value>Plugin '{0}' must stop but is already stopped.</value>
   </data>
   <data name="InterfaceMustExtendIYodiiService" xml:space="preserve">
     <value>Interface must extend IYodiiService to be a Dynamic Service.</value>
@@ -141,14 +159,14 @@
   <data name="PluginCreatorReturnedNull" xml:space="preserve">
     <value>PluginCreator returned a null plugin for '{0}'.</value>
   </data>
+  <data name="PreviousPluginMustNotBeNull" xml:space="preserve">
+    <value>Previous plugin must not be null.</value>
+  </data>
   <data name="ServiceIsAlreadyExternal" xml:space="preserve">
     <value>Service '{0}' is already bound to an external implementation. Plugin '{1}' can not offer it.</value>
   </data>
   <data name="ServiceIsPluginBased" xml:space="preserve">
     <value>Service '{0}' is a dynamic service that is implemented by plugins. It can not be associated to an external implementation.</value>
-  </data>
-  <data name="StoppedAndRunningPluginsIntersect" xml:space="preserve">
-    <value>Stopped and Running list share {0} plugin(s).</value>
   </data>
   <data name="TypeMustBeAnInterface" xml:space="preserve">
     <value>The type must be an Interface.</value>

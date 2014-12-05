@@ -32,13 +32,11 @@ using System.Reflection;
 
 namespace Yodii.Host
 {
-    public class PluginHost : IPluginHost, IYodiiEngineHost
+    public class PluginHost : IYodiiEngineHost
     {
         static ILog _log = LogManager.GetLogger( typeof( PluginHost ) );
         readonly ServiceHost _serviceHost;
         readonly Dictionary<string, PluginProxy> _plugins;
-        readonly Dictionary<string, PluginProxy> _loadedPlugins;
-        readonly List<PluginProxy> _newlyLoadedPlugins;
         Func<IPluginInfo,object[],IYodiiPlugin> _pluginCreator;
 
         public PluginHost()
@@ -49,9 +47,7 @@ namespace Yodii.Host
         internal PluginHost( CatchExceptionGeneration catchMode )
         {
             _plugins = new Dictionary<string, PluginProxy>();
-            _loadedPlugins = new Dictionary<string, PluginProxy>();
             _serviceHost = new ServiceHost( catchMode );
-            _newlyLoadedPlugins = new List<PluginProxy>();
             _pluginCreator = DefaultPluginCreator;
         }
 
@@ -59,14 +55,8 @@ namespace Yodii.Host
         {
             var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
             var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
-
             return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
-
-        /// <summary>
-        /// Gets the loaded plugins. This contains also the plugins that are currently disabled but have been loaded at least once.
-        /// </summary>
-        public IReadOnlyCollection<IPluginProxy> LoadedPlugins { get { return _loadedPlugins.Values.ToList().ToReadOnlyCollection(); } }
 
         /// <summary>
         /// Gets or sets a function that is in charge of obtaining concrete plugin instances.
@@ -79,89 +69,75 @@ namespace Yodii.Host
             get { return _pluginCreator; }
             set { _pluginCreator = value ?? DefaultPluginCreator; }
         }
-        /*
-        /// <summary>
-        /// Gets the <see cref="IPluginProxy"/> corresponding to the <see cref="IPluginInfo"/>.
-        /// </summary>
-        /// <param name="pluginInfo">Plugin info (typically provided by the <see cref="IDiscoverer"/>.</param>
-        /// <returns>The plugin proxy (may be stopped or even not loaded).</returns>
-        public IPluginProxy FindPluginProxy( IPluginInfo pluginInfo )//A VIRER
-        {
-            return _plugins.GetValueWithDefault( pluginInfo, null );
-        }
-        */
-        /// <summary>
-        /// Gets the <see cref="IPluginProxy"/> corresponding to the Plugin Guid set as parameter.
-        /// </summary>
-        /// <param name="pluginId">The Guid of the plugin</param>
-        /// <param name="checkCurrentlyLoading">set to yes if you want to look for the right IPluginProxy in the plugin currently being loaded</param>
-        /// <returns>The plugin proxy (may be stopped or even not loaded).</returns>
-        public IPluginProxy FindLoadedPlugin( string pluginFullName, bool checkCurrentlyLoading )
-        {
-            var p = _loadedPlugins.GetValueWithDefault( pluginFullName, null );
-            if( p == null && checkCurrentlyLoading ) p = _newlyLoadedPlugins.FirstOrDefault( n => n.PluginKey.PluginFullName == pluginFullName );
-            return p;
-        }
 
-        public bool IsPluginRunning( IPluginInfo pluginInfo )
+        class Result : IYodiiEngineHostApplyResult
         {
-            PluginProxy result;
-            if( !_plugins.TryGetValue( pluginInfo.PluginFullName, out result ) ) return false;
-            return result.Status == InternalRunningStatus.Started;
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
+            {
+                CancellationInfo = errors;
+                PostStartActions = actions;
+            }
+
+            public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
+
+            public IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; private set; }
         }
 
         /// <summary>
         /// Attempts to execute a plan.
         /// </summary>
-        /// <param name="disabledPluginKeys">Plugins that must be disabled.</param>
-        /// <param name="stoppedPluginKeys">Plugins that must be stopped.</param>
-        /// <param name="runningPluginKeys">Plugins that must be running.</param>
-        /// <returns>A <see cref="IExecutionPlanError"/> that details the error if any.</returns>
-        public IEnumerable<Tuple<IPluginInfo, Exception>> Apply( IEnumerable<IPluginInfo> disabledPluginKeys, IEnumerable<IPluginInfo> stoppedPluginKeys, IEnumerable<IPluginInfo> runningPluginKeys )
+        /// <param name="disabledPlugins">Plugins that must be disabled.</param>
+        /// <param name="stoppedPlugins">Plugins that must be stopped.</param>
+        /// <param name="runningPlugins">Plugins that must be running.</param>
+        /// <returns>A <see cref="IYodiiEngineHostApplyResult"/> that details the error if any.</returns>
+        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> disabledPlugins, IEnumerable<IPluginInfo> stoppedPlugins, IEnumerable<IPluginInfo> runningPlugins )
         {
             if( PluginCreator == null ) throw new InvalidOperationException( R.PluginCreatorIsNull );
 
-            IEnumerable<Tuple<IPluginInfo, Exception>> executionPlanResult = new List<Tuple<IPluginInfo, Exception>>();
-            int nbIntersect;
-            nbIntersect = disabledPluginKeys.Intersect( stoppedPluginKeys ).Count();
-            if( nbIntersect != 0 ) throw new CKException( R.DisabledAndStoppedPluginsIntersect, nbIntersect );
-            nbIntersect = disabledPluginKeys.Intersect( runningPluginKeys ).Count();
-            if( nbIntersect != 0 ) throw new CKException( R.DisabledAndRunningPluginsIntersect, nbIntersect );
-            nbIntersect = stoppedPluginKeys.Intersect( runningPluginKeys ).Count();
-            if( nbIntersect != 0 ) throw new CKException( R.StoppedAndRunningPluginsIntersect, nbIntersect );
+            var errors = new List<CancellationInfo>();
+            var postStartActions = new List<Action<IYodiiEngine>>();
 
+            ServiceManager serviceManager = new ServiceManager( _serviceHost );
             List<PluginProxy> toDisable = new List<PluginProxy>();
-            List<PluginProxy> toStop = new List<PluginProxy>();
-            List<PluginProxy> toStart = new List<PluginProxy>();
 
-            foreach( IPluginInfo k in disabledPluginKeys )
+            List<PreStopContext> toStop = new List<PreStopContext>();
+            // To be able to initialize PreStartContext objects, we need to instanciate the shared memory now.
+            Dictionary<object, object> sharedMemory = new Dictionary<object, object>();
+
+            foreach( IPluginInfo k in disabledPlugins )
             {
                 PluginProxy p = EnsureProxy( k );
-                if( p.Status != InternalRunningStatus.Disabled )
+                if( p.Status == PluginStatus.Disabled ) throw new ArgumentException( String.Format( R.HostApplyPluginAlreadyDisabled, k.PluginFullName ), "disabledPlugins" );
+                toDisable.Add( p );
+                if( p.Status != PluginStatus.Stopped )
                 {
-                    toDisable.Add( p );
-                    if( p.Status != InternalRunningStatus.Stopped )
-                    {
-                        toStop.Add( p );
-                    }
+                    var preStop = new PreStopContext( p, sharedMemory );
+                    if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
+                    toStop.Add( preStop );
                 }
             }
-            foreach( IPluginInfo k in stoppedPluginKeys )
+            foreach( IPluginInfo k in stoppedPlugins )
             {
                 PluginProxy p = EnsureProxy( k );
-                if( p.Status != InternalRunningStatus.Stopped )
-                {
-                    toStop.Add( p );
-                }
+                if( p.Status == PluginStatus.Stopped ) throw new ArgumentException( String.Format( R.HostApplyStopPluginAlreadyStopped, k.PluginFullName ), "stoppedPlugins" );
+                if( p.Status == PluginStatus.Disabled ) throw new ArgumentException( String.Format( R.HostApplyStopPluginAlreadyDisabled, k.PluginFullName ), "stoppedPlugins" );
+                var preStop = new PreStopContext( p, sharedMemory );
+                if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
+                toStop.Add( preStop );
             }
-            // The lists toDisable and toStop are correctly filled.
-            // A plugin can be in both lists if it must be stopped and then disabled.
+            // The lists toDisable and toStop are correctly filled: a plugin is in both lists if it must be stopped and then disabled.
 
             // Now, we attempt to activate the plugins that must run: if an error occurs,
             // we leave and return the error since we did not change anything.
-            foreach( IPluginInfo k in runningPluginKeys )
+
+            // The toStart list is a list of PreStartContext instead of list of the simple PluginProxy.
+            // With the help of the ServiceManager, this resolves the issue to find the swapped plugin if 
+            // it exists (and the most specialized common service).
+            List<StStartContext> toStart = new List<StStartContext>();
+            foreach( IPluginInfo k in runningPlugins )
             {
                 PluginProxy p = EnsureProxy( k );
+                if( p.Status == PluginStatus.Started ) throw new ArgumentException( String.Format( R.HostApplyStartPluginAlreadyStarted, k.PluginFullName ), "runningPlugins" );
                 if( !p.IsLoaded )
                 {
                     if( !p.TryLoad( _serviceHost, PluginCreator ) )
@@ -169,200 +145,115 @@ namespace Yodii.Host
                         Debug.Assert( p.LoadError != null, "Error is catched by the PluginHost itself." );
                         _serviceHost.LogMethodError( PluginCreator.Method, p.LoadError );
                         // Unable to load the plugin: leave now.
-                        return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, p.LoadError ) );
+                        errors.Add( new CancellationInfo( p.PluginKey, true ) { Error = p.LoadError, ErrorMessage = R.ErrorWhileCreatingPluginInstance } );
                     }
                     Debug.Assert( p.LoadError == null );
-                    Debug.Assert( p.Status == InternalRunningStatus.Disabled );
-                    _newlyLoadedPlugins.Add( p );
+                    Debug.Assert( p.Status == PluginStatus.Disabled );
                 }
-                if( p.Status != InternalRunningStatus.Started )
+                var preStart = new StStartContext( p, sharedMemory );
+                if( k.Service != null )
                 {
-                    toStart.Add( p );
+                    serviceManager.AddToStart( k.Service, preStart );
                 }
+                toStart.Add( preStart );
             }
-            // The toStart list is ready: plugins inside are loaded without error.
-
-            // We stop all "toStop" plugin.
-            // Their "stop" methods will be called.
-            foreach( PluginProxy p in toStop )
+            if( errors.Count > 0 )
             {
-                if( p.Status > InternalRunningStatus.Stopped )
-                {
-                    try
-                    {
-                        SetPluginStatus( p, InternalRunningStatus.Stopping );
-                        p.RealPlugin.Stop();
-                        _log.Debug( String.Format( "The {0} plugin has been successfully stopped.", p.PublicName ) );
-                    }
-                    catch( Exception ex )
-                    {
-                        _log.ErrorFormat( "There has been a problem when stopping the {0} plugin.", ex, p.PublicName );
-                        _serviceHost.LogMethodError( p.GetImplMethodInfoStop(), ex );
-                        executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
-                    }
-                }
+                return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
             }
 
-            // We un-initialize all "toStop" plugin.
-            // Their "Teardown" methods will be called.
-            // After that, they are all "stopped".
-            foreach( PluginProxy p in toStop )
+            // The toStart list of PreStartContext is ready (and plugins inside are loaded without error).
+            // Now starts the actual PreStop/PreStart/Stop/Start/Disable phase:
+
+            // Calling PreStop for all "toStop" plugins.
+            foreach( var c in toStop )
             {
-                try
+                Debug.Assert( c.Plugin.Status == PluginStatus.Started );
+                c.Plugin.RealPlugin.PreStop( c );
+                if( c.HandleSuccess( errors, false ) ) c.Plugin.Status = PluginStatus.Stopping;
+            }
+            // If at least one failed, cancel the start for the successful ones
+            // and stops here.
+            if( errors.Count > 0 )
+            {
+                CancelSuccessfulPreStop( sharedMemory, toStop );
+                return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+            }
+
+            // PreStop has been successfully called: we must now call the PreStart.
+            foreach( var c in toStart )
+            {
+                Debug.Assert( c.Plugin.Status != PluginStatus.Started );
+                c.Plugin.RealPlugin.PreStart( c );
+                if( c.HandleSuccess( errors, true ) )
                 {
-                    if( p.Status > InternalRunningStatus.Stopped )
+                    c.Plugin.Status = PluginStatus.Starting;
+                }
+            }
+            // If a PreStart failed, we cancel everything and stop.
+            if( errors.Count > 0 )
+            {
+                CancelSuccessfulPreStop( sharedMemory, toStop );
+                var cStop = new CancelPreStartContext( sharedMemory );
+                foreach( var c in toStart )
+                {
+                    if( c.Success )
                     {
-                        SetPluginStatus( p, InternalRunningStatus.Stopped );
-                        p.RealPlugin.Teardown();
-                        _log.Debug( String.Format( "The {0} plugin has been successfully torn down.", p.PublicName ) );
+                        c.Plugin.Status = PluginStatus.Stopped;
+                        var rev = c.RollbackAction;
+                        if( rev != null ) rev( cStop );
+                        else c.Plugin.RealPlugin.Stop( cStop );
                     }
                 }
-                catch( Exception ex )
-                {
-                    _log.ErrorFormat( "There has been a problem when tearing down the {0} plugin.", ex, p.PublicName );
-                    _serviceHost.LogMethodError( p.GetImplMethodInfoTeardown(), ex );
-                    executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
-                }
+                return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
             }
-            Debug.Assert( toStop.All( p => p.Status <= InternalRunningStatus.Stopped ) );
 
+            // Sending Stopping & Starting events...
 
-            // Prepares the plugins to start so that they become the implementation
-            // of their Service and are at least stopped (instead of disabled).
-            foreach( PluginProxy p in toStart )
+            // Time to call Stop and Start. 
+            foreach( var c in toStop )
             {
-                ServiceProxyBase service = p.Service;
-                // The call to service.SetImplementation, sets the implementation and takes
-                // the _status of the service into account: this status is at most Stopped
-                // since we necessarily stopped the previous implementation (if any) above.
-                if( service != null )
-                {
-                    Debug.Assert( service.Status <= InternalRunningStatus.Stopped );
-                    service.SetPluginImplementation( p, p.PluginKey.Service );
-                }
-                // This call will trigger an update of the service status.
-                if( p.Status == InternalRunningStatus.Disabled ) SetPluginStatus( p, InternalRunningStatus.Stopped );
+                Debug.Assert( c.Success );
+                c.Plugin.Status = PluginStatus.Stopped;
+                c.Plugin.RealPlugin.Stop( c );
+            }
+            foreach( var c in toStart )
+            {
+                Debug.Assert( c.Success );
+                c.Plugin.Status = PluginStatus.Started;
+                c.Plugin.RealPlugin.Start( c );
             }
 
-            // Now that services have been associated to their new implementation (in Stopped status), we
-            // can disable the plugins that must be disabled.
+            // Sending Stopped & Started events...
+
             foreach( PluginProxy p in toDisable )
             {
-                SetPluginStatus( p, InternalRunningStatus.Disabled );
+                p.Status = PluginStatus.Disabled;
                 try
                 {
                     p.DisposeIfDisposable();
                 }
                 catch( Exception ex )
                 {
-                    _log.ErrorFormat( "There has been a problem when disposing the {0} plugin.", ex, p.PublicName );
                     _serviceHost.LogMethodError( p.GetImplMethodInfoDispose(), ex );
-                    executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
                 }
             }
-
-            // Before starting 
-            for( int i = 0; i < toStart.Count; i++ )
-            {
-                PluginProxy p = toStart[i];
-
-                SetPluginStatus( p, InternalRunningStatus.Starting );
-                PluginSetupInfo info = new PluginSetupInfo();
-                try
-                {
-                    p.RealPlugin.Setup( info );
-                    info.Clear();
-                    _log.Debug( String.Format( "The {0} plugin has been successfully set up.", p.PublicName ) );
-                }
-                catch( Exception ex )
-                {
-                    _log.ErrorFormat( "There has been a problem when setting up the {0} plugin.", ex, p.PublicName );
-                    _serviceHost.LogMethodError( p.GetImplMethodInfoSetup(), ex );
-
-                    // Revoking the call to Setup for all plugins that haven't been started yet.
-                    // Will pass the plugin to states : Stopping and then Stopped
-                    for( int j = 0; j <= i; j++ )
-                    {
-                        RevokeSetupCall( toStart[j] );
-                    }
-
-                    info.Error = ex;
-                    return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
-                }
-            }
-
-            // Since we are now ready to start new plugins, it is now time to make the external world
-            // aware of the existence of any new plugins and configure them to run.
-            foreach( PluginProxy p in _newlyLoadedPlugins )
-            {
-                _loadedPlugins.Add( p.PluginKey.PluginFullName, p );
-            }
-            _newlyLoadedPlugins.Clear();
-
-            for( int i = 0; i < toStart.Count; i++ )
-            {
-                PluginProxy p = toStart[i];
-                try
-                {
-                    SetPluginStatus( p, InternalRunningStatus.Started );
-                    p.RealPlugin.Start();
-                    _log.Debug( String.Format( "The {0} plugin has been successfully started.", p.PublicName ) );
-                }
-                catch( Exception ex )
-                {
-                    // Emitted as low level log.
-                    _log.ErrorFormat( "There has been a problem when starting the {0} plugin.", ex, p.PublicName );
-
-                    // Emitted as a log event.
-                    _serviceHost.LogMethodError( p.GetImplMethodInfoStart(), ex );
-
-                    //All the plugins already started  when the exception was thrown have to be stopped + teardown (including this one in exception)
-                    for( int j = 0; j <= i; j++ )
-                    {
-                        RevokeStartCall( toStart[j] );
-                    }
-
-                    // Revoking the call to Setup for all plugins that hadn't been started when the exception occured.
-                    for( int j = i + 1; j < toStart.Count; j++ )
-                    {
-                        RevokeSetupCall( toStart[j] );
-                    }
-
-                    return executionPlanResult.Append( new Tuple<IPluginInfo, Exception>( p.PluginKey, ex ) );
-                }
-            }
-            return executionPlanResult;
+            return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
         }
 
-        private void RevokeStartCall( PluginProxy p )
+        static void CancelSuccessfulPreStop( Dictionary<object, object> sharedMemory, List<PreStopContext> successfulPreStop )
         {
-            try
+            var cStart = new CancelPresStopContext( sharedMemory );
+            foreach( var c in successfulPreStop )
             {
-                p.RealPlugin.Stop();
+                if( c.Success )
+                {
+                    c.Plugin.Status = PluginStatus.Started;
+                    var rev = c.RollbackAction;
+                    if( rev != null ) rev( cStart );
+                    else c.Plugin.RealPlugin.Start( cStart );
+                }
             }
-            catch( Exception exStop )
-            {
-                // 2.1 - Should be emitted as an external log event.
-                _serviceHost.LogMethodError( p.GetImplMethodInfoTeardown(), exStop );
-            }
-            RevokeSetupCall( p );
-        }
-
-        private void RevokeSetupCall( PluginProxy p )
-        {
-            // 2 - Stops the plugin status.
-            SetPluginStatus( p, InternalRunningStatus.Stopping, true );
-            // 3 - Safe call to TearDown.
-            try
-            {
-                p.RealPlugin.Teardown();
-            }
-            catch( Exception exTeardown )
-            {
-                // 2.1 - Should be emitted as an external log event.
-                _serviceHost.LogMethodError( p.GetImplMethodInfoTeardown(), exTeardown );
-            }
-            SetPluginStatus( p, InternalRunningStatus.Stopped, true );
         }
 
         /// <summary>
@@ -379,9 +270,10 @@ namespace Yodii.Host
             PluginProxy result;
             if( _plugins.TryGetValue( pluginInfo.PluginFullName, out result ) )
             {
-                if( result.PluginKey != pluginInfo )//If SetDiscoveredInfo is called, the pluginInfo will be new even if it is the same.
+                // Updates the pluginInfo reference (when discovered again, IPluginInfo instances change).
+                if( result.PluginKey != pluginInfo )
                 {
-                    result.PluginKey = pluginInfo; //TODO : figure out how to know and reload if the plugin really changes (example : different version)
+                    result.PluginKey = pluginInfo;
                 }
             }
             else
@@ -390,52 +282,6 @@ namespace Yodii.Host
                 _plugins.Add( pluginInfo.PluginFullName, result );
             }
             return result;
-        }
-
-        public event EventHandler<PluginStatusChangedEventArgs> StatusChanged;
-
-        void SetPluginStatus( PluginProxy plugin, InternalRunningStatus newOne )
-        {
-            SetPluginStatus( plugin, newOne, false );
-        }
-
-        void SetPluginStatus( PluginProxy plugin, InternalRunningStatus newOne, bool allowErrorTransition )
-        {
-            InternalRunningStatus previous = plugin.Status;
-            Debug.Assert( previous != newOne );
-            if( newOne > previous )
-            {
-                // New status is greater than the previous one.
-                // We first set the plugin (and raise the event) and then raise the service event (if any).
-                DoSetPluginStatus( plugin, newOne, previous );
-                if( plugin.IsCurrentServiceImplementation )
-                {
-                    if( newOne == InternalRunningStatus.Stopped && plugin.Service.Status == InternalRunningStatus.Stopped )
-                    {
-                        // This is an consequence of the fact that we disable plugins after 
-                        // starting the new ones.
-                        // When pA (stopping) implements sA and pB implements sA (starting), sA remains "Stopped".
-                    }
-                    else plugin.Service.SetStatusChanged( newOne, allowErrorTransition );
-                }
-            }
-            else
-            {
-                // New status is lower than the previous one.
-                // We first raise the service event (if any) and then the plugin event.
-                if( plugin.IsCurrentServiceImplementation ) plugin.Service.SetStatusChanged( newOne, allowErrorTransition );
-                DoSetPluginStatus( plugin, newOne, previous );
-            }
-        }
-
-        private void DoSetPluginStatus( PluginProxy plugin, InternalRunningStatus newOne, InternalRunningStatus previous )
-        {
-            plugin.Status = newOne;
-            var h = StatusChanged;
-            if( h != null )
-            {
-                h( this, new PluginStatusChangedEventArgs( previous, plugin ) );
-            }
         }
 
         public IServiceHost ServiceHost

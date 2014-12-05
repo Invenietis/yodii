@@ -39,7 +39,7 @@ namespace Yodii.Model
         /// <param name="e">The <see cref="Exception"/>. When null, a warning is added to the message.</param>
         /// <param name="optionalExplicitCulprit">
         /// Optional <see cref="MemberInfo"/> that designates a culprit. 
-        /// Nullable: when not specified, the <see cref="Exception.TargetSite"/> is used.
+        /// It can be null: when not specified, the <see cref="Exception.TargetSite"/> is used.
         /// </param>
         /// <param name="message">Optional event message (localized if possible). Nullable.</param>
         /// <param name="extraData">Optional extra data associated to the event. Nullable.</param>
@@ -48,7 +48,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the list of errors that occured while there was no launched plugins to process them.
         /// </summary>
-        ICKReadOnlyList<ILogErrorCaught> UntrackedErrors { get; }
+        IReadOnlyList<ILogErrorCaught> UntrackedErrors { get; }
 
     }
 }
