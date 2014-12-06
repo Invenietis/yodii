@@ -8,7 +8,7 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
-    public class AnotherPlugin5 : IYodiiPlugin
+    public class AnotherPlugin5 : YodiiPluginBase
     {
         IRunningService<IChoucrouteService5Generalization> _serviceRunning;
 
@@ -28,25 +28,26 @@ namespace Yodii.Host.Tests
             _calledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService = " + _serviceRunning.Status );
         }
 
-        public bool Setup( PluginSetupInfo info )
+
+        protected override void PluginPreStart( IPreStartContext c )
         {
             _calledMethods.Add( "Setup - IAnotherService = " + _serviceRunning.Status );
-            return true;
+            base.PluginPreStart( c );
         }
-
-        public void Start()
+        protected override void PluginStart( IStartContext c )
         {
             _calledMethods.Add( "Start - IAnotherService = " + _serviceRunning.Status );
+            base.PluginStart( c );
         }
-
-        public void Teardown()
-        {
-            _calledMethods.Add( "Teardown - IAnotherService = " + _serviceRunning.Status );
-        }
-
-        public void Stop()
+        protected override void PluginPreStop( IPreStopContext c )
         {
             _calledMethods.Add( "Stop - IAnotherService = " + _serviceRunning.Status );
+            base.PluginPreStop( c );
+        }
+        protected override void PluginStop( IStopContext c )
+        {
+            _calledMethods.Add( "Teardown - IAnotherService = " + _serviceRunning.Status );
+            base.PluginStop( c );
         }
 
         public void DoSomething()

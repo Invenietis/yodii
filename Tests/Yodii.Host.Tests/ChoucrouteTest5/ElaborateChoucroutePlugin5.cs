@@ -8,7 +8,7 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
-    public class ElaborateChoucroutePlugin5 : IChoucrouteService5, IYodiiPlugin
+    public class ElaborateChoucroutePlugin5 : YodiiPluginBase, IChoucrouteService5
     {
         IOptionalService<IAnotherService4> _serviceOpt;
 
@@ -27,26 +27,28 @@ namespace Yodii.Host.Tests
         {
             _calledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService = " + _serviceOpt.Status );
         }
-
-        public bool Setup( PluginSetupInfo info )
+        protected override void PluginPreStart( IPreStartContext c )
         {
             _calledMethods.Add( "Setup - IAnotherService = " + _serviceOpt.Status );
-            return true;
+            base.PluginPreStart( c );
         }
 
-        public void Start()
+        protected override void PluginStart( IStartContext c )
         {
             _calledMethods.Add( "Start - IAnotherService = " + _serviceOpt.Status );
+            base.PluginStart( c );
         }
 
-        public void Teardown()
-        {
-            _calledMethods.Add( "Teardown - IAnotherService = " + _serviceOpt.Status );
-        }
-
-        public void Stop()
+        protected override void PluginPreStop( IPreStopContext c )
         {
             _calledMethods.Add( "Stop - IAnotherService = " + _serviceOpt.Status );
+            base.PluginPreStop( c );
+        }
+
+        protected override void PluginStop( IStopContext c )
+        {
+            _calledMethods.Add( "Teardown - IAnotherService = " + _serviceOpt.Status );
+            base.PluginStop( c );
         }
 
         public void DoSomethingElse()

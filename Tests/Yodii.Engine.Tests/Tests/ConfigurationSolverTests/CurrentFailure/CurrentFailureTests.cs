@@ -94,7 +94,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service1.1" ), DependencyRequirement.Runnable );
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( d );
 
 
@@ -165,7 +165,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service1.1" ), DependencyRequirement.Running );
             d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service2" ), DependencyRequirement.Running );
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( d );
 
 
@@ -249,7 +249,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service3" ), DependencyRequirement.Runnable );
             d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.Running );
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( d );
 
             var result = engine.Start();

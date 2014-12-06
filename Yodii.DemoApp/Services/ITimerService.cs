@@ -90,30 +90,31 @@ public interface ISoftTimerService : IYodiiService
             _reporting = reporting;
         }
 
-        protected override void DoStart()
+        protected override void PluginStart( IStartContext c )
         {
             _delivery.ServiceStatusChanged += DeliveryServiceStatusChanged;
+            base.PluginStart( c );
         }
 
-        protected override void DoStop()
+        protected override void PluginStop( IStopContext c )
         {
             _delivery.ServiceStatusChanged -= DeliveryServiceStatusChanged;
+            base.PluginStop( c );
         }
 
         void DeliveryServiceStatusChanged( object sender, ServiceStatusChangedEventArgs e )
         {
-            if( e.Current == InternalRunningStatus.Stopping )
+            if( _delivery.Status == ServiceStatus.Stopping )
             {
-                if( _reporting.Status == InternalRunningStatus.Started ) 
+                if( _reporting.Status == ServiceStatus.Started ) 
                 {
                     _reporting.Service.Report( "Starting buffering." );
                 }
             }
-            else if( e.Current == InternalRunningStatus.Started )
+            else if( _delivery.Status == ServiceStatus.Started )
             {
                 if( this.HasBufferedData )
                 {
-                    //Debug.Assert( _reporting.CanStart, "Since it is a Runnable dependency." );
                     e.TryStart( _reporting, s => s.Report( "Delivering buffered data!" ) );
                 }
             }
@@ -123,17 +124,16 @@ public  bool HasBufferedData { get; set; }
     }
 
 
-    class DefaultSoftTimerService : IYodiiPlugin, ISoftTimerService
+    class DefaultSoftTimerService : YodiiPluginBase, ISoftTimerService
     {
         DispatcherTimer _base;
 
-
-        bool IYodiiPlugin.Setup( PluginSetupInfo info )
+        protected override void PluginPreStart( IPreStartContext c )
         {
             _base = new DispatcherTimer( DispatcherPriority.Normal );
             _base.Interval = TimeSpan.FromMilliseconds( 100.0 );
             _base.Tick += _base_Tick;
-            return true;
+            base.PluginPreStart( c );
         }
 
         void _base_Tick( object sender, EventArgs e )
@@ -142,19 +142,23 @@ public  bool HasBufferedData { get; set; }
             if( h != null ) h( this, EventArgs.Empty );
         }
 
-        void IYodiiPlugin.Start()
+        protected override void PluginStart( IStartContext c )
         {
             _base.Start();
+            base.PluginStart( c );
         }
 
-        void IYodiiPlugin.Stop()
+
+        protected override void PluginPreStop( IPreStopContext c )
         {
             _base.Stop();
+            base.PluginPreStop( c );
         }
 
-        void IYodiiPlugin.Teardown()
+        protected override void PluginStop( IStopContext c )
         {
             _base = null;
+            base.PluginStop( c );
         }
 
         public event EventHandler BaseTimer;

@@ -30,7 +30,7 @@ namespace Yodii.Engine.Tests.Mocks
 
         public static YodiiEngine CreateEngineFromXml( XmlReader r )
         {
-            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine e = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             DiscoveredInfo d = new DiscoveredInfo();
 
             // Used to index reference links between plugins and services.

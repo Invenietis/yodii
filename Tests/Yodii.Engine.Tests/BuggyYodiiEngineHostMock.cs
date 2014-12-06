@@ -13,7 +13,7 @@ namespace Yodii.Engine
     /// IYodiiEngineHost implementation that returns plugin errors when their name contains "buggy", but otherwise does nothing.
     /// </summary>
     /// <remarks>
-    /// Legacy code (used to be YodiiEngineHostMock), unused atm.
+    /// Legacy code (formerly YodiiEngineHostMock).
     /// </remarks>
     class BuggyYodiiEngineHostMock : IYodiiEngineHost
     {

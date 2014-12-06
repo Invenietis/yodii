@@ -1,10 +1,13 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using Yodii.Model;
 
 namespace Yodii.DemoApp
 {
-    public abstract class MonoWindowPlugin : NotifyPropertyChangedBase, IYodiiPlugin
+    public abstract class MonoWindowPlugin : YodiiPluginBase, INotifyPropertyChanged
     {
         readonly bool _isQuickLifeTimeManagement;
         Window _window;
@@ -14,16 +17,27 @@ namespace Yodii.DemoApp
             _isQuickLifeTimeManagement = isQuickLifeTimeManagement;
         }
 
-        bool IYodiiPlugin.Setup( PluginSetupInfo info )
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void RaisePropertyChanged( [CallerMemberName] string caller = null )
+        {
+            var h =PropertyChanged;
+            Debug.Assert( caller != null );
+            if( h != null )
+            {
+                h( this, new PropertyChangedEventArgs( caller ) );
+            }
+        }
+
+        protected override void PluginPreStart( IPreStartContext c )
         {
             if( !_isQuickLifeTimeManagement )
             {
                 _window = CreateWindow();
             }
-            return true;
+            base.PluginPreStart( c );
         }
-
-        void IYodiiPlugin.Start()
+        protected override void PluginStart( IStartContext c )
         {
             if( !_isQuickLifeTimeManagement )
             {
@@ -35,9 +49,10 @@ namespace Yodii.DemoApp
                 _window = CreateWindow();
                 _window.Show();
             }
+            base.PluginStart( c );
         }
 
-        void IYodiiPlugin.Stop()
+        protected override void PluginPreStop( IPreStopContext c )
         {
             if( !_isQuickLifeTimeManagement )
                 HideWindow();
@@ -45,12 +60,13 @@ namespace Yodii.DemoApp
                 HideAndDestroyWindow();
         }
 
-        void IYodiiPlugin.Teardown()
+        protected override void PluginStop( IStopContext c )
         {
             if( !_isQuickLifeTimeManagement )
             {
                 DestroyWindow();
             }
+            base.PluginStop( c );
         }
 
         protected bool IsQuickLifeTimeManagement { get { return _isQuickLifeTimeManagement; } }

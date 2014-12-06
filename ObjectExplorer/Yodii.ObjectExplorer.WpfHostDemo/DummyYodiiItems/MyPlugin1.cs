@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.DummyItems
 {
-    public class MyPlugin1 : IMyService1, IYodiiPlugin
+    public class MyPlugin1 : YodiiPluginBase, IMyService1
     {
         public MyPlugin1( IRunnableService<IMyService2> service2 )
         {
@@ -15,22 +15,6 @@ namespace Yodii.DummyItems
 
         #region IYodiiPlugin Members
 
-        public bool Setup( PluginSetupInfo info )
-        {
-            return true;
-        }
-
-        public void Start()
-        {
-        }
-
-        public void Teardown()
-        {
-        }
-
-        public void Stop()
-        {
-        }
         #endregion
     }
 }
