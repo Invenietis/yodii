@@ -17,7 +17,7 @@ namespace Yodii.ObjectExplorer.Wpf
     /// <remarks>
     /// If a WPF context does not exist (Application.Current), a new STA thread will be created with one in it.
     /// </remarks>
-    public class ObjectExplorerPlugin : IYodiiPlugin
+    public class ObjectExplorerPlugin :  YodiiPluginBase
     {
         IYodiiEngine _activeEngine;
         ObjectExplorerWindow _window;
