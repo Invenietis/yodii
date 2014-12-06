@@ -15,17 +15,29 @@ namespace Yodii.Host
 
         public class Impact
         {
+            /// <summary>
+            /// The service itself. Never null.
+            /// </summary>
             public readonly ServiceProxyBase Service;
+            
+            /// <summary>
+            /// The service generalization if it exists.
+            /// </summary>
+            public Impact ServiceGeneralization;
+            
             /// <summary>
             /// When SwappedImplementation is not null, this is the plugin that 
             /// is stopping and Starting is true.
+            /// When this is null, this is a disbaled impact.
             /// </summary>
             public readonly StContext Implementation;
+            
             /// <summary>
             /// If it is not starting, then it is stopping (and SwappedImplementation 
             /// is necessarily null).
             /// </summary>
             public bool Starting;
+
             /// <summary>
             /// Plugin that replaces the current Implementation.
             /// </summary>
@@ -33,6 +45,8 @@ namespace Yodii.Host
 
             public Impact( ServiceHost serviceHost, IServiceInfo service, bool starting, StContext impl )
             {
+                Debug.Assert( service != null );
+                Debug.Assert( impl != null || !starting, "impl == null => starting is false." );
                 Service = serviceHost.EnsureProxyForDynamicService( service );
                 Implementation = impl;
                 Starting = starting;
@@ -45,7 +59,7 @@ namespace Yodii.Host
             _services = new Dictionary<IServiceInfo, Impact>();
         }
 
-        public void AddToStop( IServiceInfo s, StContext impl )
+        public Impact AddToStop( IServiceInfo s, StContext impl )
         {
             Impact impact;
             if( _services.TryGetValue( s, out impact ) )
@@ -56,15 +70,17 @@ namespace Yodii.Host
             }
             else
             {
-                _services.Add( s, new Impact( _serviceHost, s, false, impl ) );
+                impact = new Impact( _serviceHost, s, false, impl );
+                _services.Add( s, impact );
             }
             if( s.Generalization != null )
             {
-                AddToStop( s.Generalization, impl );
+                impact.ServiceGeneralization = AddToStop( s.Generalization, impl );
             }
+            return impact;
         }
 
-        public ServiceProxyBase AddToStart( IServiceInfo s, StStartContext c )
+        public Impact AddToStart( IServiceInfo s, StStartContext c )
         {
             Impact impact;
             if( _services.TryGetValue( s, out impact ) )
@@ -94,9 +110,9 @@ namespace Yodii.Host
             }
             if( s.Generalization != null )
             {
-                AddToStart( s.Generalization, c );
+                impact.ServiceGeneralization = AddToStart( s.Generalization, c );
             }
-            return impact.Service;
+            return impact;
         }
     }
 

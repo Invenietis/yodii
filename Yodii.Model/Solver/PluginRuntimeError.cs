@@ -11,24 +11,26 @@ namespace Yodii.Model
     public struct PluginRuntimeError
     {
         /// <summary>
-        /// Throwing Plugin
+        /// Culprit plugin.
         /// </summary>
         public readonly IDynamicSolvedPlugin Plugin;
 
         /// <summary>
-        /// Exception detail
+        /// Detailed information about the error.
         /// </summary>
-        public readonly Exception Error;
+        public readonly IPluginHostApplyCancellationInfo CancellationInfo;
 
         /// <summary>
         /// Creates a new instance of PluginRuntimeError.
         /// </summary>
-        /// <param name="plugin">Throwing Plugin.</param>
-        /// <param name="error">Exception encountered.</param>
-        public PluginRuntimeError( IDynamicSolvedPlugin plugin, Exception error )
+        /// <param name="plugin">Culprit plugin.</param>
+        /// <param name="error">Error information.</param>
+        public PluginRuntimeError( IDynamicSolvedPlugin plugin, IPluginHostApplyCancellationInfo error )
         {
+            if( plugin == null ) throw new ArgumentNullException( "plugin" );
+            if( error == null ) throw new ArgumentNullException( "error" );
             Plugin = plugin;
-            Error = error;
+            CancellationInfo = error;
         }
     }
 }

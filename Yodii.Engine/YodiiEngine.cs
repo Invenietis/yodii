@@ -74,11 +74,12 @@ namespace Yodii.Engine
         IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
         {
             var dynResult = solver.DynamicResolution( existingCommandFilter != null ? _yodiiCommands.Where( existingCommandFilter ) : _yodiiCommands, cmd );
-            var errors = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running );
-            if( errors != null && errors.Any() )
+            var hResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running );
+            Debug.Assert( hResult != null && hResult.CancellationInfo != null );
+            if( hResult.CancellationInfo.Any() )
             {
-                IYodiiEngineResult result =  solver.CreateDynamicFailureResult( errors );
-                _liveInfo.UpdateRuntimeErrors( errors, solver.FindExistingPlugin );
+                IYodiiEngineResult result =  solver.CreateDynamicFailureResult( hResult.CancellationInfo );
+                _liveInfo.UpdateRuntimeErrors( hResult.CancellationInfo, solver.FindExistingPlugin );
                 return result;
             }
             // Success:

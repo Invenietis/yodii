@@ -100,7 +100,10 @@ namespace Yodii.Host
             ServiceManager serviceManager = new ServiceManager( _serviceHost );
             List<PluginProxy> toDisable = new List<PluginProxy>();
 
+            // The toStart and toStop list are lists of PreStart/StopContext instead of list of the simple PluginProxy.
+            // With the help of the ServiceManager, this resolves the issue to find swapped plugins (and their most specialized common service).
             List<PreStopContext> toStop = new List<PreStopContext>();
+
             // To be able to initialize PreStartContext objects, we need to instanciate the shared memory now.
             Dictionary<object, object> sharedMemory = new Dictionary<object, object>();
 
@@ -130,9 +133,6 @@ namespace Yodii.Host
             // Now, we attempt to activate the plugins that must run: if an error occurs,
             // we leave and return the error since we did not change anything.
 
-            // The toStart list is a list of PreStartContext instead of list of the simple PluginProxy.
-            // With the help of the ServiceManager, this resolves the issue to find the swapped plugin if 
-            // it exists (and the most specialized common service).
             List<StStartContext> toStart = new List<StStartContext>();
             foreach( IPluginInfo k in runningPlugins )
             {
@@ -153,7 +153,17 @@ namespace Yodii.Host
                 var preStart = new StStartContext( p, sharedMemory );
                 if( k.Service != null )
                 {
-                    serviceManager.AddToStart( k.Service, preStart );
+                    var impact = serviceManager.AddToStart( k.Service, preStart );
+                    do
+                    {
+                        if( impact.Service.Status == ServiceStatus.Disabled )
+                        {
+                            impact.Service.Status = ServiceStatus.Stopped;
+                            impact.Service.RaiseStatusChanged( postStartActions );
+                        }
+                        impact = impact.ServiceGeneralization;
+                    } 
+                    while( impact != null );
                 }
                 toStart.Add( preStart );
             }
