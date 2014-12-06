@@ -6,27 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public abstract class AbstractClass : IYodiiPlugin
+    public abstract class AbstractClass :  YodiiPluginBase
     {
-
-        bool IYodiiPlugin.Setup( PluginSetupInfo info )
-        {
-            throw new NotImplementedException();
-        }
-
-        void IYodiiPlugin.Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IYodiiPlugin.Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IYodiiPlugin.Stop()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
