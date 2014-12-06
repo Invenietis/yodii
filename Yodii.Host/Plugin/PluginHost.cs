@@ -98,7 +98,9 @@ namespace Yodii.Host
             var postStartActions = new List<Action<IYodiiEngine>>();
 
             ServiceManager serviceManager = new ServiceManager( _serviceHost );
-            List<PluginProxy> toDisable = new List<PluginProxy>();
+            // The toDisable list is composed of Impac object if the plugin implements a Service
+            // or the mere PluginProxy.
+            List<object> toDisable = new List<object>();
 
             // The toStart and toStop list are lists of PreStart/StopContext instead of list of the simple PluginProxy.
             // With the help of the ServiceManager, this resolves the issue to find swapped plugins (and their most specialized common service).
@@ -111,13 +113,23 @@ namespace Yodii.Host
             {
                 PluginProxy p = EnsureProxy( k );
                 if( p.Status == PluginStatus.Disabled ) throw new ArgumentException( String.Format( R.HostApplyPluginAlreadyDisabled, k.PluginFullName ), "disabledPlugins" );
-                toDisable.Add( p );
+                ServiceManager.Impact impact = null;
                 if( p.Status != PluginStatus.Stopped )
                 {
                     var preStop = new PreStopContext( p, sharedMemory );
-                    if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
+                    if( k.Service != null ) impact = serviceManager.AddToStop( k.Service, preStop );
                     toStop.Add( preStop );
                 }
+                else
+                {
+                    // Simply disabled plugins need to be tracked.
+                    if( k.Service != null ) impact = serviceManager.AddToDisable( k.Service, p );
+                }
+                // If the plugin implements a Service, we store its impact in order to 
+                // raise the Disabled event.
+                // Otherwise we only store the PluginProxy.
+                if( impact != null ) toDisable.Add( impact );
+                else toDisable.Add( p );
             }
             foreach( IPluginInfo k in stoppedPlugins )
             {
@@ -236,8 +248,15 @@ namespace Yodii.Host
 
             // Sending Stopped & Started events...
 
-            foreach( PluginProxy p in toDisable )
+            foreach( object o in toDisable )
             {
+                ServiceManager.Impact impact = null;
+                PluginProxy p = o as PluginProxy;
+                if( p == null )
+                {
+                    impact = (ServiceManager.Impact)o;
+                    p = impact.PluginToDisable;
+                }
                 p.Status = PluginStatus.Disabled;
                 try
                 {
@@ -246,6 +265,15 @@ namespace Yodii.Host
                 catch( Exception ex )
                 {
                     _serviceHost.LogMethodError( p.GetImplMethodInfoDispose(), ex );
+                }
+                while( impact != null )
+                {
+                    if( impact.Service.Status != ServiceStatus.Disabled )
+                    {
+                        impact.Service.Status = ServiceStatus.Disabled;
+                        impact.Service.RaiseStatusChanged( postStartActions );
+                    }
+                    impact = impact.ServiceGeneralization;
                 }
             }
             return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );

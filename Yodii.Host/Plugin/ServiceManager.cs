@@ -21,6 +21,11 @@ namespace Yodii.Host
             public readonly ServiceProxyBase Service;
             
             /// <summary>
+            /// The plugin to disable. Null if Implementation is not null.
+            /// </summary>
+            public readonly PluginProxy PluginToDisable;
+            
+            /// <summary>
             /// The service generalization if it exists.
             /// </summary>
             public Impact ServiceGeneralization;
@@ -28,7 +33,7 @@ namespace Yodii.Host
             /// <summary>
             /// When SwappedImplementation is not null, this is the plugin that 
             /// is stopping and Starting is true.
-            /// When this is null, this is a disbaled impact.
+            /// When this is null, this is a disabled impact and PluginToDisable is not null.
             /// </summary>
             public readonly StContext Implementation;
             
@@ -43,13 +48,14 @@ namespace Yodii.Host
             /// </summary>
             public StStartContext SwappedImplementation;
 
-            public Impact( ServiceHost serviceHost, IServiceInfo service, bool starting, StContext impl )
+            public Impact( ServiceHost serviceHost, IServiceInfo service, bool starting, StContext impl, PluginProxy pluginToDisable )
             {
                 Debug.Assert( service != null );
-                Debug.Assert( impl != null || !starting, "impl == null => starting is false." );
+                Debug.Assert( impl != null || (!starting && p != null), "impl == null => starting is false and a plugin to disable is available." );
                 Service = serviceHost.EnsureProxyForDynamicService( service );
                 Implementation = impl;
                 Starting = starting;
+                PluginToDisable = pluginToDisable;
             }
         }
 
@@ -59,7 +65,18 @@ namespace Yodii.Host
             _services = new Dictionary<IServiceInfo, Impact>();
         }
 
+        public Impact AddToDisable( IServiceInfo s, PluginProxy p )
+        {
+            Debug.Assert( p.PluginKey.Service == s );
+            return AddToStopOrDisabled( s, null, p );
+        }
+
         public Impact AddToStop( IServiceInfo s, StContext impl )
+        {
+            return AddToStopOrDisabled( s, impl, null );
+        }
+
+        Impact AddToStopOrDisabled( IServiceInfo s, StContext impl, PluginProxy p )
         {
             Impact impact;
             if( _services.TryGetValue( s, out impact ) )
@@ -68,14 +85,11 @@ namespace Yodii.Host
                 // then we have a duplicate plugin in disabled or stoppedPlugins.
                 throw new CKException( R.HostApplyInvalidGeneralizationMismatchStopped );
             }
-            else
-            {
-                impact = new Impact( _serviceHost, s, false, impl );
-                _services.Add( s, impact );
-            }
+            impact = new Impact( _serviceHost, s, false, impl, p );
+            _services.Add( s, impact );
             if( s.Generalization != null )
             {
-                impact.ServiceGeneralization = AddToStop( s.Generalization, impl );
+                impact.ServiceGeneralization = AddToStopOrDisabled( s.Generalization, impl, p );
             }
             return impact;
         }
