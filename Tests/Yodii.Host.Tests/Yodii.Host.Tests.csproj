@@ -74,6 +74,7 @@
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
     <Compile Include="Extensions\TestHelper.cs" />
+    <Compile Include="PluginParameterTests\ParameterTestPlugin.cs" />
     <Compile Include="YodiiHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

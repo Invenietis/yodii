@@ -120,6 +120,9 @@
   <data name="BindToStartingPluginMustBeSwapping" xml:space="preserve">
     <value>Calling BindToStartingPlugin is possible only when service is  Swapping.</value>
   </data>
+  <data name="DefaultPluginCreatorUnresolvedParams" xml:space="preserve">
+    <value>Some parameters for the plugin constructor could not be resolved. Ensure that all plugin constructor parameters are either Yodii services (interfaces implementing IYodiiService), IService&lt;T&gt; where T : IYodiiService or are types that have been injected (through PluginHost.InjectExternalService). If you need to inject other types through more standard dependency injection, you should set your own PluginCreator.</value>
+  </data>
   <data name="ErrorWhileCreatingPluginInstance" xml:space="preserve">
     <value>An error occurred while creating a new plugin instance.</value>
   </data>
