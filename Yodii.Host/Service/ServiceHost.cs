@@ -138,7 +138,7 @@ namespace Yodii.Host
             if( _proxies.TryGetValue( interfaceType, out current ) )
             {
                 _proxies[interfaceType] = proxy;
-                proxy.SetPluginImplementation( current.Implementation, null );
+                proxy.SetPluginImplementation( current.Implementation );
             }
             else
             {
@@ -400,6 +400,11 @@ namespace Yodii.Host
         object IServiceHost.GetProxy( Type interfaceType )
         {
             return _proxies.GetValueWithDefault( interfaceType, null );
+        }
+
+        IService<T> IServiceHost.EnsureProxyForDynamicService<T>()
+        {
+            return (IService<T>)EnsureProxyForDynamicService( typeof(T) );
         }
 
         #endregion

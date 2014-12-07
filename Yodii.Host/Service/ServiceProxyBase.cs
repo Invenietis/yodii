@@ -174,7 +174,7 @@ namespace Yodii.Host
             }
         }
 
-        internal void SetPluginImplementation( PluginProxyBase implementation, IServiceInfo serviceInfo )
+        internal void SetPluginImplementation( PluginProxyBase implementation )
         {
             if( _isExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName );
             _impl = implementation;
@@ -183,11 +183,6 @@ namespace Yodii.Host
                 RawImpl = _unavailableImpl;
             }
             else RawImpl = _impl.RealPlugin;
-            if( serviceInfo != null && serviceInfo.Generalization != null )
-            {
-                var proxy = _serviceHost.EnsureProxyForDynamicService( serviceInfo.Generalization );
-                proxy.SetPluginImplementation( implementation, serviceInfo.Generalization );
-            }
         }
 
         #region Protected methods called by concrete concrete dynamic classes (event relaying).

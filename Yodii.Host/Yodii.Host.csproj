@@ -72,11 +72,31 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="IPluginProxy.cs" />
+    <Compile Include="IServiceHost.cs" />
+    <Compile Include="IServiceHostConfiguration.cs" />
+    <Compile Include="ISimpleServiceHostConfiguration.cs" />
+    <Compile Include="Log\ILogCenter.cs" />
+    <Compile Include="Log\ILogEntry.cs" />
+    <Compile Include="Log\ILogErrorCaught.cs" />
+    <Compile Include="Log\ILogErrorCulprit.cs" />
+    <Compile Include="Log\ILogEventEntry.cs" />
+    <Compile Include="Log\ILogEventError.cs" />
+    <Compile Include="Log\ILogEventNotRunningError.cs" />
+    <Compile Include="Log\ILogExternalEntry.cs" />
+    <Compile Include="Log\ILogExternalErrorEntry.cs" />
+    <Compile Include="Log\ILogInterceptionEntry.cs" />
+    <Compile Include="Log\ILogMethodEntry.cs" />
+    <Compile Include="Log\ILogMethodError.cs" />
+    <Compile Include="Log\ILogWithParametersEntry.cs" />
+    <Compile Include="Log\LogEntryType.cs" />
+    <Compile Include="Log\LogEventArgs.cs" />
+    <Compile Include="Log\LogHostEventArgs.cs" />
     <Compile Include="Plugin\CancellationInfo.cs" />
     <Compile Include="Plugin\PluginProxyBase.cs" />
     <Compile Include="Plugin\PluginProxy.cs" />
-    <Compile Include="Plugin\PluginHost.cs" />
-    <Compile Include="Plugin\PluginStatus.cs" />
+    <Compile Include="PluginHost.cs" />
+    <Compile Include="PluginStatus.cs" />
     <Compile Include="Plugin\StContext.cs" />
     <Compile Include="Plugin\StStartContext.cs" />
     <Compile Include="Plugin\StStopContext.cs" />
@@ -89,6 +109,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>R.resx</DependentUpon>
     </Compile>
+    <Compile Include="ServiceLogEventOptions.cs" />
+    <Compile Include="ServiceLogMethodOptions.cs" />
+    <Compile Include="ServiceNotAvailableException.cs" />
+    <Compile Include="ServiceStoppedException.cs" />
     <Compile Include="Service\LogExternalErrorEntry.cs" />
     <Compile Include="Service\LogExternalEntry.cs" />
     <Compile Include="Service\DefaultProxyDefinition.cs" />

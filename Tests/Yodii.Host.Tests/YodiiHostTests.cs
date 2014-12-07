@@ -19,9 +19,8 @@ namespace Yodii.Host.Tests
     public class YodiiHostTests
     {
         [Test]
-        public void ToSeeWhatHappensChoucrouteTest1()
+        public void start_is_canceled_on_unresolved_pluginCtor_parameters()
         {
-
             StandardDiscoverer discoverer = new StandardDiscoverer();
             IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
@@ -29,42 +28,97 @@ namespace Yodii.Host.Tests
             PluginHost host = new PluginHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( info );
+            IYodiiEngineResult result = engine.Start();
+            Assert.That( result.Success );
 
-            IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Yodii.Host.Tests.ChoucroutePlugin", ConfigurationStatus.Optional );
+            var testPlugin = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.PluginParameterTests.ParameterTestPlugin" );
+            Assert.That( testPlugin, Is.Not.Null );
+
+            // Try to start when MyCustomClass cannot be resolved
+            result = testPlugin.Start();
+            Assert.That( result.Success, Is.False );
+
+            Assert.That( testPlugin.IsRunning, Is.False );
+            Assert.That( testPlugin.CurrentError.IsLoadError );
+            Assert.That( testPlugin.CurrentError.Error, Is.InstanceOf( typeof( CKException ) ) );
+
+            engine.Stop();
+
+            // Set a PluginCreator able to resolve MyCustomClass
+            host.PluginCreator = CustomPluginCreator;
+
+            // Try to start when MyCustomClass can be resolved
+            result = engine.Start();
+            Assert.That( result.Success );
+            testPlugin = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.PluginParameterTests.ParameterTestPlugin" );
+            Assert.That( testPlugin, Is.Not.Null );
+
+            result = testPlugin.Start();
+            Assert.That( result.Success );
+            Assert.That( testPlugin.IsRunning, Is.True );
+        }
+
+        [Test]
+        public void simple_start_stop_of_a_plugin()
+        {
+
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
+            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
+
+            PluginHost host = new PluginHost();
+            IService<ITrackMethodCallsService> serviceS = host.ServiceHost.EnsureProxyForDynamicService<ITrackMethodCallsService>();
+            ITrackMethodCallsService service = serviceS.Service;
+            Assert.Throws<ServiceNotAvailableException>( (delegate() { int i = service.CalledMethods.Count; }), "Since the service has not implementation yet: ServiceNotAvailableException." );
+
+            YodiiEngine engine = new YodiiEngine( host );
+            engine.SetDiscoveredInfo( info );
 
             var result = engine.Start();
-            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Start();
-            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false );
-            ChoucroutePlugin choucroute = (ChoucroutePlugin)pluginProxy.RealPluginObject;
+            Assert.That( result.Success );
+
+            var pLive = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
+            result = pLive.Start();
+            Assert.That( result.Success );
+
+            Assert.That( service.CalledMethods.Count, Is.EqualTo( 3 ), "The service is started, we can call its methods." );
+
+            // This is a direct access to the plugin (bypassing tha Service proxy):
+            var proxy = host.FindLoadedPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
+            Assert.That( proxy.Status == PluginStatus.Started );
+            TrackMethodCallsPlugin choucroute = (TrackMethodCallsPlugin)proxy.RealPluginObject;
             Assert.That( choucroute.CalledMethods.Count == 3 );
-            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).Status == InternalRunningStatus.Started );
 
-            Assert.That( engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Capability.CanStop == true );
-            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Stop();
-            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false ).Status == InternalRunningStatus.Stopped );
-            Assert.That( choucroute.CalledMethods.Count == 5 );//plugin is stopped but we can still directly access it since assembly is still there.
+            Assert.That( pLive.Capability.CanStop == true );
+            result = pLive.Stop();
+            Assert.That( result.Success );
+            
+            Assert.That( proxy.Status == PluginStatus.Stopped );
+            Assert.That( choucroute.CalledMethods.Count, Is.EqualTo( 5 ), "Plugin is stopped but we can still directly access it." );
+            Assert.Throws<ServiceStoppedException>( (delegate() { int i = service.CalledMethods.Count; }), "Since the service is stopped: ServiceNotAvailableException." );
 
-            IChoucrouteService service= (IChoucrouteService)host.ServiceHost.GetProxy( typeof( IChoucrouteService ) );
-            Assert.Throws<Yodii.Model.ServiceStoppedException>( (delegate() { int i =service.CalledMethods.Count; }) );
-
-            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin" ).Start();
-            Assert.That( service.CalledMethods.Count == 7 );
+            result = pLive.Start();
+            Assert.That( result.Success );
+            Assert.That( service.CalledMethods.Count == 7, "The service is started, we can call its methods." );
 
             IDiscoveredInfo info2 = discoverer.GetDiscoveredInfo();
             engine.SetDiscoveredInfo( info );
-            //test that the pluginproxy hasn't changed after a getDiscoveredInfo
-            IPluginProxy pluginProxy2 = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin", false );
-            ChoucroutePlugin choucroute2 = (ChoucroutePlugin)pluginProxy.RealPluginObject;
+            // Test that the pluginproxy hasn't changed after a getDiscoveredInfo
+            IPluginProxy proxy2 = host.FindLoadedPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
+            var pLive2 = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
 
-            Assert.That( pluginProxy == pluginProxy2 );
-            Assert.That( choucroute == choucroute2 );
+            Assert.That( proxy == proxy2, "With a new DiscoveredInfo, proxy is the same." );
+            Assert.That( pLive == pLive2, "With a new DiscoveredInfo, PluginLiveInfo is the same." );
+            TrackMethodCallsPlugin choucroute2 = (TrackMethodCallsPlugin)proxy.RealPluginObject;
+            Assert.That( choucroute == choucroute2, "The plugin itself is the same object." );
         }
+
+
         /// <summary>
         /// When the first setup fails, the proxy isn't even made.
         /// </summary>
         [Test]
-        public void IfSetupFailsChoucrouteTest2()
+        public void TOBEREVIEWED_IfSetupFailsChoucrouteTest2()
         {
 
             StandardDiscoverer discoverer = new StandardDiscoverer();
@@ -81,14 +135,16 @@ namespace Yodii.Host.Tests
             var result = engine.Start();
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin2" ).Start();
             engine.CheckStopped( "Yodii.Host.Tests.IChoucrouteService2" );
-            IPluginProxy proxy=host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin2", false );
+            IPluginProxy proxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin2" );
             Assert.IsNull( proxy );
         }
+
+
         /// <summary>
         /// The fact a stop fails is pretty much ignored.
         /// </summary>
         [Test]
-        public void IfStopFailsChoucrouteTest3()
+        public void TOBEREVIEWED_IfStopFailsChoucrouteTest3()
         {
 
             StandardDiscoverer discoverer = new StandardDiscoverer();
@@ -104,18 +160,18 @@ namespace Yodii.Host.Tests
 
             var result = engine.Start();
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" ).Start();
-            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin3", false );
+            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" );
             ChoucroutePlugin3 choucroute = (ChoucroutePlugin3)pluginProxy.RealPluginObject;
             Assert.That( choucroute.CalledMethods.Count == 3 );//cstor setup start
-            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin3", false ).Status == InternalRunningStatus.Started );
+            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" ).Status == PluginStatus.Started );
 
             Assert.That( engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" ).Capability.CanStop == true );
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" ).Stop();
-            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin3", false ).Status == InternalRunningStatus.Stopped );
+            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" ).Status == PluginStatus.Stopped );
             Assert.That( choucroute.CalledMethods.Count == 5 );//+stop teardown
 
             IChoucrouteService3 service= (IChoucrouteService3)host.ServiceHost.GetProxy( typeof( IChoucrouteService3 ) );
-            Assert.Throws<Yodii.Model.ServiceStoppedException>( (delegate() { int i =service.CalledMethods.Count; }) );
+            Assert.Throws<ServiceStoppedException>( (delegate() { int i = service.CalledMethods.Count; }) );
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin3" ).Start();
             Assert.That( service.CalledMethods.Count == 7 );//+setup start
@@ -124,7 +180,7 @@ namespace Yodii.Host.Tests
         /// If a start fails, the stop&teardown methods are called.
         /// </summary>
         [Test]
-        public void IfSartFailsChoucrouteTest4()
+        public void TOBEREVIEWED_IfSartFailsChoucrouteTest4()
         {
 
             StandardDiscoverer discoverer = new StandardDiscoverer();
@@ -140,10 +196,10 @@ namespace Yodii.Host.Tests
 
             var result = engine.Start();
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin4" ).Start();
-            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4", false );
+            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4"  );
             ChoucroutePlugin4 choucroute = (ChoucroutePlugin4)pluginProxy.RealPluginObject;
             Assert.That( choucroute.CalledMethods.Count == 5 );//ctor, setup, start (execption), stop, teardown.
-            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4", false ).Status == InternalRunningStatus.Stopped );
+            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4" ).Status == PluginStatus.Stopped );
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin4" ).Stop(); //we can call stop on an allready stopped plugin.
             Assert.That( choucroute.CalledMethods.Count == 5 ); //but this call for stop does not get to the plugin.
 
@@ -152,13 +208,13 @@ namespace Yodii.Host.Tests
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ChoucroutePlugin4" ).Start();
             Assert.That( choucroute.CalledMethods.Count == 9 );//+setup, start (execption), stop, teardown.
-            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4", false ).Status == InternalRunningStatus.Stopped );
+            Assert.That( host.FindLoadedPlugin( "Yodii.Host.Tests.ChoucroutePlugin4" ).Status == PluginStatus.Stopped );
         }
         /// <summary>
         /// Making sure the _impl of the generalized service updates itself.
         /// </summary>
         [Test]
-        public void ServiceGeneralizationChoucrouteTest5()
+        public void TOBEREVIEWED_ServiceGeneralizationChoucrouteTest5()
         {
 
             StandardDiscoverer discoverer = new StandardDiscoverer();
@@ -172,11 +228,11 @@ namespace Yodii.Host.Tests
             var result = engine.Start();
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.AnotherPlugin5" ).Start();
-            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.AnotherPlugin5", false );
+            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.AnotherPlugin5" );
             AnotherPlugin5 anotherPlugin = (AnotherPlugin5)pluginProxy.RealPluginObject;
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5" ).Start();
-            IPluginProxy pluginProxySimple = host.FindLoadedPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5", false );
+            IPluginProxy pluginProxySimple = host.FindLoadedPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5" );
             SimpleChoucroutePlugin5 SimpleChoucroutePlugin = (SimpleChoucroutePlugin5)pluginProxySimple.RealPluginObject;
 
             //Don't hesitate to put the next line in the watch and look at _impl
@@ -187,7 +243,7 @@ namespace Yodii.Host.Tests
             Assert.That( nbSimpleCalls + 1 == SimpleChoucroutePlugin.CalledMethods.Count, "making sure SimpleChoucroutePlugin was called" );
 
             engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5" ).Start();
-            IPluginProxy pluginProxyElaborate = host.FindLoadedPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5", false );
+            IPluginProxy pluginProxyElaborate = host.FindLoadedPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5" );
             ElaborateChoucroutePlugin5 ElaborateChoucroutePlugin = (ElaborateChoucroutePlugin5)pluginProxyElaborate.RealPluginObject;
 
             int nbElaborateCalls = ElaborateChoucroutePlugin.CalledMethods.Count;
@@ -195,46 +251,6 @@ namespace Yodii.Host.Tests
             Assert.That( nbElaborateCalls + 1 == ElaborateChoucroutePlugin.CalledMethods.Count, "making sure ElaborateChoucroutePlugin was called" );
         }
 
-
-
-        [Test]
-        public void Host_ThrowsException_OnUnknownPluginCtorParameters()
-        {
-            StandardDiscoverer discoverer = new StandardDiscoverer();
-            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
-            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-
-            PluginHost host = new PluginHost();
-            YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( info );
-            IYodiiEngineResult result = engine.Start();
-
-            var testPlugin = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.PluginParameterTests.ParameterTestPlugin" );
-
-            Assert.That( testPlugin, Is.Not.Null );
-
-            // Try to start when MyCustomClass cannot be resolved
-            testPlugin.Start();
-
-            Assert.That( testPlugin.IsRunning, Is.False );
-            Assert.That( testPlugin.CurrentError, Is.InstanceOf( typeof( InvalidPluginDefinitionException ) ) );
-
-            engine.Stop();
-
-            // Set a PluginCreator able to resolve MyCustomClass
-            host.PluginCreator = CustomPluginCreator;
-
-            // Try to start when MyCustomClass can be resolved
-            result = engine.Start();
-
-            testPlugin = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.PluginParameterTests.ParameterTestPlugin" );
-
-            Assert.That( testPlugin, Is.Not.Null );
-
-            testPlugin.Start();
-
-            Assert.That( testPlugin.IsRunning, Is.True );
-        }
 
         static object ResolveUnknownType( Type t )
         {

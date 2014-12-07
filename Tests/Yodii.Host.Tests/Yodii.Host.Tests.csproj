@@ -52,9 +52,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
-    <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
-    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
+    <Compile Include="TrackMethodCalls\TrackMethodCallsPlugin.cs" />
+    <Compile Include="TrackMethodCalls\IAnotherService.cs" />
+    <Compile Include="TrackMethodCalls\ITrackMethodCallsService.cs" />
     <Compile Include="ChoucrouteTest2\ChoucroutePlugin2.cs" />
     <Compile Include="ChoucrouteTest2\IAnotherService2.cs" />
     <Compile Include="ChoucrouteTest2\IChoucrouteService2.cs" />
@@ -74,7 +74,7 @@
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
     <Compile Include="Extensions\TestHelper.cs" />
-    <Compile Include="PluginParameterTests\ParameterTestPlugin.cs" />
+    <Compile Include="CtorParameterTests\ParameterTestPlugin.cs" />
     <Compile Include="YodiiHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

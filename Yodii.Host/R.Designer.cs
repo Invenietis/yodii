@@ -124,11 +124,11 @@ namespace Yodii.Host {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; must be disabled but is already disabled..
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; appears in more than one list. Lists of plugins to disable, stop end start must be disjoint..
         /// </summary>
-        internal static string HostApplyPluginAlreadyDisabled {
+        internal static string HostApplyPluginMustBeInOneList {
             get {
-                return ResourceManager.GetString("HostApplyPluginAlreadyDisabled", resourceCulture);
+                return ResourceManager.GetString("HostApplyPluginMustBeInOneList", resourceCulture);
             }
         }
         
@@ -138,24 +138,6 @@ namespace Yodii.Host {
         internal static string HostApplyStartPluginAlreadyStarted {
             get {
                 return ResourceManager.GetString("HostApplyStartPluginAlreadyStarted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; must stop but is currently disabled..
-        /// </summary>
-        internal static string HostApplyStopPluginAlreadyDisabled {
-            get {
-                return ResourceManager.GetString("HostApplyStopPluginAlreadyDisabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; must stop but is already stopped..
-        /// </summary>
-        internal static string HostApplyStopPluginAlreadyStopped {
-            get {
-                return ResourceManager.GetString("HostApplyStopPluginAlreadyStopped", resourceCulture);
             }
         }
         

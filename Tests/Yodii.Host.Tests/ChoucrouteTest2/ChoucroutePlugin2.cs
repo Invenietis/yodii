@@ -30,23 +30,19 @@ namespace Yodii.Host.Tests
         protected override void PluginPreStart( IPreStartContext c )
         {
             _calledMethods.Add( "Setup - IAnotherService = " + _serviceOpt.Status );
-            throw new InvalidOperationException();
-            base.PluginPreStart( c );
+            c.Cancel( "Canceled!" );
         }
         protected override void PluginStart( IStartContext c )
         {
             _calledMethods.Add( "Start - IAnotherService = " + _serviceOpt.Status );
-            base.PluginStart( c );
         }
         protected override void PluginPreStop( IPreStopContext c )
         {
             _calledMethods.Add( "Stop - IAnotherService = " + _serviceOpt.Status );
-            base.PluginPreStop( c );
         }
         protected override void PluginStop( IStopContext c )
         {
             _calledMethods.Add( "Teardown - IAnotherService = " + _serviceOpt.Status );
-            base.PluginStop( c );
         }
 
         void IChoucrouteService2.DoSomething()

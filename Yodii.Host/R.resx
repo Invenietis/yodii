@@ -138,17 +138,11 @@
   <data name="HostApplyInvalidGeneralizationMismatchStopped" xml:space="preserve">
     <value>Invalid generalization mismatch: 2 plugins implementing the same Service must both stop.</value>
   </data>
-  <data name="HostApplyPluginAlreadyDisabled" xml:space="preserve">
-    <value>Plugin '{0}' must be disabled but is already disabled.</value>
+  <data name="HostApplyPluginMustBeInOneList" xml:space="preserve">
+    <value>Plugin '{0}' appears in more than one list. Lists of plugins to disable, stop end start must be disjoint.</value>
   </data>
   <data name="HostApplyStartPluginAlreadyStarted" xml:space="preserve">
     <value>Plugin '{0}' must start but is already started.</value>
-  </data>
-  <data name="HostApplyStopPluginAlreadyDisabled" xml:space="preserve">
-    <value>Plugin '{0}' must stop but is currently disabled.</value>
-  </data>
-  <data name="HostApplyStopPluginAlreadyStopped" xml:space="preserve">
-    <value>Plugin '{0}' must stop but is already stopped.</value>
   </data>
   <data name="InterfaceMustExtendIYodiiService" xml:space="preserve">
     <value>Interface must extend IYodiiService to be a Dynamic Service.</value>

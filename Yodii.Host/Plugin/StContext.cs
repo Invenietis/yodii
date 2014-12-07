@@ -22,7 +22,7 @@ namespace Yodii.Host
 
         public void Cancel( string message = null, Exception ex = null )
         {
-            _info = new CancellationInfo( Plugin.PluginKey ) { ErrorMessage = message, Error = ex };
+            _info = new CancellationInfo( Plugin.PluginInfo ) { ErrorMessage = message, Error = ex };
         }
 
         public bool Success
