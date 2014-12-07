@@ -18,6 +18,8 @@ namespace Yodii.Host
             _shared = shared;
         }
 
+        public ServiceManager.Impact ServiceImpact { get; set; }
+
         public void Cancel( string message = null, Exception ex = null )
         {
             _info = new CancellationInfo( Plugin.PluginKey ) { ErrorMessage = message, Error = ex };

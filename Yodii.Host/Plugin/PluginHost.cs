@@ -70,6 +70,16 @@ namespace Yodii.Host
             set { _pluginCreator = value ?? DefaultPluginCreator; }
         }
 
+        public IServiceHost ServiceHost
+        {
+            get { return _serviceHost; }
+        }
+
+        public ILogCenter LogCenter
+        {
+            get { return _serviceHost; }
+        }
+
         class Result : IYodiiEngineHostApplyResult
         {
             public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
@@ -98,13 +108,14 @@ namespace Yodii.Host
             var postStartActions = new List<Action<IYodiiEngine>>();
 
             ServiceManager serviceManager = new ServiceManager( _serviceHost );
-            // The toDisable list is composed of Impac object if the plugin implements a Service
-            // or the mere PluginProxy.
-            List<object> toDisable = new List<object>();
+            // The toDisable list is composed of PluginProxy objects.
+            // Plugins to disable are added to the list of toStop plugins (if hey are not already 
+            // stopped) but we need this list to be able to Dispose them if they support IDisposable.
+            List<PluginProxy> toDisable = new List<PluginProxy>();
 
             // The toStart and toStop list are lists of PreStart/StopContext instead of list of the simple PluginProxy.
             // With the help of the ServiceManager, this resolves the issue to find swapped plugins (and their most specialized common service).
-            List<PreStopContext> toStop = new List<PreStopContext>();
+            List<StStopContext> toStop = new List<StStopContext>();
 
             // To be able to initialize PreStartContext objects, we need to instanciate the shared memory now.
             Dictionary<object, object> sharedMemory = new Dictionary<object, object>();
@@ -114,37 +125,27 @@ namespace Yodii.Host
                 PluginProxy p = EnsureProxy( k );
                 if( p.Status == PluginStatus.Disabled ) throw new ArgumentException( String.Format( R.HostApplyPluginAlreadyDisabled, k.PluginFullName ), "disabledPlugins" );
                 ServiceManager.Impact impact = null;
+                toDisable.Add( p );
                 if( p.Status != PluginStatus.Stopped )
                 {
-                    var preStop = new PreStopContext( p, sharedMemory );
+                    var preStop = new StStopContext( p, sharedMemory );
                     if( k.Service != null ) impact = serviceManager.AddToStop( k.Service, preStop );
                     toStop.Add( preStop );
                 }
-                else
-                {
-                    // Simply disabled plugins need to be tracked.
-                    if( k.Service != null ) impact = serviceManager.AddToDisable( k.Service, p );
-                }
-                // If the plugin implements a Service, we store its impact in order to 
-                // raise the Disabled event.
-                // Otherwise we only store the PluginProxy.
-                if( impact != null ) toDisable.Add( impact );
-                else toDisable.Add( p );
             }
             foreach( IPluginInfo k in stoppedPlugins )
             {
                 PluginProxy p = EnsureProxy( k );
                 if( p.Status == PluginStatus.Stopped ) throw new ArgumentException( String.Format( R.HostApplyStopPluginAlreadyStopped, k.PluginFullName ), "stoppedPlugins" );
                 if( p.Status == PluginStatus.Disabled ) throw new ArgumentException( String.Format( R.HostApplyStopPluginAlreadyDisabled, k.PluginFullName ), "stoppedPlugins" );
-                var preStop = new PreStopContext( p, sharedMemory );
+                var preStop = new StStopContext( p, sharedMemory );
                 if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
                 toStop.Add( preStop );
             }
-            // The lists toDisable and toStop are correctly filled: a plugin is in both lists if it must be stopped and then disabled.
+            // The lists toDisable and toStop are correctly filled: a plugin appears in both lists if it must be stopped and then disabled.
 
             // Now, we attempt to activate the plugins that must run: if an error occurs,
             // we leave and return the error since we did not change anything.
-
             List<StStartContext> toStart = new List<StStartContext>();
             foreach( IPluginInfo k in runningPlugins )
             {
@@ -161,22 +162,10 @@ namespace Yodii.Host
                     }
                     Debug.Assert( p.LoadError == null );
                     Debug.Assert( p.Status == PluginStatus.Disabled );
+                    p.Status = PluginStatus.Stopped;
                 }
                 var preStart = new StStartContext( p, sharedMemory );
-                if( k.Service != null )
-                {
-                    var impact = serviceManager.AddToStart( k.Service, preStart );
-                    do
-                    {
-                        if( impact.Service.Status == ServiceStatus.Disabled )
-                        {
-                            impact.Service.Status = ServiceStatus.Stopped;
-                            impact.Service.RaiseStatusChanged( postStartActions );
-                        }
-                        impact = impact.ServiceGeneralization;
-                    } 
-                    while( impact != null );
-                }
+                if( k.Service != null ) serviceManager.AddToStart( k.Service, preStart );
                 toStart.Add( preStart );
             }
             if( errors.Count > 0 )
@@ -184,7 +173,7 @@ namespace Yodii.Host
                 return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
             }
 
-            // The toStart list of PreStartContext is ready (and plugins inside are loaded without error).
+            // The toStart list of StStartContext is ready (and plugins inside are loaded without error).
             // Now starts the actual PreStop/PreStart/Stop/Start/Disable phase:
 
             // Calling PreStop for all "toStop" plugins.
@@ -192,7 +181,10 @@ namespace Yodii.Host
             {
                 Debug.Assert( c.Plugin.Status == PluginStatus.Started );
                 c.Plugin.RealPlugin.PreStop( c );
-                if( c.HandleSuccess( errors, false ) ) c.Plugin.Status = PluginStatus.Stopping;
+                if( c.HandleSuccess( errors, false ) )
+                {
+                    c.Plugin.Status = PluginStatus.Stopping;
+                }
             }
             // If at least one failed, cancel the start for the successful ones
             // and stops here.
@@ -205,7 +197,7 @@ namespace Yodii.Host
             // PreStop has been successfully called: we must now call the PreStart.
             foreach( var c in toStart )
             {
-                Debug.Assert( c.Plugin.Status != PluginStatus.Started );
+                Debug.Assert( c.Plugin.Status == PluginStatus.Stopped );
                 c.Plugin.RealPlugin.PreStart( c );
                 if( c.HandleSuccess( errors, true ) )
                 {
@@ -230,7 +222,9 @@ namespace Yodii.Host
                 return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
             }
 
-            // Sending Stopping & Starting events...
+            // Setting services status & sending events...
+            SetServiceSatus( postStartActions, toStop, toStart, ServiceStatus.Swapping, ServiceStatus.Stopping, ServiceStatus.Starting );
+
 
             // Time to call Stop and Start. 
             foreach( var c in toStop )
@@ -246,17 +240,12 @@ namespace Yodii.Host
                 c.Plugin.RealPlugin.Start( c );
             }
 
-            // Sending Stopped & Started events...
+            // Setting services status & sending events...
+            SetServiceSatus( postStartActions, toStop, toStart, ServiceStatus.StartedSwapped, ServiceStatus.Stopped, ServiceStatus.Started );
 
-            foreach( object o in toDisable )
+            // Disabling plugins that need to.
+            foreach( PluginProxy p in toDisable )
             {
-                ServiceManager.Impact impact = null;
-                PluginProxy p = o as PluginProxy;
-                if( p == null )
-                {
-                    impact = (ServiceManager.Impact)o;
-                    p = impact.PluginToDisable;
-                }
                 p.Status = PluginStatus.Disabled;
                 try
                 {
@@ -266,20 +255,11 @@ namespace Yodii.Host
                 {
                     _serviceHost.LogMethodError( p.GetImplMethodInfoDispose(), ex );
                 }
-                while( impact != null )
-                {
-                    if( impact.Service.Status != ServiceStatus.Disabled )
-                    {
-                        impact.Service.Status = ServiceStatus.Disabled;
-                        impact.Service.RaiseStatusChanged( postStartActions );
-                    }
-                    impact = impact.ServiceGeneralization;
-                }
             }
             return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
         }
 
-        static void CancelSuccessfulPreStop( Dictionary<object, object> sharedMemory, List<PreStopContext> successfulPreStop )
+        static void CancelSuccessfulPreStop( Dictionary<object, object> sharedMemory, List<StStopContext> successfulPreStop )
         {
             var cStart = new CancelPresStopContext( sharedMemory );
             foreach( var c in successfulPreStop )
@@ -290,6 +270,53 @@ namespace Yodii.Host
                     var rev = c.RollbackAction;
                     if( rev != null ) rev( cStart );
                     else c.Plugin.RealPlugin.Start( cStart );
+                }
+            }
+        }
+
+        static void SetServiceSatus( 
+            List<Action<IYodiiEngine>> postStartActions, 
+            List<StStopContext> toStop, 
+            List<StStartContext> toStart, 
+            ServiceStatus swapStatus, 
+            ServiceStatus stopStatus, 
+            ServiceStatus startStatus )
+        {
+            foreach( var c in toStop )
+            {
+                Debug.Assert( c.Plugin.Status == PluginStatus.Stopping && c.Success );
+                var impact = c.ServiceImpact;
+                while( impact != null )
+                {
+                    if( impact.SwappedImplementation != null )
+                    {
+                        if( !impact.Implementation.HotSwapped )
+                        {
+                            impact.Service.Status = swapStatus;
+                            impact.Service.RaiseStatusChanged( postStartActions, impact.SwappedImplementation.Plugin );
+                        }
+                    }
+                    else
+                    {
+                        impact.Service.Status = stopStatus;
+                        impact.Service.RaiseStatusChanged( postStartActions );
+                    }
+                    impact = impact.ServiceGeneralization;
+                }
+            }
+            // Sending Starting events...
+            foreach( var c in toStart )
+            {
+                Debug.Assert( c.Plugin.Status == PluginStatus.Starting && c.Success );
+                var impact = c.ServiceImpact;
+                while( impact != null )
+                {
+                    if( impact.SwappedImplementation == null || !impact.Implementation.HotSwapped )
+                    {
+                        impact.Service.Status = startStatus;
+                        impact.Service.RaiseStatusChanged( postStartActions );
+                    }
+                    impact = impact.ServiceGeneralization;
                 }
             }
         }
@@ -320,16 +347,6 @@ namespace Yodii.Host
                 _plugins.Add( pluginInfo.PluginFullName, result );
             }
             return result;
-        }
-
-        public IServiceHost ServiceHost
-        {
-            get { return _serviceHost; }
-        }
-
-        public ILogCenter LogCenter
-        {
-            get { return _serviceHost; }
         }
 
 

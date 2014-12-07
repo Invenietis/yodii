@@ -11,7 +11,7 @@ namespace Yodii.Model
     {
         /// <summary>
         /// Gets the service itself. It is actually this object itself: <c>this</c> can be directly casted into 
-        /// the interface.
+        /// the <typeparamref name="T"/> interface.
         /// </summary>
         T Service { get; }
 

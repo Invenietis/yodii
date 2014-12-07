@@ -38,10 +38,6 @@ namespace Yodii.Host
         IYodiiPlugin _instance;
         Exception  _loadError;
 
-        internal PluginProxyBase()
-        {
-        }
-
         public PluginStatus Status { get; set; }
 
         /// <summary>

@@ -16,15 +16,11 @@ namespace Yodii.Host
         public class Impact
         {
             /// <summary>
-            /// The service itself. Never null.
+            /// The service itself. Null if no Service is implemented by PluginToDisable
+            /// or Implementation.Plugin.
             /// </summary>
             public readonly ServiceProxyBase Service;
-            
-            /// <summary>
-            /// The plugin to disable. Null if Implementation is not null.
-            /// </summary>
-            public readonly PluginProxy PluginToDisable;
-            
+                        
             /// <summary>
             /// The service generalization if it exists.
             /// </summary>
@@ -33,7 +29,6 @@ namespace Yodii.Host
             /// <summary>
             /// When SwappedImplementation is not null, this is the plugin that 
             /// is stopping and Starting is true.
-            /// When this is null, this is a disabled impact and PluginToDisable is not null.
             /// </summary>
             public readonly StContext Implementation;
             
@@ -48,14 +43,13 @@ namespace Yodii.Host
             /// </summary>
             public StStartContext SwappedImplementation;
 
-            public Impact( ServiceHost serviceHost, IServiceInfo service, bool starting, StContext impl, PluginProxy pluginToDisable )
+            public Impact( ServiceHost serviceHost, IServiceInfo service, bool starting, StContext impl )
             {
                 Debug.Assert( service != null );
-                Debug.Assert( impl != null || (!starting && p != null), "impl == null => starting is false and a plugin to disable is available." );
+                Debug.Assert( impl != null || !starting, "impl == null => starting is false." );
                 Service = serviceHost.EnsureProxyForDynamicService( service );
                 Implementation = impl;
                 Starting = starting;
-                PluginToDisable = pluginToDisable;
             }
         }
 
@@ -65,18 +59,7 @@ namespace Yodii.Host
             _services = new Dictionary<IServiceInfo, Impact>();
         }
 
-        public Impact AddToDisable( IServiceInfo s, PluginProxy p )
-        {
-            Debug.Assert( p.PluginKey.Service == s );
-            return AddToStopOrDisabled( s, null, p );
-        }
-
-        public Impact AddToStop( IServiceInfo s, StContext impl )
-        {
-            return AddToStopOrDisabled( s, impl, null );
-        }
-
-        Impact AddToStopOrDisabled( IServiceInfo s, StContext impl, PluginProxy p )
+        public Impact AddToStop( IServiceInfo s, StContext c )
         {
             Impact impact;
             if( _services.TryGetValue( s, out impact ) )
@@ -85,11 +68,11 @@ namespace Yodii.Host
                 // then we have a duplicate plugin in disabled or stoppedPlugins.
                 throw new CKException( R.HostApplyInvalidGeneralizationMismatchStopped );
             }
-            impact = new Impact( _serviceHost, s, false, impl, p );
+            c.ServiceImpact = impact = new Impact( _serviceHost, s, false, c );
             _services.Add( s, impact );
             if( s.Generalization != null )
             {
-                impact.ServiceGeneralization = AddToStopOrDisabled( s.Generalization, impl, p );
+                impact.ServiceGeneralization = AddToStop( s.Generalization, c );
             }
             return impact;
         }
@@ -106,20 +89,23 @@ namespace Yodii.Host
                 }
                 impact.Starting = true;
                 impact.SwappedImplementation = c;
-                Debug.Assert( impact.Service != null );
-                // If impact is the first to be found, it necessarily corresponds to the most 
-                // specialized service in common: sets the service and the stopped plugin.
-                if( c.PreviousPluginCommonService == null )
+                impact.Implementation.Status = StContext.StStatus.StoppingSwap;
+                // If the Sart context has no impact, its plugin is replacing another one for the same service.
+                // Else, if the ServiceImpact is already associated, then the starting plugin is replacing another one for a more abstract service
+                // they have in common.
+                if( c.ServiceImpact == null )
                 {
-                    c.Status = StContext.StStatus.StartingSwap;
-                    c.PreviousPluginCommonService = (IYodiiService)impact.Service;
-                    c.PreviousImpl = impact.Implementation;
-                    c.PreviousImpl.Status = StContext.StStatus.StoppingSwap;
+                    c.SwappedServiceImpact = c.ServiceImpact = impact;
                 }
+                else if( c.SwappedServiceImpact == null )
+                {
+                    c.SwappedServiceImpact = impact;
+                }
+                Debug.Assert( c.Status == StContext.StStatus.StartingSwap );
             }
             else
             {
-                impact = new Impact( _serviceHost, s, true, c );
+                c.ServiceImpact = impact = new Impact( _serviceHost, s, true, c );
                 _services.Add( s, impact );
             }
             if( s.Generalization != null )

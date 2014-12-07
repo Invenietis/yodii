@@ -6,9 +6,9 @@ using Yodii.Model;
 
 namespace Yodii.Host
 {
-    class PreStopContext : StContext, IPreStopContext, IStopContext
+    class StStopContext : StContext, IPreStopContext, IStopContext
     {
-        public PreStopContext( PluginProxy plugin, Dictionary<object, object> shared )
+        public StStopContext( PluginProxy plugin, Dictionary<object, object> shared )
             : base( plugin, shared )
         {
         }

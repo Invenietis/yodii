@@ -35,21 +35,11 @@ namespace Yodii.Model
         void ApplyConfiguration();
 
         /// <summary>
-        /// Gets the service implementation if it is available (it can be stopped).
-        /// If <paramref name="interfaceType"/> is a wrapped <see cref="IService{T}"/> and the service is disabled, it is returned,
-        /// but if <paramref name="interfaceType"/> is a mere interface and the service is disabled, null is returned.
+        /// Gets the service implementation.
         /// </summary>
         /// <param name="interfaceType">Type of the service (it can be a wrapped <see cref="IService{T}"/>).</param>
-        /// <returns>The implementation or null if it is not available (disabled) and <paramref name="interfaceType"/> is a mere interface.</returns>
+        /// <returns>The implementation or null if it does not exist.</returns>
         object GetProxy( Type interfaceType );
-
-        /// <summary>
-        /// Gets the service implementation if it is available and starting, stopping or running (null will be returned
-        /// if it is stopped or disabled).
-        /// </summary>
-        /// <param name="interfaceType">Type of the service.</param>
-        /// <returns>The implementation or null if it is not available (disabled or stopped).</returns>
-        object GetRunningProxy( Type interfaceType );
 
         /// <summary>
         /// Ensures that a proxy exists for the given interface and associates it to an implementation.

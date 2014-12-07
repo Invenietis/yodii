@@ -97,7 +97,6 @@ namespace Yodii.Host
             readonly PluginProxyBase _swappingPlugin;
 
             public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, IList<Action<IYodiiEngine>> postStart )
-                : base( swappingPlugin != null )
             {
                 Debug.Assert( s._status != ServiceStatus.Swapping || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
                 _service = s;
@@ -143,7 +142,6 @@ namespace Yodii.Host
 
         internal void RaiseStatusChanged( IList<Action<IYodiiEngine>> postStart, PluginProxyBase swappingPlugin = null )
 		{
-            SetUnavailableImplIfNeeded();
             var h = ServiceStatusChanged;
             if( h != null )
 			{
@@ -169,11 +167,8 @@ namespace Yodii.Host
         public void SetExternalImplementation( object implementation )
         {
             if( !_isExternalService ) throw new CKException( R.ServiceIsPluginBased, _typeInterface );
-            if( implementation == null )
-            {
-                RawImpl = _unavailableImpl;
-            }
-            else
+            if( implementation == null ) implementation = _unavailableImpl;
+            if( implementation != RawImpl )
             {
                 RawImpl = implementation;
             }
@@ -183,22 +178,16 @@ namespace Yodii.Host
         {
             if( _isExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName );
             _impl = implementation;
-            Debug.Assert( _impl == null || (_impl.RealPlugin != null || _impl.Status == PluginStatus.Disabled), "Plugin.RealPlugin == null ==> Plugin.Status == Disabled" );
-            SetUnavailableImplIfNeeded();
+            if( _impl == null )
+            {
+                RawImpl = _unavailableImpl;
+            }
+            else RawImpl = _impl.RealPlugin;
             if( serviceInfo != null && serviceInfo.Generalization != null )
             {
                 var proxy = _serviceHost.EnsureProxyForDynamicService( serviceInfo.Generalization );
                 proxy.SetPluginImplementation( implementation, serviceInfo.Generalization );
             }
-        }
-
-        void SetUnavailableImplIfNeeded()
-        {
-            if( _impl == null || _status == ServiceStatus.Disabled )
-            {
-                RawImpl = _unavailableImpl;
-            }
-            else RawImpl = _impl.RealPlugin;
         }
 
         #region Protected methods called by concrete concrete dynamic classes (event relaying).

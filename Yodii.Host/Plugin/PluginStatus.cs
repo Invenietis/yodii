@@ -8,14 +8,14 @@ namespace Yodii.Host
 {
     enum PluginStatus
     {
-        Disabled = ServiceStatus.Disabled,
+        Disabled = 0,
 
-        Stopped = ServiceStatus.Stopped,
+        Stopped = 1,
         
-        Stopping = ServiceStatus.Stopping,
+        Stopping = 2,
         
-        Starting = ServiceStatus.Starting,
+        Starting = 3,
         
-        Started = ServiceStatus.Started
+        Started = 4
     }
 }

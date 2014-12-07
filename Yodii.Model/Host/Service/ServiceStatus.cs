@@ -6,14 +6,17 @@ using System.Text;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Defines the status for a service with its transition states. 
+    /// Bit flags that define the status for a service with its transition states. 
     /// </summary>
+    [Flags]
     public enum ServiceStatus
     {
+        None = 0,
+
         /// <summary>
-        /// The service is currently disabled.
+        /// Bit that denotes a replaced implementation.
         /// </summary>
-        Disabled = 0,
+        IsSwap = 8,
 
         /// <summary>
         /// The service is currently stopped.
@@ -21,21 +24,38 @@ namespace Yodii.Model
         Stopped = 1,
 
         /// <summary>
+        /// Bis that flags a running service.
+        /// When the implementation has been swapped (i.e. <see cref="Swapping"/> was the previous status instead of <see cref="Starting"/>), 
+        /// it is <see cref="StartedSwapped"/>.
+        /// </summary>
+        IsStarted = 2,
+
+        /// <summary>
+        /// The service is currently running with and was previoulsy <see cref="Stopped"/>.
+        /// When the implementation has been swapped (i.e. <see cref="Swapping"/> was the previous status instead of <see cref="Starting"/>), 
+        /// the <see cref="ServiceStatusChangedEventArgs.Swap"/> property is true.
+        /// </summary>
+        Started = IsStarted,
+
+        /// <summary>
+        /// The service is currently running (and its implementation has been swapped).
+        /// </summary>
+        StartedSwapped = IsStarted | IsSwap,
+
+        /// <summary>
+        /// Bit that denotes a transition: either <see cref="Stopping"/>, <see cref="Starting"/> or <see cref="Swapping"/>.
+        /// </summary>
+        IsTransition = 32,
+
+        /// <summary>
         /// The service is stopping.
         /// </summary>
-        Stopping = 2,
+        Stopping = Stopped | IsTransition,
 
         /// <summary>
         /// The service is starting.
         /// </summary>
-        Starting = 3,
-
-        /// <summary>
-        /// The service is currently running.
-        /// When the implementation has been swapped (i.e. <see cref="Swapping"/> was the previous status instead of <see cref="Starting"/>), 
-        /// the <see cref="ServiceStatusChangedEventArgs.Swap"/> property is true.
-        /// </summary>
-        Started = 4,
+        Starting = Started | IsTransition,
 
         /// <summary>
         /// The service is swapping its implementation.
@@ -43,6 +63,8 @@ namespace Yodii.Model
         /// Calling the <see cref="ServiceStatusChangedEventArgs.BindToStartingPlugin"/> method of the event argument
         /// bind the service to the new starting plugin.
         /// </summary>
-        Swapping = 5
+        Swapping = Starting | IsSwap,
+
+
     }
 }

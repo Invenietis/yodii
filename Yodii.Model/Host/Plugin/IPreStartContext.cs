@@ -39,7 +39,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Gets the previous plugin that also implements <see cref="PreviousPluginCommonService"/> that 
-        /// has just been stopped: the starting plugin may set <see cref="PreviousHotSwapping"/> to true
+        /// has just been stopped: the starting plugin may set <see cref="HotSwapping"/> to true
         /// to silently replace it.
         /// </summary>
         IYodiiPlugin PreviousPlugin { get; }
@@ -48,9 +48,9 @@ namespace Yodii.Model
         /// Gets or sets whether the plugin silently replaces the <see cref="PreviousPlugin"/>. 
         /// PreviousPlugin MUST not be null otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// Defaults to false. When set to true, observers of the <see cref="PreviousPluginCommonService"/>
-        /// will not receive any events.
+        /// (and its generalizaions if any) will not receive any events.
         /// </summary>
-        bool PreviousHotSwapping { get; set; }
+        bool HotSwapping { get; set; }
 
     }
 }

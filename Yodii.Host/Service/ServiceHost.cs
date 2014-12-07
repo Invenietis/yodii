@@ -399,23 +399,7 @@ namespace Yodii.Host
 
         object IServiceHost.GetProxy( Type interfaceType )
         {
-            ServiceProxyBase proxy;
-            if( _proxies.TryGetValue( interfaceType, out proxy ) 
-                && (!interfaceType.IsGenericType && proxy.Status == ServiceStatus.Disabled) )
-            {
-                proxy = null;
-            }
-            return proxy;
-        }
-
-        object IServiceHost.GetRunningProxy( Type interfaceType )
-        {
-            ServiceProxyBase proxy;
-            if( _proxies.TryGetValue( interfaceType, out proxy ) && proxy.Status <= ServiceStatus.Stopped )
-            {
-                proxy = null;
-            }
-            return proxy;
+            return _proxies.GetValueWithDefault( interfaceType, null );
         }
 
         #endregion

@@ -37,10 +37,24 @@ namespace Yodii.Host
         /// </summary>
         public bool CatchExceptions;
 
+        /// <summary>
+        /// Defines the behavior of the generated service mehods regarding Stopped or Disabled plugins.
+        /// </summary>
         public enum CheckStatus
         {
+            /// <summary>
+            /// No status check is done: calling a method on a disabled or stopped plugin 
+            /// does not throw any exception.
+            /// </summary>
             None,
+            /// <summary>
+            /// Calling a method on a disabled plugin throws a ServiceNotAvailableException.
+            /// </summary>
             NotDisabled,
+            /// <summary>
+            /// Calling a method on a disabled plugin throws a ServiceNotAvailableException and
+            /// a ServiceStoppedException on a stoped plugin.
+            /// </summary>
             Running
         }
 
