@@ -117,8 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BindToStartingPluginMustBeSwapping" xml:space="preserve">
-    <value>Calling BindToStartingPlugin is possible only when service is  Swapping.</value>
+  <data name="BindToSwappedPluginMustBeSwapping" xml:space="preserve">
+    <value>Calling BindToSwappedPlugin is possible only when service is  Swapping.</value>
+  </data>
+  <data name="CallingServiceFromCtor" xml:space="preserve">
+    <value>Calling a Service method from a Plugin constructor is not allowed.</value>
+  </data>
+  <data name="CallingServiceFromPreStart" xml:space="preserve">
+    <value>Calling a Service method from a Plugin PreStart method is not allowed.</value>
+  </data>
+  <data name="CallingServiceFromPreStartRollbackAction" xml:space="preserve">
+    <value>Calling a Service method from a Plugin PreStart rollback action is not allowed.</value>
+  </data>
+  <data name="CallingServiceFromStop" xml:space="preserve">
+    <value>Calling a Service method from a Stop method (Plugin '{0}') is not allowed.</value>
   </data>
   <data name="DefaultPluginCreatorUnresolvedParams" xml:space="preserve">
     <value>Some parameters for the plugin constructor could not be resolved. Ensure that all plugin constructor parameters are either Yodii services (interfaces implementing IYodiiService), IService&lt;T&gt; where T : IYodiiService or are types that have been injected (through PluginHost.InjectExternalService). If you need to inject other types through more standard dependency injection, you should set your own PluginCreator.</value>
@@ -140,9 +152,6 @@
   </data>
   <data name="HostApplyPluginMustBeInOneList" xml:space="preserve">
     <value>Plugin '{0}' appears in more than one list. Lists of plugins to disable, stop end start must be disjoint.</value>
-  </data>
-  <data name="HostApplyStartPluginAlreadyStarted" xml:space="preserve">
-    <value>Plugin '{0}' must start but is already started.</value>
   </data>
   <data name="InterfaceMustExtendIYodiiService" xml:space="preserve">
     <value>Interface must extend IYodiiService to be a Dynamic Service.</value>

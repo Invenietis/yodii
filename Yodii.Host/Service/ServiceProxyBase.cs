@@ -98,16 +98,21 @@ namespace Yodii.Host
 
             public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, IList<Action<IYodiiEngine>> postStart )
             {
-                Debug.Assert( s._status != ServiceStatus.Swapping || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
+                Debug.Assert( s._status != ServiceStatus.StoppingSwapped || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
                 _service = s;
                 _originalImpl = s._impl;
                 _swappingPlugin = swappingPlugin;
                 _postStart = postStart;
             }
 
-            public override void BindToStartingPlugin()
+            public override bool IsSwapping
             {
-                if( _service._status != ServiceStatus.Swapping ) throw new InvalidOperationException( R.BindToStartingPluginMustBeSwapping );
+                get { return (_service._status & (ServiceStatus.IsSwap|ServiceStatus.IsTransition)) == (ServiceStatus.IsSwap|ServiceStatus.IsTransition); }
+            }
+
+            public override void BindToSwappedPlugin()
+            {
+                if( !IsSwapping ) throw new InvalidOperationException( R.BindToSwappedPluginMustBeSwapping );
                 _service._impl = _swappingPlugin;
             }
 
@@ -189,13 +194,16 @@ namespace Yodii.Host
 
         /// <summary>
         /// This method is called whenever a method not marked with <see cref="IgnoreServiceStoppedAttribute"/>
-        /// is called. It throws a <see cref="ServiceStoppedException"/> if the service is stopped or disabled otherwise
-        /// it returns the appropriate log configuration.
+        /// is called. It throws a <see cref="ServiceStoppedException"/> if the service is stopped or a <see cref="ServiceNotAvailableException"/> for a disabled one.
+        /// It also checks that the call to any service is allowed  (ServiceHost.CallServiceBlocker).
+        /// Otherwise it returns the appropriate log configuration.
         /// </summary>
         /// <returns>The log configuration that must be used.</returns>
         [DebuggerNonUserCodeAttribute]
         protected ServiceLogMethodOptions GetLoggerForRunningCall( int iMethodMRef, out LogMethodEntry logger )
         {
+            var blocker = _serviceHost.CallServiceBlocker;
+            if( blocker != null ) throw blocker( _typeInterface );
             if( _impl == null || _impl.Status == PluginStatus.Disabled )
             {
                 throw new ServiceNotAvailableException( _typeInterface );
@@ -212,12 +220,15 @@ namespace Yodii.Host
         }
 
         /// <summary>
-        /// Returns the appropriate log configuration after having checked that the dynamic service is not disabled.
+        /// Returns the appropriate log configuration after having checked that the dynamic service is not disabled
+        /// (but it can be stopped). Checks that the call to any service is allowed  (ServiceHost.CallServiceBlocker).
         /// </summary>
         /// <returns>The log configuration that must be used.</returns>
         [DebuggerNonUserCodeAttribute]
         protected ServiceLogMethodOptions GetLoggerForNotDisabledCall( int iMethodMRef, out LogMethodEntry logger )
         {
+            var blocker = _serviceHost.CallServiceBlocker;
+            if( blocker != null ) throw blocker( _typeInterface );
             if( _impl == null || _impl.Status == PluginStatus.Disabled )
             {
                 throw new ServiceNotAvailableException( _typeInterface );
@@ -230,12 +241,15 @@ namespace Yodii.Host
         }
 
         /// <summary>
-        /// Returns the appropriate log configuration without any runtime status checks.
+        /// Returns the appropriate log configuration without any runtime status checks except that the call 
+        /// to any service must be allowed (ServiceHost.CallServiceBlocker).
         /// </summary>
         /// <returns>The log configuration that must be used.</returns>
         [DebuggerNonUserCodeAttribute]
         protected ServiceLogMethodOptions GetLoggerForAnyCall( int iMethodMRef, out LogMethodEntry logger )
         {
+            var blocker = _serviceHost.CallServiceBlocker;
+            if( blocker != null ) throw blocker( _typeInterface );
             MEntry me = _mRefs[iMethodMRef];
             ServiceLogMethodOptions o = me.LogOptions;
             logger = o == ServiceLogMethodOptions.None ? null : _serviceHost.LogMethodEnter( me.Method, o );

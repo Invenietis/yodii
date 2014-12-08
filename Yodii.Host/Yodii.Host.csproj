@@ -111,7 +111,9 @@
     </Compile>
     <Compile Include="ServiceLogEventOptions.cs" />
     <Compile Include="ServiceLogMethodOptions.cs" />
+    <Compile Include="ServiceCallException.cs" />
     <Compile Include="ServiceNotAvailableException.cs" />
+    <Compile Include="ServiceCallBlockedException.cs" />
     <Compile Include="ServiceStoppedException.cs" />
     <Compile Include="Service\LogExternalErrorEntry.cs" />
     <Compile Include="Service\LogExternalEntry.cs" />

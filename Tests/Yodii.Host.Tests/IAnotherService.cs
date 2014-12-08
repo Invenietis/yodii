@@ -10,4 +10,11 @@ namespace Yodii.Host.Tests
     {
         void DoSomethingElse();
     }
+
+    public class AnotherPlugin : YodiiPluginBase, IAnotherService
+    {
+        public void DoSomethingElse()
+        {
+        }
+    }
 }

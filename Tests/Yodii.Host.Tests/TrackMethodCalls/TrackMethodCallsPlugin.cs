@@ -8,13 +8,13 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
-    public class TrackMethodCallsPlugin : YodiiPluginBase, ITrackMethodCallsService
+    public class TrackMethodCallsPlugin : YodiiPluginBase, ITrackMethodCallsPluginService
     {
-        IOptionalService<IAnotherService> _serviceOpt;
+        IOptionalService<ITrackerService> _serviceOpt;
 
          List<string> _calledMethods;
 
-        public TrackMethodCallsPlugin( IOptionalService<IAnotherService> s )
+        public TrackMethodCallsPlugin( IOptionalService<ITrackerService> s )
         {
             _calledMethods = new List<string>();
             _serviceOpt = s;
@@ -29,6 +29,7 @@ namespace Yodii.Host.Tests
 
         void _serviceOpt_ServiceStatusChanged( object sender, ServiceStatusChangedEventArgs e )
         {
+            if( _serviceOpt.Status == ServiceStatus.IsStart )
             _calledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService.Status = " + _serviceOpt.Status );
         }
 
@@ -52,7 +53,7 @@ namespace Yodii.Host.Tests
             _calledMethods.Add( "Teardown - IAnotherService.Status = " + _serviceOpt.Status );
         }
 
-        void ITrackMethodCallsService.DoSomething()
+        void ITrackMethodCallsPluginService.DoSomething()
         {
             _calledMethods.Add( "DoSomething - IAnotherService.Status = " + _serviceOpt.Status );
         }

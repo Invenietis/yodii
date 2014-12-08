@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Model\ServiceNotAvailableException.cs) is part of CiviKey. 
+* This file (CK.Plugin.Model\ServiceStoppedException.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -28,28 +28,21 @@ namespace Yodii.Host
 {
 
     /// <summary>
-    /// Exception raised whenever an event is raised by or a method is called on a non running service. 
+    /// Exception raised when calling a service when calls to services are not allowed:
+    /// when loading a plugin (from its constructor) or when executing PreStart or Stop method.
     /// </summary>
-    [Serializable]
-    public class ServiceNotAvailableException : ServiceCallException
+	[Serializable]
+    public class ServiceCallBlockedException : ServiceCallException
 	{
         /// <summary>
-        /// Initializes a new <see cref="ServiceNotAvailableException"/>.
+        /// Initializes a new <see cref="ServiceCallBlockedException"/>.
         /// </summary>
-        /// <param name="serviceType">Type of the concerned service.</param>
-		public ServiceNotAvailableException( Type serviceType )
-            : base( serviceType )
-		{
-		}
-
-        /// <summary>
-        /// Initializes a new <see cref="ServiceNotAvailableException"/>.
-        /// </summary>
-        /// <param name="serviceType">Type of the concerned service.</param>
+        /// <param name="calledServiceType">Type of the called service.</param>
         /// <param name="message">Detailed message.</param>
-        public ServiceNotAvailableException( Type serviceType, string message )
-			: base( serviceType, message )
+        public ServiceCallBlockedException( Type calledServiceType, string message )
+			: base( calledServiceType, message )
 		{
         }
+
     }
 }

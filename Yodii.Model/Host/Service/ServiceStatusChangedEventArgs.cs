@@ -13,10 +13,15 @@ namespace Yodii.Model
     public abstract class ServiceStatusChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// Plugins can call this method only when <see cref="IService{T}.Status"/> is <see cref="ServiceStatus.Swapping"/>.
-        /// By calling this method, the <see cref="IService{T}"/> is bound to the new plugin that implements the service.
+        /// Gets whether implementation is swapping: <see cref="IService{T}.Status"/> is <see cref="ServiceStatus.StoppingSwapped"/> or <see cref="ServiceStatus.StartingSwapped"/>.
         /// </summary>
-        public abstract void BindToStartingPlugin();
+        public abstract bool IsSwapping { get; }
+
+        /// <summary>
+        /// Plugins can call this method only when <see cref="IService{T}.Status"/> is <see cref="ServiceStatus.StoppingSwapped"/> or <see cref="ServiceStatus.StartingSwapped"/>.
+        /// By calling this method, the <see cref="IService{T}"/> is bound to the strating or stopping plugin that implements the service.
+        /// </summary>
+        public abstract void BindToSwappedPlugin();
 
         /// <summary>
         /// This method can be used to dynamically start a service. There is no guaranty of success here: this is a deffered action

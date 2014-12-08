@@ -25,25 +25,25 @@ namespace Yodii.Model
 
         /// <summary>
         /// Bis that flags a running service.
-        /// When the implementation has been swapped (i.e. <see cref="Swapping"/> was the previous status instead of <see cref="Starting"/>), 
+        /// When the implementation has been swapped (i.e. <see cref="StoppingSwapped"/> was the previous status instead of <see cref="Starting"/>), 
         /// it is <see cref="StartedSwapped"/>.
         /// </summary>
-        IsStarted = 2,
+        IsStart = 2,
 
         /// <summary>
         /// The service is currently running with and was previoulsy <see cref="Stopped"/>.
-        /// When the implementation has been swapped (i.e. <see cref="Swapping"/> was the previous status instead of <see cref="Starting"/>), 
-        /// the <see cref="ServiceStatusChangedEventArgs.Swap"/> property is true.
+        /// When the implementation has been swapped (i.e. <see cref="StartingSwapped"/> was the previous status instead of <see cref="Starting"/>), 
+        /// the status is <see cref="StartedSwapped"/>.
         /// </summary>
-        Started = IsStarted,
+        Started = IsStart,
 
         /// <summary>
         /// The service is currently running (and its implementation has been swapped).
         /// </summary>
-        StartedSwapped = IsStarted | IsSwap,
+        StartedSwapped = IsStart | IsSwap,
 
         /// <summary>
-        /// Bit that denotes a transition: either <see cref="Stopping"/>, <see cref="Starting"/> or <see cref="Swapping"/>.
+        /// Bit that denotes a transition: either <see cref="Stopping"/>, <see cref="StoppingSwapped"/>, <see cref="Starting"/> or <see cref="StartingSwapped"/>.
         /// </summary>
         IsTransition = 32,
 
@@ -60,11 +60,18 @@ namespace Yodii.Model
         /// <summary>
         /// The service is swapping its implementation.
         /// Current service implementation is the plugin that is stopping.
-        /// Calling the <see cref="ServiceStatusChangedEventArgs.BindToStartingPlugin"/> method of the event argument
+        /// Calling the <see cref="ServiceStatusChangedEventArgs.BindToSwappedPlugin"/> method of the event argument
         /// bind the service to the new starting plugin.
         /// </summary>
-        Swapping = Starting | IsSwap,
+        StoppingSwapped = Stopping | IsSwap,
 
+        /// <summary>
+        /// The service is swapping its implementation.
+        /// Current service implementation is the plugin that is starting.
+        /// Calling the <see cref="ServiceStatusChangedEventArgs.BindToSwappedPlugin"/> method of the event argument
+        /// bind the service to the previous (stopping) plugin.
+        /// </summary>
+        StartingSwapped = Starting | IsSwap,
 
     }
 }

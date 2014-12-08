@@ -6,9 +6,8 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
-    public interface IChoucrouteService2 : IYodiiService
+    public interface IFailureTransitionPluginService : IYodiiService
     {
         void DoSomething();
-        List<string> CalledMethods { get; }
     }
 }

@@ -91,22 +91,31 @@ namespace Yodii.Host
         }
 
         /// <summary>
-        /// Supports <see cref="IDisposable"/> implementation. If the real plugin does not implement it, nothing is done and 
+        /// Supports <see cref="IDisposable"/> implementation and sets Status to Disabled.
+        /// If the real plugin does not implement IDisposable, nothing is done and 
         /// the current reference instance is kept (it will be reused).
-        /// If IDisposable is implemented, a call to Dispose may throw an exception (it should be handled above), but the _instance 
+        /// If IDisposable is implemented, a call to Dispose may throw an exception (it is routed to the ServiceHost.LogMethodError), but the _instance 
         /// reference is set to null: a new object will always have to be created if the plugin needs to be started again.
         /// </summary>
-        internal void DisposeIfDisposable()
+        internal void Disable( ServiceHost serviceHost )
         {
-            Debug.Assert( Status == PluginStatus.Disabled, "Status has already been set to Disabled." );
-            if( _instance != null )
+            Debug.Assert( Status == PluginStatus.Stopped, "Status has been set to Stopped." );
+            Status = PluginStatus.Disabled;
+            try
             {
-                IDisposable di = _instance as IDisposable;
-                if( di != null )
+                if( _instance != null )
                 {
-                    _instance = null;
-                    di.Dispose();
+                    IDisposable di = _instance as IDisposable;
+                    if( di != null )
+                    {
+                        _instance = null;
+                        di.Dispose();
+                    }
                 }
+            }
+            catch( Exception ex )
+            {
+                serviceHost.LogMethodError( GetImplMethodInfoDispose(), ex );
             }
         }
 

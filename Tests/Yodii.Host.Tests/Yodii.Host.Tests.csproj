@@ -52,15 +52,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TrackerPluginAndService.cs" />
     <Compile Include="TrackMethodCalls\TrackMethodCallsPlugin.cs" />
-    <Compile Include="TrackMethodCalls\IAnotherService.cs" />
-    <Compile Include="TrackMethodCalls\ITrackMethodCallsService.cs" />
-    <Compile Include="ChoucrouteTest2\ChoucroutePlugin2.cs" />
-    <Compile Include="ChoucrouteTest2\IAnotherService2.cs" />
-    <Compile Include="ChoucrouteTest2\IChoucrouteService2.cs" />
-    <Compile Include="ChoucrouteTest3\ChoucroutePlugin3.cs" />
-    <Compile Include="ChoucrouteTest3\IAnotherService3.cs" />
-    <Compile Include="ChoucrouteTest3\IChoucrouteService3.cs" />
+    <Compile Include="IAnotherService.cs" />
+    <Compile Include="TrackMethodCalls\ITrackMethodCallsPluginService.cs" />
+    <Compile Include="FailureTransitionPlugin\FailureTransitionPlugin.cs" />
+    <Compile Include="FailureTransitionPlugin\IFailureTransitionPluginService.cs" />
     <Compile Include="ChoucrouteTest4\ChoucroutePlugin4.cs" />
     <Compile Include="ChoucrouteTest4\IAnotherService4.cs" />
     <Compile Include="ChoucrouteTest4\IChoucrouteService4.cs" />

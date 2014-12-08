@@ -50,6 +50,27 @@ namespace Yodii.Model
             return @this.Stop( null );
         }
 
+        /// <summary>
+        /// Gets whether this status is <see cref="ServiceStatus.Started"/>, <see cref="ServiceStatus.StartedSwapped"/>,
+        /// <see cref="ServiceStatus.Starting"/>.
+        /// </summary>
+        /// <param name="this">This <see cref="ServiceStatus"/>.</param>
+        /// <returns>True if the service is started.</returns>
+        public static bool IsStartingOrStarted( this ServiceStatus @this )
+        {
+            return (@this & ServiceStatus.IsStart) != 0;
+        }
+
+        /// <summary>
+        /// Gets whether this service is running.
+        /// </summary>
+        /// <param name="this">This service.</param>
+        /// <returns>True if the service is started.</returns>
+        public static bool IsStartingOrStarted<T>( this IService<T> @this ) where T : IYodiiService
+        {
+            return @this.Status.IsStartingOrStarted();
+        }
+
         public static void TryStart<T>( this ServiceStatusChangedEventArgs @this, IService<T> service, Action<T> onStarted ) where T : IYodiiService
         {
             @this.TryStart( service, StartDependencyImpact.Unknown, onStarted );

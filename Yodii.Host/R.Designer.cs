@@ -61,11 +61,47 @@ namespace Yodii.Host {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Calling BindToStartingPlugin is possible only when service is  Swapping..
+        ///   Looks up a localized string similar to Calling BindToSwappedPlugin is possible only when service is  Swapping..
         /// </summary>
-        internal static string BindToStartingPluginMustBeSwapping {
+        internal static string BindToSwappedPluginMustBeSwapping {
             get {
-                return ResourceManager.GetString("BindToStartingPluginMustBeSwapping", resourceCulture);
+                return ResourceManager.GetString("BindToSwappedPluginMustBeSwapping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calling a Service method from a Plugin constructor is not allowed..
+        /// </summary>
+        internal static string CallingServiceFromCtor {
+            get {
+                return ResourceManager.GetString("CallingServiceFromCtor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calling a Service method from a Plugin PreStart method is not allowed..
+        /// </summary>
+        internal static string CallingServiceFromPreStart {
+            get {
+                return ResourceManager.GetString("CallingServiceFromPreStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calling a Service method from a Plugin PreStart rollback action is not allowed..
+        /// </summary>
+        internal static string CallingServiceFromPreStartRollbackAction {
+            get {
+                return ResourceManager.GetString("CallingServiceFromPreStartRollbackAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calling a Service method from a Stop method (Plugin &apos;{0}&apos;) is not allowed..
+        /// </summary>
+        internal static string CallingServiceFromStop {
+            get {
+                return ResourceManager.GetString("CallingServiceFromStop", resourceCulture);
             }
         }
         
@@ -129,15 +165,6 @@ namespace Yodii.Host {
         internal static string HostApplyPluginMustBeInOneList {
             get {
                 return ResourceManager.GetString("HostApplyPluginMustBeInOneList", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; must start but is already started..
-        /// </summary>
-        internal static string HostApplyStartPluginAlreadyStarted {
-            get {
-                return ResourceManager.GetString("HostApplyStartPluginAlreadyStarted", resourceCulture);
             }
         }
         

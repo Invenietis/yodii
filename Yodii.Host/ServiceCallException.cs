@@ -28,28 +28,50 @@ namespace Yodii.Host
 {
 
     /// <summary>
-    /// Exception raised whenever an event is raised by or a method is called on a non running service. 
+    /// Base exception for <see cref="ServiceNotAvailableException"/> and <see cref="ServiceCallBlockedException"/>. 
     /// </summary>
-    [Serializable]
-    public class ServiceNotAvailableException : ServiceCallException
+	[Serializable]
+	public class ServiceCallException : Exception, ISerializable
 	{
         /// <summary>
-        /// Initializes a new <see cref="ServiceNotAvailableException"/>.
+        /// Gets the service type name.
+        /// </summary>
+        public string ServiceTypeName { get; private set; }
+
+        /// <summary>
+        /// Initializes a new <see cref="ServiceCallException"/>.
         /// </summary>
         /// <param name="serviceType">Type of the concerned service.</param>
-		public ServiceNotAvailableException( Type serviceType )
-            : base( serviceType )
+		public ServiceCallException( Type serviceType )
 		{
+            ServiceTypeName = serviceType.AssemblyQualifiedName;
 		}
 
         /// <summary>
-        /// Initializes a new <see cref="ServiceNotAvailableException"/>.
+        /// Initializes a new <see cref="ServiceCallException"/>.
         /// </summary>
         /// <param name="serviceType">Type of the concerned service.</param>
         /// <param name="message">Detailed message.</param>
-        public ServiceNotAvailableException( Type serviceType, string message )
-			: base( serviceType, message )
+        public ServiceCallException( Type serviceType, string message )
+			: base( message )
 		{
+            ServiceTypeName = serviceType.AssemblyQualifiedName;
+        }
+
+        /// <summary>
+        /// Initializes a new <see cref="ServiceNotAvailableException"/> (serialization).
+        /// </summary>
+        /// <param name="info">Serialization information.</param>
+        /// <param name="context">Serialization context.</param>
+        protected ServiceCallException( SerializationInfo info, StreamingContext context )
+			: base( info, context )
+		{
+            ServiceTypeName = info.GetString( "ServiceTypeName" );
+		}
+
+        void ISerializable.GetObjectData( SerializationInfo info, StreamingContext context )
+        {
+            info.AddValue( "ServiceTypeName", ServiceTypeName );
         }
     }
 }

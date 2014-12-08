@@ -11,10 +11,13 @@ namespace Yodii.Host
     {
         ServiceManager.Impact _swappedImpact;
 
-        public StStartContext( PluginProxy plugin, Dictionary<object, object> shared )
+        public StStartContext( PluginProxy plugin, Dictionary<object, object> shared, bool wasDisabled )
             : base( plugin, shared )
         {
+            WasDisabled = wasDisabled;
         }
+
+        public readonly bool WasDisabled;
 
         public Action<IStopContext> RollbackAction { get; set; }
 

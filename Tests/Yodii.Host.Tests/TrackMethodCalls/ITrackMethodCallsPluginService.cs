@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
-    public interface ITrackMethodCallsService : IYodiiService
+    public interface ITrackMethodCallsPluginService : IYodiiService
     {
         void DoSomething();
 

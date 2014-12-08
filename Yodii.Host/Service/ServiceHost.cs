@@ -92,6 +92,13 @@ namespace Yodii.Host
             set { _eventSender = value; }
         }
 
+        /// <summary>
+        /// This is set to a non null function when calls to services are not allowed:
+        /// when loading a plugin (from its constructor) or when executing PreStart and Stop method.
+        /// The input type is the called interface type.
+        /// </summary>
+        internal Func<Type,ServiceCallBlockedException> CallServiceBlocker;
+
         internal ServiceProxyBase EnsureProxyForDynamicService( IServiceInfo service )
         {
             Debug.Assert( service != null );
