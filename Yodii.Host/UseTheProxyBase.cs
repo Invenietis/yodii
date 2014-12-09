@@ -42,15 +42,15 @@ namespace Yodii.Host
             set { }
         }
 
-        public IYodiiService Service
-        {
-            get { return null; }
-        }
-
         /// <summary>
         /// Gets the current <see cref="RunningStatus"/> of the service.
         /// From Yodii
         /// </summary>
         public RunningStatus RunningStatus { get; set; }
+
+        public IYodiiService Service
+        {
+            get { return this; }
+        }
     }
 }

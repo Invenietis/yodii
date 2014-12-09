@@ -80,6 +80,7 @@
     <Compile Include="Host\Service\IRunnableRecommendedService.cs" />
     <Compile Include="Host\Service\IRunnableService.cs" />
     <Compile Include="Host\Service\IRunningService.cs" />
+    <Compile Include="Host\Service\IServiceUntyped.cs" />
     <Compile Include="Host\Service\IService.cs" />
     <Compile Include="Host\Plugin\IYodiiPlugin.cs" />
     <Compile Include="Host\Service\IYodiiService.cs" />

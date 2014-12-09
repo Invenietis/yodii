@@ -14,6 +14,7 @@ using System.IO;
 
 namespace Yodii.Host.Tests
 {
+
     [TestFixture]
     public class YodiiHostTests
     {
@@ -69,7 +70,6 @@ namespace Yodii.Host.Tests
         [Test]
         public void simple_start_stop_of_a_plugin()
         {
-
             StandardDiscoverer discoverer = new StandardDiscoverer();
             IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
@@ -200,7 +200,6 @@ namespace Yodii.Host.Tests
         [Test]
         public void TOBEREVIEWED_ServiceGeneralizationChoucrouteTest5()
         {
-
             StandardDiscoverer discoverer = new StandardDiscoverer();
             IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
@@ -209,30 +208,27 @@ namespace Yodii.Host.Tests
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( info );
 
+
+            var serviceRoot = new ServiceWrapper<ITestRootService>( engine, host );
+            var serviceSubA = new ServiceWrapper<ITestRootSubAService>( engine, host );
+            var serviceSubB = new ServiceWrapper<ITestRootSubBService>( engine, host );
+            var serviceSubBSub = new ServiceWrapper<ITestRootSubBSubService>( engine, host );
+            var allServices = new ServiceWrapper[] { serviceRoot, serviceSubA, serviceSubB, serviceSubBSub, serviceSubBSub };
+
+            var pluginRoot = new PluginWrapper<TestRootRootPlugin>( engine, host );
+            var pluginRoot_A = new PluginWrapper<TestRootPluginAlternate>( engine, host );
+            var pluginSubA = new PluginWrapper<TestRootSubAPlugin>( engine, host );
+            var pluginSubA_A = new PluginWrapper<TestRootSubAPluginAlternate>( engine, host );
+            var pluginSubB = new PluginWrapper<TestRootSubBPlugin>( engine, host );
+            var pluginSubB_A = new PluginWrapper<TestRootSubBSubPluginAlernate>( engine, host );
+            var pluginSubBSub = new PluginWrapper<TestRootSubBSubPlugin>( engine, host );
+            var pluginSubBSub_A = new PluginWrapper<TestRootSubBSubPluginAlernate>( engine, host );
+            var allPlugins = new PluginWrapper[] { pluginRoot, pluginRoot_A, pluginSubA, pluginSubA_A, pluginSubB, pluginSubB_A, pluginSubBSub, pluginSubBSub_A };
+
             var result = engine.Start();
+            Assert.That( allServices.Select( p => p.CheckState( ServiceStatus.Stopped ) ).Any() );
+            Assert.That( allPlugins.Select( p => p.CheckState( PluginStatus.Disabled ) ).Any() );
 
-            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.AnotherPlugin5" ).Start();
-            IPluginProxy pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.AnotherPlugin5" );
-            AnotherPlugin5 anotherPlugin = (AnotherPlugin5)pluginProxy.RealPluginObject;
-
-            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5" ).Start();
-            IPluginProxy pluginProxySimple = host.FindLoadedPlugin( "Yodii.Host.Tests.SimpleChoucroutePlugin5" );
-            SimpleChoucroutePlugin5 SimpleChoucroutePlugin = (SimpleChoucroutePlugin5)pluginProxySimple.RealPluginObject;
-
-            //Don't hesitate to put the next line in the watch and look at _impl
-            //(ServiceProxyBase)host.ServiceHost.GetProxy( typeof( IChoucrouteService5Generalization ) );
-
-            int nbSimpleCalls = SimpleChoucroutePlugin.CalledMethods.Count;
-            anotherPlugin.DoSomething();
-            Assert.That( nbSimpleCalls + 1 == SimpleChoucroutePlugin.CalledMethods.Count, "making sure SimpleChoucroutePlugin was called" );
-
-            engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5" ).Start();
-            IPluginProxy pluginProxyElaborate = host.FindLoadedPlugin( "Yodii.Host.Tests.ElaborateChoucroutePlugin5" );
-            ElaborateChoucroutePlugin5 ElaborateChoucroutePlugin = (ElaborateChoucroutePlugin5)pluginProxyElaborate.RealPluginObject;
-
-            int nbElaborateCalls = ElaborateChoucroutePlugin.CalledMethods.Count;
-            anotherPlugin.DoSomething();
-            Assert.That( nbElaborateCalls + 1 == ElaborateChoucroutePlugin.CalledMethods.Count, "making sure ElaborateChoucroutePlugin was called" );
         }
 
 

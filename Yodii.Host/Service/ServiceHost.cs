@@ -389,13 +389,13 @@ namespace Yodii.Host
 
         #region IServiceHost Members
 
-        object IServiceHost.InjectExternalService( Type interfaceType, object currentImplementation )
+        IServiceUntyped IServiceHost.InjectExternalService( Type interfaceType, object currentImplementation )
         {
             if( currentImplementation == null ) throw new ArgumentNullException( "currentImplementation", R.ExternalImplRequiredAsANonNullObject );
             return EnsureProxyForExternalService( interfaceType, currentImplementation );
         }
 
-        object IServiceHost.EnsureProxyForDynamicService( Type interfaceType )
+        IServiceUntyped IServiceHost.EnsureProxyForDynamicService( Type interfaceType )
         {
             if( !typeof( IYodiiService ).IsAssignableFrom( interfaceType ) || interfaceType == typeof( IYodiiService ) )
             {
@@ -404,7 +404,7 @@ namespace Yodii.Host
             return EnsureProxyForDynamicService( interfaceType );
         }
 
-        object IServiceHost.GetProxy( Type interfaceType )
+        IServiceUntyped IServiceHost.GetProxy( Type interfaceType )
         {
             return _proxies.GetValueWithDefault( interfaceType, null );
         }

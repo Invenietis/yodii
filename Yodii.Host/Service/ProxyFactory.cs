@@ -36,11 +36,12 @@ namespace Yodii.Host
 	internal class ProxyFactory
 	{
 		static int _typeID;
-		static ModuleBuilder _moduleBuilder;
-		static MethodInfo _delegateCombine;
-		static MethodInfo _delegateGetInvocationList;
-		static MethodInfo _delegateGetMethod;
-		static MethodInfo _delegateRemove;
+		static readonly ModuleBuilder _moduleBuilder;
+		static readonly MethodInfo _delegateCombine;
+		static readonly MethodInfo _delegateGetInvocationList;
+		static readonly MethodInfo _delegateGetMethod;
+		static readonly MethodInfo _delegateRemove;
+        static readonly MethodInfo _untypedServiceGetMethod = typeof( IServiceUntyped ).GetProperty( "Service" ).GetGetMethod();
 
 		static ProxyFactory()
 		{
@@ -87,6 +88,7 @@ namespace Yodii.Host
             List<MethodInfo> _mRefs;
             List<EventInfo> _eRefs;
 
+
             public ProxyGenerator( TypeBuilder typeBuilder, IProxyDefinition definition )
             {
                 _typeBuilder = typeBuilder;
@@ -129,17 +131,15 @@ namespace Yodii.Host
 
             public void DefineServiceProperty()
             {
-                // The Service property of the IService<typeInterface> must return
-                // the proxy itself, not _impl.
+                // The IService<T>.Service property must return the proxy itself, not _impl typed as T.
                 MethodBuilder servicePropertyGet = _typeBuilder.DefineMethod(
                     "get_Service",
-                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
+                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Final,
                     CallingConventions.HasThis,
                     _definition.TypeInterface,
                     Type.EmptyTypes );
                 {
                     ILGenerator g = servicePropertyGet.GetILGenerator();
-                    // return this;
                     g.Emit( OpCodes.Ldarg_0 );
                     g.Emit( OpCodes.Ret );
                 }
@@ -152,7 +152,7 @@ namespace Yodii.Host
                 // Implementation = get_RawImpl/set_RawImpl
                 MethodBuilder implementationPropertyGet = _typeBuilder.DefineMethod(
                     "get_RawImpl",
-                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig,
+                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.Final,
                     typeof( object ),
                     Type.EmptyTypes );
                 {
@@ -164,7 +164,7 @@ namespace Yodii.Host
                 }
                 MethodBuilder implementationPropertySet = _typeBuilder.DefineMethod(
                     "set_RawImpl",
-                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig,
+                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.Final,
                     typeof( void ),
                     new Type[] { typeof( object ) } );
                 {
@@ -237,7 +237,7 @@ namespace Yodii.Host
                 {
                     MethodInfo mCall = e.EventHandlerType.GetMethod( "Invoke" );
                     Type[] parameters = CK.Reflection.ReflectionHelper.CreateParametersType( mCall.GetParameters() );
-                    mHookB = _typeBuilder.DefineMethod( "_realService_" + e.Name, MethodAttributes.Private, CallingConventions.HasThis, typeof( void ), parameters );
+                    mHookB = _typeBuilder.DefineMethod( "_realService_" + e.Name, MethodAttributes.Private | MethodAttributes.Final, CallingConventions.HasThis, typeof( void ), parameters );
                     {
                         SetDebuggerStepThroughAttribute( mHookB );
                         ILGenerator g = mHookB.GetILGenerator();
@@ -690,7 +690,7 @@ namespace Yodii.Host
                 // Initializes the signature with only its name, attributes and calling conventions first.
                 MethodBuilder mB = typeBuilder.DefineMethod(
                     m.Name,
-                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig,
+                    MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig | MethodAttributes.Final,
                     CallingConventions.HasThis );
 
                 parameters = ReflectionHelper.CreateParametersType( m.GetParameters() );
@@ -749,7 +749,9 @@ namespace Yodii.Host
             // This defines the IService<typeInterface> interface.
             if( definition.IsDynamicService )
             {
-                // Our proxy object will implement both typeInterface and IService<typeInterface> interfaces.
+                typeBuilder.AddInterfaceImplementation( typeof(IServiceUntyped) );
+                
+                // The proxy object implements both typeInterface and IService<typeInterface> interfaces.
                 Type serviceInterfaceType = typeof( IService<> ).MakeGenericType( new Type[] { definition.TypeInterface } );
                 typeBuilder.AddInterfaceImplementation( serviceInterfaceType );
 

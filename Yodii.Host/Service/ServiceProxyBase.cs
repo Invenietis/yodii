@@ -43,8 +43,8 @@ namespace Yodii.Host
         public EventInfo Event;
         public ServiceLogEventOptions LogOptions;
     }
-    
-    internal abstract class ServiceProxyBase
+
+    internal abstract class ServiceProxyBase : IServiceUntyped, IYodiiService
 	{
         readonly Type _typeInterface;
         readonly MEntry[] _mRefs;
@@ -70,6 +70,7 @@ namespace Yodii.Host
             {
                 _eRefs[i].Event = eRefs[i];
             }
+            _status = ServiceStatus.Stopped;
         }
 
         internal void Initialize( ServiceHost serviceHost, bool isExternalService )
@@ -136,6 +137,12 @@ namespace Yodii.Host
                 _postStart.Add( a );
             }
         }
+
+        /// <summary>
+        /// Explicit implementation here: the public Service Property that will be generated 
+        /// will return the T for IService{T}, IOptionalService{T}, etc...
+        /// </summary>
+        IYodiiService IServiceUntyped.Service { get { return this; } }
 
 		public event EventHandler<ServiceStatusChangedEventArgs> ServiceStatusChanged;
 

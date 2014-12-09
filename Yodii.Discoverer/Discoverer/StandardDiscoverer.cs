@@ -124,7 +124,15 @@ namespace Yodii.Discoverer
             Debug.Assert( a != null );
             CachedAssemblyInfo info = new CachedAssemblyInfo( a );
             _assemblies.Add( a.FullName, info );
-            info.Discover( this );
+            if( _yodiiModel != null ) info.Discover( this );
+            else
+            {
+                foreach( var dependency in a.MainModule.AssemblyReferences )
+                {
+                    _resolver.Resolve( dependency );
+                }
+                info.YodiiInfo.SetResult( CKReadOnlyListEmpty<ServiceInfo>.Empty, CKReadOnlyListEmpty<PluginInfo>.Empty );
+            }
             return info;
         }
 
@@ -147,12 +155,14 @@ namespace Yodii.Discoverer
 
             s = new ServiceInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
             _services.Add( t, s );
-            s.Generalization = t.Interfaces
+            ServiceInfo gen = t.Interfaces
                                     .Select( i => i.Resolve() )
                                     .Where( i => IsYodiiService( i ) )
                                     .Select( i => FindOrCreateService( i ) )
-                                    .SingleOrDefault();
-           
+                                    .OrderByDescending( super => super.Depth )
+                                    .FirstOrDefault();
+            if( gen != null ) s.Depth = gen.Depth + 1;      
+            s.Generalization = gen;
             return s;         
         }
 

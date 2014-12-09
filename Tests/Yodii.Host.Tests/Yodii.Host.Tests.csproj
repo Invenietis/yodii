@@ -52,20 +52,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginWrapper.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubBSubService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubBService.cs" />
+    <Compile Include="ServiceWrapper.cs" />
+    <Compile Include="TrackedPluginBase.cs" />
     <Compile Include="TrackerPluginAndService.cs" />
     <Compile Include="TrackMethodCalls\TrackMethodCallsPlugin.cs" />
     <Compile Include="IAnotherService.cs" />
     <Compile Include="TrackMethodCalls\ITrackMethodCallsPluginService.cs" />
     <Compile Include="FailureTransitionPlugin\FailureTransitionPlugin.cs" />
     <Compile Include="FailureTransitionPlugin\IFailureTransitionPluginService.cs" />
-    <Compile Include="ChoucrouteTest4\ChoucroutePlugin4.cs" />
-    <Compile Include="ChoucrouteTest4\IAnotherService4.cs" />
-    <Compile Include="ChoucrouteTest4\IChoucrouteService4.cs" />
-    <Compile Include="ChoucrouteTest5\AnotherPlugin5.cs" />
-    <Compile Include="ChoucrouteTest5\SimpleChoucroutePlugin5.cs" />
-    <Compile Include="ChoucrouteTest5\ElaborateChoucroutePlugin5.cs" />
-    <Compile Include="ChoucrouteTest5\IChoucrouteService5Generalization.cs" />
-    <Compile Include="ChoucrouteTest5\IChoucrouteService5.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubAService.cs" />
     <Compile Include="Extensions\ConfigurationManagerExtensions.cs" />
     <Compile Include="Extensions\DynamicTestExtensions.cs" />
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />

@@ -40,7 +40,7 @@ namespace Yodii.Host
         /// </summary>
         /// <param name="interfaceType">Type of the service (it can be a wrapped <see cref="IService{T}"/>).</param>
         /// <returns>The implementation or null if it does not exist.</returns>
-        object GetProxy( Type interfaceType );
+        IServiceUntyped GetProxy( Type interfaceType );
 
         /// <summary>
         /// Ensures that a proxy exists for the given interface and associates it to an implementation.
@@ -48,14 +48,14 @@ namespace Yodii.Host
         /// <param name="interfaceType">Type of the interface.</param>
         /// <param name="currentImplementation">Implementation to use.</param>
         /// <returns>The proxy object.</returns>
-        object InjectExternalService( Type interfaceType, object currentImplementation );
+        IServiceUntyped InjectExternalService( Type interfaceType, object currentImplementation );
 
         /// <summary>
         /// Ensures that a proxy exists for the given <see cref="IYodiiService"/> interface.
         /// </summary>
         /// <param name="interfaceType">Type of the interface that must extend <see cref="IYodiiService"/>.</param>
         /// <returns>The proxy object.</returns>
-        object EnsureProxyForDynamicService( Type interfaceType );
+        IServiceUntyped EnsureProxyForDynamicService( Type interfaceType );
 
         /// <summary>
         /// Ensures that a proxy exists for a dynamic service. The <see cref="IService{T}"/>.

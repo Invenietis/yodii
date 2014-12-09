@@ -52,13 +52,23 @@ namespace Yodii.Model
 
         /// <summary>
         /// Gets whether this status is <see cref="ServiceStatus.Started"/>, <see cref="ServiceStatus.StartedSwapped"/>,
-        /// <see cref="ServiceStatus.Starting"/>.
+        /// <see cref="ServiceStatus.Starting"/> or <see cref="ServiceStatus.StartingSwapped"/>.
         /// </summary>
         /// <param name="this">This <see cref="ServiceStatus"/>.</param>
-        /// <returns>True if the service is started.</returns>
+        /// <returns>True if the service is starting or started.</returns>
         public static bool IsStartingOrStarted( this ServiceStatus @this )
         {
             return (@this & ServiceStatus.IsStart) != 0;
+        }
+
+        /// <summary>
+        /// Gets whether this status is <see cref="ServiceStatus.Started"/> or <see cref="ServiceStatus.StartedSwapped"/>.
+        /// </summary>
+        /// <param name="this">This <see cref="ServiceStatus"/>.</param>
+        /// <returns>True if the service is running.</returns>
+        public static bool IsStarted( this ServiceStatus @this )
+        {
+            return @this == ServiceStatus.Started || @this == ServiceStatus.StartedSwapped;
         }
 
         /// <summary>

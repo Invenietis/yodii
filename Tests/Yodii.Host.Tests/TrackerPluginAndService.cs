@@ -65,6 +65,9 @@ namespace Yodii.Host.Tests
 
     }
 
+    /// <summary>
+    /// Plugin that implements ITrackerService. No dependencies.
+    /// </summary>
     public class TrackerPlugin : YodiiPluginBase, ITrackerService
     {
         readonly List<TrackedEntry> _entries;
