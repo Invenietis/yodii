@@ -194,7 +194,7 @@ namespace Yodii.Host
             {
                 RawImpl = _unavailableImpl;
             }
-            else RawImpl = _impl.RealPlugin;
+            else RawImpl = _impl.RealPluginObject;
         }
 
         #region Protected methods called by concrete concrete dynamic classes (event relaying).
@@ -211,7 +211,7 @@ namespace Yodii.Host
         {
             var blocker = _serviceHost.CallServiceBlocker;
             if( blocker != null ) throw blocker( _typeInterface );
-            if( _impl == null || _impl.Status == PluginStatus.Disabled )
+            if( _impl == null || _impl.Status == PluginStatus.Null )
             {
                 throw new ServiceNotAvailableException( _typeInterface );
             }
@@ -236,7 +236,7 @@ namespace Yodii.Host
         {
             var blocker = _serviceHost.CallServiceBlocker;
             if( blocker != null ) throw blocker( _typeInterface );
-            if( _impl == null || _impl.Status == PluginStatus.Disabled )
+            if( _impl == null || _impl.Status == PluginStatus.Null )
             {
                 throw new ServiceNotAvailableException( _typeInterface );
             }
@@ -304,7 +304,7 @@ namespace Yodii.Host
         {
             EEntry e = _eRefs[iEventMRef];
             logOptions = e.LogOptions;
-            bool isDisabled = _impl == null || _impl.Status == PluginStatus.Disabled;
+            bool isDisabled = _impl == null || _impl.Status == PluginStatus.Null;
             if( isDisabled || _impl.Status == PluginStatus.Stopped )
             {
                 if( (logOptions & ServiceLogEventOptions.SilentEventRunningStatusError) != 0 )
@@ -327,7 +327,7 @@ namespace Yodii.Host
         {
             EEntry e = _eRefs[iEventMRef];
             logOptions = e.LogOptions & ServiceLogEventOptions.CreateEntryMask;
-            if( _impl == null || _impl.Status == PluginStatus.Disabled )
+            if( _impl == null || _impl.Status == PluginStatus.Null )
             {
                 if( (logOptions & ServiceLogEventOptions.SilentEventRunningStatusError) != 0 )
                 {

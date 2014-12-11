@@ -10,6 +10,15 @@ using Yodii.Model;
 namespace Yodii.Host.Tests
 {
     /// <summary>
+    /// This plugin can fail its PreStart or PreStop calls depending on FailureTransitionPlugin.CancelPreStart and CancelPreStop static properties.
+    /// </summary>
+    public class FailureTransitionPluginDisposable : FailureTransitionPlugin, IDisposable
+    {
+        public FailureTransitionPluginDisposable( IAnotherService s, ITrackerService tracker ) : base( s, tracker ) {}
+        public void Dispose() {}
+    }
+
+    /// <summary>
     /// This plugin can fail its PreStart or PreStop calls depending on CancelPreStart and CancelPreStop static properties.
     /// </summary>
     public class FailureTransitionPlugin : YodiiPluginBase, IFailureTransitionPluginService

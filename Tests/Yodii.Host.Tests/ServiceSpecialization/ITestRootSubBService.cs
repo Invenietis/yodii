@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NUnit.Framework;
 using Yodii.Model;
 
 namespace Yodii.Host.Tests
@@ -18,11 +19,16 @@ namespace Yodii.Host.Tests
         }
     }
 
-    public class TestRootSubBPluginAlernate : TrackedPluginBase, ITestRootSubBService
+    public class TestRootSubBPluginAlternate : TrackedPluginBase, ITestRootSubBService, IDisposable
     {
-        public TestRootSubBPluginAlernate( ITrackerService t )
+        public TestRootSubBPluginAlternate( ITrackerService t )
             : base( t )
         {
+        }
+
+        void IDisposable.Dispose()
+        {
+            Assert.Throws<ServiceCallBlockedException>( () => Tracker.AddEntry( this, "Dispose" ) );
         }
     }
 

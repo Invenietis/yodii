@@ -52,10 +52,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PluginWrapper.cs" />
+    <Compile Include="PluginAndServiceWrapper\PluginWrapper.cs" />
+    <Compile Include="PluginAndServiceWrapper\WrapperExtension.cs" />
+    <Compile Include="ServiceSpecializationContext.cs" />
     <Compile Include="ServiceSpecialization\ITestRootSubBSubService.cs" />
     <Compile Include="ServiceSpecialization\ITestRootSubBService.cs" />
-    <Compile Include="ServiceWrapper.cs" />
+    <Compile Include="PluginAndServiceWrapper\ServiceWrapper.cs" />
     <Compile Include="TrackedPluginBase.cs" />
     <Compile Include="TrackerPluginAndService.cs" />
     <Compile Include="TrackMethodCalls\TrackMethodCallsPlugin.cs" />
@@ -69,8 +71,9 @@
     <Compile Include="Extensions\DynamicTestExtensions.cs" />
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
-    <Compile Include="Extensions\TestHelper.cs" />
+    <Compile Include="TestHelper.cs" />
     <Compile Include="CtorParameterTests\ParameterTestPlugin.cs" />
+    <Compile Include="SpecializationTests.cs" />
     <Compile Include="YodiiHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -45,23 +45,23 @@ namespace Yodii.Host
         /// </summary>
         internal ServiceProxyBase Service { get; private set; }
 
-        internal bool IsCurrentServiceImplementation
-        {
-            get { return Service != null && Service.Implementation == this; }
-        }
-
-        public bool IsLoaded { get { return _instance != null; } }
-
         public Exception LoadError 
         { 
             get 
             {
-                Debug.Assert( _instance != null || Status == PluginStatus.Disabled, "_instance == null ==> Status == Disabled" );
+                Debug.Assert( (_instance == null) == (Status == PluginStatus.Null), "_instance == null <==> Status == Null" );
                 return _loadError; 
             } 
         }
 
-        public object RealPluginObject { get { return RealPlugin; } }
+        public IYodiiPlugin RealPluginObject
+        {
+            get
+            {
+                Debug.Assert( (_instance == null) == (Status == PluginStatus.Null), "_instance == null <==> Status == Null" );
+                return _instance;
+            }
+        }
 
         internal MethodInfo GetImplMethodInfoPreStop() { return GetImplMethodInfo( typeof( IYodiiPlugin ), "PreStop" ); }
 
@@ -75,47 +75,40 @@ namespace Yodii.Host
 
         MethodInfo GetImplMethodInfo( Type interfaceType, string methodName ) 
         {
-            Debug.Assert( RealPlugin != null );
-            MethodInfo m = RealPlugin.GetType().GetMethod( interfaceType.FullName + '.' + methodName );
-            if( m == null ) m = RealPlugin.GetType().GetMethod( methodName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public );
+            Debug.Assert( RealPluginObject != null );
+            MethodInfo m = RealPluginObject.GetType().GetMethod( interfaceType.FullName + '.' + methodName );
+            if( m == null ) m = RealPluginObject.GetType().GetMethod( methodName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public );
             return m;
         }
 
-        internal IYodiiPlugin RealPlugin 
-        { 
-            get 
-            { 
-                Debug.Assert( _instance != null || Status == PluginStatus.Disabled, "_instance == null ==> Status == Disabled" ); 
-                return _instance; 
-            } 
-        }
-
         /// <summary>
-        /// Supports <see cref="IDisposable"/> implementation and sets Status to Disabled.
+        /// Supports <see cref="IDisposable"/> implementation and sets Status to Null.
         /// If the real plugin does not implement IDisposable, nothing is done and 
-        /// the current reference instance is kept (it will be reused).
+        /// the current reference instance is kept (it will be reused and the Status stays to Stopped).
         /// If IDisposable is implemented, a call to Dispose may throw an exception (it is routed to the ServiceHost.LogMethodError), but the _instance 
         /// reference is set to null: a new object will always have to be created if the plugin needs to be started again.
         /// </summary>
         internal void Disable( ServiceHost serviceHost )
         {
             Debug.Assert( Status == PluginStatus.Stopped, "Status has been set to Stopped." );
-            Status = PluginStatus.Disabled;
+            IDisposable di = _instance as IDisposable;
             try
             {
-                if( _instance != null )
-                {
-                    IDisposable di = _instance as IDisposable;
-                    if( di != null )
-                    {
-                        _instance = null;
-                        di.Dispose();
-                    }
-                }
+                if( di != null ) di.Dispose();
             }
             catch( Exception ex )
             {
                 serviceHost.LogMethodError( GetImplMethodInfoDispose(), ex );
+            }
+            finally
+            {
+                // Clear _instance after Dispose: if an exception is raised,
+                // GetImplMethodInfoDispose() may be called by the logger.
+                if( di != null )
+                {
+                    Status = PluginStatus.Null;
+                    _instance = null;
+                }
             }
         }
 

@@ -7,6 +7,7 @@ using Yodii.Model;
 
 namespace Yodii.Host
 {
+    [DebuggerDisplay( "Implementation={Implementation}" )]
     class StStartContext : StContext, IPreStartContext, IStartContext
     {
         ServiceManager.Impact _swappedImpact;
@@ -42,7 +43,7 @@ namespace Yodii.Host
             get { return _swappedImpact != null ? _swappedImpact.Implementation : null; } 
         }
 
-        IYodiiPlugin IPreStartContext.PreviousPlugin { get { return PreviousImpl != null ? PreviousImpl.Plugin.RealPlugin : null; } }
+        IYodiiPlugin IPreStartContext.PreviousPlugin { get { return PreviousImpl != null ? PreviousImpl.Plugin.RealPluginObject : null; } }
 
         bool IPreStartContext.HotSwapping
         {
@@ -65,6 +66,10 @@ namespace Yodii.Host
             get { return Status == StStatus.StartingHotSwap; }
         }
 
+        public override string ToString()
+        {
+            return String.Format( "Start: {0}, Previous={1}", Plugin.PluginInfo.PluginFullName, PreviousImpl != null ? PreviousImpl.Plugin.PluginInfo.PluginFullName : "null" );
+        }
     }
 
 }

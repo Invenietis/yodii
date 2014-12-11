@@ -27,5 +27,10 @@ namespace Yodii.Host
         {
             get { return Status == StStatus.StoppingHotSwap; }
         }
+
+        public override string ToString()
+        {
+            return String.Format( "Stop: {0}, MustDisable={1}, IsDisabledOnly={2}", Plugin.PluginInfo.PluginFullName, MustDisable, IsDisabledOnly );
+        }
     }
 }

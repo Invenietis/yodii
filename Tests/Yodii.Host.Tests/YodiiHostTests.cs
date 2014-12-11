@@ -21,13 +21,9 @@ namespace Yodii.Host.Tests
         [Test]
         public void start_is_canceled_on_unresolved_pluginCtor_parameters()
         {
-            StandardDiscoverer discoverer = new StandardDiscoverer();
-            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
-            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-
             PluginHost host = new PluginHost();
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( info );
+            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
             IYodiiEngineResult result = engine.Start();
             Assert.That( result.Success );
 
@@ -37,8 +33,8 @@ namespace Yodii.Host.Tests
             var pluginProxy = host.FindLoadedPlugin( "Yodii.Host.Tests.ParameterTestPlugin" );
             Assert.That( pluginLive, Is.Not.Null );
             Assert.That( trackerLive.Capability.CanStart );
-            Assert.That( trackerProxy.Status == PluginStatus.Disabled );
-            Assert.That( pluginProxy.Status == PluginStatus.Disabled );
+            Assert.That( trackerProxy.Status == PluginStatus.Null );
+            Assert.That( pluginProxy.Status == PluginStatus.Null );
 
             // Try to start when MyCustomClass cannot be resolved
             result = pluginLive.Start();
@@ -48,8 +44,8 @@ namespace Yodii.Host.Tests
             Assert.That( pluginLive.CurrentError.IsLoadError );
             Assert.That( pluginLive.CurrentError.Error, Is.InstanceOf( typeof( CKException ) ) );
             Assert.That( !trackerLive.IsRunning );
-            Assert.That( trackerProxy.Status == PluginStatus.Disabled );
-            Assert.That( pluginProxy.Status == PluginStatus.Disabled );
+            Assert.That( trackerProxy.Status == PluginStatus.Null );
+            Assert.That( pluginProxy.Status == PluginStatus.Null );
 
             // Set a PluginCreator able to resolve MyCustomClass
             host.PluginCreator = CustomPluginCreator;
@@ -70,17 +66,13 @@ namespace Yodii.Host.Tests
         [Test]
         public void simple_start_stop_of_a_plugin()
         {
-            StandardDiscoverer discoverer = new StandardDiscoverer();
-            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
-            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-
             PluginHost host = new PluginHost();
             IService<ITrackMethodCallsPluginService> serviceS = host.ServiceHost.EnsureProxyForDynamicService<ITrackMethodCallsPluginService>();
             ITrackMethodCallsPluginService service = serviceS.Service;
             Assert.Throws<ServiceNotAvailableException>( (delegate() { int i = service.CalledMethods.Count; }), "Since the service has not implementation yet: ServiceNotAvailableException." );
 
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( info );
+            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 
             var result = engine.Start();
             Assert.That( result.Success );
@@ -109,8 +101,10 @@ namespace Yodii.Host.Tests
             Assert.That( result.Success );
             Assert.That( service.CalledMethods.Count == 7, "The service is started, we can call its methods." );
 
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            discoverer.ReadAssembly( Assembly.GetExecutingAssembly().Location );
             IDiscoveredInfo info2 = discoverer.GetDiscoveredInfo();
-            engine.SetDiscoveredInfo( info );
+            engine.SetDiscoveredInfo( info2 );
             // Test that the pluginproxy hasn't changed after a getDiscoveredInfo
             IPluginProxy proxy2 = host.FindLoadedPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
             var pLive2 = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
@@ -124,13 +118,9 @@ namespace Yodii.Host.Tests
         [Test]
         public void when_PreSart_or_PreStop_fails()
         {
-            StandardDiscoverer discoverer = new StandardDiscoverer();
-            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
-            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-
             PluginHost host = new PluginHost();
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( info );
+            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
             engine.Configuration.Layers.Create().Items.Add( "Yodii.Host.Tests.ITrackMethodCallsPluginService", ConfigurationStatus.Running );
 
             var result = engine.Start();
@@ -144,19 +134,21 @@ namespace Yodii.Host.Tests
             IPluginProxy proxy = host.FindLoadedPlugin( "Yodii.Host.Tests.FailureTransitionPlugin" );
 
             Assert.That( !pLive.IsRunning && pLive.Capability.CanStart );
-            Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Disabled ) );
+            Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Null ) );
             Assert.That( !anotherServiceLive.IsRunning && anotherServiceLive.Capability.CanStart );
             Assert.That( !trackerServiceLive.IsRunning && trackerServiceLive.Capability.CanStart );
 
             FailureTransitionPlugin.CancelPreStart = true;
+            FailureTransitionPlugin.CancelPreStop = false;
+
             Assert.That( pLive.IsRunning, Is.False );
             result = pLive.Start();
             Assert.That( result.Success, Is.False );
             Assert.That( result.HostFailureResult.ErrorPlugins[0].CancellationInfo.ErrorMessage, Is.EqualTo( "Canceled!" ) );
             engine.CheckStopped( "Yodii.Host.Tests.IFailureTransitionPluginService" );
-            
+
             Assert.That( pShouldRun.IsRunning, Is.True, "It is still running by configuration." );
-            Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Disabled ), "Remains Disabled." );
+            Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Stopped ), "It has been suceesfully loaded and since it does not support IDisposable, the instance is kept." );
             Assert.That( !anotherServiceLive.IsRunning && anotherServiceLive.Capability.CanStart, "IAnotherService has not started." );
             Assert.That( !trackerServiceLive.IsRunning && trackerServiceLive.Capability.CanStart, "ITrackerService has not started." );
 
@@ -181,7 +173,7 @@ namespace Yodii.Host.Tests
             Assert.That( pShouldRun.IsRunning, Is.True, "It is still running by configuration." );
             Assert.That( anotherServiceLive.IsRunning, "IAnotherService is now running again." );
             Assert.That( trackerServiceLive.IsRunning, "ITrackerService is now running again." );
-            
+
             FailureTransitionPlugin.CancelPreStop = true;
             result = pLive.Stop();
             Assert.That( result.Success, Is.False );
@@ -194,43 +186,46 @@ namespace Yodii.Host.Tests
             engine.Stop();
         }
 
-        /// <summary>
-        /// Making sure the _impl of the generalized service updates itself.
-        /// </summary>
         [Test]
-        public void TOBEREVIEWED_ServiceGeneralizationChoucrouteTest5()
+        public void when_PreSart_or_PreStop_fails_with_a_disposable_plugin()
         {
-            StandardDiscoverer discoverer = new StandardDiscoverer();
-            IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.Host.Tests.dll" ) );
-            IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
-
             PluginHost host = new PluginHost();
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( info );
+            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 
+            var p = new PluginWrapper<FailureTransitionPluginDisposable>( engine, host );
 
-            var serviceRoot = new ServiceWrapper<ITestRootService>( engine, host );
-            var serviceSubA = new ServiceWrapper<ITestRootSubAService>( engine, host );
-            var serviceSubB = new ServiceWrapper<ITestRootSubBService>( engine, host );
-            var serviceSubBSub = new ServiceWrapper<ITestRootSubBSubService>( engine, host );
-            var allServices = new ServiceWrapper[] { serviceRoot, serviceSubA, serviceSubB, serviceSubBSub, serviceSubBSub };
+            engine.Start().CheckSuccess();
+            p.CheckState( PluginStatus.Null );
 
-            var pluginRoot = new PluginWrapper<TestRootRootPlugin>( engine, host );
-            var pluginRoot_A = new PluginWrapper<TestRootPluginAlternate>( engine, host );
-            var pluginSubA = new PluginWrapper<TestRootSubAPlugin>( engine, host );
-            var pluginSubA_A = new PluginWrapper<TestRootSubAPluginAlternate>( engine, host );
-            var pluginSubB = new PluginWrapper<TestRootSubBPlugin>( engine, host );
-            var pluginSubB_A = new PluginWrapper<TestRootSubBSubPluginAlernate>( engine, host );
-            var pluginSubBSub = new PluginWrapper<TestRootSubBSubPlugin>( engine, host );
-            var pluginSubBSub_A = new PluginWrapper<TestRootSubBSubPluginAlernate>( engine, host );
-            var allPlugins = new PluginWrapper[] { pluginRoot, pluginRoot_A, pluginSubA, pluginSubA_A, pluginSubB, pluginSubB_A, pluginSubBSub, pluginSubBSub_A };
+            FailureTransitionPlugin.CancelPreStart = true;
+            FailureTransitionPlugin.CancelPreStop = false;
 
-            var result = engine.Start();
-            Assert.That( allServices.Select( p => p.CheckState( ServiceStatus.Stopped ) ).Any() );
-            Assert.That( allPlugins.Select( p => p.CheckState( PluginStatus.Disabled ) ).Any() );
+            p.Live.Start().CheckHostFailure();
+            p.CheckState( PluginStatus.Null );
+
+            FailureTransitionPlugin.CancelPreStart = false;
+            p.Live.Start().CheckSuccess();
+            p.CheckState( PluginStatus.Started );
+
+            FailureTransitionPlugin.CancelPreStop = true;
+            p.Live.Stop().CheckHostFailure();
+            p.CheckState( PluginStatus.Started );
+
+            engine.Configuration.Layers.Create().Items.Add( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckHostFailure();
+            p.CheckState( PluginStatus.Started );
+
+            FailureTransitionPlugin.CancelPreStop = false;
+            p.Live.Stop().CheckSuccess();
+            p.CheckState( PluginStatus.Stopped );
+            
+            p.Live.Start().CheckSuccess();
+            p.CheckState( PluginStatus.Started );
+
+            engine.Configuration.Layers.Create().Items.Add( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
+            p.CheckState( PluginStatus.Null );
 
         }
-
 
         static object ResolveUnknownType( Type t )
         {

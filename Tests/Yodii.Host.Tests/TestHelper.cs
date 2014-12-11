@@ -26,9 +26,12 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using CK.Core;
 using NUnit.Framework;
+using Yodii.Discoverer;
+using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
@@ -40,6 +43,8 @@ namespace Yodii.Host.Tests
 
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
+        static IDiscoveredInfo _cachedDiscoveredInfo;
+
 
         static TestHelper()
         {
@@ -47,6 +52,18 @@ namespace Yodii.Host.Tests
             _monitor.Output.BridgeTarget.HonorMonitorFilter = false;
             _console = new ActivityMonitorConsoleClient();
             _monitor.Output.RegisterClients( _console );
+        }
+
+        public static IDiscoveredInfo GetDiscoveredInfoInThisAssembly()
+        {
+            if( _cachedDiscoveredInfo == null )
+            {
+                StandardDiscoverer discoverer = new StandardDiscoverer();
+                discoverer.ReadAssembly( Assembly.GetExecutingAssembly().Location );
+                _cachedDiscoveredInfo = discoverer.GetDiscoveredInfo();
+                Assert.That( _cachedDiscoveredInfo.IsValid() );
+            }
+            return _cachedDiscoveredInfo;
         }
 
         public static IActivityMonitor ConsoleMonitor

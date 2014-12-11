@@ -147,7 +147,7 @@ namespace Yodii.Host
             {
                 PluginProxy p = EnsureProxy( k );
                 Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
-                if( p.Status != PluginStatus.Disabled )
+                if( p.Status != PluginStatus.Null )
                 {
                     var preStop = new StStopContext( p, sharedMemory, true, p.Status == PluginStatus.Stopped );
                     if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
@@ -174,7 +174,7 @@ namespace Yodii.Host
                 PluginProxy p = EnsureProxy( k );
                 if( p.Status != PluginStatus.Started )
                 {
-                    if( !p.IsLoaded )
+                    if( p.RealPluginObject == null )
                     {
                         if( !p.TryLoad( _serviceHost, PluginCreator ) )
                         {
@@ -186,9 +186,9 @@ namespace Yodii.Host
                             // It is useless to pre load next plugins as long as we can be sure that they will not run now. 
                             break;
                         }
-                        Debug.Assert( p.Status == PluginStatus.Disabled );
+                        Debug.Assert( p.Status == PluginStatus.Null );
                     }
-                    var preStart = new StStartContext( p, sharedMemory, p.Status == PluginStatus.Disabled );
+                    var preStart = new StStartContext( p, sharedMemory, p.Status == PluginStatus.Null );
                     p.Status = PluginStatus.Stopped;
                     if( k.Service != null ) serviceManager.AddToStart( k.Service, preStart );
                     toStart.Add( preStart );
@@ -213,7 +213,7 @@ namespace Yodii.Host
                     Debug.Assert( stopC.Plugin.Status == PluginStatus.Started );
                     try
                     {
-                        stopC.Plugin.RealPlugin.PreStop( stopC );
+                        stopC.Plugin.RealPluginObject.PreStop( stopC );
                     }
                     catch( Exception ex )
                     {
@@ -243,7 +243,7 @@ namespace Yodii.Host
                 Debug.Assert( startC.Plugin.Status == PluginStatus.Stopped );
                 try
                 {
-                    startC.Plugin.RealPlugin.PreStart( startC );
+                    startC.Plugin.RealPluginObject.PreStart( startC );
                 }
                 catch( Exception ex )
                 {
@@ -268,7 +268,7 @@ namespace Yodii.Host
                         c.Plugin.Status = PluginStatus.Stopped;
                         var rev = c.RollbackAction;
                         if( rev != null ) rev( cStop );
-                        else c.Plugin.RealPlugin.Stop( cStop );
+                        else c.Plugin.RealPluginObject.Stop( cStop );
                     }
                 }
                 _serviceHost.CallServiceBlocker = null;
@@ -294,7 +294,7 @@ namespace Yodii.Host
                         Debug.Assert( stopC.Plugin.Status == PluginStatus.Stopping );
                         callingPluginName = stopC.Plugin.PluginInfo.PluginFullName;
                         stopC.Plugin.Status = PluginStatus.Stopped;
-                        stopC.Plugin.RealPlugin.Stop( stopC );
+                        stopC.Plugin.RealPluginObject.Stop( stopC );
                     }
                 }
             }
@@ -311,17 +311,16 @@ namespace Yodii.Host
                 while( impact != null )
                 {
                     Debug.Assert( impact.Service.Status == ServiceStatus.Starting || impact.Service.Status == ServiceStatus.StartingSwapped );
-                    Debug.Assert( (!impact.Implementation.HotSwapped && impact.Implementation.Plugin == startC.Plugin) 
-                                  || (impact.Implementation.HotSwapped && impact.SwappedImplementation.Plugin == startC.Plugin) );
+                    Debug.Assert( impact.Implementation.Plugin == startC.Plugin || impact.SwappedImplementation.Plugin == startC.Plugin );
                     impact.Service.SetPluginImplementation( startC.Plugin );
                     impact = impact.ServiceGeneralization;
                 }
             }
-            // Now that all 
+            // Now that all services are bound, starts the plugin.
             foreach( var startC in toStart )
             {
                 startC.Plugin.Status = PluginStatus.Started;
-                startC.Plugin.RealPlugin.Start( startC );
+                startC.Plugin.RealPluginObject.Start( startC );
             }
 
             // Setting services status & sending events...
@@ -336,7 +335,10 @@ namespace Yodii.Host
                     var impact = disableC.ServiceImpact;
                     while( impact != null && !impact.Starting )
                     {
-                        impact.Service.SetPluginImplementation( null );
+                        if( impact.Service.Implementation == disableC.Plugin )
+                        {
+                            impact.Service.SetPluginImplementation( null );
+                        }
                         impact = impact.ServiceGeneralization;
                     }
                 }
@@ -362,7 +364,7 @@ namespace Yodii.Host
                     c.Plugin.Status = PluginStatus.Started;
                     var rev = c.RollbackAction;
                     if( rev != null ) rev( cStart );
-                    else c.Plugin.RealPlugin.Start( cStart );
+                    else c.Plugin.RealPluginObject.Start( cStart );
                 }
             }
         }
@@ -381,18 +383,11 @@ namespace Yodii.Host
                 {
                     if( impact.SwappedImplementation != null )
                     {
-                        if( !impact.Implementation.HotSwapped )
+                        Debug.Assert( impact.Implementation == stopC );
+                        if( !impact.Implementation.HotSwapped && isTransition )
                         {
-                            if( isTransition )
-                            {
-                                impact.Service.Status = ServiceStatus.StoppingSwapped;
-                                impact.Service.RaiseStatusChanged( postStartActions, impact.SwappedImplementation.Plugin );
-                            }
-                            else
-                            {
-                                impact.Service.Status = ServiceStatus.Stopped;
-                                impact.Service.RaiseStatusChanged( postStartActions );
-                            }
+                            impact.Service.Status = ServiceStatus.StoppingSwapped;
+                            impact.Service.RaiseStatusChanged( postStartActions, impact.SwappedImplementation.Plugin );
                         }
                     }
                     else
@@ -412,6 +407,7 @@ namespace Yodii.Host
                 {
                     if( impact.SwappedImplementation != null )
                     {
+                        Debug.Assert( impact.SwappedImplementation == startC );
                         if( !impact.Implementation.HotSwapped )
                         {
                             if( isTransition )

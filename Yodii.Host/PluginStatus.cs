@@ -12,9 +12,9 @@ namespace Yodii.Host
     public enum PluginStatus
     {
         /// <summary>
-        /// Plugin is disabled.
+        /// Plugin is not instanciated.
         /// </summary>
-        Disabled = 0,
+        Null = 0,
 
         /// <summary>
         /// Plugin is stopped.

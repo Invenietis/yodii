@@ -49,11 +49,17 @@ namespace Yodii.Host.Tests
 
         public IServiceUntyped Service { get; private set; }
 
-        public ServiceWrapper CheckState( ServiceStatus s )
+        public bool CheckState( ServiceStatus s )
         {
             Assert.That( Service.Status, Is.EqualTo( s ), "Service '{0}' status is {1}.", _serviceName, s );
             Assert.That( Live.IsRunning, Is.EqualTo( s.IsStarted() ), "Service '{0}' live is {1}.", _serviceName, Live.IsRunning ? "running" : "not running" );
-            return this;
+            return true;
+        }
+
+        public void CheckEventsAndClear( params ServiceStatus[] statuses )
+        {
+            Events.CheckEvents( statuses );
+            ClearEvents();
         }
     }
 
