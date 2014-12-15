@@ -56,12 +56,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CK.Reflection.4.0.1\lib\net40\CK.Reflection.dll</HintPath>
     </Reference>
-    <Reference Include="Common.Logging">
-      <HintPath>..\packages\Common.Logging.2.2.0\lib\net40\Common.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="Common.Logging.Core">
-      <HintPath>..\packages\Common.Logging.Core.2.2.0\lib\net40\Common.Logging.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime">
@@ -72,6 +66,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CatchExceptionGeneration.cs" />
     <Compile Include="IPluginProxy.cs" />
     <Compile Include="IServiceHost.cs" />
     <Compile Include="IServiceHostConfiguration.cs" />
@@ -95,7 +90,7 @@
     <Compile Include="Plugin\CancellationInfo.cs" />
     <Compile Include="Plugin\PluginProxyBase.cs" />
     <Compile Include="Plugin\PluginProxy.cs" />
-    <Compile Include="PluginHost.cs" />
+    <Compile Include="YodiiHost.cs" />
     <Compile Include="PluginStatus.cs" />
     <Compile Include="Plugin\StContext.cs" />
     <Compile Include="Plugin\StStartContext.cs" />
@@ -129,7 +124,7 @@
     <Compile Include="Service\ProxyFactory.cs" />
     <Compile Include="Service\ServiceHost.cs" />
     <Compile Include="Service\SimpleServiceHostConfiguration.cs" />
-    <Compile Include="UseTheProxyBase.cs" />
+    <Compile Include="Service\UseTheProxyBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="R.resx">

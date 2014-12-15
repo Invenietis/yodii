@@ -11,11 +11,11 @@ namespace Yodii.Host.Tests
     abstract class ServiceWrapper
     {
         readonly IYodiiEngine _engine;
-        readonly PluginHost _host;
+        readonly YodiiHost _host;
         readonly string _serviceName;
         readonly List<ServiceStatus> _events;
 
-        protected ServiceWrapper( Type t, IYodiiEngine engine, PluginHost host )
+        protected ServiceWrapper( Type t, IYodiiEngine engine, YodiiHost host )
         {
             _engine = engine;
             _host = host;
@@ -65,7 +65,7 @@ namespace Yodii.Host.Tests
 
     class ServiceWrapper<T> : ServiceWrapper where T : IYodiiService
     {
-        public ServiceWrapper( IYodiiEngine engine, PluginHost host )
+        public ServiceWrapper( IYodiiEngine engine, YodiiHost host )
             : base( typeof(T), engine, host )
         {
         }

@@ -35,15 +35,6 @@ namespace Yodii.Host
     public abstract class LogEventArgs : EventArgs, ILogEntry
     {
         int _lsn;
-        DateTime _creationTimeUtc;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="LogEventArgs"/>.
-        /// </summary>
-        protected LogEventArgs()
-        {
-            _creationTimeUtc = DateTime.UtcNow;
-        }
 
         /// <summary>
         /// Describes the type of this entry.
@@ -58,14 +49,6 @@ namespace Yodii.Host
         {
             get { return _lsn; }
             protected set { _lsn = value; }
-        }
-
-        /// <summary>
-        /// Gets the creation time.
-        /// </summary>
-        public DateTime CreationTimeUtc
-        {
-            get { return _creationTimeUtc; }
         }
 
         /// <summary>

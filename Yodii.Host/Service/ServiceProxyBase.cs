@@ -108,7 +108,7 @@ namespace Yodii.Host
 
             public override bool IsSwapping
             {
-                get { return (_service._status & (ServiceStatus.IsSwap|ServiceStatus.IsTransition)) == (ServiceStatus.IsSwap|ServiceStatus.IsTransition); }
+                get { return _service._status.IsSwapping(); }
             }
 
             public override void BindToSwappedPlugin()

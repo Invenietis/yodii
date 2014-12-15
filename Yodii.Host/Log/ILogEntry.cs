@@ -36,11 +36,6 @@ namespace Yodii.Host
         LogEntryType EntryType { get; }
         
         /// <summary>
-        /// Gets the creation time.
-        /// </summary>
-        DateTime CreationTimeUtc { get; }
-
-        /// <summary>
         /// Log Serial Number.
         /// </summary>
         int LSN { get; }

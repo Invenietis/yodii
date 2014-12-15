@@ -39,7 +39,7 @@ namespace Yodii.Host.Tests
         /// </summary>
         /// <param name="host">This host.</param>
         /// <returns>The current list.</returns>
-        static public IReadOnlyList<TrackedEntry> GetTrackedEntries( this PluginHost host, bool clearEnries = true )
+        static public IReadOnlyList<TrackedEntry> GetTrackedEntries( this YodiiHost host, bool clearEnries = true )
         {
             var p = (TrackerPlugin)host.FindLoadedPlugin( "Yodii.Host.Tests.TrackerPlugin" ).RealPluginObject;
             if( p == null ) return null;

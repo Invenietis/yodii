@@ -19,7 +19,6 @@ namespace Yodii.Engine
     {
         internal BuggyYodiiEngineHostMock()
         {
-
         }
 
         public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )

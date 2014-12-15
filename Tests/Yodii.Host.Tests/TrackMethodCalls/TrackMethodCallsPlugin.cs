@@ -29,7 +29,6 @@ namespace Yodii.Host.Tests
 
         void _serviceOpt_ServiceStatusChanged( object sender, ServiceStatusChangedEventArgs e )
         {
-            if( _serviceOpt.Status == ServiceStatus.IsStart )
             _calledMethods.Add( "_serviceOpt_ServiceStatusChanged - IAnotherService.Status = " + _serviceOpt.Status );
         }
 

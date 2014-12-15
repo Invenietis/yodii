@@ -37,11 +37,6 @@ namespace Yodii.Host
         MethodInfo Method { get; }
 
         /// <summary>
-        /// Gets the caller of the method if it has been captured.
-        /// </summary>
-        MethodInfo Caller { get; }
-
-        /// <summary>
         /// Gets the returned value if it has been captured.
         /// </summary>
         object ReturnValue { get; }

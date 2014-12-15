@@ -22,44 +22,49 @@
 #endregion
 
 using CK.Core;
-using Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Yodii.Model;
 using System.Reflection;
+using System.Text;
 
 namespace Yodii.Host
 {
-    public class PluginHost : IYodiiEngineHost
+    public class YodiiHost : IYodiiEngineHost
     {
-        static ILog _log = LogManager.GetLogger( typeof( PluginHost ) );
+        readonly IActivityMonitor _monitor;
         readonly ServiceHost _serviceHost;
         readonly Dictionary<string, PluginProxy> _plugins;
         Func<IPluginInfo,object[],IYodiiPlugin> _pluginCreator;
 
-        public PluginHost()
-            : this( CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
+        public YodiiHost()
+            : this( null, CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
         {
         }
 
-        internal PluginHost( CatchExceptionGeneration catchMode )
+        public YodiiHost( IActivityMonitor monitor, CatchExceptionGeneration exceptionGeneration = CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
         {
+            if( monitor == null ) monitor = new ActivityMonitor( "Yodii.Host.YodiiHost");
+            _monitor = monitor;
             _plugins = new Dictionary<string, PluginProxy>();
-            _serviceHost = new ServiceHost( catchMode );
+            _serviceHost = new ServiceHost( exceptionGeneration );
             _pluginCreator = DefaultPluginCreator;
         }
 
-        static IYodiiPlugin DefaultPluginCreator( IPluginInfo pluginInfo, object[] ctorParameters )
+        IYodiiPlugin DefaultPluginCreator( IPluginInfo pluginInfo, object[] ctorParameters )
         {
-            var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
-            var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
-            if( ctorParameters.Length != ctor.GetParameters().Length || ctorParameters.Any( p => p == null ) )
+            using( _monitor.OpenTrace().Send( "Using DefaultCreator for {0}.", pluginInfo.PluginFullName ) )
             {
-                throw new CKException( R.DefaultPluginCreatorUnresolvedParams );
+                var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
+                var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
+                if( ctorParameters.Length != ctor.GetParameters().Length || ctorParameters.Any( p => p == null ) )
+                {
+                    throw new CKException( R.DefaultPluginCreatorUnresolvedParams );
+                }
+                return (IYodiiPlugin)ctor.Invoke( ctorParameters );
             }
-            return (IYodiiPlugin)ctor.Invoke( ctorParameters );
         }
 
         /// <summary>
@@ -122,6 +127,28 @@ namespace Yodii.Host
             if( runningPlugins == null ) throw new ArgumentNullException( "runningPlugins" );
             if( PluginCreator == null ) throw new InvalidOperationException( R.PluginCreatorIsNull );
 
+            using( _monitor.OpenInfo().Send( "Applying plan..." ) )
+            {
+                var s = _monitor.Info();
+                if( !s.IsRejected )
+                {
+                    s.Send( new StringBuilder()
+                                .Append( "DisabledPlugins: " )
+                                .Append( disabledPlugins.Select( p => p.PluginFullName ) )
+                                .AppendLine()
+                                .Append( "StoppedPlugins: " )
+                                .Append( stoppedPlugins.Select( p => p.PluginFullName ) )
+                                .AppendLine()
+                                .Append( "RunningPlugins: " )
+                                .Append( runningPlugins.Select( p => p.PluginFullName ) )
+                                .ToString() );
+                }
+                return DoApply( disabledPlugins, stoppedPlugins, runningPlugins );
+            }
+        }
+
+        IYodiiEngineHostApplyResult DoApply( IEnumerable<IPluginInfo> disabledPlugins, IEnumerable<IPluginInfo> stoppedPlugins, IEnumerable<IPluginInfo> runningPlugins )
+        {
             HashSet<IPluginInfo> uniqueCheck = new HashSet<IPluginInfo>();
             foreach( var input in disabledPlugins.Concat( stoppedPlugins ).Concat( runningPlugins ) )
             {
@@ -143,87 +170,118 @@ namespace Yodii.Host
             // To be able to initialize StContext objects, we need to instanciate the shared memory now.
             Dictionary<object, object> sharedMemory = new Dictionary<object, object>();
 
-            foreach( IPluginInfo k in disabledPlugins )
+            using( _monitor.OpenTrace().Send( "Computing plugins to Stop from disabled ones: " ) )
             {
-                PluginProxy p = EnsureProxy( k );
-                Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
-                if( p.Status != PluginStatus.Null )
+                #region Disabled Plugins
+                foreach( IPluginInfo k in disabledPlugins )
                 {
-                    var preStop = new StStopContext( p, sharedMemory, true, p.Status == PluginStatus.Stopped );
-                    if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
-                    toStop.Add( preStop );
+                    PluginProxy p = EnsureProxy( k );
+                    Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
+                    if( p.Status != PluginStatus.Null )
+                    {
+                        var preStop = new StStopContext( p, sharedMemory, true, p.Status == PluginStatus.Stopped );
+                        if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
+                        toStop.Add( preStop );
+                    }
                 }
+                _monitor.CloseGroup( toStop.Select( c => c.Plugin.PluginInfo.PluginFullName ).Concatenate() );
+                #endregion
             }
-            foreach( IPluginInfo k in stoppedPlugins )
+            using( _monitor.OpenTrace().Send( "Adding plugins to Stop from stopping plugins: " ) )
             {
-                PluginProxy p = EnsureProxy( k );
-                Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
-                if( p.Status == PluginStatus.Started )
+                #region Stopped Plugins
+                foreach( IPluginInfo k in stoppedPlugins )
                 {
-                    var preStop = new StStopContext( p, sharedMemory, false, false );
-                    if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
-                    toStop.Add( preStop );
+                    PluginProxy p = EnsureProxy( k );
+                    Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
+                    if( p.Status == PluginStatus.Started )
+                    {
+                        var preStop = new StStopContext( p, sharedMemory, false, false );
+                        if( k.Service != null ) serviceManager.AddToStop( k.Service, preStop );
+                        toStop.Add( preStop );
+                    }
+                    _monitor.CloseGroup( toStop.Select( c => c.Plugin.PluginInfo.PluginFullName ).Concatenate() );
                 }
+                #endregion
             }
 
             // Now, we attempt to activate the plugins that must run: if an error occurs,
             // we leave and return the error since we did not change anything.
-            _serviceHost.CallServiceBlocker = calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromCtor );
-            foreach( IPluginInfo k in runningPlugins )
+            using( _monitor.OpenTrace().Send( "Registering running plugins: " ) )
             {
-                PluginProxy p = EnsureProxy( k );
-                if( p.Status != PluginStatus.Started )
+                #region Running Plugins. Leave on first Load error.
+                _serviceHost.CallServiceBlocker = calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromCtor );
+                foreach( IPluginInfo k in runningPlugins )
                 {
-                    if( p.RealPluginObject == null )
+                    PluginProxy p = EnsureProxy( k );
+                    if( p.Status != PluginStatus.Started )
                     {
-                        if( !p.TryLoad( _serviceHost, PluginCreator ) )
+                        if( p.RealPluginObject == null )
                         {
-                            Debug.Assert( p.LoadError != null, "Error is catched by the PluginHost itself." );
-                            _serviceHost.LogMethodError( PluginCreator.Method, p.LoadError );
-                            // Unable to load the plugin: leave now.
-                            errors.Add( new CancellationInfo( p.PluginInfo, true ) { Error = p.LoadError, ErrorMessage = R.ErrorWhileCreatingPluginInstance } );
-                            // Breaks the loop: stop on the first failure.
-                            // It is useless to pre load next plugins as long as we can be sure that they will not run now. 
-                            break;
+                            using( _monitor.OpenTrace().Send( "Instanciating '{0}'.", k.PluginFullName ) )
+                            {
+                                if( !p.TryLoad( _serviceHost, PluginCreator ) )
+                                {
+                                    Debug.Assert( p.LoadError != null, "Error is catched by the PluginHost itself." );
+                                    _monitor.Error().Send( p.LoadError, "Instanciation failed" );
+                                    _serviceHost.LogMethodError( PluginCreator.Method, p.LoadError );
+                                    // Unable to load the plugin: leave now.
+                                    errors.Add( new CancellationInfo( p.PluginInfo, true ) { Error = p.LoadError, ErrorMessage = R.ErrorWhileCreatingPluginInstance } );
+                                    // Breaks the loop: stop on the first failure.
+                                    // It is useless to pre load next plugins as long as we can be sure that they will not run now. 
+                                    break;
+                                }
+                                Debug.Assert( p.Status == PluginStatus.Null );
+                            }
                         }
-                        Debug.Assert( p.Status == PluginStatus.Null );
+                        var preStart = new StStartContext( p, sharedMemory, p.Status == PluginStatus.Null );
+                        p.Status = PluginStatus.Stopped;
+                        if( k.Service != null ) serviceManager.AddToStart( k.Service, preStart );
+                        toStart.Add( preStart );
                     }
-                    var preStart = new StStartContext( p, sharedMemory, p.Status == PluginStatus.Null );
-                    p.Status = PluginStatus.Stopped;
-                    if( k.Service != null ) serviceManager.AddToStart( k.Service, preStart );
-                    toStart.Add( preStart );
                 }
-            }
-            _serviceHost.CallServiceBlocker = null;
-            if( errors.Count > 0 )
-            {
-                // Restores Disabled states.
-                CancelSuccessfulStartForDisabled( toStart );
-                return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+                _serviceHost.CallServiceBlocker = null;
+                if( errors.Count > 0 )
+                {
+                    // Restores Disabled states.
+                    CancelSuccessfulStartForDisabled( toStart );
+                    return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+                }
+                _monitor.CloseGroup( toStart.Select( c => c.Plugin.PluginInfo.PluginFullName ).Concatenate() );
+                #endregion
             }
 
             // The toStart list of StStartContext is ready (and plugins inside are loaded without error).
             // Now starts the actual PreStop/PreStart/Stop/Start/Disable phase:
 
-            // Calling PreStop for all "toStop" plugins: calls to Services are allowed.
-            foreach( var stopC in toStop )
+            using( _monitor.OpenTrace().Send( "Calling PreStop." ) )
             {
-                if( !stopC.IsDisabledOnly )
+                #region Calling PreStop for all "toStop" plugins: calls to Services are allowed.
+                foreach( var stopC in toStop )
                 {
-                    Debug.Assert( stopC.Plugin.Status == PluginStatus.Started );
-                    try
+                    if( !stopC.IsDisabledOnly )
                     {
-                        stopC.Plugin.RealPluginObject.PreStop( stopC );
-                    }
-                    catch( Exception ex )
-                    {
-                        stopC.Cancel( ex.Message, ex );
-                    }
-                    if( stopC.HandleSuccess( errors, false ) )
-                    {
-                        stopC.Plugin.Status = PluginStatus.Stopping;
+                        using( _monitor.OpenTrace().Send( "Plugin: {0}.", stopC.Plugin.PluginInfo.PluginFullName ) )
+                        {
+                            Debug.Assert( stopC.Plugin.Status == PluginStatus.Started );
+                            try
+                            {
+                                stopC.Plugin.RealPluginObject.PreStop( stopC );
+                            }
+                            catch( Exception ex )
+                            {
+                                _monitor.Error().Send( ex );
+                                stopC.Cancel( ex.Message, ex );
+                                _serviceHost.LogMethodError( stopC.Plugin.GetImplMethodInfoPreStop(), ex );
+                            }
+                            if( stopC.HandleSuccess( errors, false ) )
+                            {
+                                stopC.Plugin.Status = PluginStatus.Stopping;
+                            }
+                        }
                     }
                 }
+                #endregion
             }
             // If at least one failed, cancel the start for the successful ones
             // and stops here.
@@ -237,24 +295,29 @@ namespace Yodii.Host
 
             // PreStop has been successfully called: we must now call the PreStart.
             // Calls to Services are not allowed during PreStart.
-            _serviceHost.CallServiceBlocker = calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromPreStart );
-            foreach( var startC in toStart )
+            using( _monitor.OpenTrace().Send( "Calling PreStart." ) )
             {
-                Debug.Assert( startC.Plugin.Status == PluginStatus.Stopped );
-                try
+                #region Calling PreStart.
+                _serviceHost.CallServiceBlocker = calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromPreStart );
+                foreach( var startC in toStart )
                 {
-                    startC.Plugin.RealPluginObject.PreStart( startC );
+                    Debug.Assert( startC.Plugin.Status == PluginStatus.Stopped );
+                    try
+                    {
+                        startC.Plugin.RealPluginObject.PreStart( startC );
+                    }
+                    catch( Exception ex )
+                    {
+                        startC.Cancel( ex.Message, ex );
+                    }
+                    if( startC.HandleSuccess( errors, true ) )
+                    {
+                        startC.Plugin.Status = PluginStatus.Starting;
+                    }
                 }
-                catch( Exception ex )
-                {
-                    startC.Cancel( ex.Message, ex );
-                }
-                if( startC.HandleSuccess( errors, true ) )
-                {
-                    startC.Plugin.Status = PluginStatus.Starting;
-                }
+                _serviceHost.CallServiceBlocker = null;
+                #endregion
             }
-            _serviceHost.CallServiceBlocker = null;
             // If a PreStart failed, we cancel everything and stop.
             if( errors.Count > 0 )
             {

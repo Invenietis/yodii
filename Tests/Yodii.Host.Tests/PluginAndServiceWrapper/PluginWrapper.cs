@@ -10,11 +10,11 @@ namespace Yodii.Host.Tests
     class PluginWrapper
     {
         readonly IYodiiEngine _engine;
-        readonly PluginHost _host;
+        readonly YodiiHost _host;
         readonly string _pluginFullName;
         readonly ServiceWrapper _service;
 
-        public PluginWrapper( Type t, IYodiiEngine engine, PluginHost host, ServiceWrapper service = null )
+        public PluginWrapper( Type t, IYodiiEngine engine, YodiiHost host, ServiceWrapper service = null )
         {
             _engine = engine;
             _host = host;
@@ -62,7 +62,7 @@ namespace Yodii.Host.Tests
 
     class PluginWrapper<T> : PluginWrapper where T : IYodiiPlugin
     {
-        public PluginWrapper( IYodiiEngine engine, PluginHost host, ServiceWrapper service = null )
+        public PluginWrapper( IYodiiEngine engine, YodiiHost host, ServiceWrapper service = null )
             : base( typeof(T), engine, host, service )
         {
         }

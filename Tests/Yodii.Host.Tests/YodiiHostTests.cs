@@ -21,7 +21,7 @@ namespace Yodii.Host.Tests
         [Test]
         public void start_is_canceled_on_unresolved_pluginCtor_parameters()
         {
-            PluginHost host = new PluginHost();
+            YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
             IYodiiEngineResult result = engine.Start();
@@ -66,7 +66,7 @@ namespace Yodii.Host.Tests
         [Test]
         public void simple_start_stop_of_a_plugin()
         {
-            PluginHost host = new PluginHost();
+            YodiiHost host = new YodiiHost();
             IService<ITrackMethodCallsPluginService> serviceS = host.ServiceHost.EnsureProxyForDynamicService<ITrackMethodCallsPluginService>();
             ITrackMethodCallsPluginService service = serviceS.Service;
             Assert.Throws<ServiceNotAvailableException>( (delegate() { int i = service.CalledMethods.Count; }), "Since the service has not implementation yet: ServiceNotAvailableException." );
@@ -118,7 +118,7 @@ namespace Yodii.Host.Tests
         [Test]
         public void when_PreSart_or_PreStop_fails()
         {
-            PluginHost host = new PluginHost();
+            YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
             engine.Configuration.Layers.Create().Items.Add( "Yodii.Host.Tests.ITrackMethodCallsPluginService", ConfigurationStatus.Running );
@@ -189,7 +189,7 @@ namespace Yodii.Host.Tests
         [Test]
         public void when_PreSart_or_PreStop_fails_with_a_disposable_plugin()
         {
-            PluginHost host = new PluginHost();
+            YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 

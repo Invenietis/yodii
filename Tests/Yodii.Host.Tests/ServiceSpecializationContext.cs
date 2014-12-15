@@ -29,14 +29,14 @@ namespace Yodii.Host.Tests
 
         public readonly YodiiEngine Engine;
 
-        public readonly PluginHost Host;
+        public readonly YodiiHost Host;
 
         ServiceWrapper[] _allServices;
         PluginWrapper[] _allPlugins;
 
         public ServiceSpecializationContext( bool startEngine = true )
         {
-            Host = new PluginHost();
+            Host = new YodiiHost();
             Engine = new YodiiEngine( Host );
             Engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 
