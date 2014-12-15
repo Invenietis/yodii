@@ -73,8 +73,8 @@ namespace Yodii.Engine
             if( result.Success )
             {
                 _status = newStatus;
-                NotifyPropertyChanged( "Status" );
                 if( StatusReason != statusReason ) StatusReason = statusReason;
+                NotifyPropertyChanged( "Status" );
                 if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
             }
             return result;

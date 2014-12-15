@@ -30,13 +30,6 @@ using Yodii.Model;
 
 namespace Yodii.Host
 {
-    internal enum CatchExceptionGeneration
-    {
-        Never,
-        Always,
-        HonorIgnoreExceptionAttribute
-    }
-
 	internal class DefaultProxyDefinition : IProxyDefinition
 	{
 		Type _typeInterface;

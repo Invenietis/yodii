@@ -6,7 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public class Plugin1 : IYodiiPlugin, IService2
+    public class Plugin1 : YodiiPluginBase, IYodiiPlugin, IService2
     {
         readonly string _pluginFullName;
 
@@ -18,27 +18,5 @@ namespace Yodii.Discoverer.Tests
         public Plugin1()
         {
         }
-
-        #region InterfaceMethods
-        public bool Setup( PluginSetupInfo info )
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Teardown()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Stop()
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
     }
 }

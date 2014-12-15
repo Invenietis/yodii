@@ -41,7 +41,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.PluginInfos.Add( new PluginInfo( "P", d.DefaultAssembly ) );
             d.FindPlugin( "P" ).Service = d.FindService( "S1" );
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( d );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -86,7 +86,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid001a()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -135,7 +135,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid001b()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -173,7 +173,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
             
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create(); 
@@ -223,7 +223,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid001d()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -260,7 +260,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
             info.FindPlugin( "PluginAx-1" ).AddServiceReference( info.FindService( "ServiceB" ), DependencyRequirement.Optional );
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -327,7 +327,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -365,7 +365,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             DiscoveredInfo info = MockInfoFactory.CreateGraph001();
             info.PluginInfos.Remove( info.FindPlugin( "PluginAx-1" ) );
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -432,7 +432,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid002a()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph002();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -498,7 +498,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph002();
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -541,7 +541,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid003a()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -579,7 +579,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid003b()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -617,7 +617,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid003c()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -655,7 +655,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid003d()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -684,7 +684,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -729,7 +729,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         internal static YodiiEngine CreateValid003f()
         {
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -762,7 +762,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
 
             info.PluginInfos.Remove( info.FindPlugin( "PluginA-2" ) );
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -804,7 +804,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #endregion
 
             DiscoveredInfo info = MockInfoFactory.CreateGraph004();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -845,7 +845,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
              */
             #endregion
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph004() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -904,7 +904,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 */
             #endregion
             DiscoveredInfo info = MockInfoFactory.CreateGraph005();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -962,7 +962,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *  
             */
             #endregion
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             var disco = MockInfoFactory.CreateGraph005b();
             var anotherBlocking = new ServiceInfo( "AnotherBlocking", disco.DefaultAssembly );
             var disabledForBlocking = new PluginInfo( "DisabledForBlocking", disco.DefaultAssembly );
@@ -1077,7 +1077,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.PluginInfos.Add(new PluginInfo("P1", d.DefaultAssembly));
             d.FindPlugin("P1").Service = d.FindService("S1.1");
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1124,7 +1124,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.PluginInfos.Add(new PluginInfo("P1", d.DefaultAssembly));
             d.FindPlugin("P1").Service = d.FindService("S1.1");
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1181,7 +1181,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service2"), DependencyRequirement.Running);
             d.FindPlugin("Plugin2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1254,7 +1254,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
             d.FindPlugin("Plugin3").AddServiceReference(d.FindService("Service2"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1323,7 +1323,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin2").AddServiceReference(d.FindService("Service1"), DependencyRequirement.Running);
             d.FindPlugin("Plugin3").AddServiceReference(d.FindService("Service2"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1377,7 +1377,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             d.FindPlugin("Plugin1.1").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1431,7 +1431,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             d.FindPlugin("Plugin1.1").AddServiceReference(d.FindService("Service1"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1485,7 +1485,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1543,7 +1543,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin1.2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
 
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1600,7 +1600,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin1.2").AddServiceReference(d.FindService("Service1.1"), DependencyRequirement.Running);
 
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
 
@@ -1615,7 +1615,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         }
         internal static YodiiEngine CreateValidCommonReferences3()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005c() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1682,7 +1682,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateValidCommonReferences4()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005d() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1707,7 +1707,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateValidRunnableReferences()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph006() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1731,7 +1731,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateValidOnlyOneRunnableReference()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph007() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1754,7 +1754,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateInvalidRunnableRecommendedReference()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph008() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1839,7 +1839,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateValidOptionalReferences()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005e() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1909,7 +1909,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateValidOptionalRecommendedReferences()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005f() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
@@ -1987,7 +1987,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin1").AddServiceReference(d.FindService("Service3"), DependencyRequirement.Runnable);
             d.FindPlugin("Plugin3").AddServiceReference(d.FindService("Service2.2"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
             var result = engine.Start();
@@ -2036,7 +2036,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             d.FindPlugin("Plugin5").AddServiceReference(d.FindService("Service2.2"), DependencyRequirement.Running);
             d.FindPlugin("Plugin6").AddServiceReference(d.FindService("Service3.1"), DependencyRequirement.Running);
 
-            YodiiEngine engine = new YodiiEngine(new YodiiEngineHostMock());
+            YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
             var result = engine.Start();
@@ -2050,7 +2050,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
         internal static YodiiEngine CreateDynamicInvalidLoop()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraphDynamicInvalidLoop() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();

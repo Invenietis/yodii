@@ -14,11 +14,11 @@ namespace Yodii.Engine.Tests
         [Test]
         public void EngineCreationTest()
         {
-            YodiiEngineHostMock fakeMock = null;
+            BuggyYodiiEngineHostMock fakeMock = null;
             var ex = Assert.Throws<ArgumentNullException>(() => new YodiiEngine(fakeMock));
             Assert.That(ex.ParamName, Is.EqualTo( "host" ));
 
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             Assert.That( engine.Host, Is.Not.Null );
             Assert.That( engine.IsRunning, Is.False );
             Assert.That( engine.Configuration, Is.Not.Null );
@@ -27,7 +27,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void EngineUseTest()
         {
-            IYodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            IYodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
 
             Assert.Throws<ArgumentNullException>( () => engine.SetDiscoveredInfo( null ) );
 

@@ -17,7 +17,7 @@ namespace Yodii.ObjectExplorer.Wpf
     /// <remarks>
     /// If a WPF context does not exist (Application.Current), a new STA thread will be created with one in it.
     /// </remarks>
-    public class ObjectExplorerPlugin : IYodiiPlugin
+    public class ObjectExplorerPlugin :  YodiiPluginBase
     {
         IYodiiEngine _activeEngine;
         ObjectExplorerWindow _window;
@@ -33,23 +33,18 @@ namespace Yodii.ObjectExplorer.Wpf
 
         #region IYodiiPlugin Members
 
-        bool IYodiiPlugin.Setup( PluginSetupInfo info )
+        protected override void PluginPreStart( IPreStartContext c )
         {
             _closing = false;
 
             if( Application.Current == null )
             {
-                info.FailedUserMessage = "A WPF context (Application.Current) must exist for this plugin.";
-                info.FailedDetailedMessage = "A WPF context (Application.Current) must exist for this plugin.";
-                return false;
+                c.Cancel("A WPF context (Application.Current) must exist for this plugin.");
             }
-            else
-            {
-                return true;
-            }
+            base.PluginPreStart( c );
         }
 
-        void IYodiiPlugin.Start()
+        protected override void PluginStart( IStartContext c )
         {
             Debug.Assert( Application.Current != null, "A WPF context (Application.Current) must exist for this plugin." );
             Debug.Assert( _window == null, "No window exists." );
@@ -61,15 +56,13 @@ namespace Yodii.ObjectExplorer.Wpf
 
                 _window.Show();
             } ) );
+
+            base.PluginStart( c );
         }
 
-        void IYodiiPlugin.Stop()
+        protected override void PluginPreStop( IPreStopContext c )
         {
             Shutdown();
-        }
-
-        void IYodiiPlugin.Teardown()
-        {
         }
 
         #endregion

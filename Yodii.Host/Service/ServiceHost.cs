@@ -66,7 +66,7 @@ namespace Yodii.Host
         }
 
         private IList<ILogErrorCaught> _untrackedErrors;
-        public ICKReadOnlyList<ILogErrorCaught> UntrackedErrors { get; private set; }
+        public IReadOnlyList<ILogErrorCaught> UntrackedErrors { get; private set; }
 
         public void Add( IServiceHostConfiguration configurator )
         {
@@ -91,6 +91,13 @@ namespace Yodii.Host
             get { return _eventSender; }
             set { _eventSender = value; }
         }
+
+        /// <summary>
+        /// This is set to a non null function when calls to services are not allowed:
+        /// when loading a plugin (from its constructor) or when executing PreStart and Stop method.
+        /// The input type is the called interface type.
+        /// </summary>
+        internal Func<Type,ServiceCallBlockedException> CallServiceBlocker;
 
         internal ServiceProxyBase EnsureProxyForDynamicService( IServiceInfo service )
         {
@@ -138,7 +145,7 @@ namespace Yodii.Host
             if( _proxies.TryGetValue( interfaceType, out current ) )
             {
                 _proxies[interfaceType] = proxy;
-                proxy.SetPluginImplementation( current.Implementation, null );//Emilie : don't know what to do here.
+                proxy.SetPluginImplementation( current.Implementation );
             }
             else
             {
@@ -382,13 +389,13 @@ namespace Yodii.Host
 
         #region IServiceHost Members
 
-        object IServiceHost.InjectExternalService( Type interfaceType, object currentImplementation )
+        IServiceUntyped IServiceHost.InjectExternalService( Type interfaceType, object currentImplementation )
         {
             if( currentImplementation == null ) throw new ArgumentNullException( "currentImplementation", R.ExternalImplRequiredAsANonNullObject );
             return EnsureProxyForExternalService( interfaceType, currentImplementation );
         }
 
-        object IServiceHost.EnsureProxyForDynamicService( Type interfaceType )
+        IServiceUntyped IServiceHost.EnsureProxyForDynamicService( Type interfaceType )
         {
             if( !typeof( IYodiiService ).IsAssignableFrom( interfaceType ) || interfaceType == typeof( IYodiiService ) )
             {
@@ -397,25 +404,14 @@ namespace Yodii.Host
             return EnsureProxyForDynamicService( interfaceType );
         }
 
-        object IServiceHost.GetProxy( Type interfaceType )
+        IServiceUntyped IServiceHost.GetProxy( Type interfaceType )
         {
-            ServiceProxyBase proxy;
-            if( _proxies.TryGetValue( interfaceType, out proxy ) 
-                && (!interfaceType.IsGenericType && proxy.Status == InternalRunningStatus.Disabled) )
-            {
-                proxy = null;
-            }
-            return proxy;
+            return _proxies.GetValueWithDefault( interfaceType, null );
         }
 
-        object IServiceHost.GetRunningProxy( Type interfaceType )
+        IService<T> IServiceHost.EnsureProxyForDynamicService<T>()
         {
-            ServiceProxyBase proxy;
-            if( _proxies.TryGetValue( interfaceType, out proxy ) && proxy.Status <= InternalRunningStatus.Stopped )
-            {
-                proxy = null;
-            }
-            return proxy;
+            return (IService<T>)EnsureProxyForDynamicService( typeof(T) );
         }
 
         #endregion

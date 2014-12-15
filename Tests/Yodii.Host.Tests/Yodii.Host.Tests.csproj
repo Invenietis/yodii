@@ -52,28 +52,28 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
-    <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
-    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
-    <Compile Include="ChoucrouteTest2\ChoucroutePlugin2.cs" />
-    <Compile Include="ChoucrouteTest2\IAnotherService2.cs" />
-    <Compile Include="ChoucrouteTest2\IChoucrouteService2.cs" />
-    <Compile Include="ChoucrouteTest3\ChoucroutePlugin3.cs" />
-    <Compile Include="ChoucrouteTest3\IAnotherService3.cs" />
-    <Compile Include="ChoucrouteTest3\IChoucrouteService3.cs" />
-    <Compile Include="ChoucrouteTest4\ChoucroutePlugin4.cs" />
-    <Compile Include="ChoucrouteTest4\IAnotherService4.cs" />
-    <Compile Include="ChoucrouteTest4\IChoucrouteService4.cs" />
-    <Compile Include="ChoucrouteTest5\AnotherPlugin5.cs" />
-    <Compile Include="ChoucrouteTest5\SimpleChoucroutePlugin5.cs" />
-    <Compile Include="ChoucrouteTest5\ElaborateChoucroutePlugin5.cs" />
-    <Compile Include="ChoucrouteTest5\IChoucrouteService5Generalization.cs" />
-    <Compile Include="ChoucrouteTest5\IChoucrouteService5.cs" />
+    <Compile Include="PluginAndServiceWrapper\PluginWrapper.cs" />
+    <Compile Include="PluginAndServiceWrapper\WrapperExtension.cs" />
+    <Compile Include="ServiceSpecializationContext.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubBSubService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubBService.cs" />
+    <Compile Include="PluginAndServiceWrapper\ServiceWrapper.cs" />
+    <Compile Include="TrackedPluginBase.cs" />
+    <Compile Include="TrackerPluginAndService.cs" />
+    <Compile Include="TrackMethodCalls\TrackMethodCallsPlugin.cs" />
+    <Compile Include="IAnotherService.cs" />
+    <Compile Include="TrackMethodCalls\ITrackMethodCallsPluginService.cs" />
+    <Compile Include="FailureTransitionPlugin\FailureTransitionPlugin.cs" />
+    <Compile Include="FailureTransitionPlugin\IFailureTransitionPluginService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubAService.cs" />
     <Compile Include="Extensions\ConfigurationManagerExtensions.cs" />
     <Compile Include="Extensions\DynamicTestExtensions.cs" />
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
     <Compile Include="Extensions\TestExtensions.cs" />
-    <Compile Include="Extensions\TestHelper.cs" />
+    <Compile Include="TestHelper.cs" />
+    <Compile Include="CtorParameterTests\ParameterTestPlugin.cs" />
+    <Compile Include="SpecializationTests.cs" />
     <Compile Include="YodiiHostTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

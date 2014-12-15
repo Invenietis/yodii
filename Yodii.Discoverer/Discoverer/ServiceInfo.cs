@@ -8,12 +8,12 @@ using CK.Core;
 
 namespace Yodii.Discoverer
 {
+    [DebuggerDisplay( "{_serviceFullName} < {_generalization}" )]
     internal sealed class ServiceInfo : IServiceInfo, IDiscoveredItem
     {
         readonly string _serviceFullName;
         readonly IAssemblyInfo _assemblyInfo;
         IServiceInfo _generalization;
-        bool _hasError;
 
         internal ServiceInfo( string serviceFullName, IAssemblyInfo assemblyInfo )
         {
@@ -44,15 +44,16 @@ namespace Yodii.Discoverer
 
         #endregion
 
+        public int Depth;
+
         public bool HasError
         {
-            get { return _hasError; }
-            set { _hasError = value; }
+            get { return false; }
         }
 
         public string ErrorMessage
         {
-            get { return _hasError ? "An error occured." : null; }
+            get { return null; }
         }
     }
 }

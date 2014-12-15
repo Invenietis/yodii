@@ -348,9 +348,23 @@ namespace Yodii.Lab
 
         #region IYodiiEngineHost Members
 
-        IEnumerable<Tuple<IPluginInfo, Exception>> IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        class Result : IYodiiEngineHostApplyResult
         {
-            List<Tuple<IPluginInfo, Exception>> exceptionList = new List<Tuple<IPluginInfo, Exception>>();
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
+            {
+                CancellationInfo = errors;
+                PostStartActions = actions;
+            }
+
+            public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
+
+            public IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; private set; }
+        }
+
+        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        {
+            List<IPluginHostApplyCancellationInfo> cancellationInfos = new List<IPluginHostApplyCancellationInfo>();
+            List<Action<IYodiiEngine>> postStartActions = new List<Action<IYodiiEngine>>();
 
             // TODO
             Console.WriteLine( "Disabling:" );
@@ -383,7 +397,7 @@ namespace Yodii.Lab
                 }
             }
 
-            return exceptionList;
+            return new Result( cancellationInfos.AsReadOnlyList(), postStartActions.AsReadOnlyList());
         }
 
         #endregion

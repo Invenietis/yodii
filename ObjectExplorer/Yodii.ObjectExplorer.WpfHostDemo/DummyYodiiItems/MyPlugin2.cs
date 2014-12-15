@@ -6,23 +6,7 @@ using Yodii.Model;
 
 namespace Yodii.DummyItems
 {
-    public class MyPlugin2 : IYodiiPlugin, IMyService1
+    public class MyPlugin2 : YodiiPluginBase, IMyService1
     {
-        public bool Setup( PluginSetupInfo info )
-        {
-            return true;
-        }
-
-        public void Start()
-        {
-        }
-
-        public void Teardown()
-        {
-        }
-
-        public void Stop()
-        {
-        }
     }
 }

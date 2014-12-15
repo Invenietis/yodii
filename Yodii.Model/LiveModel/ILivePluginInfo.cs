@@ -22,6 +22,6 @@ namespace Yodii.Model
         /// <summary>
         /// Runtime plugin exception.
         /// </summary>
-        Exception CurrentError { get; }
+        IPluginHostApplyCancellationInfo CurrentError { get; }
     }
 }

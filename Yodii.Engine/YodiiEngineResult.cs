@@ -64,16 +64,16 @@ namespace Yodii.Engine
         /// <summary>
         /// Dynamic failure constructor.
         /// </summary>
-        internal YodiiEngineResult( IConfigurationSolver solver, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo, YodiiEngine engine )
+        internal YodiiEngineResult( IConfigurationSolver solver, IReadOnlyList<IPluginHostApplyCancellationInfo> applyErrors, YodiiEngine engine )
         {
             Debug.Assert( solver != null );
-            Debug.Assert( errorInfo != null && errorInfo.Any() );
+            Debug.Assert( applyErrors != null && applyErrors.Any() );
             Debug.Assert( engine != null );
 
             var allP = solver.AllPlugins.Select( p => new SolvedPluginSnapshot( p ) ).ToDictionary( ps => ps.PluginInfo );
             var allS = solver.AllServices.Select( s => new SolvedServiceSnapshot( s ) ).ToReadOnlyList();
 
-            var errors = errorInfo.Select( e => new PluginRuntimeError( allP[e.Item1], e.Item2 ) ).ToReadOnlyList();
+            var errors = applyErrors.Select( e => new PluginRuntimeError( allP[e.Plugin], e ) ).ToReadOnlyList();
             _pluginCulprits = errors.Select( e => e.Plugin.PluginInfo ).ToReadOnlyList();
             _serviceCulprits = _pluginCulprits.Select( p => p.Service ).Where( s => s != null ).ToReadOnlyList();
             _engine = engine;

@@ -112,18 +112,18 @@ namespace Yodii.Engine
             notifier.RaiseEvents();
         }
 
-        internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors, Func<string,PluginData> pluginDataFinderForNewPlugin )
+        internal void UpdateRuntimeErrors( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, Func<string, PluginData> pluginDataFinderForNewPlugin )
         {
             foreach( var e in errors )
             {
-                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginFullName );
+                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Plugin.PluginFullName );
                 if( pluginInfo == null )
                 {
-                    pluginInfo = new LivePluginInfo( pluginDataFinderForNewPlugin( e.Item1.PluginFullName ), _engine );
-                    pluginInfo.CurrentError = e.Item2;
+                    pluginInfo = new LivePluginInfo( pluginDataFinderForNewPlugin( e.Plugin.PluginFullName ), _engine );
+                    pluginInfo.CurrentError = e;
                     _plugins.Add( pluginInfo );
                 }
-                else pluginInfo.CurrentError = e.Item2;
+                else pluginInfo.CurrentError = e;
             }
         }
 

@@ -19,12 +19,12 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
     {
         readonly YodiiEngine _engine;
         readonly StandardDiscoverer _discoverer;
-        readonly PluginHost _host;
+        readonly YodiiHost _host;
 
         internal ObjectExplorerManager()
         {
             _discoverer = new StandardDiscoverer();
-            _host = new PluginHost();
+            _host = new YodiiHost();
             _engine = new YodiiEngine( _host );
 
             _host.PluginCreator = CustomPluginCreator;

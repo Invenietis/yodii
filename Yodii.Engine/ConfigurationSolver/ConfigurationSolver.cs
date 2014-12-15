@@ -362,7 +362,7 @@ namespace Yodii.Engine
             return data;
         }
 
-        internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        internal IYodiiEngineResult CreateDynamicFailureResult( IReadOnlyList<IPluginHostApplyCancellationInfo> errors )
         {
             return new YodiiEngineResult( this, errors, _engine );
         }

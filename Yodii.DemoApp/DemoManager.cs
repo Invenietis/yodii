@@ -66,7 +66,7 @@ namespace Yodii.DemoApp
             IAssemblyInfo ia = discoverer.ReadAssembly( Path.GetFullPath( "Yodii.DemoApp.exe" ) );
             IDiscoveredInfo info = discoverer.GetDiscoveredInfo();
 
-            PluginHost host = new PluginHost();
+            YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( info );
             IConfigurationLayer cl = engine.Configuration.Layers.Create();

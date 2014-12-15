@@ -19,7 +19,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void LayerCreationTest()
         {
-            YodiiEngine e = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine e = new YodiiEngine( new BuggyYodiiEngineHostMock() );
 
             IConfigurationLayer layer = e.Configuration.Layers.Create( "TestConfig" );
             Assert.That( layer.Items.Count == 0 );
@@ -59,7 +59,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void LayerAddPrecedenceTest()
         {
-            var engine = new YodiiEngine( new YodiiEngineHostMock() );
+            var engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer = engine.Configuration.Layers.Create( "TestConfig" );
 
             IYodiiEngineResult result;
@@ -137,7 +137,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void ManagerCreationTests()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             int managerChangingCount = 0;
             int managerChangedCount = 0;
 
@@ -173,7 +173,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void RemovingLayerTests()
         {
-            var e = new YodiiEngine( new YodiiEngineHostMock() );
+            var e = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             var layer = e.Configuration.Layers.Create();
             layer.Items.AddSuccess( "p1", ConfigurationStatus.Disabled, ConfigurationStatus.Disabled );
             layer.Items.AddSuccess( "p2", ConfigurationStatus.Optional, ConfigurationStatus.Optional );
@@ -202,7 +202,7 @@ namespace Yodii.Engine.Tests
         public void ManagerTests()
         {
 
-            //YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            //YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             //IConfigurationLayer layer = engine.ConfigurationManager.Layers.Create( "system" );
             //Assert.That( layer.Items.Add( "schmurtz1", ConfigurationStatus.Running ).Success, Is.True );
             //Assert.That( layer.Items.Add( "schmurtz2", ConfigurationStatus.Running ).Success, Is.True );
@@ -256,7 +256,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void FullStartImpactCombination()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
             IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
 
@@ -286,7 +286,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void FullStopImpactCombination()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
             IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
 
@@ -321,7 +321,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void MinimalImpactCombination()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
             IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
 
@@ -355,7 +355,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void StartRecommendedImpactCombination()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
             IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
 
@@ -390,7 +390,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void StopOptionalAndRunnableImpactCombination()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
             IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
 
@@ -425,7 +425,7 @@ namespace Yodii.Engine.Tests
         [Test]
         public void StartRecommendedAndStopOptionalAndRunnableImpactCombination()
         {
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             IConfigurationLayer layer1 = engine.Configuration.Layers.Create();
             IConfigurationLayer layer2 = engine.Configuration.Layers.Create();
 

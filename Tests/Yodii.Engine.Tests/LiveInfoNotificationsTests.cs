@@ -29,7 +29,7 @@ namespace Yodii.Engine.Tests
              *  +---------+
              */
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
-            YodiiEngine engine = new YodiiEngine( new YodiiEngineHostMock() );
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( info );
             engine.Start();
             ILiveServiceInfo sA = engine.LiveInfo.FindService( "ServiceA" );

@@ -53,7 +53,7 @@ namespace Yodii.ObjectExplorer.Wpf
                 foreach( var r in result.HostFailureResult.ErrorPlugins )
                 {
                     sb.AppendLine(
-                        String.Format( "For plugin '{0}':\n  * {1}", r.Plugin.PluginInfo.PluginFullName, r.Error.Message )
+                        String.Format( "For plugin '{0}':\n  * {1}", r.Plugin.PluginInfo.PluginFullName, r.CancellationInfo.ErrorMessage )
                         );
                 }
             }

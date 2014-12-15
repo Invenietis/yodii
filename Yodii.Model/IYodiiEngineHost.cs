@@ -20,6 +20,6 @@ namespace Yodii.Model
         /// <param name="toStop">List of plugins to stop.</param>
         /// <param name="toStart">List of plugins to start.</param>
         /// <returns>List of exceptions encountered while each plugin changed state.</returns>
-        IEnumerable<Tuple<IPluginInfo, Exception>> Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart ); 
+        IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart ); 
     }
 }

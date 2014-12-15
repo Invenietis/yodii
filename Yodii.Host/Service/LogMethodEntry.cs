@@ -35,7 +35,6 @@ namespace Yodii.Host
     {
         int _depth;
         MethodInfo _method;
-        MethodInfo _caller;
         internal object[] _parameters;
         internal object _returnValue;
         LogMethodEntryError _error;
@@ -67,11 +66,6 @@ namespace Yodii.Host
         public MethodInfo Method
         {
             get { return _method; }
-        }
-
-        public MethodInfo Caller
-        {
-            get { return _caller; }
         }
 
         public object[] Parameters

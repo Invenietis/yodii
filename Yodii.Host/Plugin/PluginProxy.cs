@@ -37,16 +37,14 @@ namespace Yodii.Host
     {
         public PluginProxy( IPluginInfo pluginKey )
         {
-            PluginKey = pluginKey;
+            PluginInfo = pluginKey;
         }
 
-        public IPluginInfo PluginKey { get; internal set; }
-
-        public string PublicName { get { return PluginKey.PluginFullName; } }
+        public IPluginInfo PluginInfo { get; internal set; }
 
         internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, object[], IYodiiPlugin> pluginCreator )
         {
-            var serviceReferences = PluginKey.ServiceReferences;
+            var serviceReferences = PluginInfo.ServiceReferences;
 
             int paramCount = 0;
 
@@ -63,7 +61,7 @@ namespace Yodii.Host
             {
                 ctorParameters[serviceReferences[i].ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( serviceReferences[i].Reference );
             }
-            return TryLoad( serviceHost, () => pluginCreator( PluginKey, ctorParameters ), PluginKey );
+            return TryLoad( serviceHost, () => pluginCreator( PluginInfo, ctorParameters ), PluginInfo.PluginFullName );
         }
 
     }

@@ -112,12 +112,7 @@ namespace Yodii.Discoverer
                 catch( Exception ex )
                 {
                     result = new CachedAssemblyInfo( ex );
-                    CachedAssemblyInfo info;
-                    if(_assemblies.TryGetValue(path, out info))
-                    {
-                        _assemblies.Remove( path );
-                    }
-                    _assemblies.Add( path, result );
+                    _assemblies[path] = result;
                 }
             }
             Debug.Assert( result.YodiiInfo != null, "result.YodiiInfo is NEVER null." );
@@ -129,9 +124,18 @@ namespace Yodii.Discoverer
             Debug.Assert( a != null );
             CachedAssemblyInfo info = new CachedAssemblyInfo( a );
             _assemblies.Add( a.FullName, info );
-            info.Discover( this );
+            if( _yodiiModel != null ) info.Discover( this );
+            else
+            {
+                foreach( var dependency in a.MainModule.AssemblyReferences )
+                {
+                    _resolver.Resolve( dependency );
+                }
+                info.YodiiInfo.SetResult( CKReadOnlyListEmpty<ServiceInfo>.Empty, CKReadOnlyListEmpty<PluginInfo>.Empty );
+            }
             return info;
         }
+
         public IDiscoveredInfo GetDiscoveredInfo( bool withAssembliesOnError = false )
         {
             List<IAssemblyInfo> assemblyInfos = new List<IAssemblyInfo>();
@@ -151,12 +155,14 @@ namespace Yodii.Discoverer
 
             s = new ServiceInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
             _services.Add( t, s );
-            s.Generalization = t.Interfaces
+            ServiceInfo gen = t.Interfaces
                                     .Select( i => i.Resolve() )
                                     .Where( i => IsYodiiService( i ) )
                                     .Select( i => FindOrCreateService( i ) )
-                                    .SingleOrDefault();
-           
+                                    .OrderByDescending( super => super.Depth )
+                                    .FirstOrDefault();
+            if( gen != null ) s.Depth = gen.Depth + 1;      
+            s.Generalization = gen;
             return s;         
         }
 
@@ -179,33 +185,29 @@ namespace Yodii.Discoverer
                     var paramType = param.ParameterType.Resolve();
                     if( !paramType.IsInterface ) continue;
 
+                    ServiceReferenceInfo serviceRef;
                     if( paramType.HasGenericParameters )
                     {
                         if( paramType.GenericParameters.Count > 1 ) continue;
-                        //ServiceInfo sRef = FindOrCreateService( ( (GenericInstanceType)param.ParameterType ).GenericParameters[0].Resolve() );
-                        
-                        TypeReference refWrapped = ( (GenericInstanceType)param.ParameterType ).GenericArguments[0];
-                        if( refWrapped == null ) continue;
-                        TypeDefinition wrappedService = refWrapped.Resolve();
-                        TypeDefinition wrappedService2 = paramType.GenericParameters[0].DeclaringType.Resolve();
-                        if( !IsYodiiService( wrappedService ) ) continue;
-                        //TypeDefinition genericForReq = paramType.GenericParameters[0].DeclaringType;
-                        //TypeDefinition wrapper = wrappedService2.DeclaringType;
-                        //TypeDefinition wrapper = wrappedService;
+
+                        TypeReference actualServiceref = ((GenericInstanceType)param.ParameterType).GenericArguments[0];
+                        if( actualServiceref == null ) continue;
+                        TypeDefinition actualService = actualServiceref.Resolve();
+                        if( !IsYodiiService( actualService ) ) continue;
+                        TypeDefinition wrapper = paramType.GenericParameters[0].DeclaringType.Resolve();
                         DependencyRequirement req;
-                        if( !IsDependencyRequirement( wrappedService2, out req ) ) continue;
+                        if( !IsDependencyRequirement( wrapper, out req ) ) continue;
                                     
-                        ServiceInfo sRef = FindOrCreateService( wrappedService );
-                        ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, req, param.Name, param.Index, false );
-                        p.BindServiceRequirement( serviceRef );
+                        ServiceInfo sRef = FindOrCreateService( actualService );
+                        serviceRef = new ServiceReferenceInfo( p, sRef, req, param.Name, param.Index, false );
                     }
                     else
                     {
                         if( !IsYodiiService( paramType ) ) continue;
                         ServiceInfo sRef = FindOrCreateService( paramType );
-                        ServiceReferenceInfo serviceRef = new ServiceReferenceInfo( p, sRef, DependencyRequirement.Running, param.Name, param.Index, true );
-                        p.BindServiceRequirement( serviceRef );
+                        serviceRef = new ServiceReferenceInfo( p, sRef, DependencyRequirement.Running, param.Name, param.Index, true );
                     }
+                    p.BindServiceRequirement( serviceRef );
                 }
             }
             return p;

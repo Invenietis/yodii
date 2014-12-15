@@ -13,7 +13,7 @@ namespace Yodii.Engine
     {
         IPluginInfo _pluginInfo;
         ILiveServiceInfo _service;
-        Exception _currentError;
+        IPluginHostApplyCancellationInfo _currentError;
 
         internal LivePluginInfo( PluginData p, YodiiEngine engine )
             : base( engine, p, p.PluginInfo.PluginFullName )
@@ -47,7 +47,7 @@ namespace Yodii.Engine
             get { return _pluginInfo; }
         }
 
-        public Exception CurrentError
+        public IPluginHostApplyCancellationInfo CurrentError
         {
             get { return _currentError; }
             internal set
