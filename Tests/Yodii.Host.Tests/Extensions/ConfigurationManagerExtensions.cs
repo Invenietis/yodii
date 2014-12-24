@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -7,6 +8,7 @@ using Yodii.Model;
 
 namespace Yodii.Host.Tests
 {
+    [ExcludeFromCodeCoverage]
     static class ConfigurationManagerExtensions
     {
         public static IYodiiEngineResult AddSuccess( this IConfigurationItemCollection @this, string name, ConfigurationStatus status, ConfigurationStatus? solvedStatusInFinalConfig = null )

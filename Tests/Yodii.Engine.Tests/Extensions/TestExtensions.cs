@@ -113,14 +113,15 @@ namespace Yodii.Engine.Tests
             }
         }
 
-        public static void CheckSuccess( this IYodiiEngineResult @this )
+        public static void CheckSuccess( this IYodiiEngineResult @this, string message = null )
         {
-            Assert.That( @this.Success, Is.True );
-            Assert.That( @this.StaticFailureResult, Is.Null );
-            Assert.That( @this.HostFailureResult, Is.Null );
-            Assert.That( @this.ConfigurationFailureResult, Is.Null );
-            Assert.That( @this.PluginCulprits, Is.Empty );
-            Assert.That( @this.ServiceCulprits, Is.Empty );
+            if( message == null ) message = String.Empty;
+            Assert.That( @this.Success, Is.True, message );
+            Assert.That( @this.StaticFailureResult, Is.Null, message );
+            Assert.That( @this.HostFailureResult, Is.Null, message );
+            Assert.That( @this.ConfigurationFailureResult, Is.Null, message );
+            Assert.That( @this.PluginCulprits, Is.Empty, message );
+            Assert.That( @this.ServiceCulprits, Is.Empty, message );
         }
 
         public static void CheckWantedConfigSolvedStatusIs( this IYodiiEngineResult @this, string pluginOrServiceFullName, SolvedConfigurationStatus wantedStatus )

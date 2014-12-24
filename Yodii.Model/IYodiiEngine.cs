@@ -22,6 +22,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Change the current set of <see cref="IPluginInfo"/> and <see cref="IServiceInfo"/>.
+        /// If <see cref="IsRunning"/> is true, this can be rejected: the result will indicate the reason of the failure.
         /// </summary>
         /// <param name="dicoveredInfo">New discovered information to work with.</param>
         /// <returns>Engine operation result.</returns>
@@ -44,10 +45,12 @@ namespace Yodii.Model
         bool IsRunning { get; }
 
         /// <summary>
-        /// Starts the engine, performs all possible resolutions,
+        /// Starts the engine (that must be stopped), performs all possible resolutions,
         /// and begins monitoring configuration for changes.
         /// </summary>
+        /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
         /// <returns>Engine start result.</returns>
+        /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
         IYodiiEngineResult Start( IEnumerable<YodiiCommand> persistedCommands = null );
 
         /// <summary>

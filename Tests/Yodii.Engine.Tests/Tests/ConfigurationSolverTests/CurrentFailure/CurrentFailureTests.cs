@@ -44,11 +44,11 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             StaticConfigurationTests.CreateDynamicInvalidLoop().FullStart( ( engine, res ) =>
             {
-                engine.LiveInfo.FindService( "Service1" ).Start( "caller", StartDependencyImpact.Minimal );
-                engine.LiveInfo.FindPlugin( "Plugin1.2" ).Start( "caller", StartDependencyImpact.Minimal );
-                engine.LiveInfo.FindPlugin( "Plugin2.2" ).Start( "caller", StartDependencyImpact.Minimal );
+                engine.LiveInfo.FindPlugin( "Plugin1.1" ).Start( StartDependencyImpact.Minimal ).CheckSuccess( "Starting the Plugin1.1 (just for fun)." );
+                engine.LiveInfo.FindPlugin( "Plugin1.2" ).Start( StartDependencyImpact.Minimal ).CheckSuccess( "Starting Plugin1.2 (this launch the Plugin2.2 to support Service2." );
+                Assert.That( engine.LiveInfo.FindPlugin( "Plugin2.2" ).RunningStatus, Is.EqualTo( RunningStatus.Running ), "Plugin2.2 is required by Plugin1.2." );
 
-                engine.LiveInfo.FindPlugin( "Plugin2.2" ).Stop( "caller" );
+                engine.LiveInfo.FindPlugin( "Plugin2.2" ).Stop().CheckSuccess( "Stops the Plugin2.2 will stop the Service2 => all will be stopped." );
 
                 engine.CheckAllPluginsStopped( "Plugin2.2, Plugin1.2" );
             } );
@@ -59,25 +59,25 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         {
             #region graph
             /**
-             *                  +--------+           
-             *      +---------->|Service1+-------+   
-             *      |           |Optional|       |   
-             *      |           +---+----+       |   
-             *      |                        +---+-----+                  
-             *      |                        |Plugin1  |                  
-             *      |                        |Optional |                  
-             *  +---+------+                 +---+-----+                  
-             *  |Service1.1|                     | Need Runnable                       
-             *  |Optional  |---------------------+                        
-             *  +----+-----+                
+             *                    +----------+           
+             *        +---------->| Service1 +-------+   
+             *        |           | Optional |       |   
+             *        |           +----------+       |   
+             *        |                          +---+------+                  
+             *        |                          | Plugin1  |                  
+             *        |                          | Optional |                  
+             *  +-----+------+                   +---+------+                  
+             *  | Service1.1 |                       | Runnable                       
+             *  |  Optional  |-----------------------+                        
+             *  +----+-------+ 
              *       |         
              *       |                 
              *       |         
              *       |         
-             *  +----+------+                
-             *  |Plugin1.1  |                
-             *  |Optional   |                
-             *  +-----------+                
+             *  +----+-------+                
+             *  | Plugin1.1  |                
+             *  | Optional   |                
+             *  +------------+  
              *                                                            
              */
             #endregion
@@ -108,6 +108,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
                 res.CheckAllServicesRunnable( "Service1,Service1.1" );
             } );
         }
+
+
         [Test]
         public void InvalidLoop2WithARunnableReference()
         {

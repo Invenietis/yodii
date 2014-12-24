@@ -60,6 +60,9 @@ namespace Yodii.Engine
             _liveInfo = new LiveInfo( this );
         }
 
+        /// <summary>
+        /// Gets a prebuilt immutable succesful result.
+        /// </summary>
         internal SuccessYodiiEngineResult SuccessResult
         {
             get { return _successResult; }
@@ -94,6 +97,10 @@ namespace Yodii.Engine
             return _successResult;
         }
 
+        /// <summary>
+        /// Gets the current <see cref="IDiscoveredInfo"/>.
+        /// Use <see cref="SetDiscoveredInfo"/> to set a new set of plugins and services description.
+        /// </summary>
         public IDiscoveredInfo DiscoveredInfo
         {
             get { return _discoveredInfo; }
@@ -157,9 +164,16 @@ namespace Yodii.Engine
             }
         }
 
+        /// <summary>
+        /// Starts the engine (that must be stopped), performs all possible resolutions,
+        /// and begins monitoring configuration for changes.
+        /// </summary>
+        /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
+        /// <returns>Engine start result.</returns>
+        /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
         public IYodiiEngineResult Start( IEnumerable<YodiiCommand> persistedCommands = null )
         {
-            return Start( false, false );
+            return Start( false, false, persistedCommands );
         }
 
         /// <summary>
@@ -189,24 +203,35 @@ namespace Yodii.Engine
             return r.Item1;
         }
 
+        /// <summary>
+        /// Starts the engine (that must be stopped).
+        /// </summary>
+        /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
+        /// <param name="revertPlugins">True to revert the list of the plugins (based on their <see cref="IPluginInfo.PluginFullName"/>).</param>
+        /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
+        /// <returns>The result.</returns>
+        /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
         public IYodiiEngineResult Start( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
         {
-            if( !IsRunning )
+            if( IsRunning ) throw new InvalidOperationException();
+            _yodiiCommands.Clear();
+            if( persistedCommands != null ) _yodiiCommands.AddRange( persistedCommands );
+            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, false );
+            if( r.Item1 != null )
             {
-                _yodiiCommands.Clear();
-                if( persistedCommands != null ) _yodiiCommands.AddRange( persistedCommands );
-                var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _discoveredInfo, revertServices, revertPlugins, false );
-                if( r.Item1 != null )
-                {
-                    Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
-                    Debug.Assert( r.Item1.Engine == this );
-                    return r.Item1;
-                }
-                return DoDynamicResolution( r.Item2, null, null );
+                Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
+                Debug.Assert( r.Item1.Engine == this );
+                return r.Item1;
             }
-            return _successResult;
+            return DoDynamicResolution( r.Item2, null, null );
         }
 
+        /// <summary>
+        /// Sets the discovery information that describes available plugins and services.
+        /// If <see cref="IsRunning"/> is true, this can be rejected: the result will indicate the reason of the failure.
+        /// </summary>
+        /// <param name="info">The plugins and services description. Can not be null.</param>
+        /// <returns></returns>
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
         {
             if( info == null ) throw new ArgumentNullException( "info" );

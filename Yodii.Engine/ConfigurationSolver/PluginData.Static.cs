@@ -335,31 +335,57 @@ namespace Yodii.Engine
                 SetDisabled( PluginDisabledReason.InvalidStructureLoop );
                 return false;
             }
-            //BELOW : code garenting the use of ONE runnable. Was deemed confusing to the user.
-            /*else
-            {
-                HashSet<IYodiiItemData> runnable = new HashSet<IYodiiItemData>();
-                
-                foreach( var sRef in PluginInfo.ServiceReferences )
-                {
-                    if( sRef.Requirement == DependencyRequirement.Runnable )
-                    {
-                        runnable.Clear();
-                        runnable.AddRange(running);
-                        ServiceData service2 = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                        service2.FillTransitiveIncludedServices( runnable );
-                        if( runnable.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
-                        {
-                            SetDisabled( PluginDisabledReason.InvalidStructureLoop );
-                            return false;
-                        }
-                    }
-                }
-                //TODO: for each reference other than running. 
-                //          Clone HashSet, 
-                //          adds FillTransitiveIncludedServices for each reference other than running.
-                // As soon as one intersects, SetDisabled( PluginDisabledReason.InvalidStructureLoop );
-            }*/
+            ///  Following code checks that each runnable, one by one, can CoRun with this plugin.
+            ///  Was deemed confusing to the user: this does not enforces that a Start of a Service
+            ///  when another dependency is running, will not stop this plugin.
+            ///  Preventing suicide seems to require more things like a set of CoRunnig( i1 ... in ) that states
+            ///  that nothing prevents any of these sets of items to be running together.
+            ///    
+            ///     HashSet<IYodiiItemData> runnable = new HashSet<IYodiiItemData>();
+            ///     foreach( var sRef in PluginInfo.ServiceReferences )
+            ///     {
+            ///         if( sRef.Requirement == DependencyRequirement.Runnable )
+            ///         {
+            ///             runnable.Clear();
+            ///             runnable.AddRange(running);
+            ///             ServiceData service2 = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+            ///             service2.FillTransitiveIncludedServices( runnable );
+            ///             if( runnable.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
+            ///             {
+            ///                 SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+            ///                 return false;
+            ///             }
+            ///         }
+            ///     }
+            /// 
+            /// Following this idea leads to a structure where each Item I can be associated to a 
+            /// description of its requirement regarding other items:
+            ///  - Items that when I is running must run (MustRunWith): this contains at least Running dependencies to Services and this generalizes the code above.
+            ///  - A set of sets ("CanRunWith" items): each of them contains a set of items that must be able to run while I is running.
+            ///    These sets must be combined to the MustRunWith set and each of them must be satisfied.
+            /// 
+            /// Thess "CanRunWith" sets can be defined with an attribute (AllowMultiple = true) on the Plugin:
+            /// [CanRunWith( typeof(IService1), typeof(IService2) )]
+            /// [CanRunWith( typeof(IService1), typeof(IService3), typeof(IService4) )]
+            /// [CanRunWith( typeof(IService5) )]
+            /// 
+            /// For runnables and optionals, if we want to prevent the suicide of P, we can now automatically consider that a CanRunWith( S ) exists for each dependency.
+            /// This could be the default, but I'm not sure that it is a good idea. I'd rather let the suicicide be the defaulto therwise we would need a 
+            /// kind of AllowSuicideWhenStarting(S) declaration that will not be really easy to understand.
+            /// 
+            /// This has an impact on the dynamic pahases: to handle this we must "boost" the command that has started P (if it exists, ie. if it is not running by configuration).
+            /// When P starts S, we start S, and right after we must start P otherwise there is no guaranty that another command leads to the fact that P can no more be running.
+            /// For multiple "CanRunWith", should we also boost the commands that started the other services that are actually running?
+            /// If yes, which set should we consider? Considering the previous examples:
+            ///   - We must start the dependency IService3.
+            ///   - We have already running dependencies: IService1 and IService2.
+            /// Nothing prevents the start of IService3 to stop IService2. That is understandable. But IService1 must be kept alive since it belongs to the second set: we start it 
+            /// right after. But what if IService3 also belongs to another set: [CanRunWith( typeof(IService2), typeof(IService3) )] ?
+            /// We then need to also start IService2. Can the start of IService1 have led IService2 to be stopped? No since the CanRunWith has been statically statisfied.
+            /// 
+            /// All this seems to be logically consistent. To be implemented this definitely requires the "launcher" to be known. 
+            /// The current IService<T> (the proxy) exposes the Start()/Stop() methods. This is annoying: we don't know/control who is calling us.  
+            ///
             return true;
         }
 
