@@ -384,7 +384,9 @@ namespace Yodii.Engine
             /// We then need to also start IService2. Can the start of IService1 have led IService2 to be stopped? No since the CanRunWith has been statically statisfied.
             /// 
             /// All this seems to be logically consistent. To be implemented this definitely requires the "launcher" to be known. 
-            /// The current IService<T> (the proxy) exposes the Start()/Stop() methods. This is annoying: we don't know/control who is calling us.  
+            /// The current IService<T> (the proxy) exposes the Start()/Stop() methods. This is annoying: we don't know/control who is calling us.
+            /// One need an internal IInternalYodiiEngine interface that will be injected into each plugin (if they require it) that captures the plugin identity
+            /// and exposes Start/Stop capabilities and, ideally, access to IInternalLiveInfo observable models without Start/Stop capabilities.
             ///
             return true;
         }
