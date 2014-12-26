@@ -130,7 +130,7 @@ namespace Yodii.Host
                     ILiveServiceInfo s = e.LiveInfo.FindService( serviceFullName );
                     if( s != null && s.Capability.CanStartWith( impact ) )
                     {
-                        s.Start( null, impact );
+                        e.Start( s, impact );
                         if( onStarted != null ) onStarted( service.Service );
                     }
                 };

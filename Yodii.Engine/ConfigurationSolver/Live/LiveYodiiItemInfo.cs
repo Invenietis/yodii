@@ -72,6 +72,8 @@ namespace Yodii.Engine
             get { return _fullName; }
         }
 
+        public abstract bool IsPlugin { get; }
+
         public bool IsRunning
         {
             get { return _runningStatus >= RunningStatus.Running; }
@@ -90,28 +92,6 @@ namespace Yodii.Engine
         public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
         public RunningStatus RunningStatus { get { return _runningStatus; } }
-
-        protected abstract bool IsPlugin { get; }
-
-        public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.Unknown )
-        {
-            if( !_capability.CanStartWith( impact ) )
-            {
-                throw new InvalidOperationException( "You must call Capability.CanStart with the wanted impact and ensure that it returns true before calling Start." );
-            }
-            YodiiCommand command = new YodiiCommand( true, _fullName, IsPlugin, impact, callerKey );
-            return _engine.AddYodiiCommand( command );
-        }
-
-        public IYodiiEngineResult Stop( string callerKey )
-        {
-            if( !_capability.CanStop )
-            {
-                throw new InvalidOperationException( "You must call Capability.CanStop and ensure that it returns true before calling Stop." );
-            }
-            YodiiCommand command = new YodiiCommand( false, _fullName, IsPlugin, StartDependencyImpact.Unknown, callerKey );
-            return _engine.AddYodiiCommand( command );
-        }
 
         public void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {

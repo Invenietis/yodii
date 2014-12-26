@@ -120,6 +120,8 @@ namespace Yodii.Engine
             }
         }
 
+        public bool IsPlugin { get { return true; } }
+
         /// <summary>
         /// The discovered plugin information.
         /// </summary>
@@ -373,7 +375,7 @@ namespace Yodii.Engine
             /// This could be the default, but I'm not sure that it is a good idea. I'd rather let the suicicide be the defaulto therwise we would need a 
             /// kind of AllowSuicideWhenStarting(S) declaration that will not be really easy to understand.
             /// 
-            /// This has an impact on the dynamic pahases: to handle this we must "boost" the command that has started P (if it exists, ie. if it is not running by configuration).
+            /// This has an impact on the dynamic phase: to handle this we must "boost" the command that has started P (if it exists, ie. if it is not running by configuration).
             /// When P starts S, we start S, and right after we must start P otherwise there is no guaranty that another command leads to the fact that P can no more be running.
             /// For multiple "CanRunWith", should we also boost the commands that started the other services that are actually running?
             /// If yes, which set should we consider? Considering the previous examples:

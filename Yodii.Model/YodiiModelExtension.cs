@@ -13,41 +13,75 @@ namespace Yodii.Model
     {
 
         /// <summary>
+        /// Attempts to start a plugin. 
         /// </summary>
-        /// <param name="this">This live plugin/service info.</param>
-        /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILiveYodiiItem @this )
+        /// <param name="this">This engine.</param>
+        /// <param name="pluginFullName">Name of the plugin to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability">.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
+        public static IYodiiEngineResult StartPlugin( this IYodiiEngineBase @this, string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
-            return @this.Start( null, StartDependencyImpact.Unknown );
+            var p = @this.LiveInfo.FindPlugin( pluginFullName );
+            if( p == null ) throw new ArgumentException();
+            return @this.Start( p, impact );
         }
 
         /// <summary>
+        /// Attempts to start a service. 
         /// </summary>
-        /// <param name="this">This live plugin/service info.</param>
-        /// <param name="callerKey">Caller key.</param>
-        /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILiveYodiiItem @this, string callerKey )
+        /// <param name="this">This engine.</param>
+        /// <param name="serviceFullName">Name of the service to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability">.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully started or not.</returns>
+        public static IYodiiEngineResult StartService( this IYodiiEngineBase @this, string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
-            return @this.Start( callerKey, StartDependencyImpact.Unknown );
+            var s = @this.LiveInfo.FindService( serviceFullName );
+            if( s == null ) throw new ArgumentException();
+            return @this.Start( s, impact );
         }
 
         /// <summary>
+        /// Attempts to stop a service or a plugin. 
         /// </summary>
-        /// <param name="this">This live plugin/service info.</param>
-        /// <param name="impact">The impact.</param>
-        /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Start( this ILiveYodiiItem @this, StartDependencyImpact impact )
+        /// <param name="this">This engine.</param>
+        /// <param name="pluginFullName">Name of the plugin to stop.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        public static IYodiiEngineResult StopPlugin( this IYodiiEngineBase @this, string pluginFullName )
         {
-            return @this.Start( null, impact );
+            var p = @this.LiveInfo.FindPlugin( pluginFullName );
+            if( p == null ) throw new ArgumentException();
+            return @this.Stop( p );
         }
 
         /// <summary>
+        /// Attempts to stop a service. 
         /// </summary>
-        /// <param name="this">This live plugin/service info.</param>
-        /// <returns>The engine result.</returns>
-        public static IYodiiEngineResult Stop( this ILiveYodiiItem @this )
+        /// <param name="this">This engine.</param>
+        /// <param name="serviceFullName">Name of the service to stop.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully stopped or not.</returns>
+        public static IYodiiEngineResult StopService( this IYodiiEngineBase @this, string serviceFullName )
         {
-            return @this.Stop( null );
+            var s = @this.LiveInfo.FindService( serviceFullName );
+            if( s == null ) throw new ArgumentException();
+            return @this.Stop( s );
         }
 
         /// <summary>

@@ -101,6 +101,8 @@ namespace Yodii.Engine
             }
         }
 
+        public bool IsPlugin { get { return false; } }
+
         /// <summary>
         /// The ServiceInfo discovered object.
         /// </summary>

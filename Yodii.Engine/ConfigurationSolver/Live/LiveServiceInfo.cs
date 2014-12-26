@@ -23,7 +23,7 @@ namespace Yodii.Engine
             _serviceInfo = s.ServiceInfo;
         }
 
-        protected override bool IsPlugin { get { return false; } }
+        public override bool IsPlugin { get { return false; } }
 
         internal void UpdateFrom( ServiceData s, DelayedPropertyNotification notifier )
         {

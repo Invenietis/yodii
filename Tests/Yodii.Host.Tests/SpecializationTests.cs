@@ -26,14 +26,14 @@ namespace Yodii.Host.Tests
                 var c = new ServiceSpecializationContext();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginRoot." );
-                c.PluginRoot.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginRoot.Live ).CheckSuccess();
                 c.PluginRoot.CheckState( PluginStatus.Started );
                 c.ServiceRoot.CheckState( ServiceStatus.Started );
                 c.ServiceRoot.CheckEventsAndClear( ServiceStatus.Starting, ServiceStatus.Started );
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Stopping ServiceRoot." );
-                c.ServiceRoot.Live.Stop().CheckSuccess();
+                c.Engine.Stop( c.ServiceRoot.Live ).CheckSuccess();
                 c.PluginRoot.CheckState( PluginStatus.Stopped );
                 c.ServiceRoot.CheckState( ServiceStatus.Stopped );
                 c.ServiceRoot.CheckEventsAndClear( ServiceStatus.Stopping, ServiceStatus.Stopped );
@@ -49,7 +49,7 @@ namespace Yodii.Host.Tests
                 var c = new ServiceSpecializationContext();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginRoot." );
-                c.PluginRoot.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginRoot.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginRoot );
                 c.ServiceRoot.CheckState( ServiceStatus.Started );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -59,7 +59,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting AltPluginRoot." );
-                c.AltPluginRoot.Live.Start().CheckSuccess();
+                c.Engine.Start( c.AltPluginRoot.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.AltPluginRoot );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -69,7 +69,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginRoot." );
-                c.PluginRoot.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginRoot.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginRoot );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -88,7 +88,7 @@ namespace Yodii.Host.Tests
                 var c = new ServiceSpecializationContext();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginRoot." );
-                c.PluginRoot.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginRoot.Live ).CheckSuccess();
                 c.ServiceRoot.CheckState( ServiceStatus.Started );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
                 c.ServiceSubB.CheckState( ServiceStatus.Stopped );
@@ -100,7 +100,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubB." );
-                c.PluginSubB.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubB.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubB );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -113,7 +113,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubBSub." );
-                c.PluginSubBSub.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubBSub.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubBSub );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -135,7 +135,7 @@ namespace Yodii.Host.Tests
                 var c = new ServiceSpecializationContext();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubBSub." );
-                c.PluginSubBSub.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubBSub.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubBSub );
                 c.ServiceRoot.CheckState( ServiceStatus.Started );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -148,7 +148,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubB." );
-                c.PluginSubB.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubB.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubB );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -161,7 +161,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginRoot." );
-                c.PluginRoot.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginRoot.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginRoot );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -185,7 +185,7 @@ namespace Yodii.Host.Tests
                 var c = new ServiceSpecializationContext();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubBSub." );
-                c.PluginSubBSub.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubBSub.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubBSub );
                 c.ServiceRoot.CheckState( ServiceStatus.Started );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );
@@ -198,7 +198,7 @@ namespace Yodii.Host.Tests
                 c.Host.GetTrackedEntries();
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubA." );
-                c.PluginSubA.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubA.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubA );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Started );
@@ -221,7 +221,7 @@ namespace Yodii.Host.Tests
                 Assert.That( c.AllPlugins.All( p => p.CheckState( PluginStatus.Null ) ), "Since they never ran, they are Null." );
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubBSub." );
-                c.PluginSubBSub.Live.Start().CheckSuccess();
+                c.Engine.Start( c.PluginSubBSub.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.PluginSubBSub );
                 
                 TestHelper.ConsoleMonitor.Trace().Send( "Disabling PluginSubBSub by configuration." );
@@ -230,7 +230,7 @@ namespace Yodii.Host.Tests
                 Assert.That( c.AllServices.All( s => s.CheckState( ServiceStatus.Stopped ) ) );
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Starting PluginSubBSubAlternate (IDisposable plugin)." );
-                c.AltPluginSubBSub.Live.Start().CheckSuccess();
+                c.Engine.Start( c.AltPluginSubBSub.Live ).CheckSuccess();
                 c.CheckOnePluginStarted( c.AltPluginSubBSub );
                 c.ServiceRoot.CheckState( ServiceStatus.StartedSwapped );
                 c.ServiceSubA.CheckState( ServiceStatus.Stopped );

@@ -549,12 +549,12 @@ namespace Yodii.Lab
         {
             if( _labStateManager.Engine.IsRunning )
             {
-                LabState.Engine.Stop();
+                LabState.Engine.StopEngine();
             }
             else
             {
                 RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
-                var startResult = _engine.Start();
+                var startResult = _engine.StartEngine();
 
                 if( startResult == null )
                 {

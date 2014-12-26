@@ -84,7 +84,7 @@ namespace Yodii.ObjectExplorer.Wpf
                         _tryingToClose = true;
 
                         // Ask the engine to stop ourselves.
-                        var r = livePluginInfo.Stop();
+                        var r = _activeEngine.Stop( livePluginInfo );
 
                         // We stopped our own plugin, without Stop() calling Close(), so the window is still there.
                         // Revoke the Cancel so it closes when exiting this method.

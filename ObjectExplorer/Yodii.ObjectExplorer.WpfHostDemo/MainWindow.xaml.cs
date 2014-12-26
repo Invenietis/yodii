@@ -44,7 +44,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             this.DataContext = this;
 
             InitializeComponent();
-            Engine.Start();
+            Engine.StartEngine();
         }
 
         void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -66,24 +66,24 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
 
         private void Start_Click( object sender, RoutedEventArgs e )
         {
-            Engine.Start();
+            Engine.StartEngine();
         }
 
         private void Stop_Click( object sender, RoutedEventArgs e )
         {
-            Engine.Stop();
+            Engine.StopEngine();
         }
 
         private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
         {
-            Engine.Stop();
+            Engine.StopEngine();
         }
 
         private void StartOE_Click( object sender, RoutedEventArgs e )
         {
             if( ObjectExplorerPlugin.Capability.CanStart )
             {
-                ObjectExplorerPlugin.Start();
+                Engine.Start( ObjectExplorerPlugin, StartDependencyImpact.Unknown );
             }
             else
             {
@@ -95,7 +95,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
         {
             if( ObjectExplorerPlugin.Capability.CanStop )
             {
-                ObjectExplorerPlugin.Stop();
+                Engine.Stop( ObjectExplorerPlugin );
             }
             else
             {

@@ -13,7 +13,8 @@ namespace Yodii.Model
     /// This is the observable façade to the whole <see cref="IYodiiEngine"/>.
     /// </summary>
     /// <remarks>
-    /// Gives information about which services and plugins were successfully resolved and started.
+    /// Gives information about which services and plugins were successfully resolved and started and supports 
+    /// start and stop capabilities.
     /// </remarks>
     public interface ILiveInfo
     {
@@ -45,14 +46,14 @@ namespace Yodii.Model
         ILiveServiceInfo FindService( string fullName );
         
         /// <summary>
-        /// Find a plugin by its GUID.
+        /// Find a plugin by its full name.
         /// </summary>
         /// <param name="pluginFullName">Plugin full name</param>
         /// <returns>Live plugin</returns>
         ILivePluginInfo FindPlugin( string pluginFullName );
 
         /// <summary>
-        /// Cancels any start or stop made by this caller.
+        /// Cancels any start or stop made by the given caller.
         /// </summary>
         /// <param name="callerKey">The caller key that identifies the caller. Null is considered to be the same as <see cref="String.Empty"/>.</param>
         /// <returns>Since canceling commands may trigger a runtime error, this method must return a result.</returns>

@@ -11,6 +11,8 @@ namespace Yodii.Engine
     /// </summary>
     interface IYodiiItemData
     {
+        bool IsPlugin { get; }
+
         ConfigurationStatus ConfigOriginalStatus { get; }
 
         SolvedConfigurationStatus ConfigSolvedStatus { get; }

@@ -166,7 +166,7 @@ namespace Yodii.Lab
 
             if( !result.Success )
             {
-                Engine.Stop();
+                Engine.StopEngine();
                 MessageBox.Show( String.Format( "Engine would have this error:\n\n{0}", result.Describe() ), "Change refused", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
             }
         }
@@ -410,7 +410,7 @@ namespace Yodii.Lab
         /// </summary>
         internal void ClearState()
         {
-            if( _engine.IsRunning ) _engine.Stop();
+            if( _engine.IsRunning ) _engine.StopEngine();
 
             _labPluginInfos.Clear();
             _labServiceInfos.Clear();
@@ -595,41 +595,29 @@ namespace Yodii.Lab
         /// Creates a lab wrapper item around an existing mock service, and adds it to our collection.
         /// </summary>
         /// <param name="s">Existing mock service</param>
-        private void CreateLabService( ServiceInfo s )
+        private LabServiceInfo CreateLabService( ServiceInfo s )
         {
             LabServiceInfo newServiceInfo;
-            if( s.Generalization != null )
-            {
-                LabServiceInfo generalizationLiveInfo = _labServiceInfos.GetByKey( (ServiceInfo)s.Generalization );
-                newServiceInfo = new LabServiceInfo( s ); // TODO: Running requirement
-            }
-            else
-            {
-                newServiceInfo = new LabServiceInfo( s );
-            }
+            newServiceInfo = new LabServiceInfo( _engine, s );
             _labServiceInfos.Add( newServiceInfo );
+            return newServiceInfo;
         }
 
         /// <summary>
         /// Creates a lab wrapper item around an existing mock plugin, and adds it to our collection.
         /// </summary>
         /// <param name="p">Existing mock plugin</param>
-        private void CreateLabPlugin( PluginInfo p )
+        private LabPluginInfo CreateLabPlugin( PluginInfo p )
         {
             LabPluginInfo lp;
-
             if( p.Service != null )
             {
                 p.Service.InternalImplementations.Add( p );
                 LabServiceInfo liveService = _labServiceInfos.GetByKey( p.Service );
-                lp = new LabPluginInfo( p );
             }
-            else
-            {
-                lp = new LabPluginInfo( p );
-            }
-
+            lp = new LabPluginInfo( _engine, p );
             _labPluginInfos.Add( lp );
+            return lp;
         }
 
         /// <summary>

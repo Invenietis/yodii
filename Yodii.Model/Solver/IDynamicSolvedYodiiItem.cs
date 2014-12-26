@@ -16,6 +16,11 @@ namespace Yodii.Model
         string FullName { get; }
 
         /// <summary>
+        /// Gets whether this is a plugin (or a service).
+        /// </summary>
+        bool IsPlugin { get; }
+
+        /// <summary>
         /// Gets the final running status.
         /// </summary>
         RunningStatus RunningStatus { get; }

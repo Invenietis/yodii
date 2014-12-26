@@ -18,6 +18,8 @@ namespace Yodii.Engine
             _pluginInfo = plugin.PluginInfo;
         }
 
+        public bool IsPlugin { get { return true; } }
+
         public override string FullName { get { return _pluginInfo.PluginFullName; } }
         
         public IPluginInfo PluginInfo { get { return _pluginInfo; } }

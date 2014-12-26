@@ -11,13 +11,14 @@ namespace Yodii.Lab.Mocks
     [DebuggerDisplay( "Lab plugin: {PluginInfo.PluginFullName}" )]
     public class LabPluginInfo : ViewModelBase
     {
+        readonly IYodiiEngine _engine;
         readonly PluginInfo _pluginInfo;
         ILivePluginInfo _livePluginInfo;
 
-        internal LabPluginInfo( PluginInfo pluginInfo )
+        internal LabPluginInfo( IYodiiEngine engine, PluginInfo pluginInfo )
         {
-            Debug.Assert( pluginInfo != null );
-
+            Debug.Assert( engine != null && pluginInfo != null );
+            _engine = engine;
             _pluginInfo = pluginInfo;
 
             StartPluginCommand = new RelayCommand( ExecuteStartPlugin, CanExecuteStartPlugin );
@@ -26,13 +27,13 @@ namespace Yodii.Lab.Mocks
 
         private bool CanExecuteStopPlugin( object obj )
         {
-            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Running;
+            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Running && LivePluginInfo.Capability.CanStop;
         }
 
         private void ExecuteStopPlugin( object obj )
         {
-            if( !CanExecuteStopPlugin( null ) ) return;
-            var result = LivePluginInfo.Stop( "LabPluginInfo" );
+            if( !CanExecuteStopPlugin( obj ) ) return;
+            var result = _engine.Stop( LivePluginInfo );
             if( !result.Success )
             {
                 MessageBox.Show( result.Describe() );
@@ -41,13 +42,17 @@ namespace Yodii.Lab.Mocks
 
         private bool CanExecuteStartPlugin( object obj )
         {
-            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Stopped;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+            return LivePluginInfo != null && LivePluginInfo.Capability.CanStartWith( impact );
         }
 
         private void ExecuteStartPlugin( object obj )
         {
-            if( !CanExecuteStartPlugin( null ) ) return;
-            var result = LivePluginInfo.Start( "LabPluginInfo" );
+            if( !CanExecuteStartPlugin( obj ) ) return;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+            var result = _engine.Start( LivePluginInfo, impact );
             if( !result.Success )
             {
                 MessageBox.Show( result.Describe() );
@@ -83,15 +88,13 @@ namespace Yodii.Lab.Mocks
             get { return _livePluginInfo; }
             internal set
             {
-                if( value != null )
+                Debug.Assert( value == null || value.PluginInfo == PluginInfo );
+                if( value != _livePluginInfo )
                 {
-                    Debug.Assert( value.PluginInfo == PluginInfo );
+                    _livePluginInfo = value;
+                    RaisePropertyChanged();
+                    RaisePropertyChanged( "IsLive" );
                 }
-
-                _livePluginInfo = value;
-
-                RaisePropertyChanged();
-                RaisePropertyChanged( "IsLive" );
             }
         }
 

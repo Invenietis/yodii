@@ -47,7 +47,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add( "S1.1", ConfigurationStatus.Running );
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             Assert.That( result.Success, Is.False );
         }
 
@@ -268,7 +268,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
             cl.Items.Add( "PluginAx-1", ConfigurationStatus.Running );
 
-            IYodiiEngineResult res = engine.Start();
+            IYodiiEngineResult res = engine.StartEngine();
 
             res.CheckSuccess();
 
@@ -1083,7 +1083,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
             cl.Items.Add("S1.1", ConfigurationStatus.Running);
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1131,7 +1131,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             cl.Items.Add("S1.1", ConfigurationStatus.Running);
             cl.Items.Add("P", ConfigurationStatus.Running);
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             Assert.That(result.Success, Is.False);
         }
 
@@ -1186,7 +1186,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1259,7 +1259,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1328,7 +1328,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1382,7 +1382,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1436,7 +1436,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1490,7 +1490,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1548,7 +1548,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1605,7 +1605,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -1990,7 +1990,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();
@@ -2039,7 +2039,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             YodiiEngine engine = new YodiiEngine(new BuggyYodiiEngineHostMock());
             engine.SetDiscoveredInfo(d);
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
             {
                 res.CheckSuccess();

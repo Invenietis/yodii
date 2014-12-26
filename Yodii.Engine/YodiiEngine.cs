@@ -124,7 +124,7 @@ namespace Yodii.Engine
             get { return _currentSolver != null; }
         }
 
-        public void Stop()
+        public void StopEngine()
         {
             if( IsRunning )
             {
@@ -171,9 +171,9 @@ namespace Yodii.Engine
         /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
         /// <returns>Engine start result.</returns>
         /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
-        public IYodiiEngineResult Start( IEnumerable<YodiiCommand> persistedCommands = null )
+        public IYodiiEngineResult StartEngine( IEnumerable<YodiiCommand> persistedCommands = null )
         {
-            return Start( false, false, persistedCommands );
+            return StartEngine( false, false, persistedCommands );
         }
 
         /// <summary>
@@ -185,6 +185,45 @@ namespace Yodii.Engine
         {
             return StaticResolutionOnly( false, false );
         }
+
+
+        /// <summary>
+        /// Attempts to start a service or a plugin. 
+        /// </summary>
+        /// <param name="pluginOrService">The plugin or service live object to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability">pluginOrService.Capability</see> property <see cref="ILiveRunCapability.CanStart"/> 
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <returns>Result detailing whether the service or plugin was successfully started or not.</returns>
+        public IYodiiEngineResult Start( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        {
+            if( pluginOrService == null ) throw new ArgumentNullException();
+            if( !pluginOrService.Capability.CanStartWith( impact ) )
+            {
+                throw new InvalidOperationException( "You must call Capability.CanStart with the wanted impact and ensure that it returns true before calling Start." );
+            }
+            YodiiCommand command = new YodiiCommand( true, pluginOrService.FullName, pluginOrService.IsPlugin, impact, null );
+            return AddYodiiCommand( command );
+        }
+
+        /// <summary>
+        /// Attempts to stop this service or plugin.
+        /// </summary>
+        /// <param name="pluginOrService">The plugin or service live object to stop.</param>
+        /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        public IYodiiEngineResult Stop( ILiveYodiiItem pluginOrService )
+        {
+            if( pluginOrService == null ) throw new ArgumentNullException();
+            if( !pluginOrService.Capability.CanStop )
+            {
+                throw new InvalidOperationException( "You must call Capability.CanStop and ensure that it returns true before calling Stop." );
+            }
+            YodiiCommand command = new YodiiCommand( false, pluginOrService.FullName, pluginOrService.IsPlugin, StartDependencyImpact.Unknown, null );
+            return AddYodiiCommand( command );
+        }
+
 
         /// <summary>
         /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
@@ -211,7 +250,7 @@ namespace Yodii.Engine
         /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
         /// <returns>The result.</returns>
         /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
-        public IYodiiEngineResult Start( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
+        public IYodiiEngineResult StartEngine( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
         {
             if( IsRunning ) throw new InvalidOperationException();
             _yodiiCommands.Clear();

@@ -43,7 +43,7 @@ namespace Yodii.Engine.Tests
 
 
 
-            result = engine.Start();
+            result = engine.StartEngine();
             Assert.That( result.Success, Is.True );
             Assert.That( engine.LiveInfo, Is.Not.Null );
             Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).PluginInfo, Is.EqualTo( pluginA1 ) );
@@ -74,7 +74,7 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).CurrentError, Is.Null );
             Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.Null );
 
-            engine.Stop();
+            engine.StopEngine();
 
         }
     }

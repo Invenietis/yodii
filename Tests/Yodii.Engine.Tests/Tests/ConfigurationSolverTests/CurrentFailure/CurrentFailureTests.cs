@@ -44,11 +44,11 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             StaticConfigurationTests.CreateDynamicInvalidLoop().FullStart( ( engine, res ) =>
             {
-                engine.LiveInfo.FindPlugin( "Plugin1.1" ).Start( StartDependencyImpact.Minimal ).CheckSuccess( "Starting the Plugin1.1 (just for fun)." );
-                engine.LiveInfo.FindPlugin( "Plugin1.2" ).Start( StartDependencyImpact.Minimal ).CheckSuccess( "Starting Plugin1.2 (this launch the Plugin2.2 to support Service2." );
+                engine.StartPlugin( "Plugin1.1", StartDependencyImpact.Minimal ).CheckSuccess( "Starting the Plugin1.1 (just for fun)." );
+                engine.StartPlugin( "Plugin1.2", StartDependencyImpact.Minimal ).CheckSuccess( "Starting Plugin1.2 (this launch the Plugin2.2 to support Service2." );
                 Assert.That( engine.LiveInfo.FindPlugin( "Plugin2.2" ).RunningStatus, Is.EqualTo( RunningStatus.Running ), "Plugin2.2 is required by Plugin1.2." );
 
-                engine.LiveInfo.FindPlugin( "Plugin2.2" ).Stop().CheckSuccess( "Stops the Plugin2.2 will stop the Service2 => all will be stopped." );
+                engine.StopPlugin( "Plugin2.2" ).CheckSuccess( "Stops the Plugin2.2 will stop the Service2 => all will be stopped." );
 
                 engine.CheckAllPluginsStopped( "Plugin2.2, Plugin1.2" );
             } );
@@ -99,7 +99,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
@@ -172,7 +172,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
 
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();
@@ -254,7 +254,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             engine.SetDiscoveredInfo( d );
 
-            var result = engine.Start();
+            var result = engine.StartEngine();
             engine.FullStaticResolutionOnly( res =>
             {
                 res.CheckSuccess();

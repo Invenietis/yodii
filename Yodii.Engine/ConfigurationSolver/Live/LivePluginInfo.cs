@@ -21,7 +21,7 @@ namespace Yodii.Engine
             _pluginInfo = p.PluginInfo;
         }
 
-        protected override bool IsPlugin { get { return true; } }
+        public override bool IsPlugin { get { return true; } }
 
         internal void UpdateFrom( PluginData p, DelayedPropertyNotification notifier )
         {

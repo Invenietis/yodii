@@ -18,6 +18,8 @@ namespace Yodii.Engine
             _serviceInfo = s.ServiceInfo;
         }
 
+        public bool IsPlugin { get { return false; } }
+
         public override string FullName { get { return _serviceInfo.ServiceFullName; } }
         
         public IServiceInfo ServiceInfo { get { return _serviceInfo; } }

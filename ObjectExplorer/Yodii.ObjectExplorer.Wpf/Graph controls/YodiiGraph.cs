@@ -25,9 +25,8 @@ namespace Yodii.ObjectExplorer.Wpf
 
         internal bool LockGraphUpdates = false;
 
-        IConfigurationManager _configurationManager;
+        readonly IYodiiEngine _engine;
 
-        #region Constructor
         /// <summary>
         /// Used for GraphX serialization. Not implemented.
         /// </summary>
@@ -38,42 +37,39 @@ namespace Yodii.ObjectExplorer.Wpf
             : base()
         {
             Debug.Assert( engine != null );
-
+            _engine = engine;
             _serviceInfos = engine.LiveInfo.Services;
             _pluginInfos = engine.LiveInfo.Plugins;
-            _configurationManager = engine.Configuration;
 
             _serviceInfos.CollectionChanged += _serviceInfos_CollectionChanged;
             _pluginInfos.CollectionChanged += _pluginInfos_CollectionChanged;
-            _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
+            _engine.Configuration.ConfigurationChanged += _configurationManager_ConfigurationChanged;
 
             BuildInitialGraph();
         }
-        #endregion Constructor
 
         void BuildInitialGraph()
         {
             this.Clear();
-
             foreach( var service in _serviceInfos ) CreateServiceVertex( service );
             foreach( var plugin in _pluginInfos ) CreatePluginVertex( plugin );
-
             RaiseGraphUpdateRequested();
-
-            ReprocessVerticesWithConfiguration( _configurationManager.FinalConfiguration );
+            ReprocessVerticesWithConfiguration( _engine.Configuration.FinalConfiguration );
         }
+
+        public IYodiiEngine Engine { get { return _engine; } }
 
         #region Properties
         internal IConfigurationManager ConfigurationManager
         {
-            get { return _configurationManager; }
-            set
-            {
-                Debug.Assert( value != null );
-                _configurationManager = value;
-                ReprocessVerticesWithConfiguration( _configurationManager.FinalConfiguration );
-                _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
-            }
+            get { return _engine.Configuration; }
+            //set
+            //{
+            //    Debug.Assert( value != null );
+            //    _configurationManager = value;
+            //    ReprocessVerticesWithConfiguration( _configurationManager.FinalConfiguration );
+            //    _configurationManager.ConfigurationChanged += _configurationManager_ConfigurationChanged;
+            //}
         }
 
         void _configurationManager_ConfigurationChanged( object sender, ConfigurationChangedEventArgs e )
@@ -123,7 +119,7 @@ namespace Yodii.ObjectExplorer.Wpf
         YodiiGraphVertex CreateServiceVertex( ILiveServiceInfo liveService )
         {
             YodiiGraphVertex serviceVertex = new YodiiGraphVertex( this, liveService ) { ID = currentId++ };
-            SetVertexConfiguration( serviceVertex, _configurationManager.FinalConfiguration );
+            SetVertexConfiguration( serviceVertex, _engine.Configuration.FinalConfiguration );
             this.AddVertex( serviceVertex );
 
 
@@ -160,7 +156,7 @@ namespace Yodii.ObjectExplorer.Wpf
         YodiiGraphVertex CreatePluginVertex( ILivePluginInfo livePlugin )
         {
             YodiiGraphVertex pluginVertex = new YodiiGraphVertex( this, livePlugin ) { ID = this.currentId++ };
-            SetVertexConfiguration( pluginVertex, _configurationManager.FinalConfiguration );
+            SetVertexConfiguration( pluginVertex, _engine.Configuration.FinalConfiguration );
             this.AddVertex( pluginVertex );
 
             if( livePlugin.PluginInfo.Service != null )

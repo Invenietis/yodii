@@ -215,7 +215,7 @@ namespace Yodii.Lab
         {
             if( state.Engine.IsRunning )
             {
-                state.Engine.Stop();
+                state.Engine.StopEngine();
             }
 
             while( r.Read() )
@@ -485,7 +485,7 @@ namespace Yodii.Lab
             // Stop running engine
             if( state.Engine.IsRunning )
             {
-                state.Engine.Stop();
+                state.Engine.StopEngine();
             }
 
             // Clear configuration manager

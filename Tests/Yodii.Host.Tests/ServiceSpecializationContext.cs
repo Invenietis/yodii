@@ -58,7 +58,7 @@ namespace Yodii.Host.Tests
 
             if( startEngine )
             {
-                Engine.Start().CheckSuccess();
+                Engine.StartEngine().CheckSuccess();
                 _allServices.CheckState( ServiceStatus.Stopped );
                 _allPlugins.CheckState( PluginStatus.Null );
                 Assert.That( _allServices.AllEvents(), Is.Empty );

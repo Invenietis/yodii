@@ -15,7 +15,6 @@ namespace Yodii.ObjectExplorer.Wpf
     public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
-        readonly bool _isPlugin;
         readonly ILiveServiceInfo _liveService;
         readonly ILivePluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
@@ -38,47 +37,6 @@ namespace Yodii.ObjectExplorer.Wpf
             _stopItemCommand = new RelayCommand( StopLiveItemExecute, CanStopLiveItem );
         }
 
-        private bool CanStartLiveItem( object obj )
-        {
-            if( LiveObject == null ) return false;
-            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Running ) return false;
-
-            StartDependencyImpact impact = StartDependencyImpact.Unknown;
-            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
-
-            return LiveObject.Capability.CanStartWith( impact );
-        }
-
-        private bool CanStopLiveItem( object obj )
-        {
-            if( LiveObject == null ) return false;
-            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Stopped ) return false;
-
-            return true;
-        }
-
-        private void StartLiveItemExecute( object obj )
-        {
-            if( !CanStartLiveItem( obj ) ) return;
-
-            if( LiveObject.RunningStatus == RunningStatus.Stopped )
-            {
-                StartDependencyImpact impact = StartDependencyImpact.Unknown;
-                if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
-
-                LiveObject.Start( impact );
-            }
-        }
-
-        private void StopLiveItemExecute( object obj )
-        {
-            if( !CanStopLiveItem( obj ) ) return;
-
-            if( LiveObject.RunningStatus == RunningStatus.Running )
-            {
-                LiveObject.Stop();
-            }
-        }
         /// <summary>
         /// Creates a new plugin vertex.
         /// </summary>
@@ -90,7 +48,6 @@ namespace Yodii.ObjectExplorer.Wpf
             Debug.Assert( parentGraph != null );
             Debug.Assert( plugin != null );
 
-            _isPlugin = true;
             _livePlugin = plugin;
             _liveItem = plugin;
             _parentGraph = parentGraph;
@@ -107,13 +64,53 @@ namespace Yodii.ObjectExplorer.Wpf
             Debug.Assert( parentGraph != null );
             Debug.Assert( service != null );
 
-            _isPlugin = false;
             _liveService = service;
             _liveItem = service;
             _parentGraph = parentGraph;
         }
 
         #endregion Constructors
+
+        private bool CanStartLiveItem( object obj )
+        {
+            if( LiveObject == null ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Running ) return false;
+
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+
+            return LiveObject.Capability.CanStartWith( impact );
+        }
+
+        private void StartLiveItemExecute( object obj )
+        {
+            if( !CanStartLiveItem( obj ) ) return;
+
+            if( LiveObject.RunningStatus == RunningStatus.Stopped )
+            {
+                StartDependencyImpact impact = StartDependencyImpact.Unknown;
+                if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+                _parentGraph.Engine.Start( LiveObject, impact );
+            }
+        }
+
+        private bool CanStopLiveItem( object obj )
+        {
+            if( LiveObject == null ) return false;
+            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Stopped ) return false;
+
+            return true;
+        }
+
+        private void StopLiveItemExecute( object obj )
+        {
+            if( !CanStopLiveItem( obj ) ) return;
+
+            if( LiveObject.RunningStatus == RunningStatus.Running )
+            {
+                _parentGraph.Engine.Stop( LiveObject );
+            }
+        }
 
         #region Properties
 
@@ -123,7 +120,7 @@ namespace Yodii.ObjectExplorer.Wpf
         /// <remarks>
         /// LabPluginInfo contains something in this case.
         /// </remarks>
-        public bool IsPlugin { get { return _isPlugin; } }
+        public bool IsPlugin { get { return _livePlugin != null; } }
 
         /// <summary>
         /// True if the element represented by this vertex is a service.
@@ -131,7 +128,7 @@ namespace Yodii.ObjectExplorer.Wpf
         /// <remarks>
         /// LabServiceInfo contains something in this case.
         /// </remarks>
-        public bool IsService { get { return !_isPlugin; } }
+        public bool IsService { get { return _liveService != null; } }
 
         /// <summary>
         /// Whether this vertex is currently selected by the user.

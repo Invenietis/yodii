@@ -21,31 +21,31 @@ namespace Yodii.Engine.Tests
             {
                 using( m.OpenInfo().Send( "FullStart()." ) )
                 {
-                    result = @this.Start( false, false );
+                    result = @this.StartEngine( false, false );
                     result.Trace( m );
                     tests( @this, result );
-                    @this.Stop();
+                    @this.StopEngine();
                 }
                 using( m.OpenInfo().Send( "FullStart( revertServices )." ) )
                 {
-                    result = @this.Start( true, false );
+                    result = @this.StartEngine( true, false );
                     result.Trace( m );
                     tests( @this, result );
-                    @this.Stop();
+                    @this.StopEngine();
                 }
                 using( m.OpenInfo().Send( "FullStart( revertPlugins )." ) )
                 {
-                    result = @this.Start( false, true );
+                    result = @this.StartEngine( false, true );
                     result.Trace( m );
                     tests( @this, result );
-                    @this.Stop();
+                    @this.StopEngine();
                 }
                 using( m.OpenInfo().Send( "FullStart( revertServices, revertPlugins )." ) )
                 {
-                    result = @this.Start( true, true );
+                    result = @this.StartEngine( true, true );
                     result.Trace( m );
                     tests( @this, result );
-                    @this.Stop();
+                    @this.StopEngine();
                 }
             }
         }

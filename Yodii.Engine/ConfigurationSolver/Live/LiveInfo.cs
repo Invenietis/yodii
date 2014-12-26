@@ -128,7 +128,7 @@ namespace Yodii.Engine
         }
 
         /// <summary>
-        /// Called by YodiiEngine.Stop().
+        /// Called by YodiiEngine.StopEngine().
         /// </summary>
         internal void Clear()
         {
