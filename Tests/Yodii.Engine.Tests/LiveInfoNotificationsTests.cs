@@ -77,10 +77,13 @@ namespace Yodii.Engine.Tests
                                                 };
 
             IConfigurationLayer config = engine.Configuration.Layers.Create( "Default" );
-            config.Items.Add( p1.FullName, ConfigurationStatus.Disabled );
+            config.Items.Set( p1.FullName, ConfigurationStatus.Disabled );
             
-            Assert.That( p1.Capability.CanStart && p1.Capability.CanStartWithFullStart 
-                        && p1.Capability.CanStartWithStartRecommended && p1.Capability.CanStartWithStopOptionalAndRunnable 
+            Assert.That( p1.Capability.CanStart 
+                        && p1.Capability.CanStartWithFullStart 
+                        && p1.Capability.CanStartWithStartRecommended 
+                        && p1.Capability.CanStartWithStopOptionalAndRunnable
+                        && p1.Capability.CanStartWithStartRecommendedAndStopOptionalAndRunnable
                         && p1.Capability.CanStartWithFullStop, Is.False );
 
             Assert.That( p2.Capability.CanStart && sA.Capability.CanStart, Is.True );
@@ -89,12 +92,12 @@ namespace Yodii.Engine.Tests
             Assert.That( p2.Capability.CanStartWithStopOptionalAndRunnable && sA.Capability.CanStartWithStopOptionalAndRunnable, Is.True );
             Assert.That( p2.Capability.CanStartWithFullStop && sA.Capability.CanStartWithFullStop, Is.True );
 
-
             CollectionAssert.AreEquivalent( new string[]{
                 "p1.Capablity.CanStart", 
                 "p1.Capablity.CanStartWithFullStart", 
                 "p1.Capablity.CanStartWithStartRecommended", 
                 "p1.Capablity.CanStartWithStopOptionalAndRunnable", 
+                "p1.Capablity.CanStartWithStartRecommendedAndStopOptionalAndRunnable", 
                 "p1.Capablity.CanStartWithFullStop", 
                 "p1.DisabledReason", 
                 "p1.RunningStatus", 
@@ -103,13 +106,14 @@ namespace Yodii.Engine.Tests
                 "p1.FinalConfigSolvedStatus" }, propertyChanged );
             propertyChanged.Clear();
 
-            config.Items.Add( p1.FullName, ConfigurationStatus.Optional );
+            config.Items.Set( p1.FullName, ConfigurationStatus.Optional );
 
             CollectionAssert.AreEquivalent( new string[]{
                 "p1.Capablity.CanStart", 
                 "p1.Capablity.CanStartWithFullStart", 
                 "p1.Capablity.CanStartWithStartRecommended", 
                 "p1.Capablity.CanStartWithStopOptionalAndRunnable", 
+                "p1.Capablity.CanStartWithStartRecommendedAndStopOptionalAndRunnable", 
                 "p1.Capablity.CanStartWithFullStop", 
                 "p1.DisabledReason", 
                 "p1.RunningStatus", 

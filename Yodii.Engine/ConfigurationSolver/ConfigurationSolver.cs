@@ -327,8 +327,8 @@ namespace Yodii.Engine
             ServiceData data;
             if( _services.TryGetValue( s.ServiceFullName, out data ) ) return data;
 
-            //Set default status
-            ConfigurationStatus serviceStatus = finalConfig.GetStatus( s.ServiceFullName );
+            // Gets default status
+            FinalConfigurationItem serviceConf = finalConfig.GetFinalConfiguration( s.ServiceFullName );
             // Handle generalization.
             ServiceData dataGen = null;
             if( s.Generalization != null )
@@ -338,12 +338,12 @@ namespace Yodii.Engine
             Debug.Assert( (s.Generalization == null) == (dataGen == null) );
             if( dataGen == null )
             {
-                data = new ServiceData( this, s, serviceStatus );
+                data = new ServiceData( this, s, serviceConf.Status, serviceConf.Impact );
                 _serviceFamilies.Add( data.Family );
             }
             else
             {
-                data = new ServiceData( s, dataGen, serviceStatus );
+                data = new ServiceData( s, dataGen, serviceConf.Status, serviceConf.Impact );
             }
             _services.Add( s.ServiceFullName, data );
             return data;
@@ -354,10 +354,10 @@ namespace Yodii.Engine
             PluginData data;
             if( _plugins.TryGetValue( p.PluginFullName, out data ) ) return data;
 
-            ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginFullName );
+            FinalConfigurationItem pConf = finalConfig.GetFinalConfiguration( p.PluginFullName );
             ServiceData service = p.Service != null ? _services[p.Service.ServiceFullName] : null;
             if( service == null ) ++_independentPluginsCount;
-            data = new PluginData( this, p, service, pluginStatus );
+            data = new PluginData( this, p, service, pConf.Status, pConf.Impact );
             _plugins.Add( p.PluginFullName, data );
             return data;
         }

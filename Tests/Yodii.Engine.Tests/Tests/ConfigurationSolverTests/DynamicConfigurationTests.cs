@@ -496,7 +496,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             var rootIService2 = engine.LiveInfo.Services.Where( s => s.FullName == "IService2" ).First();
 
             var layer = engine.Configuration.Layers.Create( "DefautLayer" );
-            var result = layer.Items.Add( "IService2", ConfigurationStatus.Disabled );
+            var result = layer.Items.Set( "IService2", ConfigurationStatus.Disabled );
 
             Assert.That( result.Success == false );
         }

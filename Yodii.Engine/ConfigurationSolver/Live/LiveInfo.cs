@@ -38,15 +38,22 @@ namespace Yodii.Engine
             get { return _services; }
         }
 
-        public ILiveServiceInfo FindService( string fullName )
+        public ILiveServiceInfo FindService( string serviceFullName )
         {
-            if( fullName == null ) throw new ArgumentNullException( "fullName" );
-            return _services.GetByKey( fullName );
+            if( serviceFullName == null ) throw new ArgumentNullException( "serviceFullName" );
+            return _services.GetByKey( serviceFullName );
         }
 
         public ILivePluginInfo FindPlugin( string pluginFullName )
         {
+            if( pluginFullName == null ) throw new ArgumentNullException( "pluginFullName" );
             return _plugins.GetByKey( pluginFullName );
+        }
+
+        public ILiveYodiiItem FindYodiiItem( string pluginOrserviceFullName )
+        {
+            if( pluginOrserviceFullName == null ) throw new ArgumentNullException( "pluginOrserviceFullName" );
+            return (ILiveYodiiItem)_plugins.GetByKey( pluginOrserviceFullName ) ?? _services.GetByKey( pluginOrserviceFullName );
         }
 
         public bool Contains( string serviceFullName )

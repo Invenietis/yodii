@@ -50,65 +50,11 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
                 engine.StopPlugin( "Plugin2.2" ).CheckSuccess( "Stops the Plugin2.2 will stop the Service2 => all will be stopped." );
 
-                engine.CheckAllPluginsStopped( "Plugin2.2, Plugin1.2" );
+                engine.CheckAllPluginsStopped( "Plugin1.1, Plugin1.2, Plugin2.1, Plugin2.2" );
             } );
         }
+
         #region Invalid Loops with runnable/optionnal references which we don't want to solve for the moment.
-        [Test]
-        public void InvalidInternalLoop1WithARunnableReference()
-        {
-            #region graph
-            /**
-             *                    +----------+           
-             *        +---------->| Service1 +-------+   
-             *        |           | Optional |       |   
-             *        |           +----------+       |   
-             *        |                          +---+------+                  
-             *        |                          | Plugin1  |                  
-             *        |                          | Optional |                  
-             *  +-----+------+                   +---+------+                  
-             *  | Service1.1 |                       | Runnable                       
-             *  |  Optional  |-----------------------+                        
-             *  +----+-------+ 
-             *       |         
-             *       |                 
-             *       |         
-             *       |         
-             *  +----+-------+                
-             *  | Plugin1.1  |                
-             *  | Optional   |                
-             *  +------------+  
-             *                                                            
-             */
-            #endregion
-
-            var d = new DiscoveredInfo();
-            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
-            d.ServiceInfos.Add( new ServiceInfo( "Service1.1", d.DefaultAssembly ) );
-            d.FindService( "Service1.1" ).Generalization = d.FindService( "Service1" );
-
-            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
-            d.PluginInfos.Add( new PluginInfo( "Plugin1.1", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin1.1" ).Service = d.FindService( "Service1.1" );
-
-            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service1.1" ), DependencyRequirement.Runnable );
-
-            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( d );
-
-
-
-            var result = engine.StartEngine();
-            engine.FullStaticResolutionOnly( res =>
-            {
-                res.CheckSuccess();
-                res.CheckPluginsDisabled( "Plugin1" );
-                res.CheckAllPluginsRunnable( "Plugin1.1" );
-                res.CheckAllServicesRunnable( "Service1,Service1.1" );
-            } );
-        }
-
 
         [Test]
         public void InvalidLoop2WithARunnableReference()

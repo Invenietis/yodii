@@ -291,46 +291,52 @@ namespace Yodii.Engine
         {
             switch( req )
             {
-                case DependencyRequirement.Running: return PluginDisabledReason.ByRunningReference;
-                case DependencyRequirement.RunnableRecommended: return PluginDisabledReason.ByRunnableRecommendedReference;
-                case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
+                case DependencyRequirement.RunnableRecommended: 
                 case DependencyRequirement.OptionalRecommended:
-                    if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
+                    if( _configSolvedImpact == StartDependencyImpact.FullStop )
                     {
-                        return PluginDisabledReason.ByOptionalRecommendedReference;
+                        return PluginDisabledReason.ByStopImpactOnOptionalRecommendedReference;
+                    }
+                    break;
+                case DependencyRequirement.Runnable: 
+                    if( _configSolvedImpact == StartDependencyImpact.FullStop 
+                        || _configSolvedImpact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
+                    {
+                        return PluginDisabledReason.ByStopImpactOnOptionalRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
-                    if( _configSolvedImpact == StartDependencyImpact.FullStart )
+                    if( _configSolvedImpact == StartDependencyImpact.FullStop 
+                        || _configSolvedImpact == StartDependencyImpact.StopOptionalAndRunnable
+                        || _configSolvedImpact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
                     {
-                        return PluginDisabledReason.ByOptionalReference;
+                        return PluginDisabledReason.ByStopImpactOnOptionalReference;
                     }
                     break;
             }
             return PluginDisabledReason.None;
         }
 
-        public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
-        {
-            if( !set.Add( this ) ) return;
+        //public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
+        //{
+        //    if( !set.Add( this ) ) return;
 
-            foreach( var s in GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
-            {
-                s.FillTransitiveIncludedServices( set );
-            }
-        }
+        //    foreach( var s in GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
+        //    {
+        //        s.FillTransitiveIncludedServices( set );
+        //    }
+        //}
 
         public bool CheckInvalidLoop()
         {
             Debug.Assert( !Disabled );
             HashSet<IYodiiItemData> running = new HashSet<IYodiiItemData>();
-            foreach( var sRef in PluginInfo.ServiceReferences )
+            // If this plugin is running by configuration, we consider runnable references: we want runnable references to be able to start
+            // and their start must not stop this plugin whatever this configured impact is.
+            // If this plugin is only runnable, we take runnable references (and optional ones) into account depending on this configured impact.
+            foreach( var service in GetIncludedServices( ConfigSolvedImpact, ConfigSolvedStatus == SolvedConfigurationStatus.Running ) )
             {
-                if( sRef.Requirement == DependencyRequirement.Running )
-                {
-                    ServiceData service = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                    service.FillTransitiveIncludedServices( running );
-                }
+                service.FillTransitiveIncludedServices( running );
             }
             if( running.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
             {
@@ -417,9 +423,9 @@ namespace Yodii.Engine
 
             if( impact == StartDependencyImpact.Minimal ) return forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
 
-            if( _inclServices == null ) _inclServices = new IReadOnlyList<ServiceData>[8];
+            if( _inclServices == null ) _inclServices = new IReadOnlyList<ServiceData>[10];
             int iImpact = (int)impact;
-            if( impact > StartDependencyImpact.Minimal ) --impact;
+            if( impact > StartDependencyImpact.Minimal ) --iImpact;
             if( forRunnableStatus ) iImpact *= 2;
             --iImpact;
 
@@ -435,21 +441,6 @@ namespace Yodii.Engine
                     switch( sRef.Requirement )
                     {
                         case DependencyRequirement.RunnableRecommended:
-                            {
-                                if( impact >= StartDependencyImpact.StartRecommended )
-                                {
-                                    newAdded |= incl.Add( sr );
-                                }
-                                break;
-                            }
-                        case DependencyRequirement.Runnable:
-                            {
-                                if( impact == StartDependencyImpact.FullStart )
-                                {
-                                    newAdded |= incl.Add( sr );
-                                }
-                                break;
-                            }
                         case DependencyRequirement.OptionalRecommended:
                             {
                                 if( impact >= StartDependencyImpact.StartRecommended )
@@ -458,6 +449,7 @@ namespace Yodii.Engine
                                 }
                                 break;
                             }
+                        case DependencyRequirement.Runnable:
                         case DependencyRequirement.Optional:
                             {
                                 if( impact == StartDependencyImpact.FullStart )

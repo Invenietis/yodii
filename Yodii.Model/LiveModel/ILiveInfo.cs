@@ -39,19 +39,26 @@ namespace Yodii.Model
         IObservableReadOnlyList<YodiiCommand> YodiiCommands { get; }
         
         /// <summary>
-        /// Find a live service by its full name.
+        /// Find a service by its full name.
         /// </summary>
-        /// <param name="fullName">Full name of the live service</param>
-        /// <returns>Live service</returns>
-        ILiveServiceInfo FindService( string fullName );
+        /// <param name="serviceFullName">Full name of the live service</param>
+        /// <returns>Live service.</returns>
+        ILiveServiceInfo FindService( string serviceFullName );
         
         /// <summary>
         /// Find a plugin by its full name.
         /// </summary>
-        /// <param name="pluginFullName">Plugin full name</param>
-        /// <returns>Live plugin</returns>
+        /// <param name="pluginFullName">Plugin full name.</param>
+        /// <returns>Live plugin.</returns>
         ILivePluginInfo FindPlugin( string pluginFullName );
 
+        /// <summary>
+        /// Find a service or a plugin by its full name.
+        /// </summary>
+        /// <param name="pluginOrserviceFullName">Full name of the service or plugin.</param>
+        /// <returns>Live service or plugin.</returns>
+        ILiveYodiiItem FindYodiiItem( string pluginOrserviceFullName );
+        
         /// <summary>
         /// Cancels any start or stop made by the given caller.
         /// </summary>

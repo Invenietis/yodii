@@ -127,7 +127,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
             ConfigurationStatus newStatus = (ConfigurationStatus)box.SelectedItem;
 
-            var itemSetResult = item.SetStatus( newStatus, "ConfigurationEditor" );
+            var itemSetResult = item.Set( newStatus );
             if( !itemSetResult.Success )
             {
                 RaiseUserError( "Couldn't set item", String.Format( "Could not set {0} to {2}, as it would cause the following error:\n\n{1}",
@@ -175,7 +175,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 string serviceOrPluginId = w.ViewModel.SelectedServiceOrPluginId;
                 if( serviceOrPluginId != null )
                 {
-                    var itemAddResult = layer.Items.Add( serviceOrPluginId, w.ViewModel.SelectedStatus );
+                    var itemAddResult = layer.Items.Set( serviceOrPluginId, w.ViewModel.SelectedStatus );
                     if( !itemAddResult.Success )
                     {
                         string message = itemAddResult.Describe();

@@ -13,7 +13,7 @@ namespace Yodii.Host.Tests
     {
         public static IYodiiEngineResult AddSuccess( this IConfigurationItemCollection @this, string name, ConfigurationStatus status, ConfigurationStatus? solvedStatusInFinalConfig = null )
         {
-            IYodiiEngineResult r = @this.Add( name, status );
+            IYodiiEngineResult r = @this.Set( name, status );
             r.CheckSuccess();
             if( solvedStatusInFinalConfig != null ) Assert.That( @this.ParentLayer.ConfigurationManager.FinalConfiguration.GetStatus( name ), Is.EqualTo( solvedStatusInFinalConfig ) );
             return r;

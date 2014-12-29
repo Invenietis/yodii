@@ -39,10 +39,17 @@ namespace Yodii.Model
 
         /// <summary>
         /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.StopOptionalAndRunnable"/> mode.
-        /// Non recommended dependencies (<see cref="DependencyRequirement.Optional"/> and <see cref="DependencyRequirement.Runnable"/>) ares stopped,
+        /// Non recommended dependencies (<see cref="DependencyRequirement.Optional"/> and <see cref="DependencyRequirement.Runnable"/>) are stopped,
         /// recommended ones may run or not.
         /// </summary>
         bool CanStartWithStopOptionalAndRunnable { get; }
+
+        /// <summary>
+        /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable"/> mode.
+        /// Non recommended dependencies (<see cref="DependencyRequirement.Optional"/> and <see cref="DependencyRequirement.Runnable"/>) are stopped,
+        /// recommended ones are started.
+        /// </summary>
+        bool CanStartWithStartRecommendedAndStopOptionalAndRunnable { get; }
 
         /// <summary>
         /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.FullStop"/> mode.

@@ -251,14 +251,14 @@ namespace Yodii.Lab.Tests
             Assert.That( vm.ChangedSinceLastSave, Is.False );
 
             // Layer item added
-            var yr = layer.Items.Add( "PluginA-2", ConfigurationStatus.Disabled, "test" );
+            var yr = layer.Items.Set( "PluginA-2", ConfigurationStatus.Disabled, "test" );
             Assert.That( yr.Success );
             Assert.That( vm.ChangedSinceLastSave, Is.True );
             r = vm.SaveState( tempFilePath );
             Assert.That( vm.ChangedSinceLastSave, Is.False );
 
             // Layer item changed
-            yr = layer.Items["PluginA-2"].SetStatus( ConfigurationStatus.Running );
+            yr = layer.Items["PluginA-2"].Set( ConfigurationStatus.Running );
             Assert.That( yr.Success );
             Assert.That( vm.ChangedSinceLastSave, Is.True );
             r = vm.SaveState( tempFilePath );
@@ -421,11 +421,11 @@ namespace Yodii.Lab.Tests
 
             // Set configuration
             var cLayer1 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer" );
-            var result = cLayer1.Items.Add( serviceA.ServiceFullName, ConfigurationStatus.Running, "Test reason" );
+            var result = cLayer1.Items.Set( serviceA.ServiceFullName, ConfigurationStatus.Running, "Test reason" );
             Assert.That( result.Success );
 
             var cLayer2 = vm.LabState.Engine.Configuration.Layers.Create( "Test layer 2" );
-            result = cLayer2.Items.Add( pluginA2.PluginFullName, ConfigurationStatus.Running, "Test reason 2" );
+            result = cLayer2.Items.Set( pluginA2.PluginFullName, ConfigurationStatus.Running, "Test reason 2" );
             Assert.That( result.Success );
 
             // Testing tests

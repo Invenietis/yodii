@@ -70,8 +70,8 @@ namespace Yodii.DemoApp
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( info );
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
-            cl.Items.Add( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
+            cl.Items.Set( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
+            cl.Items.Set( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
             engine.StartEngine();
             //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Client1" ).Start();
             //engine.LiveInfo.FindPlugin( "Yodii.DemoApp.Company1" ).Start();

@@ -69,5 +69,7 @@ namespace Yodii.Engine
         ByOptionalRecommendedReference,
         ByOptionalReference,
         InvalidStructureLoop,
+        ByStopImpactOnOptionalReference,
+        ByStopImpactOnOptionalRecommendedReference,
     }
 }

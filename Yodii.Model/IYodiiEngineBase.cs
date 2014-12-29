@@ -47,7 +47,7 @@ namespace Yodii.Model
         /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
         /// </exception>
         /// <returns>Result detailing whether the service or plugin was successfully started or not.</returns>
-        IYodiiEngineResult Start( ILiveYodiiItem pluginOrService, StartDependencyImpact impact );
+        IYodiiEngineResult Start( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown );
 
         /// <summary>
         /// Attempts to stop this service or plugin.

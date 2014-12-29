@@ -113,7 +113,7 @@ namespace Yodii.Engine.Tests
             }
         }
 
-        public static void CheckSuccess( this IYodiiEngineResult @this, string message = null )
+        public static IYodiiEngineResult CheckSuccess( this IYodiiEngineResult @this, string message = null )
         {
             if( message == null ) message = String.Empty;
             Assert.That( @this.Success, Is.True, message );
@@ -122,13 +122,41 @@ namespace Yodii.Engine.Tests
             Assert.That( @this.ConfigurationFailureResult, Is.Null, message );
             Assert.That( @this.PluginCulprits, Is.Empty, message );
             Assert.That( @this.ServiceCulprits, Is.Empty, message );
+            return @this;
         }
 
-        public static void CheckWantedConfigSolvedStatusIs( this IYodiiEngineResult @this, string pluginOrServiceFullName, SolvedConfigurationStatus wantedStatus )
+        public static IYodiiEngineResult Check( this IYodiiEngineResult @this, Action<IYodiiEngineResult> check )
+        {
+            check( @this );
+            return @this;
+        }
+
+        public static IYodiiEngineResult CheckItem( this IYodiiEngineResult @this, string pluginOrServiceFullName, Func<ILiveYodiiItem,bool> check, string message = null )
+        {
+            Assert.That( check( @this.Engine.LiveInfo.FindYodiiItem( pluginOrServiceFullName ) ), message );
+            return @this;
+        }
+
+        public static IYodiiEngineResult CheckRunningStatus( this IYodiiEngineResult @this, string pluginOrServiceFullName, RunningStatus status )
+        {
+            Assert.That( @this.Engine.LiveInfo.FindYodiiItem( pluginOrServiceFullName ).RunningStatus, Is.EqualTo( status ) );
+            return @this;
+        }
+
+        public static IYodiiEngineResult CheckFailure( this IYodiiEngineResult @this, string message = null )
+        {
+            if( message == null ) message = String.Empty;
+            Assert.That( @this.Success, Is.False, message );
+            return @this;
+        }
+
+        public static IYodiiEngineResult CheckWantedConfigSolvedStatusIs( this IYodiiEngineResult @this, string pluginOrServiceFullName, SolvedConfigurationStatus wantedStatus )
         {
             if( @this.Success )
             {
-                Assert.Fail( "Not implemented ==> TODO: IYodiiEngineResult SHOULD have a 'IYodiiEngine Engine' property!" );
+                ILiveYodiiItem item = (ILiveYodiiItem)@this.Engine.LiveInfo.FindService( pluginOrServiceFullName ) ?? @this.Engine.LiveInfo.FindPlugin( pluginOrServiceFullName );
+                if( item == null ) Assert.Fail( String.Format( "Plugin or Service '{0}' not found.", pluginOrServiceFullName ) );
+                Assert.That( item.WantedConfigSolvedStatus, Is.EqualTo( wantedStatus ), String.Format( "'{0}' has a WantedConfigSolvedStatus = '{1}'. It must be '{2}'.", pluginOrServiceFullName, item.WantedConfigSolvedStatus, wantedStatus ) );
             }
             else
             {
@@ -141,30 +169,35 @@ namespace Yodii.Engine.Tests
                     else Assert.Fail( String.Format( "Plugin or Service '{0}' not found.", pluginOrServiceFullName ) );
                 }
             }
+            return @this;
         }
 
-        public static void CheckNoBlockingPlugins( this IYodiiEngineResult @this )
+        public static IYodiiEngineResult CheckNoBlockingPlugins( this IYodiiEngineResult @this )
         {
             Assert.That( (@this.StaticFailureResult != null ? @this.StaticFailureResult.BlockingPlugins : Enumerable.Empty<IStaticSolvedPlugin>()), Is.Empty );
+            return @this;
         }
 
-        public static void CheckNoBlockingServices( this IYodiiEngineResult @this )
+        public static IYodiiEngineResult CheckNoBlockingServices( this IYodiiEngineResult @this )
         {
             Assert.That( (@this.StaticFailureResult != null ? @this.StaticFailureResult.BlockingServices : Enumerable.Empty<IStaticSolvedService>()), Is.Empty );
+            return @this;
         }
 
-        public static void CheckAllBlockingPluginsAre( this IYodiiEngineResult @this, string names )
+        public static IYodiiEngineResult CheckAllBlockingPluginsAre( this IYodiiEngineResult @this, string names )
         {
             string[] n = names.Split( new[]{','}, StringSplitOptions.RemoveEmptyEntries );
             Assert.That( !@this.Success && @this.StaticFailureResult != null, String.Format( "{0} blocking plugins expected. No error found.", n.Length ) );
             CheckContainsAllWithAlternative( n, @this.StaticFailureResult.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName ) );
+            return @this;
         }
 
-        public static void CheckAllBlockingServicesAre( this IYodiiEngineResult @this, string names )
+        public static IYodiiEngineResult CheckAllBlockingServicesAre( this IYodiiEngineResult @this, string names )
         {
             string[] n = names.Split( new[]{','}, StringSplitOptions.RemoveEmptyEntries );
             Assert.That( !@this.Success && @this.StaticFailureResult != null, String.Format( "{0} blocking services expected. No error found.", n.Length ) );
             CheckContainsAllWithAlternative( n, @this.StaticFailureResult.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName ) );
+            return @this;
         }
 
         internal static void CheckContainsAllWithAlternative( string[] expected, IEnumerable<string> actual )

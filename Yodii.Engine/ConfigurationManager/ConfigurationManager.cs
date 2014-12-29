@@ -61,26 +61,28 @@ namespace Yodii.Engine
         {
             foreach( ConfigurationLayer layer in _configurationLayerCollection )
             {
-                FinalConfigurationItem data;
                 ConfigurationStatus combinedStatus;
-                StartDependencyImpact combinedImpact;
                 string invalidCombination;
 
                 foreach( ConfigurationItem item in layer.Items )
                 {
                     if( filter == null || filter( item ) )
                     {
+                        FinalConfigurationItem data;
                         if( final.TryGetValue( item.ServiceOrPluginFullName, out data ) )
                         {
                             combinedStatus = FinalConfigurationItem.Combine( item.Status, data.Status, out invalidCombination );
                             if( string.IsNullOrEmpty( invalidCombination ) )
                             {
-                                combinedImpact = FinalConfigurationItem.Combine( item.Impact, data.Impact, out invalidCombination );
-                                if( string.IsNullOrEmpty( invalidCombination ) )
+                                StartDependencyImpact combinedImpact;
+                                if( data.Impact.Combine( item.Impact, out combinedImpact ) )
                                 {
                                     final[item.ServiceOrPluginFullName] = new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact );
                                 }
-                                else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
+                                else
+                                {
+                                    return new ConfigurationFailureResult( String.Format( "{0}: {1} and {2} cannot be combined for {3}.", currentOperation, item.Impact, data.Impact, item.ServiceOrPluginFullName ) );
+                                }
                             }
                             else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
                         }            

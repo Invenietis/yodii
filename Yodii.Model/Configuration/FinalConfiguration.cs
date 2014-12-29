@@ -24,9 +24,9 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Gets the final configuration status for a given service or plugin ID.
+        /// Gets the final configuration status for a given service or plugin.
         /// </summary>
-        /// <param name="serviceOrPluginFullName">Service or plugin ID to check.</param>
+        /// <param name="serviceOrPluginFullName">Service or plugin to check.</param>
         /// <returns>The status of the item, or Optional if the item does not exist.</returns>
         public ConfigurationStatus GetStatus( string serviceOrPluginFullName )
         {
@@ -35,13 +35,24 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Gets the final configuration impact for a given service or plugin ID.
+        /// Gets the final configuration impact for a given service or plugin.
         /// </summary>
-        /// <param name="serviceOrPluginFullName">Service or plugin ID to check.</param>
+        /// <param name="serviceOrPluginFullName">Service or plugin to check.</param>
         /// <returns>The impact of the item.</returns>
         public StartDependencyImpact GetImpact( string serviceOrPluginFullName )
         {
+            Debug.Assert( StartDependencyImpact.Unknown == 0 );
             return _items.GetByKey( serviceOrPluginFullName ).Impact;
+        }
+
+        /// <summary>
+        /// Gets the final configuration for a given service or plugin.
+        /// </summary>
+        /// <param name="serviceOrPluginFullName">Service or plugin to check.</param>
+        /// <returns>The final configuration of the item.</returns>
+        public FinalConfigurationItem GetFinalConfiguration( string serviceOrPluginFullName )
+        {
+            return _items.GetByKey( serviceOrPluginFullName );
         }
 
         /// <summary>

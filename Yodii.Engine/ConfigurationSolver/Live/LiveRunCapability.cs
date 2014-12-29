@@ -17,6 +17,7 @@ namespace Yodii.Engine
             public bool CanStartWithFullStart;
             public bool CanStartWithStartRecommended;
             public bool CanStartWithStopOptionalAndRunnable;
+            public bool CanStartWithStartRecommendedAndStopOptionalAndRunnable;
             public bool CanStartWithFullStop;
 
             public AllFlags( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
@@ -29,11 +30,17 @@ namespace Yodii.Engine
                     CanStartWithFullStart = s.CallableWithFullStart;
                     CanStartWithStartRecommended = s.CallableWithStartRecommended;
                     CanStartWithStopOptionalAndRunnable = s.CallableWithStopOptionalAndRunnable;
+                    CanStartWithStartRecommendedAndStopOptionalAndRunnable = s.CallableWithStartRecommendedAndStopOptionalAndRunnable;
                     CanStartWithFullStop = s.CanStartWithFullStop;
                 }
                 else
                 {
-                    CanStart = CanStartWithFullStart = CanStartWithStartRecommended = CanStartWithStopOptionalAndRunnable = CanStartWithFullStop = false;
+                    CanStart 
+                        = CanStartWithFullStart 
+                        = CanStartWithStartRecommended 
+                        = CanStartWithStopOptionalAndRunnable 
+                        = CanStartWithStartRecommendedAndStopOptionalAndRunnable  
+                        = CanStartWithFullStop = false;
                 }
             }
         }
@@ -52,6 +59,7 @@ namespace Yodii.Engine
             notifier.Update( this, ref _flags.CanStartWithFullStart, newOne.CanStartWithFullStart, () => CanStartWithFullStart );
             notifier.Update( this, ref _flags.CanStartWithStartRecommended, newOne.CanStartWithStartRecommended, () => CanStartWithStartRecommended );
             notifier.Update( this, ref _flags.CanStartWithStopOptionalAndRunnable, newOne.CanStartWithStopOptionalAndRunnable, () => CanStartWithStopOptionalAndRunnable );
+            notifier.Update( this, ref _flags.CanStartWithStartRecommendedAndStopOptionalAndRunnable, newOne.CanStartWithStartRecommendedAndStopOptionalAndRunnable, () => CanStartWithStartRecommendedAndStopOptionalAndRunnable );
             notifier.Update( this, ref _flags.CanStartWithFullStop, newOne.CanStartWithFullStop, () => CanStartWithFullStop );
         }
 
@@ -67,6 +75,8 @@ namespace Yodii.Engine
 
         public bool CanStartWithStopOptionalAndRunnable { get { return _flags.CanStartWithStopOptionalAndRunnable; } }
 
+        public bool CanStartWithStartRecommendedAndStopOptionalAndRunnable { get { return _flags.CanStartWithStartRecommendedAndStopOptionalAndRunnable; } }
+
         public bool CanStartWithFullStop { get { return _flags.CanStartWithFullStop; } }
 
         public bool CanStartWith( StartDependencyImpact impact )
@@ -78,6 +88,7 @@ namespace Yodii.Engine
                     case StartDependencyImpact.FullStart: return _flags.CanStartWithFullStart;
                     case StartDependencyImpact.StartRecommended: return _flags.CanStartWithStartRecommended;
                     case StartDependencyImpact.StopOptionalAndRunnable: return _flags.CanStartWithStopOptionalAndRunnable;
+                    case StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable: return _flags.CanStartWithStartRecommendedAndStopOptionalAndRunnable;
                     case StartDependencyImpact.FullStop: return _flags.CanStartWithFullStop;
                 }
             }

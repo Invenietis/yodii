@@ -68,7 +68,7 @@ namespace Yodii.Lab
                     PersistedConfigurationItem persistedItem = new PersistedConfigurationItem();
                     persistedItem.ServiceOrPluginId = i.ServiceOrPluginFullName;
                     persistedItem.Status = i.Status;
-                    persistedItem.StatusReason = i.StatusReason;
+                    persistedItem.StatusReason = i.Description;
 
                     persistedLayer.Items.Add( persistedItem );
                 }
@@ -515,7 +515,7 @@ namespace Yodii.Lab
 
                 foreach( PersistedConfigurationItem item in l.Items )
                 {
-                    var result = newLayer.Items.Add( item.ServiceOrPluginId, item.Status, item.StatusReason );
+                    var result = newLayer.Items.Set( item.ServiceOrPluginId, item.Status, item.StatusReason );
                     Debug.Assert( result.Success );
                 }
             }

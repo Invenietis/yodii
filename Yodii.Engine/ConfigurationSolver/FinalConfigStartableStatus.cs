@@ -17,6 +17,7 @@ namespace Yodii.Engine
         public readonly bool CanStartWithFullStop;
         public readonly bool CallableWithStopOptionalAndRunnable;
         public readonly bool CallableWithStartRecommended;
+        public readonly bool CallableWithStartRecommendedAndStopOptionalAndRunnable;
         public readonly bool CallableWithFullStart;
 
         public FinalConfigStartableStatus( IServiceDependentObject o )
@@ -31,12 +32,13 @@ namespace Yodii.Engine
             CanStartWithFullStop = config != StartDependencyImpact.FullStop ? ComputeStartableFor( o, StartDependencyImpact.FullStop ) : true;
             CallableWithStopOptionalAndRunnable = config != StartDependencyImpact.StopOptionalAndRunnable ? ComputeStartableFor( o, StartDependencyImpact.StopOptionalAndRunnable ) : true;
             CallableWithStartRecommended = config != StartDependencyImpact.StartRecommended ? ComputeStartableFor( o, StartDependencyImpact.StartRecommended ) : true;
+            CallableWithStartRecommendedAndStopOptionalAndRunnable = config != StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ? ComputeStartableFor( o, StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) : true;
             CallableWithFullStart = config != StartDependencyImpact.FullStart ? ComputeStartableFor( o, StartDependencyImpact.FullStart ) : true;
         }
 
         bool ComputeStartableFor( IServiceDependentObject o, StartDependencyImpact impact )
         {
-            foreach( var s in o.GetIncludedServices( impact, false ) )
+            foreach( var s in o.GetIncludedServices( impact, o.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running ) )
             {
                 if( s.Disabled ) return false;
             }

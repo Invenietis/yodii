@@ -136,7 +136,7 @@ namespace Yodii.Engine
             if( !set.Add( this ) ) return;
             var propagation = GetUsefulPropagationInfo();
             if( propagation == null ) return;
-            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
+            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact, ConfigSolvedStatus == SolvedConfigurationStatus.Running ) )
             {
                 s.FillTransitiveIncludedServices( set );
             }

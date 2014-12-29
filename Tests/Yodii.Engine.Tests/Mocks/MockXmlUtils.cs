@@ -101,7 +101,7 @@ namespace Yodii.Engine.Tests.Mocks
                     var status = (ConfigurationStatus)Enum.Parse( typeof( ConfigurationStatus ), r.GetAttribute( "Status" ) );
                     var statusReason = r.GetAttribute( "Reason" );
 
-                    newLayer.Items.Add( serviceOrPluginId, status, statusReason );
+                    newLayer.Items.Set( serviceOrPluginId, status, statusReason );
                 }
             }
 

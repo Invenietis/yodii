@@ -121,7 +121,7 @@ namespace Yodii.Host.Tests
             YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
-            engine.Configuration.Layers.Create().Items.Add( "Yodii.Host.Tests.ITrackMethodCallsPluginService", ConfigurationStatus.Running );
+            engine.Configuration.Layers.Create().Items.Set( "Yodii.Host.Tests.ITrackMethodCallsPluginService", ConfigurationStatus.Running );
 
             var result = engine.StartEngine();
             Assert.That( result.Success, Is.True );
@@ -212,7 +212,7 @@ namespace Yodii.Host.Tests
             engine.Stop( p.Live ).CheckHostFailure();
             p.CheckState( PluginStatus.Started );
 
-            engine.Configuration.Layers.Create().Items.Add( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckHostFailure();
+            engine.Configuration.Layers.Create().Items.Set( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckHostFailure();
             p.CheckState( PluginStatus.Started );
 
             FailureTransitionPlugin.CancelPreStop = false;
@@ -222,7 +222,7 @@ namespace Yodii.Host.Tests
             engine.Start( p.Live ).CheckSuccess();
             p.CheckState( PluginStatus.Started );
 
-            engine.Configuration.Layers.Create().Items.Add( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
+            engine.Configuration.Layers.Create().Items.Set( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
             p.CheckState( PluginStatus.Null );
 
         }

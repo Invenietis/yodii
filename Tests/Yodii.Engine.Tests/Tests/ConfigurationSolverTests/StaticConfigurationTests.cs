@@ -45,7 +45,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( d );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "S1.1", ConfigurationStatus.Running );
+            cl.Items.Set( "S1.1", ConfigurationStatus.Running );
 
             var result = engine.StartEngine();
             Assert.That( result.Success, Is.False );
@@ -90,13 +90,13 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceAx", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginAx-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginB-1", ConfigurationStatus.Runnable );
             return engine;
         }
 
@@ -139,11 +139,11 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceAx", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginAx-1", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Running );
             return engine;
         }
 
@@ -177,8 +177,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create(); 
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
             {
@@ -227,8 +227,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Disabled );
             return engine;
         }
 
@@ -264,9 +264,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
-            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Running );
+            cl.Items.Set( "PluginAx-1", ConfigurationStatus.Running );
 
             IYodiiEngineResult res = engine.StartEngine();
 
@@ -331,9 +331,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Running );
-            cl.Items.Add( "PluginB-1", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Running );
+            cl.Items.Set( "PluginB-1", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
                 {
@@ -369,12 +369,12 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceAx", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginB-1", ConfigurationStatus.Runnable );
 
             engine.FullStaticResolutionOnly( res =>
                 {
@@ -436,15 +436,15 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceB", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Runnable );
-            cl.Items.Add( "ServiceAxx", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginAxx-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginB-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceB", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceAx", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceAxx", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginAx-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginAxx-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginB-1", ConfigurationStatus.Runnable );
             return engine;
         }
 
@@ -502,10 +502,10 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceAx", ConfigurationStatus.Running );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginAx-1", ConfigurationStatus.Running );
-            cl.Items.Add( "PluginAxx-1", ConfigurationStatus.Disabled );
+            cl.Items.Set( "ServiceAx", ConfigurationStatus.Running );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginAx-1", ConfigurationStatus.Running );
+            cl.Items.Set( "PluginAxx-1", ConfigurationStatus.Disabled );
             return engine;
         }
 
@@ -545,7 +545,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Optional );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Optional );
             return engine;
         }
 
@@ -583,7 +583,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Disabled );
             return engine;
         }
 
@@ -621,7 +621,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Runnable );
             return engine;
         }
 
@@ -659,7 +659,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Running );
             return engine;
         }
 
@@ -688,8 +688,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
                 {
@@ -733,9 +733,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "PluginA-2", ConfigurationStatus.Runnable );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "PluginA-2", ConfigurationStatus.Runnable );
             return engine;
         }
 
@@ -766,8 +766,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Disabled );
-            cl.Items.Add( "PluginA-1", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Disabled );
+            cl.Items.Set( "PluginA-1", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
                {
@@ -808,8 +808,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceAx1", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceAx2", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
                {
@@ -849,9 +849,9 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph004() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "ServiceA", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceAx1", ConfigurationStatus.Running );
-            cl.Items.Add( "ServiceAx2", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceA", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceAx1", ConfigurationStatus.Running );
+            cl.Items.Set( "ServiceAx2", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
                {
@@ -908,8 +908,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( info );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
-            cl.Items.Add( "Service2", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service2", ConfigurationStatus.Running );
 
             engine.FullStaticResolutionOnly( res =>
                {
@@ -972,10 +972,10 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( disco );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
-            cl.Items.Add( "Service2", ConfigurationStatus.Running );
-            cl.Items.Add( "AnotherBlocking", ConfigurationStatus.Runnable );
-            cl.Items.Add( "DisabledForBlocking", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service2", ConfigurationStatus.Running );
+            cl.Items.Set( "AnotherBlocking", ConfigurationStatus.Runnable );
+            cl.Items.Set( "DisabledForBlocking", ConfigurationStatus.Disabled );
 
             engine.FullStaticResolutionOnly( res =>
                {
@@ -1081,7 +1081,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo(d);
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add("S1.1", ConfigurationStatus.Running);
+            cl.Items.Set("S1.1", ConfigurationStatus.Running);
 
             var result = engine.StartEngine();
             engine.FullStaticResolutionOnly(res =>
@@ -1128,8 +1128,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo(d);
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add("S1.1", ConfigurationStatus.Running);
-            cl.Items.Add("P", ConfigurationStatus.Running);
+            cl.Items.Set("S1.1", ConfigurationStatus.Running);
+            cl.Items.Set("P", ConfigurationStatus.Running);
 
             var result = engine.StartEngine();
             Assert.That(result.Success, Is.False);
@@ -1619,8 +1619,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005c() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
-            cl.Items.Add( "Service2", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service2", ConfigurationStatus.Running );
             return engine;
         }
 
@@ -1686,7 +1686,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005d() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
 
             return engine;
         }
@@ -1758,25 +1758,25 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph008() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Plugin1", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Plugin3", ConfigurationStatus.Disabled );
-            cl.Items.Add( "Plugin4", ConfigurationStatus.Running );
-            cl.Items.Add( "Plugin6", ConfigurationStatus.Disabled );
-            cl.Items.Add( "Plugin8", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Plugin9", ConfigurationStatus.Disabled );
-            cl.Items.Add( "Plugin10", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Plugin14", ConfigurationStatus.Disabled );
-            cl.Items.Add( "Plugin17", ConfigurationStatus.Running );
-            cl.Items.Add( "Plugin19", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Plugin20", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Plugin24", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Plugin1", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Plugin3", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Plugin4", ConfigurationStatus.Running );
+            cl.Items.Set( "Plugin6", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Plugin8", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Plugin9", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Plugin10", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Plugin14", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Plugin17", ConfigurationStatus.Running );
+            cl.Items.Set( "Plugin19", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Plugin20", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Plugin24", ConfigurationStatus.Disabled );
 
-            cl.Items.Add( "Service2", ConfigurationStatus.Disabled );
-            cl.Items.Add( "Service2.1", ConfigurationStatus.Running );
-            cl.Items.Add( "Service1.1", ConfigurationStatus.Running );
-            cl.Items.Add( "Service1.2", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Service1.1.2", ConfigurationStatus.Runnable );
-            cl.Items.Add( "Service1.1.3", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Service2", ConfigurationStatus.Disabled );
+            cl.Items.Set( "Service2.1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1.1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1.2", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Service1.1.2", ConfigurationStatus.Runnable );
+            cl.Items.Set( "Service1.1.3", ConfigurationStatus.Runnable );
 
             return engine;
         }
@@ -1843,7 +1843,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005e() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
 
             return engine;
         }
@@ -1913,8 +1913,8 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraph005f() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
-            cl.Items.Add( "Service2", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service2", ConfigurationStatus.Running );
             return engine;
         }        
         
@@ -2054,7 +2054,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             engine.SetDiscoveredInfo( MockInfoFactory.CreateGraphDynamicInvalidLoop() );
 
             IConfigurationLayer cl = engine.Configuration.Layers.Create();
-            cl.Items.Add( "Service1", ConfigurationStatus.Running );
+            cl.Items.Set( "Service1", ConfigurationStatus.Running );
 
             return engine;
         }

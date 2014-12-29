@@ -10,7 +10,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    public class ConfigurationItem : IConfigurationItem
+    class ConfigurationItem : IConfigurationItem
     {
         readonly string _serviceOrPluginFullName;
         readonly ConfigurationLayer _owner;
@@ -19,7 +19,7 @@ namespace Yodii.Engine
         StartDependencyImpact _impact;
         string _statusReason;
 
-        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason = "")
+        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason )
         {
             Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
             Debug.Assert( configurationLayer != null );
@@ -52,41 +52,52 @@ namespace Yodii.Engine
         }
 
         /// <summary>
-        /// Gets or sets an optional reason for this configuration status.
-        /// Null when <see cref="Layer"/> is null (this item does no more belong to its layer).
+        /// Gets or sets an optional description for this configuration.
+        /// This is null when <see cref="Layer"/> is null (this item does no more belong to its layer).
         /// </summary>
-        public string StatusReason
+        public string Description
         {
             get { return _statusReason; }
             set
             {
                 if ( _statusReason == null ) throw new InvalidOperationException();
-                _statusReason = value ?? String.Empty;
-                NotifyPropertyChanged();
+                if( value == null ) value = String.Empty;
+                if( _statusReason != value )
+                {
+                    _statusReason = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 
-        public IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
+        public IYodiiEngineResult Set( ConfigurationStatus newStatus, string newDescription = null )
+        {
+            return Set( newStatus, _impact, newDescription );
+        }
+
+        public IYodiiEngineResult Set( StartDependencyImpact newImpact, string newDescription = null )
+        {
+            return Set( _status, newImpact, newDescription );
+        }
+
+        public IYodiiEngineResult Set( ConfigurationStatus newStatus, StartDependencyImpact newImpact, string newDescription = null )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem(_serviceOrPluginFullName, newStatus, _impact ) ); 
-            if( result.Success )
+            bool changeStatus = _status != newStatus;
+            bool changeImpact = _impact != newImpact;
+            if( !changeImpact && !changeStatus )
             {
-                _status = newStatus;
-                if( StatusReason != statusReason ) StatusReason = statusReason;
-                NotifyPropertyChanged( "Status" );
-                if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
+                if( newDescription != null ) Description = newDescription;
+                return _owner.ConfigurationManager.Engine.SuccessResult;
             }
-            return result;
-        }
-
-        public IYodiiEngineResult SetImpact( StartDependencyImpact newImpact )
-        {
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, _status, newImpact ) );
+            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, newStatus, newImpact ) );
             if( result.Success )
             {
                 _impact = newImpact;
-                NotifyPropertyChanged( "Impact" );
+                _status = newStatus;
+                if( newDescription != null ) Description = newDescription;
+                if( changeImpact ) NotifyPropertyChanged( "Impact" );
+                if( changeStatus ) NotifyPropertyChanged( "Status" );
                 if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
             }
             return result;

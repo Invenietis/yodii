@@ -336,7 +336,17 @@ namespace Yodii.Engine
         {
             if( _configSolvedStatus == SolvedConfigurationStatus.Running ) return !Disabled;
             if( !Family.SetRunningService( this, reason ) ) return false;
-            PropagateSolvedStatus();
+            ServiceData s = this;
+            while( s != null && !s.Disabled )
+            {
+                foreach( var backRef in s._backReferences )
+                {
+                    PluginDisabledReason r = backRef.PluginData.GetDisableReasonForRunningReference( backRef.Requirement );
+                    if( r != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( r );
+                }
+                s = s.Generalization;
+            }
+            if( !Disabled ) PropagateSolvedStatus();
             return !Disabled;
         }
 

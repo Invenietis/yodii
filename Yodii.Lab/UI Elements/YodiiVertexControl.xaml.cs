@@ -151,7 +151,7 @@ namespace Yodii.Lab
                 changedLayer = ConfigurationManager.Layers.First();
             }
 
-            var result = changedLayer.Items.Add( pluginOrServiceId, status, "Right-click change" );
+            var result = changedLayer.Items.Set( pluginOrServiceId, status, "Right-click change" );
 
             if( !result.Success )
             {

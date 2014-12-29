@@ -92,7 +92,7 @@ namespace Yodii.Engine
 
         #endregion
 
-        public class ConfigurationItemCollection : IConfigurationItemCollection
+        class ConfigurationItemCollection : IConfigurationItemCollection
         {
             CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
             ConfigurationLayer _layer;
@@ -130,26 +130,45 @@ namespace Yodii.Engine
                 get { return _layer; }
             }
 
-            public IYodiiEngineResult Add( string serviceOrPluginFullName, ConfigurationStatus status, string statusReason = "", StartDependencyImpact impact = StartDependencyImpact.Unknown)
+            public IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string description )
             {
+                return DoSet( serviceOrPluginFullName, status, impact, description );
+            }
+
+            public IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, string description )
+            {
+                return DoSet( serviceOrPluginFullName, status, null, description );
+            }
+
+            public IYodiiEngineResult Set( string serviceOrPluginFullName, StartDependencyImpact impact, string description )
+            {
+                return DoSet( serviceOrPluginFullName, null, impact, description );
+            }
+
+            IYodiiEngineResult DoSet( string serviceOrPluginFullName, ConfigurationStatus? status, StartDependencyImpact? impact, string description )
+            {
+                Debug.Assert( status.HasValue || impact.HasValue );
                 if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
 
+                IYodiiEngineResult result;
                 ConfigurationItem existing = _items.GetByKey( serviceOrPluginFullName );
                 if( existing != null )
                 {
-                    IYodiiEngineResult res = existing.SetStatus( status );
-                    if( res.Success ) return existing.SetImpact(impact);
-                    return res;
+                    if( !status.HasValue ) result = existing.Set( impact.Value, description );
+                    else if( !impact.HasValue ) result = existing.Set( status.Value, description );
+                    else result = existing.Set( status.Value, impact.Value, description );
+                    return result;
                 }
-
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status, impact, statusReason );
+                if( !status.HasValue ) status = ConfigurationStatus.Optional;
+                if( !impact.HasValue ) impact = StartDependencyImpact.Unknown;
+                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status.Value, impact.Value, description ?? String.Empty );
                 if( _layer._owner == null )
                 {
                     _items.Add( newItem );
                     return SuccessYodiiEngineResult.NullEngineSuccessResult;
                 }
 
-                IYodiiEngineResult result = _layer._owner.OnConfigurationItemAdding( newItem );
+                result = _layer._owner.OnConfigurationItemAdding( newItem );
                 if( result.Success )
                 {
                     _items.Add( newItem );
