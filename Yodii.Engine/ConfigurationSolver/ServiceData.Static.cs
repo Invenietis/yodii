@@ -216,6 +216,7 @@ namespace Yodii.Engine
         }
 
         /// <summary>
+        /// Gets all the services in the family except this one, its ancestors and its specializations.
         /// Never null.
         /// </summary>
         internal IEnumerable<ServiceData> DirectExcludedServices
