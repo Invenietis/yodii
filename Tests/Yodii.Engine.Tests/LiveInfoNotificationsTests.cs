@@ -41,8 +41,6 @@ namespace Yodii.Engine.Tests
             Assert.That( p1.Capability.CanStart && p2.Capability.CanStart && sA.Capability.CanStart, Is.True );
             Assert.That( p1.Capability.CanStartWithFullStart && p2.Capability.CanStartWithFullStart && sA.Capability.CanStartWithFullStart, Is.True );
             Assert.That( p1.Capability.CanStartWithStartRecommended && p2.Capability.CanStartWithStartRecommended && sA.Capability.CanStartWithStartRecommended, Is.True );
-            Assert.That( p1.Capability.CanStartWithStopOptionalAndRunnable && p2.Capability.CanStartWithStopOptionalAndRunnable && sA.Capability.CanStartWithStopOptionalAndRunnable, Is.True );
-            Assert.That( p1.Capability.CanStartWithFullStop && p2.Capability.CanStartWithFullStop && sA.Capability.CanStartWithFullStop, Is.True );
 
             HashSet<string> propertyChanged = new HashSet<string>();
             p1.PropertyChanged += ( s, e ) => 
@@ -81,24 +79,16 @@ namespace Yodii.Engine.Tests
             
             Assert.That( p1.Capability.CanStart 
                         && p1.Capability.CanStartWithFullStart 
-                        && p1.Capability.CanStartWithStartRecommended 
-                        && p1.Capability.CanStartWithStopOptionalAndRunnable
-                        && p1.Capability.CanStartWithStartRecommendedAndStopOptionalAndRunnable
-                        && p1.Capability.CanStartWithFullStop, Is.False );
+                        && p1.Capability.CanStartWithStartRecommended, Is.False );
 
             Assert.That( p2.Capability.CanStart && sA.Capability.CanStart, Is.True );
             Assert.That( p2.Capability.CanStartWithFullStart && sA.Capability.CanStartWithFullStart, Is.True );
             Assert.That( p2.Capability.CanStartWithStartRecommended && sA.Capability.CanStartWithStartRecommended, Is.True );
-            Assert.That( p2.Capability.CanStartWithStopOptionalAndRunnable && sA.Capability.CanStartWithStopOptionalAndRunnable, Is.True );
-            Assert.That( p2.Capability.CanStartWithFullStop && sA.Capability.CanStartWithFullStop, Is.True );
 
             CollectionAssert.AreEquivalent( new string[]{
                 "p1.Capablity.CanStart", 
                 "p1.Capablity.CanStartWithFullStart", 
                 "p1.Capablity.CanStartWithStartRecommended", 
-                "p1.Capablity.CanStartWithStopOptionalAndRunnable", 
-                "p1.Capablity.CanStartWithStartRecommendedAndStopOptionalAndRunnable", 
-                "p1.Capablity.CanStartWithFullStop", 
                 "p1.DisabledReason", 
                 "p1.RunningStatus", 
                 "p1.ConfigOriginalStatus", 
@@ -112,9 +102,6 @@ namespace Yodii.Engine.Tests
                 "p1.Capablity.CanStart", 
                 "p1.Capablity.CanStartWithFullStart", 
                 "p1.Capablity.CanStartWithStartRecommended", 
-                "p1.Capablity.CanStartWithStopOptionalAndRunnable", 
-                "p1.Capablity.CanStartWithStartRecommendedAndStopOptionalAndRunnable", 
-                "p1.Capablity.CanStartWithFullStop", 
                 "p1.DisabledReason", 
                 "p1.RunningStatus", 
                 "p1.ConfigOriginalStatus", 

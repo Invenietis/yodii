@@ -83,14 +83,17 @@ namespace Yodii.Engine
         public IYodiiEngineResult Set( ConfigurationStatus newStatus, StartDependencyImpact newImpact, string newDescription = null )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
+            var c = _owner.Items.ConfigurationManager;
             bool changeStatus = _status != newStatus;
             bool changeImpact = _impact != newImpact;
             if( !changeImpact && !changeStatus )
             {
                 if( newDescription != null ) Description = newDescription;
-                return _owner.ConfigurationManager.Engine.SuccessResult;
+                return _owner.Items.ConfigurationManager.Engine.SuccessResult;
             }
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, newStatus, newImpact ) );
+            IYodiiEngineResult result = c != null 
+                                            ? c.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, newStatus, newImpact ) ) 
+                                            : SuccessYodiiEngineResult.NullEngineSuccessResult;
             if( result.Success )
             {
                 _impact = newImpact;
@@ -98,7 +101,7 @@ namespace Yodii.Engine
                 if( newDescription != null ) Description = newDescription;
                 if( changeImpact ) NotifyPropertyChanged( "Impact" );
                 if( changeStatus ) NotifyPropertyChanged( "Status" );
-                if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
+                if( c != null ) c.OnConfigurationChanged();
             }
             return result;
         }

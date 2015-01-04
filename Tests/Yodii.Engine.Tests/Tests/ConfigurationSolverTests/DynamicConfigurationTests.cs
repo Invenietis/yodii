@@ -63,7 +63,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
 
-            StaticConfigurationTests.CreateValidCommonReferences3().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidCommonReferences3().FullStartAndStop( ( engine, res ) =>
             {
                 engine.StartPlugin( "Plugin4" ).CheckSuccess();
                 engine.CheckAllPluginsRunning( "Plugin4, Plugin8, Plugin1|Plugin2, Plugin5|Plugin6" );
@@ -85,7 +85,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             #region graph
             /*
             *                  +--------+                            +--------+
-            *      +-----------|Service1+                            |Service2|---------------+
+            *      +-----------|Service1|                            |Service2|---------------+
             *      |           |Running |                            |Running |               |      
             *      |           +---+----+                            +----+---+               |      
             *      |               |                                      |                   |      
@@ -99,7 +99,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *       |                   |                         |       |                                              | 
             *       |                   |                         |       |                                              | 
             *       |                   |           +--------+    |       |                                              |          
-            *       |                   |           |Service3+    |       |                   +--------+                 |          
+            *       |                   |           |Service3|    |       |                   +--------+                 |          
             *       |       +-----------|-----------|Optional|    |       |                   |Service4+                 |          
             *       |       |           |           +---+----+    |       |       +-----------|Optional|-------+         |            
             *       |       |           |               |         |       |       |           +---+----+       |         |               
@@ -125,7 +125,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
 
-            StaticConfigurationTests.CreateValidCommonReferences3().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidCommonReferences3().FullStartAndStop( ( engine, res ) =>
             {
                 engine.StopPlugin( "Plugin7" ).CheckSuccess();
                 engine.CheckAllPluginsStopped( "Plugin7, Plugin3, Plugin2, Plugin6" );
@@ -192,7 +192,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             */
             #endregion
 
-            StaticConfigurationTests.CreateValidCommonReferences4().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidCommonReferences4().FullStartAndStop( ( engine, res ) =>
                 {
                     engine.StartPlugin( "Plugin4", StartDependencyImpact.Minimal );
                     engine.StartPlugin( "Plugin1", StartDependencyImpact.Minimal );
@@ -208,7 +208,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             // file://E:\Dev\Yodii\Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png
             // file://Yodii.Engine.Tests\ConfigurationSolverTests\Graphs\ValidRunnableReferences.png
 
-            StaticConfigurationTests.CreateValidRunnableReferences().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidRunnableReferences().FullStartAndStop( ( engine, res ) =>
             {
                 engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5, Plugin6, Plugin7, Plugin8, Plugin9" );
 
@@ -236,7 +236,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         [Test]
         public void ValidOnlyOneRunnableReference()
         {
-            StaticConfigurationTests.CreateValidOnlyOneRunnableReference().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidOnlyOneRunnableReference().FullStartAndStop( ( engine, res ) =>
             {
                 engine.CheckAllServicesStopped( "Service1, Service1.1, Service1.2, Service1.3, Service2, Service2.1, Service2.2" );
                 engine.CheckAllPluginsStopped( "Plugin1, Plugin2, Plugin3, Plugin4, Plugin5" );
@@ -360,7 +360,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             *            +--------+                  +--------+
             */
             #endregion
-            StaticConfigurationTests.CreateValidOptionalReferences().FullStart( ( engine, res ) =>
+            StaticConfigurationTests.CreateValidOptionalReferences().FullStartAndStop( ( engine, res ) =>
             {
                 engine.CheckAllPluginsRunning( "Plugin1|Plugin2" );
                 engine.CheckServicesRunningLocked( "Service1" );

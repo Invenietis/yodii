@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using Yodii.Model;
 
-namespace Yodii.Engine.Tests
+namespace Yodii
 {
     static class ConfigurationManagerExtensions
     {

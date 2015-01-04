@@ -43,8 +43,17 @@ namespace Yodii.Model
         /// <param name="pluginOrService">The plugin or service live object to start.</param>
         /// <param name="impact">Startup impact on references.</param>
         /// <exception cref="InvalidOperationException">
+        /// <para>
         /// The <see cref="ILiveYodiiItem.Capability">pluginOrService.Capability</see> property <see cref="ILiveRunCapability.CanStart"/> 
         /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </para>
+        /// or
+        /// <para>
+        /// This engine is not running.
+        /// </para>
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// The parameter <paramref name="pluginOrService"/> is null.
         /// </exception>
         /// <returns>Result detailing whether the service or plugin was successfully started or not.</returns>
         IYodiiEngineResult Start( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown );
@@ -54,6 +63,18 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="pluginOrService">The plugin or service live object to stop.</param>
         /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// <para>
+        /// The <see cref="ILiveYodiiItem.Capability">pluginOrService.Capability</see> property <see cref="ILiveRunCapability.CanStop"/> must be true.
+        /// </para>
+        /// or
+        /// <para>
+        /// This engine is not running.
+        /// </para>
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// The parameter <paramref name="pluginOrService"/> is null.
+        /// </exception>
         IYodiiEngineResult Stop( ILiveYodiiItem pluginOrService );
 
 

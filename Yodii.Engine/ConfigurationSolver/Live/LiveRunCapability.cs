@@ -16,9 +16,6 @@ namespace Yodii.Engine
             public bool CanStart;
             public bool CanStartWithFullStart;
             public bool CanStartWithStartRecommended;
-            public bool CanStartWithStopOptionalAndRunnable;
-            public bool CanStartWithStartRecommendedAndStopOptionalAndRunnable;
-            public bool CanStartWithFullStop;
 
             public AllFlags( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
             {
@@ -27,40 +24,32 @@ namespace Yodii.Engine
                 if( s != null )
                 {
                     CanStart = true;
-                    CanStartWithFullStart = s.CallableWithFullStart;
-                    CanStartWithStartRecommended = s.CallableWithStartRecommended;
-                    CanStartWithStopOptionalAndRunnable = s.CallableWithStopOptionalAndRunnable;
-                    CanStartWithStartRecommendedAndStopOptionalAndRunnable = s.CallableWithStartRecommendedAndStopOptionalAndRunnable;
-                    CanStartWithFullStop = s.CanStartWithFullStop;
+                    CanStartWithFullStart = s.CanStartWith( StartDependencyImpact.FullStart );
+                    CanStartWithStartRecommended = s.CanStartWith( StartDependencyImpact.StartRecommended );
                 }
                 else
                 {
-                    CanStart 
-                        = CanStartWithFullStart 
-                        = CanStartWithStartRecommended 
-                        = CanStartWithStopOptionalAndRunnable 
-                        = CanStartWithStartRecommendedAndStopOptionalAndRunnable  
-                        = CanStartWithFullStop = false;
+                    CanStart = CanStartWithFullStart = CanStartWithStartRecommended = false;
                 }
             }
         }
+        FinalConfigStartableStatus _startableStatus;
         AllFlags _flags;
 
         internal LiveRunCapability( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s )
         {
+            _startableStatus = s;
             _flags = new AllFlags( finalConfigStatus, s );
         }
 
         internal void UpdateFrom( SolvedConfigurationStatus finalConfigStatus, FinalConfigStartableStatus s, DelayedPropertyNotification notifier )
         {
+            _startableStatus = s;
             AllFlags newOne = new AllFlags( finalConfigStatus, s );
             notifier.Update( this, ref _flags.CanStop, newOne.CanStop, () => CanStop );
             notifier.Update( this, ref _flags.CanStart, newOne.CanStart, () => CanStart );
             notifier.Update( this, ref _flags.CanStartWithFullStart, newOne.CanStartWithFullStart, () => CanStartWithFullStart );
             notifier.Update( this, ref _flags.CanStartWithStartRecommended, newOne.CanStartWithStartRecommended, () => CanStartWithStartRecommended );
-            notifier.Update( this, ref _flags.CanStartWithStopOptionalAndRunnable, newOne.CanStartWithStopOptionalAndRunnable, () => CanStartWithStopOptionalAndRunnable );
-            notifier.Update( this, ref _flags.CanStartWithStartRecommendedAndStopOptionalAndRunnable, newOne.CanStartWithStartRecommendedAndStopOptionalAndRunnable, () => CanStartWithStartRecommendedAndStopOptionalAndRunnable );
-            notifier.Update( this, ref _flags.CanStartWithFullStop, newOne.CanStartWithFullStop, () => CanStartWithFullStop );
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -73,26 +62,9 @@ namespace Yodii.Engine
 
         public bool CanStartWithStartRecommended { get { return _flags.CanStartWithStartRecommended; } }
 
-        public bool CanStartWithStopOptionalAndRunnable { get { return _flags.CanStartWithStopOptionalAndRunnable; } }
-
-        public bool CanStartWithStartRecommendedAndStopOptionalAndRunnable { get { return _flags.CanStartWithStartRecommendedAndStopOptionalAndRunnable; } }
-
-        public bool CanStartWithFullStop { get { return _flags.CanStartWithFullStop; } }
-
         public bool CanStartWith( StartDependencyImpact impact )
         {
-            if( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 )
-            {
-                switch( impact )
-                {
-                    case StartDependencyImpact.FullStart: return _flags.CanStartWithFullStart;
-                    case StartDependencyImpact.StartRecommended: return _flags.CanStartWithStartRecommended;
-                    case StartDependencyImpact.StopOptionalAndRunnable: return _flags.CanStartWithStopOptionalAndRunnable;
-                    case StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable: return _flags.CanStartWithStartRecommendedAndStopOptionalAndRunnable;
-                    case StartDependencyImpact.FullStop: return _flags.CanStartWithFullStop;
-                }
-            }
-            return _flags.CanStart;
+            return _startableStatus.CanStartWith( impact );
         }
 
         public void RaisePropertyChanged( string propertyName )

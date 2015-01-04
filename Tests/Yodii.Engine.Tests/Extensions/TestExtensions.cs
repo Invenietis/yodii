@@ -7,13 +7,14 @@ using NUnit.Framework;
 using CK.Core;
 using Yodii.Model;
 using System.Runtime.CompilerServices;
+using Yodii.Engine;
 
-namespace Yodii.Engine.Tests
+namespace Yodii
 {
     static class TestExtensions
     {
 
-        public static void Trace( this IYodiiEngineResult @this, IActivityMonitor m )
+        public static IYodiiEngineResult Trace( this IYodiiEngineResult @this, IActivityMonitor m )
         {
             if( @this.Success )
             {
@@ -24,15 +25,17 @@ namespace Yodii.Engine.Tests
                 m.Trace().Send( "Failed!" );
                 if( @this.StaticFailureResult != null ) @this.StaticFailureResult.Trace( m );
             }
+            return @this;
         }
 
-        public static void Trace( this IStaticFailureResult @this, IActivityMonitor m )
+        public static IStaticFailureResult Trace( this IStaticFailureResult @this, IActivityMonitor m )
         {
             m.Trace().Send( "Blocking Plugins: {0}", String.Join( ", ", @this.BlockingPlugins.Select( p => p.PluginInfo.PluginFullName + " (" + p.WantedConfigSolvedStatus + "/" + p.DisabledReason + ")" ) ) );
             m.Trace().Send( "Blocking Services: {0}", String.Join( ", ", @this.BlockingServices.Select( s => s.ServiceInfo.ServiceFullName + " (" + s.WantedConfigSolvedStatus + "/" + s.DisabledReason + ")" ) ) );
+            return @this;
         }
 
-        public static void FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests, [CallerMemberName]string callerName = null )
+        public static YodiiEngine FullStaticResolutionOnly( this YodiiEngine @this, Action<IYodiiEngineStaticOnlyResult> tests, [CallerMemberName]string callerName = null )
         {
             IActivityMonitor m = TestHelper.ConsoleMonitor;
             IYodiiEngineStaticOnlyResult[] result = new IYodiiEngineStaticOnlyResult[4];
@@ -111,6 +114,7 @@ namespace Yodii.Engine.Tests
                     Assert.Fail( "Plugin/service ordering leads to different result! (See logs for details.)" );
                 }
             }
+            return @this;
         }
 
         public static IYodiiEngineResult CheckSuccess( this IYodiiEngineResult @this, string message = null )
@@ -123,6 +127,16 @@ namespace Yodii.Engine.Tests
             Assert.That( @this.PluginCulprits, Is.Empty, message );
             Assert.That( @this.ServiceCulprits, Is.Empty, message );
             return @this;
+        }
+
+        public static void CheckHostFailure( this IYodiiEngineResult @this )
+        {
+            Assert.That( @this.Success, Is.False );
+            Assert.That( @this.StaticFailureResult, Is.Null );
+            Assert.That( @this.ConfigurationFailureResult, Is.Null );
+            Assert.That( @this.HostFailureResult, Is.Not.Null );
+            Assert.That( @this.HostFailureResult.ErrorPlugins, Is.Not.Empty );
+            Assert.That( @this.PluginCulprits, Is.Not.Empty );
         }
 
         public static IYodiiEngineResult Check( this IYodiiEngineResult @this, Action<IYodiiEngineResult> check )
@@ -219,7 +233,7 @@ namespace Yodii.Engine.Tests
             }
             if( !expectedIsPartial )
             {
-                if( expected.Length < actual.Count() ) Assert.Fail( String.Format( "Expected '{0}' but was '{1}'.", String.Join( ", ", expected ), String.Join( ", ", actual ) ) );
+                if( expected.Length < actual.Count() ) Assert.Fail( String.Format( "Expected '{0}' but was '{1}'.", String.Join( ", ", expected.OrderBy( n => n ) ), String.Join( ", ", actual.OrderBy( n => n ) ) ) );
             }
         }
 

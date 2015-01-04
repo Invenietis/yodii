@@ -12,7 +12,7 @@ namespace Yodii.Engine
 {
     partial class ServiceData
     {
-        internal class StaticPropagation : BasePropagation, IServiceDependentObject
+        internal class StaticPropagation : BasePropagation
         {
             public StaticPropagation( ServiceData s )
                 : base( s )
@@ -62,10 +62,9 @@ namespace Yodii.Engine
                 }
                 else
                 {
-                    StartDependencyImpact impact = Service.ConfigSolvedImpact;
-                    Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 );
+                    StartDependencyImpact impact = Service.ConfigSolvedImpact | StartDependencyImpact.IsStartRunnableRecommended | StartDependencyImpact.IsStartRunnableOnly;
 
-                    foreach( var s in GetIncludedServices( impact, false ) )
+                    foreach( var s in GetIncludedServices( impact ) )
                     {
                         if( !s.SetRunningStatus( ServiceSolvedConfigStatusReason.FromPropagation ) )
                         {
@@ -74,6 +73,7 @@ namespace Yodii.Engine
                             return false;
                         }
                     }
+                    //Debug.Assert( Service.Disabled || GetExcludedServices( impact ).All( s => s.Disabled ) );
                     if( !Service.Disabled )
                     {
                         foreach( var s in GetExcludedServices( impact ) )
@@ -83,16 +83,6 @@ namespace Yodii.Engine
                     }
                 }
                 return true;
-            }
-
-            public SolvedConfigurationStatus FinalConfigSolvedStatus
-            {
-                get { return Service.FinalConfigSolvedStatus; }
-            }
-
-            public StartDependencyImpact ConfigSolvedImpact
-            {
-                get { return Service.ConfigSolvedImpact; }
             }
 
         }
@@ -131,12 +121,12 @@ namespace Yodii.Engine
             return _propagation;
         }
 
-        public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
+        public void FillTransitiveIncludedServices( HashSet<ServiceData> set )
         {
             if( !set.Add( this ) ) return;
             var propagation = GetUsefulPropagationInfo();
             if( propagation == null ) return;
-            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact, ConfigSolvedStatus == SolvedConfigurationStatus.Running ) )
+            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact ) )
             {
                 s.FillTransitiveIncludedServices( set );
             }

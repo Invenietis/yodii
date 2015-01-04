@@ -30,7 +30,7 @@ using System.Text;
 using CK.Core;
 using NUnit.Framework;
 
-namespace Yodii.Engine.Tests
+namespace Yodii
 {
     [ExcludeFromCodeCoverage]
     static class TestHelper

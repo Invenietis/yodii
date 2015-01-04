@@ -147,15 +147,14 @@ namespace Yodii.Engine
                     }
                 }
                 ProcessDeferredPropagations();
-
                 SuicidePrevention();
-
             }
             // Finalizes static resolution by computing final Runnable statuses per impact for Optional and Runnable plugins or services.
             Step = ConfigurationSolverStep.InitializeFinalStartableStatus;
             {
-                foreach( ServiceData s in _orderedServices ) s.InitializeFinalStartableStatus();
+                // Must first initialize plugins FinalStartableStatus since services use them.
                 foreach( PluginData p in _orderedPlugins ) p.InitializeFinalStartableStatus();
+                foreach( ServiceData s in _orderedServices ) s.InitializeFinalStartableStatus();
             }
 
             List<PluginData> blockingPlugins = null;
@@ -201,6 +200,7 @@ namespace Yodii.Engine
             }
             return null;
         }
+
         /// <summary>
         /// Goes through the plugin list to check for non-suported, running reference loops.
         /// If a plugin was disabled during the process, it is repeated.
@@ -215,7 +215,19 @@ namespace Yodii.Engine
                 {
                     if( !p.Disabled )
                     {
-                        atLeastOneFailed |= !p.CheckInvalidLoop();
+                        // If the plugin is running by configuration, we consider runnable references: we want runnable references to be able to start
+                        // and their start must not stop this plugin whatever the configured impact is.
+                        // If the plugin is only runnable, we take runnable references (and optional ones) into account depending on this configured impact.
+                        var impact = p.ConfigSolvedImpact;
+                        if( p.ConfigSolvedStatus == SolvedConfigurationStatus.Running ) impact |= StartDependencyImpact.IsStartRunnableOnly | StartDependencyImpact.IsStartRunnableRecommended;
+
+                        var running = p.GetIncludedServicesClosure( impact, true );
+                        if( running.Overlaps( p.GetExcludedServices( impact ) ) )
+                        {
+                            atLeastOneFailed = true;
+                            p.SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                            ProcessDeferredPropagations();
+                        }
                     }
                 }
             }
@@ -228,7 +240,8 @@ namespace Yodii.Engine
             {
                 ServiceData s = _deferedPropagation.First();
                 _deferedPropagation.Remove( s );
-                s.PropagateSolvedStatus();
+                if( Step < ConfigurationSolverStep.WaitingForDynamicResolution ) s.PropagateSolvedStatus();
+                else s.DynPropagateStart();
             }
         }
 
@@ -236,7 +249,7 @@ namespace Yodii.Engine
         /// Solves undetermined status based on commands.
         /// </summary>
         /// <param name="commands"></param>
-        /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
+        /// <returns>This method returns a <see cref="DynamicSolverResult"/> that contains the plugins to start/stop or disable for the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
         {
@@ -250,7 +263,7 @@ namespace Yodii.Engine
             List<YodiiCommand> commands = new List<YodiiCommand>();
             if( newOne != null )
             {
-                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne );
+                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne, true );
                 Debug.Assert( alwaysTrue, "The newly added command is necessarily okay." );
                 commands.Add( newOne );
             }
@@ -265,15 +278,25 @@ namespace Yodii.Engine
                     }
                 }
             }
+            Console.WriteLine( "Commands = {0}", commands.Count );
+            Debug.Assert( _deferedPropagation.Count == 0 );
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision( true );
+                if( !f.Root.Disabled )
+                {
+                    f.DynamicFinalDecision( true );
+                    ProcessDeferredPropagations();
+                }
             }
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision( false );
+                if( !f.Root.Disabled )
+                {
+                    f.DynamicFinalDecision( false );
+                    ProcessDeferredPropagations();
+                }
             }
 
             List<IPluginInfo> disabled = new List<IPluginInfo>();
@@ -293,33 +316,35 @@ namespace Yodii.Engine
                     Debug.Assert( p.Service == null );
                     p.DynamicStopBy( PluginRunningStatusReason.StoppedByFinalDecision );
                     stopped.Add( p.PluginInfo );
+                    ProcessDeferredPropagations();
                 }
             }
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
         
-        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
+        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, bool isFirst = false )
         {
+            // If the plugin does not exist, we keep the command.
+            bool success = true;
             if( cmd.ServiceFullName != null )
             {
                 // If the service does not exist, we keep the command.
                 ServiceData s;
                 if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
                 {
-                    if ( cmd.Start ) return s.DynamicStartByCommand( cmd.Impact );
-                    return s.DynamicStopByCommand();
+                    success = cmd.Start ? s.DynamicStartByCommand( (cmd.Impact | s.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : s.DynamicStopByCommand();
                 }
-                return true;
             }
-            // Starts or stops the plugin.
-            // If the plugin does not exist, we keep the command.
-            PluginData p;
-            if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
+            else
             {
-                if ( cmd.Start ) return p.DynamicStartByCommand( cmd.Impact );
-                else return p.DynamicStopByCommand();
+                PluginData p;
+                if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
+                {
+                    success = cmd.Start ? p.DynamicStartByCommand( (cmd.Impact | p.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : p.DynamicStopByCommand();
+                }
             }
-            return true;
+            if( success ) ProcessDeferredPropagations();
+            return success;
         }
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )

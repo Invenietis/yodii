@@ -43,10 +43,9 @@ namespace Yodii.Engine
                             Debug.Assert( _runningService.DynamicStatus.HasValue && _runningService.DynamicStatus.Value == RunningStatus.RunningLocked );
                             DynamicSetRunningService( _runningService, ServiceRunningStatusReason.None );
                         }
-                        Root.OnAllPluginsDynamicStateInitialized();
                     }
                 }
-                else Root.OnAllPluginsDynamicStateInitialized();
+                Root.DebugCheckOnAllPluginsDynamicStateInitialized();
             }
 
             public void DynamicSetRunningPlugin( PluginData running )
@@ -146,9 +145,9 @@ namespace Yodii.Engine
                     if( startPoint.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running  || (startPoint.DynamicStatus != null && startPoint.DynamicStatus.Value == RunningStatus.Running) )
                     {
                         Debug.Assert( startPoint.DynamicCanStart( startPoint.ConfigSolvedImpact ) );
-                        PluginData firstRunnable = startPoint.FindFirstPluginData( p => p.DynamicCanStart( StartDependencyImpact.Minimal ) );
+                        PluginData firstRunnable = startPoint.FindFirstPluginData( p => p.DynamicCanStart( p.DynamicImpact ) );
                         Debug.Assert( firstRunnable != null );
-                        firstRunnable.DynamicStartBy( StartDependencyImpact.Minimal, PluginRunningStatusReason.StartedByFinalDecision );
+                        firstRunnable.DynamicStartBy( PluginRunningStatusReason.StartedByFinalDecision );
                         Debug.Assert( _dynRunningPlugin == firstRunnable );
                         Debug.Assert( _dynRunningPlugin.DynamicStatus.Value == RunningStatus.Running
                                             && Root.FindFirstPluginData( p => p != _dynRunningPlugin && p.DynamicStatus.Value >= RunningStatus.Running ) == null,

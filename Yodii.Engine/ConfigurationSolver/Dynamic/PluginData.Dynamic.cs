@@ -11,6 +11,7 @@ namespace Yodii.Engine
     {
         RunningStatus? _dynamicStatus;
         PluginRunningStatusReason _dynamicReason;
+        internal StartDependencyImpact DynamicImpact;
 
         public RunningStatus? DynamicStatus { get { return _dynamicStatus; } }
 
@@ -19,6 +20,7 @@ namespace Yodii.Engine
         /// </summary>
         public void DynamicResetState()
         {
+            DynamicImpact = ConfigSolvedImpact;
             switch( FinalConfigSolvedStatus )
             {
                 case SolvedConfigurationStatus.Disabled: 
@@ -51,29 +53,55 @@ namespace Yodii.Engine
             return DynTestCanStart( impact );
         }
 
-        public bool DynamicStartByCommand( StartDependencyImpact impact )
+        public bool DynamicStartByCommand( StartDependencyImpact impact, bool isFirst = false )
         {
+            Debug.Assert( (impact & ConfigSolvedImpact) == ConfigSolvedImpact );
+            
             if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-            if( impact == StartDependencyImpact.Unknown ) impact = ConfigSolvedImpact;
-            if( !DynTestCanStart( impact ) ) return false;
+            if( isFirst )
+            {
+                Debug.Assert( (_dynamicStatus == null || _dynamicStatus.Value == RunningStatus.RunningLocked) && DynTestCanStart( impact ) );
+                DynamicImpact = impact;
+            }
+            else
+            {
+                // Use DynamicImpact to take service propagation into account.
+                if( !DynTestCanStart( DynamicImpact ) ) return false;
+                DynamicImpact |= impact.ToTryBits();
+            }
             _dynamicStatus = RunningStatus.Running;
             _dynamicReason = PluginRunningStatusReason.StartedByCommand;
-            DynamicStartBy( impact, PluginRunningStatusReason.StartedByCommand );
+            DynamicStartBy( PluginRunningStatusReason.StartedByCommand );
             return true;
         }
 
         bool DynTestCanStart( StartDependencyImpact impact )
         {
+            var allIncluded = DynGetIncludedServicesClosure( impact );
             foreach( var s in GetExcludedServices( impact ) )
             {
                 if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
+                if( allIncluded.Contains( s ) ) return false;
             }
-            foreach( var s in GetIncludedServices( impact, false ) )
+            foreach( var s in allIncluded )
             {
                 if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
             }
             return true;
-        } 
+        }
+
+        public HashSet<ServiceData> DynGetIncludedServicesClosure( StartDependencyImpact impact )
+        {
+            Debug.Assert( !Disabled );
+            impact = impact.ClearAllTryBits();
+
+            var result = new HashSet<ServiceData>();
+            foreach( var service in GetIncludedServices( impact ) )
+            {
+                service.DynFillTransitiveIncludedServices( result );
+            }
+            return result;
+        }
 
         public PluginRunningStatusReason GetStoppedReasonForStoppedReference( DependencyRequirement requirement )
         {
@@ -82,25 +110,25 @@ namespace Yodii.Engine
             {
                 case DependencyRequirement.Running: return PluginRunningStatusReason.StoppedByRunningReference;
                 case DependencyRequirement.RunnableRecommended:
-                    if( impact >= StartDependencyImpact.StartRecommended )
+                    if( (impact&StartDependencyImpact.IsStartRunnableRecommended) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByRunnableRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Runnable:
-                    if( impact == StartDependencyImpact.FullStart )
+                    if( (impact & StartDependencyImpact.IsStartRunnableOnly) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByRunnableReference;
                     }
                     break;
                 case DependencyRequirement.OptionalRecommended:
-                    if( impact >= StartDependencyImpact.StartRecommended )
+                    if( (impact & StartDependencyImpact.IsStartOptionalRecommended) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByOptionalRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
-                    if( impact == StartDependencyImpact.FullStart )
+                    if( (impact & StartDependencyImpact.IsStartOptionalOnly) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByOptionalReference;
                     }
@@ -129,7 +157,7 @@ namespace Yodii.Engine
             }
         }
 
-        internal void DynamicStartBy( StartDependencyImpact impact, PluginRunningStatusReason reason )
+        internal void DynamicStartBy( PluginRunningStatusReason reason )
         {
             Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value >= RunningStatus.Running );
             if( _dynamicStatus == null )
@@ -139,10 +167,22 @@ namespace Yodii.Engine
             }
             if( Service != null ) Service.OnDirectPluginStarted( this );
 
+            List<ServiceData> tryStart = null;
             foreach( var sRef in PluginInfo.ServiceReferences )
             {
                 ServiceData s = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                s.DynamicStartByDependency( impact, sRef.Requirement );
+                if( s.DynamicStartByDependency( DynamicImpact, sRef.Requirement ) && s.DynamicStatus == null )
+                {
+                    if( tryStart == null ) tryStart = new List<ServiceData>();
+                    tryStart.Add( s );
+                }
+            }
+            if( tryStart != null )
+            {
+                foreach( var s in tryStart )
+                {
+                    if( s.DynamicStatus == null ) s.DynamicStartBy( ServiceRunningStatusReason.StartedByPropagation );
+                }
             }
         }       
 

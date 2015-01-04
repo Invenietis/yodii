@@ -981,30 +981,32 @@ namespace Yodii.Engine.Tests.Mocks
 
             return d;
         }
+
         internal static IDiscoveredInfo CreateGraphDynamicInvalidLoop()
         {
             DiscoveredInfo d = new DiscoveredInfo();
 
             #region graph
             /*
-            *                  +--------+  
-            *      +-----------|Service1|  
-            *      |           |Running |  
-            *      |           +---+----+  
+            *                  +------------+  
+            *      +-----------|  Service1  |  
+            *      |           |  Optional  |  
+            *      |           +------+-----+  
             *  +---+---------+        | 
             *  |Service1.1   |        |    
             *  |Optional     |  +---+-----+
             *  +------------++  |Plugin1.2|
-            *      |        |   |Optional |-----------------------+ 
+            *      |        ^   |Optional |-----------------------+ 
             *      |        |   +---------+                       |
             *   +--+------+ |                                     |
             *   |Plugin1.1| |                                     |Running
             *   |Optional | |                                     |
             *   +---------+ |                      +---------+    |
             *               |            +---------+Service2 |<---+
-            *               |         +--+------+  |Optional |   
-            *               +---------+Plugin2.1|  +----+----+   
-            *                         |Optional |       |        
+            *               |            |         |Optional |
+            *               |         +--+------+  +----+----+   
+            *               +---------+Plugin2.1|       |
+            *                Running  |Optional |       |        
             *                         +---------+       |        
             *                                        +--+------+ 
             *                                        |Plugin2.2| 

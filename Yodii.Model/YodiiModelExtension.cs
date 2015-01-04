@@ -38,7 +38,7 @@ namespace Yodii.Model
         /// <param name="serviceFullName">Name of the service to start.</param>
         /// <param name="impact">Startup impact on references.</param>
         /// <exception cref="InvalidOperationException">
-        /// The <see cref="ILiveYodiiItem.Capability">.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
         /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
         /// </exception>
         /// <exception cref="ArgumentException">The service must exist.</exception>
