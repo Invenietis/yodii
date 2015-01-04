@@ -487,14 +487,6 @@ namespace Yodii.Lab
             {
                 state.Engine.StopEngine();
             }
-
-            // Clear configuration manager
-            foreach( var l in state.Engine.Configuration.Layers.ToList() )
-            {
-                var result = state.Engine.Configuration.Layers.Remove( l );
-                Debug.Assert( result.Success );
-            }
-
             // Clear services and plugins
             state.ClearState();
 
@@ -511,7 +503,7 @@ namespace Yodii.Lab
             // Load configuration manager data
             foreach( PersistedConfigurationLayer l in deserializedState.ConfigurationLayers )
             {
-                IConfigurationLayer newLayer = state.Engine.Configuration.Layers.Create( l.LayerName );
+                IConfigurationLayer newLayer = l.LayerName == "" ? state.Engine.Configuration.Layers.Default : state.Engine.Configuration.Layers.Create( l.LayerName );
 
                 foreach( PersistedConfigurationItem item in l.Items )
                 {

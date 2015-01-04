@@ -245,7 +245,7 @@ namespace Yodii.Lab.Tests
 
             // Monitor Configuration changes:
             // Layer created
-            var layer = vm.LabState.Engine.Configuration.Layers.Default;
+            var layer = vm.LabState.Engine.Configuration.Layers.Create( "Layer" );
             Assert.That( vm.ChangedSinceLastSave, Is.True );
             r = vm.SaveState( tempFilePath );
             Assert.That( vm.ChangedSinceLastSave, Is.False );

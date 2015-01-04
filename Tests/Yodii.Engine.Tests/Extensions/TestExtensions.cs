@@ -129,6 +129,16 @@ namespace Yodii
             return @this;
         }
 
+        public static void CheckHostFailure( this IYodiiEngineResult @this )
+        {
+            Assert.That( @this.Success, Is.False );
+            Assert.That( @this.StaticFailureResult, Is.Null );
+            Assert.That( @this.ConfigurationFailureResult, Is.Null );
+            Assert.That( @this.HostFailureResult, Is.Not.Null );
+            Assert.That( @this.HostFailureResult.ErrorPlugins, Is.Not.Empty );
+            Assert.That( @this.PluginCulprits, Is.Not.Empty );
+        }
+
         public static IYodiiEngineResult Check( this IYodiiEngineResult @this, Action<IYodiiEngineResult> check )
         {
             check( @this );

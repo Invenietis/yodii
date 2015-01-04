@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
 using CK.Core;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Yodii.Engine
 {
@@ -424,6 +425,7 @@ namespace Yodii.Engine
             }
         }
 
+        [ExcludeFromCodeCoverage]
         public override string ToString()
         {
             StringBuilder b = new StringBuilder();
@@ -432,6 +434,7 @@ namespace Yodii.Engine
         }
 
 
+        [ExcludeFromCodeCoverage]
         public void ToString( StringBuilder b, string prefix )
         {
             b.Append( prefix );

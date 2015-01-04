@@ -30,6 +30,19 @@ namespace Yodii.Model
         }
 
         /// <summary>
+        /// Returns a <see cref="StartDependencyImpact"/> with only IsTryXXX bit in it.
+        /// Note that <see cref="StartDependencyImpact.Minimal"/> is always set.
+        /// </summary>
+        /// <param name="@this">This <see cref="StartDependencyImpact"/>.</param>
+        /// <returns>Impact with only IsTryXXX bits.</returns>
+        public static StartDependencyImpact ToTryBits( this StartDependencyImpact @this )
+        {
+            int moved = (int)(@this & StartDependencyImpact.FullStart) << 4;
+            int cleared = (int)(@this & StartDependencyImpact.TryFullStart);
+            return (StartDependencyImpact)(cleared | moved) | StartDependencyImpact.Minimal;
+        }
+
+        /// <summary>
         /// Returns a <see cref="StartDependencyImpact"/> without any IsTryXXX bit that have a XXX bit set.
         /// </summary>
         /// <param name="@this">This <see cref="StartDependencyImpact"/>.</param>

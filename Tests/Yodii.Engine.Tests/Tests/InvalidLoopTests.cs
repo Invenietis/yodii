@@ -543,6 +543,12 @@ namespace Yodii.Engine.Tests
                     e.CheckAllServicesStopped( "Service1, Service2, Service2.1, Service2.2, Service2.3, Service3, >Service1, >Service1.1, >Service2, >Service3" );
                     e.CheckAllPluginsStopped( "Plugin1, Plugin2.1, Plugin2.2, Plugin3, >Plugin1, >Plugin1.1, >Plugin2, >Plugin3" );
 
+                    e.StartPlugin( "Plugin1", StartDependencyImpact.StartRecommended ).CheckSuccess();
+                    e.CheckAllPluginsDisabled( ">Plugin1bis" );
+                    e.CheckAllPluginsRunning( "Plugin1, Plugin2.1, Plugin3" );
+                    e.CheckAllPluginsStopped( "Plugin2.2, >Plugin1, >Plugin1.1, >Plugin2, >Plugin3" );
+                    e.CheckAllServicesRunning( "Service1, Service2.3, Service2.2, Service2.1, Service2, Service3" );
+
                     e.StartService( "Service1", StartDependencyImpact.StartRecommended ).CheckSuccess();
                     e.CheckAllPluginsDisabled( ">Plugin1bis" );
                     e.CheckAllPluginsRunning( "Plugin1, Plugin2.1, Plugin3" );
@@ -679,6 +685,23 @@ namespace Yodii.Engine.Tests
             return engine;
         }
         
+        [Test]
+        public void more_complex_loop_start()
+        {
+            BuildMoreComplexLoop( ConfigurationStatus.Running, StartDependencyImpact.Unknown )
+                .FullStartAndStop( ( e, r ) =>
+                {
+                    e.StartService( "Service1", StartDependencyImpact.IsStartOptionalRecommended | StartDependencyImpact.IsStartRunnableOnly );
+                } );
+
+            BuildMoreComplexLoop( ConfigurationStatus.Optional, StartDependencyImpact.Unknown )
+                .FullStartAndStop( ( e, r ) =>
+                {
+                    e.StartPlugin( "Plugin1", StartDependencyImpact.IsStartOptionalOnly );
+                    e.StartService( "Service1", StartDependencyImpact.IsStartOptionalOnly );
+                    e.StartService( "Service1", StartDependencyImpact.IsStartOptionalRecommended | StartDependencyImpact.IsStartRunnableOnly );
+                } );
+        }
 
         [Test]
         public void simple_loop_start_stress_test()
@@ -704,8 +727,15 @@ namespace Yodii.Engine.Tests
             }
         }
 
+        [Test]
+        public void quite_complex_loop_start_stress_test()
+        {
+            StartAllStartable( BuildQuiteComplexLoop(), 100 );
+        }
+
         static void StartAllStartable( YodiiEngine engine, int round = 10, [CallerMemberName]string caller = "" )
         {
+            StartAllStartable( 611142695, engine, round, caller );
             StartAllStartable( new Random().Next(), engine, round, caller );
         }
 

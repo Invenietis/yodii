@@ -249,7 +249,7 @@ namespace Yodii.Engine
         /// Solves undetermined status based on commands.
         /// </summary>
         /// <param name="commands"></param>
-        /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
+        /// <returns>This method returns a <see cref="DynamicSolverResult"/> that contains the plugins to start/stop or disable for the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
         {
@@ -263,7 +263,7 @@ namespace Yodii.Engine
             List<YodiiCommand> commands = new List<YodiiCommand>();
             if( newOne != null )
             {
-                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne );
+                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne, true );
                 Debug.Assert( alwaysTrue, "The newly added command is necessarily okay." );
                 commands.Add( newOne );
             }
@@ -278,15 +278,25 @@ namespace Yodii.Engine
                     }
                 }
             }
+            Console.WriteLine( "Commands = {0}", commands.Count );
+            Debug.Assert( _deferedPropagation.Count == 0 );
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision( true );
+                if( !f.Root.Disabled )
+                {
+                    f.DynamicFinalDecision( true );
+                    ProcessDeferredPropagations();
+                }
             }
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision( false );
+                if( !f.Root.Disabled )
+                {
+                    f.DynamicFinalDecision( false );
+                    ProcessDeferredPropagations();
+                }
             }
 
             List<IPluginInfo> disabled = new List<IPluginInfo>();
@@ -306,13 +316,15 @@ namespace Yodii.Engine
                     Debug.Assert( p.Service == null );
                     p.DynamicStopBy( PluginRunningStatusReason.StoppedByFinalDecision );
                     stopped.Add( p.PluginInfo );
+                    ProcessDeferredPropagations();
                 }
             }
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
         
-        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
+        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, bool isFirst = false )
         {
+            // If the plugin does not exist, we keep the command.
             bool success = true;
             if( cmd.ServiceFullName != null )
             {
@@ -320,16 +332,16 @@ namespace Yodii.Engine
                 ServiceData s;
                 if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
                 {
-                    success = cmd.Start ? s.DynamicStartByCommand( cmd.Impact ) : s.DynamicStopByCommand();
+                    success = cmd.Start ? s.DynamicStartByCommand( (cmd.Impact | s.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : s.DynamicStopByCommand();
                 }
-                return true;
             }
-            // Starts or stops the plugin.
-            // If the plugin does not exist, we keep the command.
-            PluginData p;
-            if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
+            else
             {
-                success = cmd.Start ? p.DynamicStartByCommand( cmd.Impact ) : p.DynamicStopByCommand();
+                PluginData p;
+                if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
+                {
+                    success = cmd.Start ? p.DynamicStartByCommand( (cmd.Impact | p.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : p.DynamicStopByCommand();
+                }
             }
             if( success ) ProcessDeferredPropagations();
             return success;
