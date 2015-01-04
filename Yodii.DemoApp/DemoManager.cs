@@ -69,7 +69,7 @@ namespace Yodii.DemoApp
             YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
             engine.SetDiscoveredInfo( info );
-            IConfigurationLayer cl = engine.Configuration.Layers.Create();
+            IConfigurationLayer cl = engine.Configuration.Layers.Default;
             cl.Items.Set( "Yodii.DemoApp.Client1", ConfigurationStatus.Running );
             cl.Items.Set( "Yodii.DemoApp.Company1", ConfigurationStatus.Running );
             engine.StartEngine();

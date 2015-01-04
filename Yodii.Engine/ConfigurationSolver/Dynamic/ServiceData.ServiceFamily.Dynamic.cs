@@ -43,10 +43,10 @@ namespace Yodii.Engine
                             Debug.Assert( _runningService.DynamicStatus.HasValue && _runningService.DynamicStatus.Value == RunningStatus.RunningLocked );
                             DynamicSetRunningService( _runningService, ServiceRunningStatusReason.None );
                         }
-                        Root.OnAllPluginsDynamicStateInitialized();
+                        Root.DebugCheckOnAllPluginsDynamicStateInitialized();
                     }
                 }
-                else Root.OnAllPluginsDynamicStateInitialized();
+                else Root.DebugCheckOnAllPluginsDynamicStateInitialized();
             }
 
             public void DynamicSetRunningPlugin( PluginData running )

@@ -6,13 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using CK.Core;
 using NUnit.Framework;
+using Yodii.Engine;
 using Yodii.Model;
 
-namespace Yodii.Engine.Tests
+namespace Yodii
 {
     static class DynamicTestExtensions
     {
-        public static void FullStart( this YodiiEngine @this, Action<YodiiEngine,IYodiiEngineResult> tests, [CallerMemberName]string callerName = null )
+        public static void FullStartAndStop( this YodiiEngine @this, Action<YodiiEngine,IYodiiEngineResult> tests, [CallerMemberName]string callerName = null )
         {
             IActivityMonitor m = TestHelper.ConsoleMonitor;
             IYodiiEngineResult result;
@@ -51,150 +52,153 @@ namespace Yodii.Engine.Tests
         }
 
         #region Plugins and Services
-        public static void CheckAllDisabled( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllDisabled( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, false );
+            return CheckStatus( @this, RunningStatus.Disabled, serviceOrPluginNames, false );
         }
 
-        public static void CheckAllStopped( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllStopped( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.Stopped, pluginOrServiceNames, false );
+            return CheckStatus( @this, RunningStatus.Stopped, serviceOrPluginNames, false );
         }
 
-        public static void CheckAllRunning( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllRunning( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.Running, pluginOrServiceNames, false );
+            return CheckStatus( @this, RunningStatus.Running, serviceOrPluginNames, false );
         }
 
-        public static void CheckAllRunningLocked( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllRunningLocked( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.RunningLocked, pluginOrServiceNames, false );
+            return CheckStatus( @this, RunningStatus.RunningLocked, serviceOrPluginNames, false );
         }
 
-        public static void CheckDisabled( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckDisabled( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, true );
+            return CheckStatus( @this, RunningStatus.Disabled, serviceOrPluginNames, true );
         }
 
-        public static void CheckStopped( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckStopped( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.Stopped, pluginOrServiceNames, true );
+            return CheckStatus( @this, RunningStatus.Stopped, serviceOrPluginNames, true );
         }
 
-        public static void CheckRunning( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckRunning( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.Running, pluginOrServiceNames, true );
+            return CheckStatus( @this, RunningStatus.Running, serviceOrPluginNames, true );
         }
 
-        public static void CheckRunningLocked( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckRunningLocked( this IYodiiEngine @this, string serviceOrPluginNames )
         {
-            CheckStatus( @this, RunningStatus.RunningLocked, pluginOrServiceNames, true );
+            return CheckStatus( @this, RunningStatus.RunningLocked, serviceOrPluginNames, true );
         }
 
-        static void CheckStatus( this YodiiEngine @this, RunningStatus status, string pluginOrServiceNames, bool expectedIsPartial )
+        static IYodiiEngine CheckStatus( this IYodiiEngine @this, RunningStatus status, string serviceOrPluginNames, bool expectedIsPartial )
         {
-            string[] expected = pluginOrServiceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+            string[] expected = serviceOrPluginNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             var withTheStatus = @this.LiveInfo.Plugins.Where( p => p.RunningStatus == status ).Select( p => p.PluginInfo.PluginFullName );
             withTheStatus = withTheStatus.Concat( @this.LiveInfo.Services.Where( s => s.RunningStatus == status ).Select( s => s.ServiceInfo.ServiceFullName ) );
             TestExtensions.CheckContainsWithAlternative( expected, withTheStatus, expectedIsPartial );
+            return @this;
         }
         #endregion
 
         #region Plugins only
-        public static void CheckAllPluginsDisabled( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllPluginsDisabled( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, false );
+            return CheckPluginsStatus( @this, RunningStatus.Disabled, pluginNames, false );
         }
 
-        public static void CheckAllPluginsStopped( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllPluginsStopped( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Stopped, pluginOrServiceNames, false );
+            return CheckPluginsStatus( @this, RunningStatus.Stopped, pluginNames, false );
         }
 
-        public static void CheckAllPluginsRunning( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllPluginsRunning( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Running, pluginOrServiceNames, false );
+            return CheckPluginsStatus( @this, RunningStatus.Running, pluginNames, false );
         }
 
-        public static void CheckAllPluginsRunningLocked( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllPluginsRunningLocked( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.RunningLocked, pluginOrServiceNames, false );
+            return CheckPluginsStatus( @this, RunningStatus.RunningLocked, pluginNames, false );
         }
 
-        public static void CheckPluginsDisabled( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckPluginsDisabled( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, true );
+            return CheckPluginsStatus( @this, RunningStatus.Disabled, pluginNames, true );
         }
 
-        public static void CheckPluginsStopped( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckPluginsStopped( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Stopped, pluginOrServiceNames, true );
+            return CheckPluginsStatus( @this, RunningStatus.Stopped, pluginNames, true );
         }
 
-        public static void CheckPluginsRunning( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckPluginsRunning( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.Running, pluginOrServiceNames, true );
+            return CheckPluginsStatus( @this, RunningStatus.Running, pluginNames, true );
         }
 
-        public static void CheckPluginsRunningLocked( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckPluginsRunningLocked( this IYodiiEngine @this, string pluginNames )
         {
-            CheckPluginsStatus( @this, RunningStatus.RunningLocked, pluginOrServiceNames, true );
+            return CheckPluginsStatus( @this, RunningStatus.RunningLocked, pluginNames, true );
         }
 
-        static void CheckPluginsStatus( this YodiiEngine @this, RunningStatus status, string pluginOrServiceNames, bool expectedIsPartial )
+        static IYodiiEngine CheckPluginsStatus( this IYodiiEngine @this, RunningStatus status, string pluginNames, bool expectedIsPartial )
         {
-            string[] expected = pluginOrServiceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+            string[] expected = pluginNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             var withTheStatus = @this.LiveInfo.Plugins.Where( p => p.RunningStatus == status ).Select( p => p.PluginInfo.PluginFullName );
             TestExtensions.CheckContainsWithAlternative( expected, withTheStatus, expectedIsPartial );
+            return @this;
         }
         #endregion
 
         #region Services only
-        public static void CheckAllServicesDisabled( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllServicesDisabled( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, false );
+            return CheckServicesStatus( @this, RunningStatus.Disabled, serviceNames, false );
         }
 
-        public static void CheckAllServicesStopped( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllServicesStopped( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Stopped, pluginOrServiceNames, false );
+            return CheckServicesStatus( @this, RunningStatus.Stopped, serviceNames, false );
         }
 
-        public static void CheckAllServicesRunning( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllServicesRunning( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Running, pluginOrServiceNames, false );
+            return CheckServicesStatus( @this, RunningStatus.Running, serviceNames, false );
         }
 
-        public static void CheckAllServicesRunningLocked( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckAllServicesRunningLocked( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.RunningLocked, pluginOrServiceNames, false );
+            return CheckServicesStatus( @this, RunningStatus.RunningLocked, serviceNames, false );
         }
 
-        public static void CheckServicesDisabled( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckServicesDisabled( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Disabled, pluginOrServiceNames, true );
+            return CheckServicesStatus( @this, RunningStatus.Disabled, serviceNames, true );
         }
 
-        public static void CheckServicesStopped( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckServicesStopped( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Stopped, pluginOrServiceNames, true );
+            return CheckServicesStatus( @this, RunningStatus.Stopped, serviceNames, true );
         }
 
-        public static void CheckServicesRunning( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckServicesRunning( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.Running, pluginOrServiceNames, true );
+            return CheckServicesStatus( @this, RunningStatus.Running, serviceNames, true );
         }
 
-        public static void CheckServicesRunningLocked( this YodiiEngine @this, string pluginOrServiceNames )
+        public static IYodiiEngine CheckServicesRunningLocked( this IYodiiEngine @this, string serviceNames )
         {
-            CheckServicesStatus( @this, RunningStatus.RunningLocked, pluginOrServiceNames, true );
+            return CheckServicesStatus( @this, RunningStatus.RunningLocked, serviceNames, true );
         }
 
-        static void CheckServicesStatus( this YodiiEngine @this, RunningStatus status, string pluginOrServiceNames, bool expectedIsPartial )
+        static IYodiiEngine CheckServicesStatus( this IYodiiEngine @this, RunningStatus status, string serviceNames, bool expectedIsPartial )
         {
-            string[] expected = pluginOrServiceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+            string[] expected = serviceNames.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             var withTheStatus = @this.LiveInfo.Services.Where( s => s.RunningStatus == status ).Select( s => s.ServiceInfo.ServiceFullName );
             TestExtensions.CheckContainsWithAlternative( expected, withTheStatus, expectedIsPartial );
+            return @this;
         }
         #endregion
 

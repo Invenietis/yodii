@@ -91,7 +91,7 @@ namespace Yodii.Engine.Tests.Mocks
 
             var layerName = r.GetAttribute( "Name" );
 
-            var newLayer = manager.Layers.Create( layerName );
+            var newLayer = String.IsNullOrEmpty( layerName ) ? manager.Layers.Default : manager.Layers.Create( layerName );
 
             while( r.Read() )
             {
@@ -99,9 +99,11 @@ namespace Yodii.Engine.Tests.Mocks
                 {
                     var serviceOrPluginId = r.GetAttribute( "ServiceOrPluginId" );
                     var status = (ConfigurationStatus)Enum.Parse( typeof( ConfigurationStatus ), r.GetAttribute( "Status" ) );
+                    StartDependencyImpact impact = StartDependencyImpact.Unknown;
+                    Enum.TryParse<StartDependencyImpact>( r.GetAttribute( "Status" ), out impact );
                     var statusReason = r.GetAttribute( "Reason" );
 
-                    newLayer.Items.Set( serviceOrPluginId, status, statusReason );
+                    newLayer.Items.Set( serviceOrPluginId, status, impact, statusReason );
                 }
             }
 

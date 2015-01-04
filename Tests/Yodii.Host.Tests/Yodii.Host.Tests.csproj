@@ -52,6 +52,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\ConfigurationManagerExtensions.cs">
+      <Link>Extensions\ConfigurationManagerExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\DynamicTestExtensions.cs">
+      <Link>Extensions\DynamicTestExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\StaticOnlyTestExtensions.cs">
+      <Link>Extensions\StaticOnlyTestExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\TestExtensions.cs">
+      <Link>Extensions\TestExtensions.cs</Link>
+    </Compile>
     <Compile Include="PluginAndServiceWrapper\PluginWrapper.cs" />
     <Compile Include="PluginAndServiceWrapper\WrapperExtension.cs" />
     <Compile Include="ServiceSpecializationContext.cs" />
@@ -67,10 +79,6 @@
     <Compile Include="FailureTransitionPlugin\IFailureTransitionPluginService.cs" />
     <Compile Include="ServiceSpecialization\ITestRootService.cs" />
     <Compile Include="ServiceSpecialization\ITestRootSubAService.cs" />
-    <Compile Include="Extensions\ConfigurationManagerExtensions.cs" />
-    <Compile Include="Extensions\DynamicTestExtensions.cs" />
-    <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
-    <Compile Include="Extensions\TestExtensions.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="CtorParameterTests\ParameterTestPlugin.cs" />
     <Compile Include="SpecializationTests.cs" />
@@ -102,6 +110,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

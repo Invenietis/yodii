@@ -35,7 +35,7 @@ namespace Yodii.Engine
             _configOriginalStatus = d.ConfigOriginalStatus;
             _configSolvedStatus = d.ConfigSolvedStatus;
             _configOriginalImpact = d.ConfigOriginalImpact;
-            _configSolvedImpact = d.RawConfigSolvedImpact;
+            _configSolvedImpact = d.ConfigSolvedImpact;
         }
 
         protected void UpdateItem( IYodiiItemData d, DelayedPropertyNotification notifier )
@@ -49,7 +49,7 @@ namespace Yodii.Engine
             notifier.Update( this, ref _configOriginalStatus, d.ConfigOriginalStatus, () => ConfigOriginalStatus );
             notifier.Update( this, ref _configSolvedStatus, d.ConfigSolvedStatus, () => WantedConfigSolvedStatus );
             notifier.Update( this, ref _configOriginalImpact, d.ConfigOriginalImpact, () => ConfigOriginalImpact );
-            notifier.Update( this, ref _configSolvedImpact, d.RawConfigSolvedImpact, () => ConfigSolvedImpact );
+            notifier.Update( this, ref _configSolvedImpact, d.ConfigSolvedImpact, () => ConfigSolvedImpact );
             if( wasRunning != (_runningStatus >= RunningStatus.Running) )
             {
                 notifier.Notify( this, () => IsRunning );

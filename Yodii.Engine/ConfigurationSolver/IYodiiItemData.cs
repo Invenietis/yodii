@@ -27,6 +27,6 @@ namespace Yodii.Engine
 
         StartDependencyImpact ConfigOriginalImpact { get; }
 
-        StartDependencyImpact RawConfigSolvedImpact { get; }
+        StartDependencyImpact ConfigSolvedImpact { get; }
     }
 }

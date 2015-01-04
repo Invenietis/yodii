@@ -15,72 +15,57 @@ namespace Yodii.Engine
 {
     internal class ConfigurationLayer : IConfigurationLayer
     {
-        #region fields
-
-        readonly ConfigurationItemCollection _configurationItemCollection;
-
+        internal readonly ConfigurationItemCollection Items;
+        ConfigurationLayerCollection _owner;
         string _layerName;
-        ConfigurationManager _owner;
 
-        #endregion fields
-
-        internal ConfigurationLayer( ConfigurationManager owner, string layerName )
+        internal ConfigurationLayer( ConfigurationLayerCollection owner, string layerName )
         {
             _owner = owner;
             _layerName = String.IsNullOrWhiteSpace( layerName ) ? String.Empty : layerName;
-            _configurationItemCollection = new ConfigurationItemCollection( this );
+            Items = new ConfigurationItemCollection( this );
         }
-
-        #region properties
 
         public string LayerName
         {
             get { return _layerName; }
             set
             {
-                if( String.IsNullOrWhiteSpace( value ) ) value = String.Empty;
+                if( _layerName.Length == 0 ) throw new InvalidOperationException();
+                if( String.IsNullOrWhiteSpace( value ) ) throw new ArgumentException();
                 if( _layerName != value )
                 {
-                    _layerName = value;
-                    if( _owner != null ) _owner.OnLayerNameChanged( this );
+                    if( _owner != null )
+                    {
+                        int i = _owner.IndexOf( value );
+                        _layerName = value;
+                        _owner.CheckPosition( i );
+                    }
                     NotifyPropertyChanged();
                 }
             }
         }
 
-        public IConfigurationItemCollection Items
+        internal ConfigurationLayerCollection Owner 
         {
-            get { return _configurationItemCollection; }
+            get { return _owner; }
+            set
+            {
+                Debug.Assert( _owner != value );
+                _owner = value;
+                NotifyPropertyChanged();
+            }
         }
 
         IConfigurationManager IConfigurationLayer.ConfigurationManager
         {
-            get { return _owner; }
+            get { return _owner != null ? _owner.ConfigurationManager : null; }
         }
 
-        public ConfigurationManager ConfigurationManager
+        IConfigurationItemCollection IConfigurationLayer.Items
         {
-            get { return _owner; }
+            get { return Items; }
         }
-
-        internal void SetConfigurationManager( ConfigurationManager c )
-        {
-            Debug.Assert( c != _owner );
-            _owner = c;
-            NotifyPropertyChanged();
-        }
-
-        #endregion properties
-
-        internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, FinalConfigurationItem data )
-        {
-            Debug.Assert( item != null && item.Layer == this && _configurationItemCollection.Items.Contains( item ) );
-
-            if( _owner == null ) return SuccessYodiiEngineResult.NullEngineSuccessResult;
-            return _owner.OnConfigurationItemChanging( item, data );
-        }
-
-        #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -90,176 +75,11 @@ namespace Yodii.Engine
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
-        #endregion
-
-        class ConfigurationItemCollection : IConfigurationItemCollection
+        internal void ClearDefaultLayer()
         {
-            CKObservableSortedArrayKeyList<ConfigurationItem, string> _items;
-            ConfigurationLayer _layer;
-
-            internal ConfigurationItemCollection( ConfigurationLayer parent )
-            {
-                _items = new CKObservableSortedArrayKeyList<ConfigurationItem, string>( e => e.ServiceOrPluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
-                _layer = parent;
-                _items.PropertyChanged += RetrievePropertyEvent;
-                _items.CollectionChanged += RetrieveCollectionEvent;
-            }
-
-            private void RetrieveCollectionEvent( object sender, NotifyCollectionChangedEventArgs e )
-            {
-                FireCollectionChanged( e );
-            }
-
-            private void RetrievePropertyEvent( object sender, PropertyChangedEventArgs e )
-            {
-                FirePropertyChanged( e );
-            }
-            
-            internal CKObservableSortedArrayKeyList<ConfigurationItem, string> Items
-            {
-                get { return _items; }
-            }
-
-            IConfigurationLayer IConfigurationItemCollection.ParentLayer
-            {
-                get { return _layer; }
-            }
-
-            internal ConfigurationLayer ParentLayer
-            {
-                get { return _layer; }
-            }
-
-            public IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string description )
-            {
-                return DoSet( serviceOrPluginFullName, status, impact, description );
-            }
-
-            public IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, string description )
-            {
-                return DoSet( serviceOrPluginFullName, status, null, description );
-            }
-
-            public IYodiiEngineResult Set( string serviceOrPluginFullName, StartDependencyImpact impact, string description )
-            {
-                return DoSet( serviceOrPluginFullName, null, impact, description );
-            }
-
-            IYodiiEngineResult DoSet( string serviceOrPluginFullName, ConfigurationStatus? status, StartDependencyImpact? impact, string description )
-            {
-                Debug.Assert( status.HasValue || impact.HasValue );
-                if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
-
-                IYodiiEngineResult result;
-                ConfigurationItem existing = _items.GetByKey( serviceOrPluginFullName );
-                if( existing != null )
-                {
-                    if( !status.HasValue ) result = existing.Set( impact.Value, description );
-                    else if( !impact.HasValue ) result = existing.Set( status.Value, description );
-                    else result = existing.Set( status.Value, impact.Value, description );
-                    return result;
-                }
-                if( !status.HasValue ) status = ConfigurationStatus.Optional;
-                if( !impact.HasValue ) impact = StartDependencyImpact.Unknown;
-                ConfigurationItem newItem = new ConfigurationItem( _layer, serviceOrPluginFullName, status.Value, impact.Value, description ?? String.Empty );
-                if( _layer._owner == null )
-                {
-                    _items.Add( newItem );
-                    return SuccessYodiiEngineResult.NullEngineSuccessResult;
-                }
-
-                result = _layer._owner.OnConfigurationItemAdding( newItem );
-                if( result.Success )
-                {
-                    _items.Add( newItem );
-                    _layer._owner.OnConfigurationChanged();
-                    return result;
-                }
-                newItem.OnRemoved();
-                return result;
-            }
-
-            /// <summary>
-            /// Removes a configuration for plugin or a service.
-            /// </summary>
-            /// <param name="serviceOrPluginFullName">The identifier.</param>
-            /// <returns>Detailed result of the operation.</returns>
-            public IYodiiEngineResult Remove( string serviceOrPluginFullName )
-            {
-                if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );
-
-                ConfigurationItem target = _items.GetByKey( serviceOrPluginFullName );
-                if( target != null )
-                {
-                    if( _layer._owner == null )
-                    {
-                        target.OnRemoved();
-                        _items.Remove( target );
-                        return SuccessYodiiEngineResult.NullEngineSuccessResult;
-                    }
-
-                    IYodiiEngineResult result = _layer._owner.OnConfigurationItemRemoving( target );
-                    if( result.Success )
-                    {
-                        target.OnRemoved();
-                        _items.Remove( target );
-                        _layer._owner.OnConfigurationChanged();
-                        return result;
-                    }
-                    return result;
-                }
-                return new YodiiEngineResult( new ConfigurationFailureResult( "Item not found" ), _layer._owner != null ? _layer._owner.Engine : null );
-            }
-
-            public int Count
-            {
-                get { return _items.Count; }
-            }
-
-            public event NotifyCollectionChangedEventHandler CollectionChanged;
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            private void FirePropertyChanged( PropertyChangedEventArgs e )
-            {
-                var h = PropertyChanged;
-                if( h != null ) h( this, e );
-            }
-
-            private void FireCollectionChanged( NotifyCollectionChangedEventArgs e )
-            {
-                var h = CollectionChanged;
-                if( h != null ) h( this, e );
-            }
-
-            public bool Contains( object item )
-            {
-                return _items.Contains( item );
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _items.GetEnumerator();
-            }
-
-            IEnumerator<IConfigurationItem> IEnumerable<IConfigurationItem>.GetEnumerator()
-            {
-                return _items.GetEnumerator();
-            }
-
-            public int IndexOf( object item )
-            {
-                return _items.IndexOf( item );
-            }
-
-            public IConfigurationItem this[string key]
-            {
-                get { return this._items.GetByKey( key ); }
-            }
-
-            public IConfigurationItem this[int index]
-            {
-                get { return _items[index]; }
-            }
+            Debug.Assert( _layerName.Length == 0 );
+            Items.Clear();
         }
+
     }
 }

@@ -64,16 +64,31 @@ namespace Yodii.Engine
 
         bool DynTestCanStart( StartDependencyImpact impact )
         {
+            var allIncluded = DynGetIncludedServicesClosure( impact );
             foreach( var s in GetExcludedServices( impact ) )
             {
                 if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
+                if( allIncluded.Contains( s ) ) return false;
             }
-            foreach( var s in GetIncludedServices( impact, false ) )
+            foreach( var s in allIncluded )
             {
                 if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
             }
             return true;
-        } 
+        }
+
+        public HashSet<ServiceData> DynGetIncludedServicesClosure( StartDependencyImpact impact )
+        {
+            Debug.Assert( !Disabled );
+            impact = impact.ClearAllTryBits();
+
+            var result = new HashSet<ServiceData>();
+            foreach( var service in GetIncludedServices( impact ) )
+            {
+                service.DynFillTransitiveIncludedServices( result );
+            }
+            return result;
+        }
 
         public PluginRunningStatusReason GetStoppedReasonForStoppedReference( DependencyRequirement requirement )
         {
@@ -82,25 +97,25 @@ namespace Yodii.Engine
             {
                 case DependencyRequirement.Running: return PluginRunningStatusReason.StoppedByRunningReference;
                 case DependencyRequirement.RunnableRecommended:
-                    if( impact >= StartDependencyImpact.StartRecommended )
+                    if( (impact&StartDependencyImpact.IsStartRunnableRecommended) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByRunnableRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Runnable:
-                    if( impact == StartDependencyImpact.FullStart )
+                    if( (impact & StartDependencyImpact.IsStartRunnableOnly) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByRunnableReference;
                     }
                     break;
                 case DependencyRequirement.OptionalRecommended:
-                    if( impact >= StartDependencyImpact.StartRecommended )
+                    if( (impact & StartDependencyImpact.IsStartOptionalRecommended) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByOptionalRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
-                    if( impact == StartDependencyImpact.FullStart )
+                    if( (impact & StartDependencyImpact.IsStartOptionalOnly) != 0 )
                     {
                         return PluginRunningStatusReason.StoppedByOptionalReference;
                     }

@@ -8,13 +8,12 @@ using CK.Core;
 
 namespace Yodii.Engine
 {
-    partial class PluginData : IServiceDependentObject, IYodiiItemData
+    partial class PluginData : IYodiiItemData
     {
         readonly IConfigurationSolver _solver;
-        IReadOnlyList<ServiceData> _runningIncludedServices;
-        IReadOnlyList<ServiceData> _runnableIncludedServices;
-        IReadOnlyList<ServiceData>[] _exclServices;
-        IReadOnlyList<ServiceData>[] _inclServices;
+        IReadOnlyList<ServiceData>[] _includedServices;
+        IReadOnlyList<ServiceData>[] _excludedServices;
+        HashSet<ServiceData>[] _includedServicesClosure;
         PluginDisabledReason _configDisabledReason;
         SolvedConfigurationStatus _configSolvedStatus;
         PluginRunningRequirementReason _configSolvedStatusReason;
@@ -26,6 +25,8 @@ namespace Yodii.Engine
             _solver = solver;
             PluginInfo = p;
             Service = service;
+
+            // Status
             ConfigOriginalStatus = pluginStatus;
             switch( pluginStatus )
             {
@@ -35,17 +36,18 @@ namespace Yodii.Engine
             }
             _configSolvedStatusReason = PluginRunningRequirementReason.Config;
 
-            RawConfigSolvedImpact = ConfigOriginalImpact = impact;
-            if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Service != null )
+            // Impact
+            _configSolvedImpact = ConfigOriginalImpact = impact;
+            if( service != null )
             {
-                RawConfigSolvedImpact = Service.ConfigSolvedImpact;
+                _configSolvedImpact = (ConfigOriginalImpact | service.ConfigSolvedImpact).ClearUselessTryBits();
             }
-            _configSolvedImpact = RawConfigSolvedImpact;
-            if( _configSolvedImpact == StartDependencyImpact.Unknown || (_configSolvedImpact & StartDependencyImpact.IsTryOnly) != 0 )
+            if( _configSolvedImpact == StartDependencyImpact.Unknown )
             {
                 _configSolvedImpact = StartDependencyImpact.Minimal;
             }
 
+            // 
             if( ConfigOriginalStatus == ConfigurationStatus.Disabled )
             {
                 _configDisabledReason = PluginDisabledReason.Config;
@@ -54,13 +56,13 @@ namespace Yodii.Engine
             {
                 _configDisabledReason = PluginDisabledReason.PluginInfoHasError;
             }
-            else if( Service != null )
+            else if( service != null )
             {
-                if( Service.Disabled )
+                if( service.Disabled )
                 {
                     _configDisabledReason = PluginDisabledReason.ServiceIsDisabled;
                 }
-                else if( Service.Family.RunningPlugin != null )
+                else if( service.Family.RunningPlugin != null )
                 {
                     _configDisabledReason = PluginDisabledReason.AnotherRunningPluginExistsInFamilyByConfig;
                 }
@@ -100,15 +102,14 @@ namespace Yodii.Engine
                     }
                 }
             }
-            if( Service != null )
+            if( service != null )
             {
-                Service.AddPlugin( this );
+                service.AddPlugin( this );
             }
             if( !Disabled  )
             {
                 // If the plugin is not yet disabled, we register it:
-                // whenever the referenced service is disabled (or stopped during dynamic resolution), this 
-                // will disable (or stop) the plugin according to its ConfigSolvedImpact.
+                // whenever the referenced service is disabled, this will disable the plugin.
                 foreach( var sRef in PluginInfo.ServiceReferences )
                 {
                     _solver.FindExistingService( sRef.Reference.ServiceFullName ).RegisterPluginReference( this, sRef.Requirement );
@@ -148,12 +149,7 @@ namespace Yodii.Engine
         public readonly StartDependencyImpact ConfigOriginalImpact;
 
         /// <summary>
-        /// The configured StartDependencyImpact (either ConfigOriginalImpact or the Service's one if ConfigOriginalImpact is unknown).
-        /// </summary>
-        public readonly StartDependencyImpact RawConfigSolvedImpact;
-
-        /// <summary>
-        /// The solved StartDependencyImpact for the static resolution: never IsTryOnly nor unknown.
+        /// The solved StartDependencyImpact: combination of ConfigOriginalImpact and the Service's one.
         /// </summary>
         public StartDependencyImpact ConfigSolvedImpact
         {
@@ -207,6 +203,7 @@ namespace Yodii.Engine
         {
             Debug.Assert( r != PluginDisabledReason.None );
             Debug.Assert( _configDisabledReason == PluginDisabledReason.None );
+            _includedServicesClosure = null;
             _configDisabledReason = r;
             if( Service != null ) Service.OnPluginDisabled( this );
         }
@@ -225,7 +222,7 @@ namespace Yodii.Engine
             Debug.Assert( FinalConfigSolvedStatus == SolvedConfigurationStatus.Running );
             if( !Disabled )
             {
-                foreach( var s in GetIncludedServices( _configSolvedImpact, false ) )
+                foreach( var s in GetIncludedServices( _configSolvedImpact | StartDependencyImpact.IsStartRunnableRecommended | StartDependencyImpact.IsStartRunnableOnly ) )
                 {
                     if( !s.SetRunningStatus( ServiceSolvedConfigStatusReason.FromPropagation ) )
                     {
@@ -240,11 +237,12 @@ namespace Yodii.Engine
                         }
                     }
                 }
+                //Debug.Assert( Disabled || GetExcludedServices( _configSolvedImpact | StartDependencyImpact.IsStartRunnableRecommended | StartDependencyImpact.IsStartRunnableOnly ).All( s => s.Disabled ) );
                 if( !Disabled )
                 {
                     foreach( var s in GetExcludedServices( _configSolvedImpact ) )
                     {
-                        if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation ); 
+                        if( !s.Disabled ) s.SetDisabled( ServiceDisabledReason.StopppedByPropagation );
                     }
                 }
             }
@@ -260,7 +258,7 @@ namespace Yodii.Engine
         {
             if( !Disabled )
             {
-                _finalConfigStartableStatus = new FinalConfigStartableStatus( this );
+                _finalConfigStartableStatus = new FinalConfigStartableStatusPlugin( this );
             }
         }
 
@@ -272,13 +270,13 @@ namespace Yodii.Engine
                 case DependencyRequirement.RunnableRecommended: return PluginDisabledReason.ByRunnableRecommendedReference;
                 case DependencyRequirement.Runnable: return PluginDisabledReason.ByRunnableReference;
                 case DependencyRequirement.OptionalRecommended:
-                    if( _configSolvedImpact >= StartDependencyImpact.StartRecommended )
+                    if( (_configSolvedImpact & StartDependencyImpact.IsStartOptionalRecommended) != 0 )
                     {
                         return PluginDisabledReason.ByOptionalRecommendedReference;
                     }
                     break;
                 case DependencyRequirement.Optional:
-                    if( _configSolvedImpact == StartDependencyImpact.FullStart )
+                    if( (_configSolvedImpact & StartDependencyImpact.IsStartOptionalOnly) != 0 )
                     {
                         return PluginDisabledReason.ByOptionalReference;
                     }
@@ -287,64 +285,49 @@ namespace Yodii.Engine
             return PluginDisabledReason.None;
         }
 
-        public PluginDisabledReason GetDisableReasonForRunningReference( DependencyRequirement req )
-        {
-            switch( req )
-            {
-                case DependencyRequirement.RunnableRecommended: 
-                case DependencyRequirement.OptionalRecommended:
-                    if( _configSolvedImpact == StartDependencyImpact.FullStop )
-                    {
-                        return PluginDisabledReason.ByStopImpactOnOptionalRecommendedReference;
-                    }
-                    break;
-                case DependencyRequirement.Runnable: 
-                    if( _configSolvedImpact == StartDependencyImpact.FullStop 
-                        || _configSolvedImpact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
-                    {
-                        return PluginDisabledReason.ByStopImpactOnOptionalRecommendedReference;
-                    }
-                    break;
-                case DependencyRequirement.Optional:
-                    if( _configSolvedImpact == StartDependencyImpact.FullStop 
-                        || _configSolvedImpact == StartDependencyImpact.StopOptionalAndRunnable
-                        || _configSolvedImpact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
-                    {
-                        return PluginDisabledReason.ByStopImpactOnOptionalReference;
-                    }
-                    break;
-            }
-            return PluginDisabledReason.None;
-        }
-
-        //public void FillTransitiveIncludedServices( HashSet<IYodiiItemData> set )
-        //{
-        //    if( !set.Add( this ) ) return;
-
-        //    foreach( var s in GetIncludedServices( ConfigSolvedImpact, forRunnableStatus: false ) )
-        //    {
-        //        s.FillTransitiveIncludedServices( set );
-        //    }
-        //}
-
-        public bool CheckInvalidLoop()
+        public HashSet<ServiceData> GetIncludedServicesClosure( StartDependencyImpact impact, bool refreshCache = false )
         {
             Debug.Assert( !Disabled );
-            HashSet<IYodiiItemData> running = new HashSet<IYodiiItemData>();
-            // If this plugin is running by configuration, we consider runnable references: we want runnable references to be able to start
-            // and their start must not stop this plugin whatever this configured impact is.
-            // If this plugin is only runnable, we take runnable references (and optional ones) into account depending on this configured impact.
-            foreach( var service in GetIncludedServices( ConfigSolvedImpact, ConfigSolvedStatus == SolvedConfigurationStatus.Running ) )
+            if( _includedServicesClosure == null ) _includedServicesClosure = new HashSet<ServiceData>[16];
+            impact = impact.ClearAllTryBits();
+            int i = (int)impact >> 1;
+
+            HashSet<ServiceData> result = _includedServicesClosure[i];
+            if( result == null || refreshCache )
             {
-                service.FillTransitiveIncludedServices( running );
+                result = new HashSet<ServiceData>();
+                foreach( var service in GetIncludedServices( impact ) )
+                {
+                    service.FillTransitiveIncludedServices( result );
+                }
+                _includedServicesClosure[i] = result;
             }
-            if( running.Overlaps( GetExcludedServices( ConfigSolvedImpact ) ) )
-            {
-                SetDisabled( PluginDisabledReason.InvalidStructureLoop );
-                return false;
-            }
+            return result;
+        }
+
+        #region CoRunning discussion - Must be kept
+        //public bool BuildTransitiveIncludedServiceSetAndCheckInvalidLoop()
+        //{
+        //    Debug.Assert( !Disabled );
+        //    // If this plugin is running by configuration, we consider runnable references: we want runnable references to be able to start
+        //    // and their start must not stop this plugin whatever this configured impact is.
+        //    // If this plugin is only runnable, we take runnable references (and optional ones) into account depending on this configured impact.
+        //    var impact = ConfigSolvedImpact;
+        //    if( ConfigSolvedStatus == SolvedConfigurationStatus.Running ) impact |= StartDependencyImpact.IsStartRunnableOnly | StartDependencyImpact.IsStartRunnableRecommended;
+
+        //    HashSet<ServiceData> running = new HashSet<ServiceData>();
+        //    foreach( var service in GetIncludedServices( impact ) )
+        //    {
+        //        service.FillTransitiveIncludedServices( running );
+        //    }
+        //    if( running.Overlaps( GetExcludedServices( impact ) ) )
+        //    {
+        //        return false;
+        //    }
+
+
             ///  Following code checks that each runnable, one by one, can CoRun with this plugin.
-            ///  Was deemed confusing to the user: this does not enforces that a Start of a Service
+            ///  This was deemed confusing to the user: this does not guaranty that the Start of a Service
             ///  when another dependency is running, will not stop this plugin.
             ///  Preventing suicide seems to require more things like a set of CoRunnig( i1 ... in ) that states
             ///  that nothing prevents any of these sets of items to be running together.
@@ -378,7 +361,7 @@ namespace Yodii.Engine
             /// [CanRunWith( typeof(IService5) )]
             /// 
             /// For runnables and optionals, if we want to prevent the suicide of P, we can now automatically consider that a CanRunWith( S ) exists for each dependency.
-            /// This could be the default, but I'm not sure that it is a good idea. I'd rather let the suicicide be the defaulto therwise we would need a 
+            /// This could be the default, but I'm not sure that it is a good idea. I'd rather let the suicicide be the default otherwise we would need a 
             /// kind of AllowSuicideWhenStarting(S) declaration that will not be really easy to understand.
             /// 
             /// This has an impact on the dynamic phase: to handle this we must "boost" the command that has started P (if it exists, ie. if it is not running by configuration).
@@ -396,79 +379,61 @@ namespace Yodii.Engine
             /// One need an internal IInternalYodiiEngine interface that will be injected into each plugin (if they require it) that captures the plugin identity
             /// and exposes Start/Stop capabilities and, ideally, access to IInternalLiveInfo observable models without Start/Stop capabilities.
             ///
-            return true;
-        }
+        //    return true;
+        //}
+        #endregion
 
-
-        public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact, bool forRunnableStatus )
+        public IEnumerable<ServiceData> GetIncludedServices( StartDependencyImpact impact )
         {
-            if( _runningIncludedServices == null )
+            if( _includedServices == null ) _includedServices = new IReadOnlyList<ServiceData>[16];
+            impact = impact.ClearAllTryBits();
+            int i = (int)impact >> 1;
+            var result = _includedServices[i];
+            if( result == null )
             {
-                var running = Service != null ? new HashSet<ServiceData>( Service.InheritedServicesWithThis ) : new HashSet<ServiceData>();
-                foreach( var sRef in PluginInfo.ServiceReferences )
+                if( _includedServices[0] == null )
                 {
-                    if( sRef.Requirement == DependencyRequirement.Running ) running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
-                }
-                _runningIncludedServices = running.ToReadOnlyList();
-                bool newRunnableAdded = false;
-                foreach( var sRef in PluginInfo.ServiceReferences )
-                {
-                    if( sRef.Requirement == DependencyRequirement.Runnable || sRef.Requirement == DependencyRequirement.RunnableRecommended )
+                    var running = Service != null ? new HashSet<ServiceData>( Service.InheritedServicesWithThis ) : new HashSet<ServiceData>();
+                    foreach( var sRef in PluginInfo.ServiceReferences )
                     {
-                        newRunnableAdded |= running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
+                        if( sRef.Requirement == DependencyRequirement.Running ) running.Add( _solver.FindExistingService( sRef.Reference.ServiceFullName ) );
                     }
+                    result = _includedServices[0] = running.ToReadOnlyList();
                 }
-                _runnableIncludedServices = newRunnableAdded ? running.ToReadOnlyList() : _runningIncludedServices;
-            }
-
-            if( impact == StartDependencyImpact.Minimal ) return forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
-
-            if( _inclServices == null ) _inclServices = new IReadOnlyList<ServiceData>[10];
-            int iImpact = (int)impact;
-            if( impact > StartDependencyImpact.Minimal ) --iImpact;
-            if( forRunnableStatus ) iImpact *= 2;
-            --iImpact;
-
-            IReadOnlyList<ServiceData> i = _inclServices[iImpact];
-            if( i == null )
-            {
-                var baseSet = forRunnableStatus ? _runnableIncludedServices : _runningIncludedServices;
-                var incl = new HashSet<ServiceData>( baseSet );
-                bool newAdded = false;
-                foreach( var sRef in PluginInfo.ServiceReferences )
+                if( i > 0 )
                 {
-                    ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                    switch( sRef.Requirement )
+                    var running = new HashSet<ServiceData>( _includedServices[0] );
+                    foreach( var sRef in PluginInfo.ServiceReferences )
                     {
-                        case DependencyRequirement.RunnableRecommended:
-                        case DependencyRequirement.OptionalRecommended:
-                            {
-                                if( impact >= StartDependencyImpact.StartRecommended )
-                                {
-                                    newAdded |= incl.Add( sr );
-                                }
-                                break;
-                            }
-                        case DependencyRequirement.Runnable:
-                        case DependencyRequirement.Optional:
-                            {
-                                if( impact == StartDependencyImpact.FullStart )
-                                {
-                                    newAdded |= incl.Add( sr );
-                                }
-                                break;
-                            }
+                        ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
+                        switch( sRef.Requirement )
+                        {
+                            case DependencyRequirement.RunnableRecommended:
+                                    if( (impact & StartDependencyImpact.IsStartRunnableRecommended) != 0 ) running.Add( sr );
+                                    break;
+                            case DependencyRequirement.OptionalRecommended:
+                                    if( (impact&StartDependencyImpact.IsStartOptionalRecommended) != 0 ) running.Add( sr );
+                                    break;
+                            case DependencyRequirement.Runnable:
+                                    if( (impact & StartDependencyImpact.IsStartRunnableOnly) != 0 ) running.Add( sr );
+                                    break;
+                            case DependencyRequirement.Optional:
+                                    if( (impact & StartDependencyImpact.IsStartOptionalOnly) != 0 ) running.Add( sr );
+                                    break;
+                        }
                     }
+                    result = _includedServices[i] = running.ToReadOnlyList();
                 }
-                i = _inclServices[iImpact] = newAdded ? incl.ToReadOnlyList() : baseSet;
             }
-            return i;
+            return result;
         }
 
         public IEnumerable<ServiceData> GetExcludedServices( StartDependencyImpact impact )
         {
-            if( _exclServices == null ) _exclServices = new IReadOnlyList<ServiceData>[6];
-            IReadOnlyList<ServiceData> e = _exclServices[(int)impact-1];
+            if( _excludedServices == null ) _excludedServices = new IReadOnlyList<ServiceData>[16];
+            impact = impact.ClearAllTryBits();
+            int i = (int)impact >> 1;
+            IReadOnlyList<ServiceData> e = _excludedServices[i];
             if( e == null )
             {
                 HashSet<ServiceData> excl;
@@ -478,69 +443,9 @@ namespace Yodii.Engine
                     excl.ExceptWith( Service.InheritedServicesWithThis );
                 }
                 else excl = new HashSet<ServiceData>();
-                foreach( var sRef in PluginInfo.ServiceReferences )
-                {
-                    ServiceData sr = _solver.FindExistingService( sRef.Reference.ServiceFullName );
-                    switch( sRef.Requirement )
-                    {
-                        case DependencyRequirement.Running:
-                            {
-                                excl.UnionWith( sr.DirectExcludedServices );
-                                break;
-                            }
-                        case DependencyRequirement.RunnableRecommended:
-                            {
-                                if( impact >= StartDependencyImpact.StartRecommended )
-                                {
-                                    excl.UnionWith( sr.DirectExcludedServices );
-                                }
-                                else if( impact == StartDependencyImpact.FullStop )
-                                {
-                                    excl.Add( sr );
-                                }
-                                break;
-                            }
-                        case DependencyRequirement.Runnable:
-                            {
-                                if( impact == StartDependencyImpact.FullStart )
-                                {
-                                    excl.UnionWith( sr.DirectExcludedServices );
-                                }
-                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable 
-                                    || impact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
-                                {
-                                    excl.Add( sr );
-                                }
-                                break;
-                            }
-                        case DependencyRequirement.OptionalRecommended:
-                            {
-                                if( impact >= StartDependencyImpact.StartRecommended )
-                                {
-                                    excl.UnionWith( sr.DirectExcludedServices );
-                                }
-                                else if( impact == StartDependencyImpact.FullStop )
-                                {
-                                    excl.Add( sr );
-                                }
-                                break;
-                            }
-                        case DependencyRequirement.Optional:
-                            {
-                                if( impact == StartDependencyImpact.FullStart )
-                                {
-                                    excl.UnionWith( sr.DirectExcludedServices );
-                                }
-                                else if( impact <= StartDependencyImpact.StopOptionalAndRunnable 
-                                    || impact == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable )
-                                {
-                                    excl.Add( sr );
-                                }
-                                break;
-                            }
-                    }
-                }
-                e = _exclServices[(int)impact-1] = excl.ToReadOnlyList();
+                excl.UnionWith( GetIncludedServices( impact ).SelectMany( s => s.DirectExcludedServices ) );
+
+                e = _excludedServices[i] = excl.ToReadOnlyList();
             }
             return e;
         }
@@ -582,11 +487,6 @@ namespace Yodii.Engine
         StartDependencyImpact IYodiiItemData.ConfigOriginalImpact
         {
             get { return ConfigOriginalImpact; }
-        }
-
-        StartDependencyImpact IYodiiItemData.RawConfigSolvedImpact
-        {
-            get { return RawConfigSolvedImpact; }
         }
 
         #endregion

@@ -33,7 +33,7 @@ using NUnit.Framework;
 using Yodii.Discoverer;
 using Yodii.Model;
 
-namespace Yodii.Host.Tests
+namespace Yodii
 {
     [ExcludeFromCodeCoverage]
     static class TestHelper

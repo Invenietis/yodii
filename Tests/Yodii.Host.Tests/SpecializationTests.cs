@@ -225,7 +225,7 @@ namespace Yodii.Host.Tests
                 c.CheckOnePluginStarted( c.PluginSubBSub );
                 
                 TestHelper.ConsoleMonitor.Trace().Send( "Disabling PluginSubBSub by configuration." );
-                c.Engine.Configuration.Layers.Create().Items.Set( c.PluginSubBSub.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
+                c.Engine.Configuration.Layers.Default.Items.Set( c.PluginSubBSub.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
                 Assert.That( c.AllPlugins.All( p => (p == c.PluginSubBSub && p.CheckState( PluginStatus.Stopped )) || p.CheckState( PluginStatus.Null ) ), "All are null except PluginSubBSub that has been started." );
                 Assert.That( c.AllServices.All( s => s.CheckState( ServiceStatus.Stopped ) ) );
 
@@ -238,7 +238,7 @@ namespace Yodii.Host.Tests
                 c.ServiceSubBSub.CheckState( ServiceStatus.StartedSwapped );
 
                 TestHelper.ConsoleMonitor.Trace().Send( "Disabling AltPluginSubBSub by configuration." );
-                c.Engine.Configuration.Layers.Create().Items.Set( c.AltPluginSubBSub.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
+                c.Engine.Configuration.Layers.Default.Items.Set( c.AltPluginSubBSub.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();
 
                 Assert.That( c.AllPlugins.All( p => (p == c.PluginSubBSub || p == c.PluginSubBSub && p.CheckState( PluginStatus.Stopped )) || p.CheckState( PluginStatus.Null ) ), 
                                 "All are null except PluginSubBSub that has been started previously and AltPluginSubBSub is null: since it is IDisposable it has been released." );

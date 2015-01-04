@@ -26,7 +26,7 @@ namespace Yodii.Engine
 
             protected override bool IsValidPlugin( PluginData p )
             {
-                return p.DynamicStatus == null;
+                return p.DynamicStatus == null || p.DynamicStatus.Value >= RunningStatus.Running;
             }
 
             protected override bool IsValidSpecialization( ServiceData s )
@@ -48,13 +48,17 @@ namespace Yodii.Engine
                 {
                     if( !TheOnlyPlugin.DynamicCanStart( impact ) ) return false;
                 }
+                else if( TheOnlyService != null )
+                {
+                    if( !TheOnlyService.DynamicCanStart( impact ) ) return false;
+                }
                 else
                 {
                     foreach( var s in GetExcludedServices( impact ) )
                     {
                         if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
                     }
-                    foreach( var s in GetIncludedServices( impact, false ) )
+                    foreach( var s in GetIncludedServices( impact ) )
                     {
                         if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
                     }
@@ -83,7 +87,7 @@ namespace Yodii.Engine
                         Debug.Assert( s.DynamicStatus == null || s.DynamicStatus.Value <= RunningStatus.Stopped );
                         if( s.DynamicStatus == null ) s.DynamicStopBy( ServiceRunningStatusReason.StoppedByPropagation );
                     }
-                    foreach( var s in GetIncludedServices( impact, false ) )
+                    foreach( var s in GetIncludedServices( impact ) )
                     {
                         Debug.Assert( s.DynamicStatus == null || s.DynamicStatus.Value >= RunningStatus.Running );
                         if( s.DynamicStatus == null ) s.DynamicStartBy( ServiceRunningStatusReason.StartedByPropagation );
@@ -113,6 +117,17 @@ namespace Yodii.Engine
             if( _dynPropagation == null ) _dynPropagation = new DynamicPropagation( _propagation );
             _dynPropagation.Refresh();
             return _dynPropagation;
+        }
+
+        public void DynFillTransitiveIncludedServices( HashSet<ServiceData> set )
+        {
+            if( !set.Add( this ) ) return;
+            var propagation = DynGetPropagationInfo();
+            if( propagation == null ) return;
+            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact ) )
+            {
+                s.DynFillTransitiveIncludedServices( set );
+            }
         }
     }
 }

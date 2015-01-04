@@ -38,34 +38,10 @@ namespace Yodii.Model
         bool CanStartWithStartRecommended { get; }
 
         /// <summary>
-        /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.StopOptionalAndRunnable"/> mode.
-        /// Non recommended dependencies (<see cref="DependencyRequirement.Optional"/> and <see cref="DependencyRequirement.Runnable"/>) are stopped,
-        /// recommended ones may run or not.
-        /// </summary>
-        bool CanStartWithStopOptionalAndRunnable { get; }
-
-        /// <summary>
-        /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable"/> mode.
-        /// Non recommended dependencies (<see cref="DependencyRequirement.Optional"/> and <see cref="DependencyRequirement.Runnable"/>) are stopped,
-        /// recommended ones are started.
-        /// </summary>
-        bool CanStartWithStartRecommendedAndStopOptionalAndRunnable { get; }
-
-        /// <summary>
-        /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.FullStop"/> mode.
-        /// This stops any dependencies that are not absolutely required (only the <see cref="DependencyRequirement.Running"/> are running, the other ones are stopped).
-        /// </summary>
-        bool CanStartWithFullStop { get; }
-
-        /// <summary>
         /// Tests whether the plugin or service can be successfully started with the given impact.
         /// </summary>
         /// <param name="impact">The impact that must be satisfied.</param>
         /// <returns>True if the plugin or service can successfully start with the given impact.</returns>
-        /// <remarks>
-        /// When impact is <see cref="StartDependencyImpact.Unknown"/> or if <see cref="StartDependencyImpact.IsTryOnly"/> bit is set, this 
-        /// corresponds to the <see cref="CanStart"/> property.
-        /// </remarks>
         bool CanStartWith( StartDependencyImpact impact );
 
     }

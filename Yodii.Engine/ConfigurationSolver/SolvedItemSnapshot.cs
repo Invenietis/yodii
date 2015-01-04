@@ -24,7 +24,7 @@ namespace Yodii.Engine
             _configOriginalStatus = item.ConfigOriginalStatus;
             _configSolvedStatus = item.ConfigSolvedStatus;
             _configOriginalImpact = item.ConfigOriginalImpact;
-            _configSolvedImpact = item.RawConfigSolvedImpact;
+            _configSolvedImpact = item.ConfigSolvedImpact;
         }
 
         public abstract string FullName { get; }

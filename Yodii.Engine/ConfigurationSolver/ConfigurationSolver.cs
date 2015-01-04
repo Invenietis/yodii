@@ -147,15 +147,14 @@ namespace Yodii.Engine
                     }
                 }
                 ProcessDeferredPropagations();
-
                 SuicidePrevention();
-
             }
             // Finalizes static resolution by computing final Runnable statuses per impact for Optional and Runnable plugins or services.
             Step = ConfigurationSolverStep.InitializeFinalStartableStatus;
             {
-                foreach( ServiceData s in _orderedServices ) s.InitializeFinalStartableStatus();
+                // Must first initialize plugins FinalStartableStatus since services use them.
                 foreach( PluginData p in _orderedPlugins ) p.InitializeFinalStartableStatus();
+                foreach( ServiceData s in _orderedServices ) s.InitializeFinalStartableStatus();
             }
 
             List<PluginData> blockingPlugins = null;
@@ -201,6 +200,7 @@ namespace Yodii.Engine
             }
             return null;
         }
+
         /// <summary>
         /// Goes through the plugin list to check for non-suported, running reference loops.
         /// If a plugin was disabled during the process, it is repeated.
@@ -215,7 +215,19 @@ namespace Yodii.Engine
                 {
                     if( !p.Disabled )
                     {
-                        atLeastOneFailed |= !p.CheckInvalidLoop();
+                        // If the plugin is running by configuration, we consider runnable references: we want runnable references to be able to start
+                        // and their start must not stop this plugin whatever the configured impact is.
+                        // If the plugin is only runnable, we take runnable references (and optional ones) into account depending on this configured impact.
+                        var impact = p.ConfigSolvedImpact;
+                        if( p.ConfigSolvedStatus == SolvedConfigurationStatus.Running ) impact |= StartDependencyImpact.IsStartRunnableOnly | StartDependencyImpact.IsStartRunnableRecommended;
+
+                        var running = p.GetIncludedServicesClosure( impact, true );
+                        if( running.Overlaps( p.GetExcludedServices( impact ) ) )
+                        {
+                            atLeastOneFailed = true;
+                            p.SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                            ProcessDeferredPropagations();
+                        }
                     }
                 }
             }
@@ -228,7 +240,8 @@ namespace Yodii.Engine
             {
                 ServiceData s = _deferedPropagation.First();
                 _deferedPropagation.Remove( s );
-                s.PropagateSolvedStatus();
+                if( Step < ConfigurationSolverStep.WaitingForDynamicResolution ) s.PropagateSolvedStatus();
+                else s.DynPropagateStart();
             }
         }
 
@@ -300,14 +313,14 @@ namespace Yodii.Engine
         
         bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
         {
+            bool success = true;
             if( cmd.ServiceFullName != null )
             {
                 // If the service does not exist, we keep the command.
                 ServiceData s;
                 if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
                 {
-                    if ( cmd.Start ) return s.DynamicStartByCommand( cmd.Impact );
-                    return s.DynamicStopByCommand();
+                    success = cmd.Start ? s.DynamicStartByCommand( cmd.Impact ) : s.DynamicStopByCommand();
                 }
                 return true;
             }
@@ -316,10 +329,10 @@ namespace Yodii.Engine
             PluginData p;
             if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
             {
-                if ( cmd.Start ) return p.DynamicStartByCommand( cmd.Impact );
-                else return p.DynamicStopByCommand();
+                success = cmd.Start ? p.DynamicStartByCommand( cmd.Impact ) : p.DynamicStopByCommand();
             }
-            return true;
+            if( success ) ProcessDeferredPropagations();
+            return success;
         }
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )

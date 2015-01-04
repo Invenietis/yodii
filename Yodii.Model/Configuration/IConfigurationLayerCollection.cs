@@ -12,9 +12,14 @@ namespace Yodii.Model
         /// <summary>
         /// Creates an empty layer in the collection.
         /// </summary>
-        /// <param name="layerName">Display name of the new layer</param>
+        /// <param name="layerName">Display name of the new layer. Can not be null nor empty.</param>
         /// <returns>Created layer</returns>
-        IConfigurationLayer Create( string layerName = null );
+        IConfigurationLayer Create( string layerName );
+
+        /// <summary>
+        /// Default configuration layer has an empty <see cref="IConfigurationLayer.LayerName"/>.
+        /// </summary>
+        IConfigurationLayer Default { get; }
 
         /// <summary>
         /// Attempts to remove a configuration layer from the collection.
@@ -26,7 +31,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets layers by their name.
         /// </summary>
-        /// <param name="layerName">Layer display name</param>
+        /// <param name="layerName">Layer display name.</param>
         /// <returns>Zero, one or more layers.</returns>
         IReadOnlyCollection<IConfigurationLayer> this[string layerName] { get; }
 
