@@ -69,8 +69,6 @@ namespace Yodii.Engine
                 if( !DynTestCanStart( DynamicImpact ) ) return false;
                 DynamicImpact |= impact.ToTryBits();
             }
-            _dynamicStatus = RunningStatus.Running;
-            _dynamicReason = PluginRunningStatusReason.StartedByCommand;
             DynamicStartBy( PluginRunningStatusReason.StartedByCommand );
             return true;
         }

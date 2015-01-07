@@ -143,11 +143,18 @@ namespace Yodii.Engine
                 if( !s.Disabled ) s.SetDynamicImpact( impact );
                 s = s.NextSpecialization;
             }
-            PluginData d = FirstPlugin;
-            while( d != null )
+            PluginData p = FirstPlugin;
+            while( p != null )
             {
-                if( !d.Disabled ) d.DynamicImpact |= impact;
-                d = d.NextPluginForService;
+                if( p.DynamicStatus == null )
+                {
+                    p.DynamicImpact |= impact;
+                    if( !p.DynamicCanStart( p.DynamicImpact ) )
+                    {
+                        p.DynamicStopBy( PluginRunningStatusReason.StoppedByCommand );
+                    }
+                }
+                p = p.NextPluginForService;
             }
         }
 
