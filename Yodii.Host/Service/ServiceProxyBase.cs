@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Service\ServiceProxyBase.cs) is part of CiviKey. 
+* This file (Yodii.Host\Service\ServiceProxyBase.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -14,7 +14,7 @@
 * You should have received a copy of the GNU Lesser General Public License 
 * along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
 *  
-* Copyright © 2007-2012, 
+* Copyright © 2007-2015, 
 *     Invenietis <http://www.invenietis.com>,
 *     In’Tech INFO <http://www.intechinfo.fr>,
 * All rights reserved. 
@@ -134,7 +134,7 @@ namespace Yodii.Host
                     ILiveYodiiItem item = e.LiveInfo.FindYodiiItem( serviceOrPluginFullName );
                     if( item != null && item.Capability.CanStartWith( impact ) )
                     {
-                        var r = e.Start( item, impact );
+                        var r = e.StartItem( item, impact );
                         if( r.Success )
                         {
                             if( onSuccess != null ) onSuccess();
