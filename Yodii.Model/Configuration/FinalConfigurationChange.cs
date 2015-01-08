@@ -12,6 +12,9 @@ namespace Yodii.Model
     [Flags]
     public enum FinalConfigurationChange
     {
+        /// <summary>
+        /// No change.
+        /// </summary>
         None = 0,
 
         /// <summary>

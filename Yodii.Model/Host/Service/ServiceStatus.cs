@@ -42,6 +42,9 @@ namespace Yodii.Model
     [Flags]
     public enum ServiceStatus
     {
+        /// <summary>
+        /// Invalid service status.
+        /// </summary>
         None =  ServiceStatusValues.None,
 
         /// <summary>

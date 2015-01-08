@@ -144,9 +144,9 @@ namespace Yodii.Engine
                     ServiceData startPoint = _dynRunningService ?? Root;
                     if( startPoint.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running  || (startPoint.DynamicStatus != null && startPoint.DynamicStatus.Value == RunningStatus.Running) )
                     {
-                        Debug.Assert( startPoint.DynamicCanStart( startPoint.ConfigSolvedImpact ) );
-                        PluginData firstRunnable = startPoint.FindFirstPluginData( p => p.DynamicCanStart( p.DynamicImpact ) );
-                        Debug.Assert( firstRunnable != null );
+                        Debug.Assert( startPoint.CanStartOrIsStarted );
+                        PluginData firstRunnable = startPoint.FindFirstPluginData( p => p.CanStartOrIsStarted );
+                        Debug.Assert( firstRunnable != null && firstRunnable.CanStartOrIsStarted );
                         firstRunnable.DynamicStartBy( PluginRunningStatusReason.StartedByFinalDecision );
                         Debug.Assert( _dynRunningPlugin == firstRunnable );
                         Debug.Assert( _dynRunningPlugin.DynamicStatus.Value == RunningStatus.Running

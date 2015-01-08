@@ -115,7 +115,7 @@ public interface ISoftTimerService : IYodiiService
             {
                 if( this.HasBufferedData )
                 {
-                    e.TryStart( _reporting, s => s.Report( "Delivering buffered data!" ) );
+                    e.TryStart( _reporting, () => _reporting.Service.Report( "Delivering buffered data!" ) );
                 }
             }
         }

@@ -28,7 +28,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets or sets the action that will be executed if any other PreStop or PreStart fails.
         /// Note that this rollback action will not be called for the plugin that called <see cref="Cancel"/>.
-        /// Defaults to <see cref="IPlugin.Start"/>.
+        /// Defaults to <see cref="IYodiiPlugin.Start"/>.
         /// </summary>
         Action<IStartContext> RollbackAction { get; set; }
     }

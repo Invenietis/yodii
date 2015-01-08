@@ -6,7 +6,7 @@ namespace Yodii.Model
     /// <summary>
     /// This interface defines the minimal properties and behavior of a plugin.
     /// It implements a two-phases transition: plugin that should stop or start
-    /// can accept or reject the transition thanks to <see cref="PresStop"/> and <see cref="PreStart"/>.
+    /// can accept or reject the transition thanks to <see cref="PreStop"/> and <see cref="PreStart"/>.
     /// If all of them aggreed, then <see cref="Stop"/> and <see cref="Start"/> are called.
     /// </summary>
     public interface IYodiiPlugin

@@ -64,6 +64,7 @@ namespace Yodii.Engine
         StoppedByRunnableRecommendedReference,
         StoppedByRunnableReference,
         StoppedByOptionalRecommendedReference,
-        StoppedByOptionalReference
+        StoppedByOptionalReference,
+        StoppedByServiceCommandImpact
     }
 }

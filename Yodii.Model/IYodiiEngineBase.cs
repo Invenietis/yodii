@@ -10,6 +10,7 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Yodii engine base interface for <see cref="IYodiiEngine"/> and <see cref="IInnerYodiiEngine"/>.
+    /// It exposes all relevant information to the external or internal world thanks to its <see cref="LiveInfo"/>.
     /// </summary>
     public interface IYodiiEngineBase : INotifyPropertyChanged
     {

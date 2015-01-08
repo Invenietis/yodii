@@ -67,7 +67,7 @@ namespace Yodii.Engine
         IEnumerable<PluginData> AllPlugins { get; }
         
         /// <summary>
-        /// Used during static and dynamic resolution to stack propagation 
+        /// Used during static resolution to stack propagation 
         /// instead of relying on recursion.
         /// </summary>
         /// <param name="s">The ServiceData for which status must be propagated.</param>

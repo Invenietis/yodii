@@ -45,7 +45,7 @@ namespace Yodii.Model
         StartDependencyImpact ConfigSolvedImpact { get; }
 
         /// <summary>
-        /// Gets the solved configuration status, it is the wanted result: it can be <see cref="SolvedConfigurationStatus.Runnning"/>
+        /// Gets the solved configuration status, it is the wanted result: it can be <see cref="SolvedConfigurationStatus.Running"/>
         /// even if the <see cref="DisabledReason"/> is not null.
         /// Use <see cref="FinalConfigSolvedStatus"/> to get a status that integrates the fact that the item is disabled.
         /// </summary>

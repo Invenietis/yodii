@@ -11,8 +11,8 @@ namespace Yodii.Model
     public interface IStopContext
     {
         /// <summary>
-        /// Gets whether this stop is from a cancelled <see cref="IPlugin.PreStart"/> rather
-        /// than a successful <see cref="IPlugin.PreStop"/>.
+        /// Gets whether this stop is from a cancelled <see cref="IYodiiPlugin.PreStart"/> rather
+        /// than a successful <see cref="IYodiiPlugin.PreStop"/>.
         /// </summary>
         bool CancellingPreStart { get; }
 

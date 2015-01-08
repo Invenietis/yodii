@@ -6,12 +6,12 @@
       <Field Name="_items" Hidden="true" />
     </Members>
     <AssociationLine Name="Items" Type="Yodii.Model.FinalConfigurationItem">
-      <MemberNameLabel ManuallyPlaced="true">
-        <Position X="0.016" Y="0.06" />
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.151" Y="0.06" Height="0.182" Width="0.798" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAQAACAAAAAAAAAAEABAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAUAACAAAAAAAAAAEABAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\FinalConfiguration.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -33,8 +33,8 @@
   <Interface Name="Yodii.Model.IConfigurationManager">
     <Position X="0.5" Y="0.5" Width="4.5" />
     <AssociationLine Name="Layers" Type="Yodii.Model.IConfigurationLayerCollection">
-      <MemberNameLabel ManuallyPlaced="true">
-        <Position X="0.152" Y="0.518" />
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.079" Y="0.31" Height="0.162" Width="0.628" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
@@ -57,23 +57,23 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayerCollection">
-    <Position X="1" Y="2.75" Width="3.5" />
+    <Position X="1" Y="2.5" Width="3.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAACAAABAAAAAAAAEAAAAAAAABAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAACAAAJAAAAAAAAEAAAAAAAABAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayerCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItemCollection">
     <Position X="5.25" Y="6.75" Width="3" />
     <TypeIdentifier>
-      <HashCode>AAIAAAAAQAAAAAAACAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAQAAABAAACAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItemCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItem">
     <Position X="8.75" Y="7.25" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAIAEAAEAAAAAAAAAAAAEAAAQABAAAAEAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAEAAAgBAAAAAAAEAAAAABAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
@@ -100,16 +100,16 @@
     </ShowAsAssociation>
   </Interface>
   <Enum Name="Yodii.Model.ConfigurationStatus">
-    <Position X="6.75" Y="4.25" Width="1.75" />
+    <Position X="7" Y="3.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAABAAAAAAAAAAAAAACAAAAAAAAAAAAKAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\ConfigurationStatus.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Yodii.Model.StartDependencyImpact">
-    <Position X="9" Y="3.75" Width="3.5" />
+    <Position X="9" Y="3.25" Width="3.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAABAAAYAAACgQAACAAAAAAABAAAAAAAAIAAAkJA=</HashCode>
+      <HashCode>CAAgAABAQAAAAAAgAAQDAAAAEAAAAAAAIAAAKAAAgBA=</HashCode>
       <FileName>LiveModel\StartDependencyImpact.cs</FileName>
     </TypeIdentifier>
   </Enum>

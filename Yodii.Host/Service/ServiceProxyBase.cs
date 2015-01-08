@@ -122,16 +122,27 @@ namespace Yodii.Host
                 if( _swappingPlugin != null ) _service._impl = _originalImpl;
             }
 
-            public override void TryStart<T>( IService<T> service, StartDependencyImpact impact, Action<T> onStarted )
+            public override void TryStart<T>( IService<T> service, StartDependencyImpact impact, Action onSuccess, Action<IYodiiEngineResult> onError )
             {
-                var serviceFullName = service.Service.GetType().FullName;
+                TryStart( service.Service.GetType().FullName, impact, onSuccess, onError );
+            }
+
+            public override void TryStart( string serviceOrPluginFullName, StartDependencyImpact impact, Action onSuccess, Action<IYodiiEngineResult> onError )
+            {
                 Action<IYodiiEngine> a = e => 
                 {
-                    ILiveServiceInfo s = e.LiveInfo.FindService( serviceFullName );
-                    if( s != null && s.Capability.CanStartWith( impact ) )
+                    ILiveYodiiItem item = e.LiveInfo.FindYodiiItem( serviceOrPluginFullName );
+                    if( item != null && item.Capability.CanStartWith( impact ) )
                     {
-                        e.Start( s, impact );
-                        if( onStarted != null ) onStarted( service.Service );
+                        var r = e.Start( item, impact );
+                        if( r.Success )
+                        {
+                            if( onSuccess != null ) onSuccess();
+                        }
+                        else
+                        {
+                            if( onError != null ) onError( r );
+                        }
                     }
                 };
                 _postStart.Add( a );

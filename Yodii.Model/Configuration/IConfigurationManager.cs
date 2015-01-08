@@ -31,7 +31,6 @@ namespace Yodii.Model
 
         /// <summary>
         /// Layers contained in this manager.
-        /// Always contains the <see cref="DefaultLayer"/>.
         /// </summary>
         IConfigurationLayerCollection Layers { get; }
 

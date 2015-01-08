@@ -39,32 +39,32 @@ namespace Yodii.Engine
                 return s.DynGetPropagationInfo();
             }
 
-            internal bool TestCanStart( StartDependencyImpact impact )
-            {
-                Debug.Assert( Service.DynamicStatus == null || Service.DynamicStatus.Value == RunningStatus.RunningLocked );
-                Debug.Assert( impact != StartDependencyImpact.Unknown );
+            //internal bool TestCanStart( StartDependencyImpact impact )
+            //{
+            //    Debug.Assert( Service.DynamicStatus == null || Service.DynamicStatus.Value == RunningStatus.RunningLocked );
+            //    Debug.Assert( impact != StartDependencyImpact.Unknown );
 
-                if( TheOnlyPlugin != null )
-                {
-                    if( !TheOnlyPlugin.DynamicCanStart( impact ) ) return false;
-                }
-                else if( TheOnlyService != null )
-                {
-                    if( !TheOnlyService.DynamicCanStart( impact ) ) return false;
-                }
-                else
-                {
-                    foreach( var s in GetExcludedServices( impact ) )
-                    {
-                        if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
-                    }
-                    foreach( var s in GetIncludedServices( impact ) )
-                    {
-                        if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
-                    }
-                }
-                return true;
-            }
+            //    if( TheOnlyPlugin != null )
+            //    {
+            //        if( !TheOnlyPlugin.DynamicCanStart( impact ) ) return false;
+            //    }
+            //    else if( TheOnlyService != null )
+            //    {
+            //        if( !TheOnlyService.DynamicCanStart( impact ) ) return false;
+            //    }
+            //    else
+            //    {
+            //        foreach( var s in GetExcludedServices( impact ) )
+            //        {
+            //            if( s.DynamicStatus != null && s.DynamicStatus.Value >= RunningStatus.Running ) return false;
+            //        }
+            //        foreach( var s in GetIncludedServices( impact ) )
+            //        {
+            //            if( s.DynamicStatus != null && s.DynamicStatus.Value <= RunningStatus.Stopped ) return false;
+            //        }
+            //    }
+            //    return true;
+            //}
 
             internal void PropagateStart()
             {
