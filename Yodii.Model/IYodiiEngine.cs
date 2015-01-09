@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Model\IYodiiEngine.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +34,8 @@ namespace Yodii.Model
     /// <summary>
     /// Yodii engine is the primary object of Yodii.
     /// It is in charge of maintaining coherency among available plugins and services, their configuration and the evolution at runtime.
-    /// It exposes all relevant information to the external world thanks to its <see cref="LiveInfo"/>.
     /// </summary>
-    public interface IYodiiEngine : IYodiiEngineBase
+    public interface IYodiiEngine : IYodiiEngineBase, INotifyPropertyChanged
     {
         /// <summary>
         /// Whether this engine is currently running.
@@ -35,7 +57,7 @@ namespace Yodii.Model
         void StopEngine();
 
         /// <summary>
-        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// Triggers the static resolution of the graph (with the current <see cref="IYodiiEngineBase.Configuration">Configuration</see>).
         /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
         /// </summary>
         /// <returns>

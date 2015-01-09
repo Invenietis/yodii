@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Service\ServiceProxyBase.cs) is part of CiviKey. 
+* This file (Yodii.Host\Service\ServiceProxyBase.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -14,7 +14,7 @@
 * You should have received a copy of the GNU Lesser General Public License 
 * along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
 *  
-* Copyright © 2007-2012, 
+* Copyright © 2007-2015, 
 *     Invenietis <http://www.invenietis.com>,
 *     In’Tech INFO <http://www.intechinfo.fr>,
 * All rights reserved. 
@@ -92,18 +92,18 @@ namespace Yodii.Host
 
         class Event : ServiceStatusChangedEventArgs
         {
-            readonly IList<Action<IYodiiEngine>> _postStart;
+            readonly Action<Action<IYodiiEngine>> _postStart;
             readonly ServiceProxyBase _service;
             readonly PluginProxyBase _originalImpl;
             readonly PluginProxyBase _swappingPlugin;
 
-            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, IList<Action<IYodiiEngine>> postStart )
+            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, Action<Action<IYodiiEngine>> postStartActionsCollector )
             {
                 Debug.Assert( s._status != ServiceStatus.StoppingSwapped || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
                 _service = s;
                 _originalImpl = s._impl;
                 _swappingPlugin = swappingPlugin;
-                _postStart = postStart;
+                _postStart = postStartActionsCollector;
             }
 
             public override bool IsSwapping
@@ -122,19 +122,33 @@ namespace Yodii.Host
                 if( _swappingPlugin != null ) _service._impl = _originalImpl;
             }
 
-            public override void TryStart<T>( IService<T> service, StartDependencyImpact impact, Action<T> onStarted )
+            public override void TryStart<T>( IService<T> service, StartDependencyImpact impact, Action onSuccess, Action<IYodiiEngineResult> onError )
             {
-                var serviceFullName = service.Service.GetType().FullName;
+                TryStart( service.Service.GetType().FullName, impact, onSuccess, onError );
+            }
+
+            public override void TryStart( string serviceOrPluginFullName, StartDependencyImpact impact, Action onSuccess, Action<IYodiiEngineResult> onError )
+            {
                 Action<IYodiiEngine> a = e => 
                 {
-                    ILiveServiceInfo s = e.LiveInfo.FindService( serviceFullName );
-                    if( s != null && s.Capability.CanStartWith( impact ) )
+                    if( e.IsRunning )
                     {
-                        e.Start( s, impact );
-                        if( onStarted != null ) onStarted( service.Service );
+                        ILiveYodiiItem item = e.LiveInfo.FindYodiiItem( serviceOrPluginFullName );
+                        if( item != null && item.Capability.CanStartWith( impact ) )
+                        {
+                            var r = e.StartItem( item, impact );
+                            if( r.Success )
+                            {
+                                if( onSuccess != null ) onSuccess();
+                            }
+                            else
+                            {
+                                if( onError != null ) onError( r );
+                            }
+                        }
                     }
                 };
-                _postStart.Add( a );
+                _postStart( a );
             }
         }
 
@@ -152,12 +166,12 @@ namespace Yodii.Host
             internal set { _status = value; }
 		}
 
-        internal void RaiseStatusChanged( IList<Action<IYodiiEngine>> postStart, PluginProxyBase swappingPlugin = null )
+        internal void RaiseStatusChanged( Action<Action<IYodiiEngine>> postStartActionsCollector, PluginProxyBase swappingPlugin = null )
 		{
             var h = ServiceStatusChanged;
             if( h != null )
 			{
-                Event ev = new Event( this, swappingPlugin, postStart );
+                Event ev = new Event( this, swappingPlugin, postStartActionsCollector );
                 foreach( EventHandler<ServiceStatusChangedEventArgs> f in h.GetInvocationList() )
                 {
                     f( this, ev );

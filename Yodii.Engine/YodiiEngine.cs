@@ -1,4 +1,27 @@
-﻿using System;
+﻿#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\YodiiEngine.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -21,6 +44,8 @@ namespace Yodii.Engine
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _currentSolver;
+        Queue<Action<IYodiiEngine>> _postActions;
+        bool _isStopping;
 
         class YodiiCommandList : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
         {
@@ -76,8 +101,20 @@ namespace Yodii.Engine
 
         IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
         {
+            bool isRootStart = false;
+            Action<Action<IYodiiEngine>> postActionCollector = null;
+            if( !_isStopping )
+            {
+                if( _postActions == null )
+                {
+                    _postActions = new Queue<Action<IYodiiEngine>>();
+                    isRootStart = true;
+                }
+                postActionCollector = _postActions.Enqueue;
+            }
+
             var dynResult = solver.DynamicResolution( existingCommandFilter != null ? _yodiiCommands.Where( existingCommandFilter ) : _yodiiCommands, cmd );
-            var hResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running );
+            var hResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running, postActionCollector );
             Debug.Assert( hResult != null && hResult.CancellationInfo != null );
             if( hResult.CancellationInfo.Any() )
             {
@@ -94,6 +131,16 @@ namespace Yodii.Engine
 
             _yodiiCommands.Merge( dynResult.Commands );
             if( wasStopped ) RaisePropertyChanged( "IsRunning" );
+
+            if( isRootStart )
+            {
+                Debug.Assert( _postActions != null );
+                while( _postActions.Count > 0 )
+                {
+                    _postActions.Dequeue()( this );
+                }
+                _postActions = null;
+            }
             return _successResult;
         }
 
@@ -124,15 +171,37 @@ namespace Yodii.Engine
             get { return _currentSolver != null; }
         }
 
+        public bool IsStopping
+        {
+            get { return _isStopping; }
+            private set 
+            { 
+                if( _isStopping != value )
+                {
+                    _isStopping = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public void StopEngine()
         {
             if( IsRunning )
             {
-                // Stopping the engine disables all plugins.
-                _host.Apply( _discoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>() );
+                IsStopping = true;
+                try
+                {
+                    // Stopping the engine disables all plugins.
+                    // No post action here: this is the hint for the host that we are stopping.
+                    _host.Apply( _discoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>(), null );
 
-                _liveInfo.Clear();
-                _currentSolver = null;
+                    _liveInfo.Clear();
+                    _currentSolver = null;
+                }
+                finally
+                {
+                    IsStopping = false;
+                }
                 RaisePropertyChanged( "IsRunning" );
             }
         }
@@ -186,7 +255,6 @@ namespace Yodii.Engine
             return StaticResolutionOnly( false, false );
         }
 
-
         /// <summary>
         /// Attempts to start a service or a plugin. 
         /// </summary>
@@ -206,7 +274,7 @@ namespace Yodii.Engine
         /// The parameter <paramref name="pluginOrService"/> is null.
         /// </exception>
         /// <returns>Result detailing whether the service or plugin was successfully started or not.</returns>
-        public IYodiiEngineResult Start( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        public IYodiiEngineResult StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
             if( pluginOrService == null ) throw new ArgumentNullException();
             if( !IsRunning ) throw new InvalidOperationException();
@@ -235,7 +303,7 @@ namespace Yodii.Engine
         /// <exception cref="ArgumentNullException">
         /// The parameter <paramref name="pluginOrService"/> is null.
         /// </exception>
-        public IYodiiEngineResult Stop( ILiveYodiiItem pluginOrService )
+        public IYodiiEngineResult StopItem( ILiveYodiiItem pluginOrService )
         {
             if( pluginOrService == null ) throw new ArgumentNullException();
             if( !IsRunning ) throw new InvalidOperationException();
@@ -246,7 +314,6 @@ namespace Yodii.Engine
             YodiiCommand command = new YodiiCommand( false, pluginOrService.FullName, pluginOrService.IsPlugin, StartDependencyImpact.Unknown, null );
             return AddYodiiCommand( command );
         }
-
 
         /// <summary>
         /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).

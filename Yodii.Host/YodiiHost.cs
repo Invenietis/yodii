@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (CK.Plugin.Host\Plugin\PluginHost.cs) is part of CiviKey. 
+* This file (Yodii.Host\YodiiHost.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -14,7 +14,7 @@
 * You should have received a copy of the GNU Lesser General Public License 
 * along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
 *  
-* Copyright © 2007-2012, 
+* Copyright © 2007-2015, 
 *     Invenietis <http://www.invenietis.com>,
 *     In’Tech INFO <http://www.intechinfo.fr>,
 * All rights reserved. 
@@ -102,15 +102,13 @@ namespace Yodii.Host
 
         class Result : IYodiiEngineHostApplyResult
         {
-            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors )
             {
                 CancellationInfo = errors;
-                PostStartActions = actions;
             }
 
             public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
 
-            public IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; private set; }
         }
 
         /// <summary>
@@ -120,7 +118,11 @@ namespace Yodii.Host
         /// <param name="stoppedPlugins">Plugins that must be stopped.</param>
         /// <param name="runningPlugins">Plugins that must be running.</param>
         /// <returns>A <see cref="IYodiiEngineHostApplyResult"/> that details the error if any.</returns>
-        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> disabledPlugins, IEnumerable<IPluginInfo> stoppedPlugins, IEnumerable<IPluginInfo> runningPlugins )
+        public IYodiiEngineHostApplyResult Apply( 
+            IEnumerable<IPluginInfo> disabledPlugins, 
+            IEnumerable<IPluginInfo> stoppedPlugins, 
+            IEnumerable<IPluginInfo> runningPlugins,
+            Action<Action<IYodiiEngine>> postStartActionsCollector )
         {
             if( disabledPlugins == null ) throw new ArgumentNullException( "disabledPlugins" );
             if( stoppedPlugins == null ) throw new ArgumentNullException( "stoppedPlugins" );
@@ -143,11 +145,15 @@ namespace Yodii.Host
                                 .Append( runningPlugins.Select( p => p.PluginFullName ) )
                                 .ToString() );
                 }
-                return DoApply( disabledPlugins, stoppedPlugins, runningPlugins );
+                return DoApply( disabledPlugins, stoppedPlugins, runningPlugins, postStartActionsCollector );
             }
         }
 
-        IYodiiEngineHostApplyResult DoApply( IEnumerable<IPluginInfo> disabledPlugins, IEnumerable<IPluginInfo> stoppedPlugins, IEnumerable<IPluginInfo> runningPlugins )
+        IYodiiEngineHostApplyResult DoApply( 
+            IEnumerable<IPluginInfo> disabledPlugins, 
+            IEnumerable<IPluginInfo> stoppedPlugins, 
+            IEnumerable<IPluginInfo> runningPlugins,
+            Action<Action<IYodiiEngine>> postStartActionsCollector )
         {
             HashSet<IPluginInfo> uniqueCheck = new HashSet<IPluginInfo>();
             foreach( var input in disabledPlugins.Concat( stoppedPlugins ).Concat( runningPlugins ) )
@@ -159,7 +165,6 @@ namespace Yodii.Host
             }
 
             var errors = new List<CancellationInfo>();
-            var postStartActions = new List<Action<IYodiiEngine>>();
 
             ServiceManager serviceManager = new ServiceManager( _serviceHost );
             // The toStart and toStop list are lists of StStart/StStopContext.
@@ -245,7 +250,7 @@ namespace Yodii.Host
                 {
                     // Restores Disabled states.
                     CancelSuccessfulStartForDisabled( toStart );
-                    return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+                    return new Result( errors.AsReadOnlyList() );
                 }
                 _monitor.CloseGroup( toStart.Select( c => c.Plugin.PluginInfo.PluginFullName ).Concatenate() );
                 #endregion
@@ -290,7 +295,7 @@ namespace Yodii.Host
                 CancelSuccessfulPreStop( sharedMemory, toStop );
                 // Restores Disabled states.
                 CancelSuccessfulStartForDisabled( toStart );
-                return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+                return new Result( errors.AsReadOnlyList() );
             }
 
             // PreStop has been successfully called: we must now call the PreStart.
@@ -337,11 +342,11 @@ namespace Yodii.Host
                 _serviceHost.CallServiceBlocker = null;
                 // Restores Disabled states.
                 CancelSuccessfulStartForDisabled( toStart );
-                return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+                return new Result( errors.AsReadOnlyList() );
             }
 
             // Setting ServiceStatus & sending events: StoppingSwapped, Stopping, StartingSwapped, Starting. 
-            SetServiceSatus( postStartActions, toStop, toStart, true );
+            SetServiceSatus( postStartActionsCollector, toStop, toStart, true );
 
 
             // Time to call Stop. While Stopping, calling Services is not allowed.
@@ -387,7 +392,7 @@ namespace Yodii.Host
             }
 
             // Setting services status & sending events...
-            SetServiceSatus( postStartActions, toStop, toStart, false );
+            SetServiceSatus( postStartActionsCollector, toStop, toStart, false );
 
             // Disabling plugins that need to.
             foreach( var disableC in toStop )
@@ -406,7 +411,7 @@ namespace Yodii.Host
                     }
                 }
             }
-            return new Result( errors.AsReadOnlyList(), postStartActions.AsReadOnlyList() );
+            return new Result( errors.AsReadOnlyList() );
         }
 
         private void CancelSuccessfulStartForDisabled( List<StStartContext> toStart )
@@ -432,8 +437,8 @@ namespace Yodii.Host
             }
         }
 
-        static void SetServiceSatus( 
-            List<Action<IYodiiEngine>> postStartActions, 
+        static void SetServiceSatus(
+            Action<Action<IYodiiEngine>> postStartActionsCollector, 
             List<StStopContext> toStop, 
             List<StStartContext> toStart, 
             bool isTransition )
@@ -450,13 +455,13 @@ namespace Yodii.Host
                         if( !impact.Implementation.HotSwapped && isTransition )
                         {
                             impact.Service.Status = ServiceStatus.StoppingSwapped;
-                            impact.Service.RaiseStatusChanged( postStartActions, impact.SwappedImplementation.Plugin );
+                            impact.Service.RaiseStatusChanged( postStartActionsCollector, impact.SwappedImplementation.Plugin );
                         }
                     }
                     else
                     {
                         impact.Service.Status = isTransition ? ServiceStatus.Stopping : ServiceStatus.Stopped;
-                        impact.Service.RaiseStatusChanged( postStartActions );
+                        impact.Service.RaiseStatusChanged( postStartActionsCollector );
                     }
                     impact = impact.ServiceGeneralization;
                 }
@@ -476,19 +481,19 @@ namespace Yodii.Host
                             if( isTransition )
                             {
                                 impact.Service.Status = ServiceStatus.StartingSwapped;
-                                impact.Service.RaiseStatusChanged( postStartActions, impact.Implementation.Plugin );
+                                impact.Service.RaiseStatusChanged( postStartActionsCollector, impact.Implementation.Plugin );
                             }
                             else
                             {
                                 impact.Service.Status = ServiceStatus.StartedSwapped;
-                                impact.Service.RaiseStatusChanged( postStartActions );
+                                impact.Service.RaiseStatusChanged( postStartActionsCollector );
                             }
                         }
                     }
                     else
                     {
                         impact.Service.Status = isTransition ? ServiceStatus.Starting : ServiceStatus.Started;
-                        impact.Service.RaiseStatusChanged( postStartActions );
+                        impact.Service.RaiseStatusChanged( postStartActionsCollector );
                     }
                     impact = impact.ServiceGeneralization;
                 }

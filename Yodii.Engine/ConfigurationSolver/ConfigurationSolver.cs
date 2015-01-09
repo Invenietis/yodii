@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\ConfigurationSolver.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +29,7 @@ using CK.Core;
 using System.Diagnostics;
 using Yodii.Model;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Yodii.Engine
 {
@@ -84,11 +108,6 @@ namespace Yodii.Engine
         public PluginData FindPlugin( string pluginFullName )
         {
             return _plugins.GetValueWithDefault( pluginFullName, null );
-        }
-
-        void IConfigurationSolver.DeferPropagation( ServiceData s )
-        {
-            _deferedPropagation.Add( s );
         }
 
         public IEnumerable<ServiceData> AllServices { get { return _orderedServices; } }
@@ -234,21 +253,28 @@ namespace Yodii.Engine
             while( atLeastOneFailed );
         }
 
+        void IConfigurationSolver.DeferPropagation( ServiceData s )
+        {
+            Debug.Assert( Step < ConfigurationSolverStep.WaitingForDynamicResolution );
+            _deferedPropagation.Add( s );
+        }
+
         void ProcessDeferredPropagations()
         {
+            Debug.Assert( Step < ConfigurationSolverStep.WaitingForDynamicResolution );
             while( _deferedPropagation.Count > 0 )
             {
                 ServiceData s = _deferedPropagation.First();
                 _deferedPropagation.Remove( s );
-                if( Step < ConfigurationSolverStep.WaitingForDynamicResolution ) s.PropagateSolvedStatus();
-                else s.DynPropagateStart();
+                s.PropagateSolvedStatus();
             }
         }
 
         /// <summary>
         /// Solves undetermined status based on commands.
         /// </summary>
-        /// <param name="commands"></param>
+        /// <param name="pastCommands">Previously honored commands.</param>
+        /// <param name="newOne">Optional new command to honor first.</param>
         /// <returns>This method returns a <see cref="DynamicSolverResult"/> that contains the plugins to start/stop or disable for the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
@@ -272,20 +298,18 @@ namespace Yodii.Engine
             {
                 if( newOne == null || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
                 {
-                    if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
+                    if( ApplyAndTellMeIfCommandMustBeKept( previous, false ) )
                     {
                         commands.Add( previous );
                     }
                 }
             }
-            Debug.Assert( _deferedPropagation.Count == 0 );
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
                 if( !f.Root.Disabled )
                 {
                     f.DynamicFinalDecision( true );
-                    ProcessDeferredPropagations();
                 }
             }
             foreach( var f in _serviceFamilies )
@@ -294,7 +318,6 @@ namespace Yodii.Engine
                 if( !f.Root.Disabled )
                 {
                     f.DynamicFinalDecision( false );
-                    ProcessDeferredPropagations();
                 }
             }
 
@@ -315,13 +338,12 @@ namespace Yodii.Engine
                     Debug.Assert( p.Service == null );
                     p.DynamicStopBy( PluginRunningStatusReason.StoppedByFinalDecision );
                     stopped.Add( p.PluginInfo );
-                    ProcessDeferredPropagations();
                 }
             }
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
         
-        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, bool isFirst = false )
+        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, bool isFirst )
         {
             // If the plugin does not exist, we keep the command.
             bool success = true;
@@ -342,7 +364,6 @@ namespace Yodii.Engine
                     success = cmd.Start ? p.DynamicStartByCommand( (cmd.Impact | p.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : p.DynamicStopByCommand();
                 }
             }
-            if( success ) ProcessDeferredPropagations();
             return success;
         }
 
@@ -391,6 +412,7 @@ namespace Yodii.Engine
             return new YodiiEngineResult( this, errors, _engine );
         }
 
+        [ExcludeFromCodeCoverage]
         public override string ToString()
         {
             StringBuilder b = new StringBuilder();

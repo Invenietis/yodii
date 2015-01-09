@@ -1,4 +1,27 @@
-﻿using System;
+﻿#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\LabStateManager.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -350,21 +373,17 @@ namespace Yodii.Lab
 
         class Result : IYodiiEngineHostApplyResult
         {
-            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors )
             {
                 CancellationInfo = errors;
-                PostStartActions = actions;
             }
 
             public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
-
-            public IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; private set; }
         }
 
-        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> actionCollector )
         {
             List<IPluginHostApplyCancellationInfo> cancellationInfos = new List<IPluginHostApplyCancellationInfo>();
-            List<Action<IYodiiEngine>> postStartActions = new List<Action<IYodiiEngine>>();
 
             // TODO
             Console.WriteLine( "Disabling:" );
@@ -397,7 +416,7 @@ namespace Yodii.Lab
                 }
             }
 
-            return new Result( cancellationInfos.AsReadOnlyList(), postStartActions.AsReadOnlyList());
+            return new Result( cancellationInfos.AsReadOnlyList());
         }
 
         #endregion

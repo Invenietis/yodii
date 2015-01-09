@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Tests\Yodii.Host.Tests\YodiiHostTests.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,7 +61,7 @@ namespace Yodii.Host.Tests
             Assert.That( pluginProxy.Status == PluginStatus.Null );
 
             // Try to start when MyCustomClass cannot be resolved
-            result = engine.Start( pluginLive );
+            result = engine.StartItem( pluginLive );
             Assert.That( result.Success, Is.False );
 
             Assert.That( pluginLive.IsRunning, Is.False );
@@ -52,13 +75,13 @@ namespace Yodii.Host.Tests
             host.PluginCreator = CustomPluginCreator;
 
             // Try to start when MyCustomClass can be resolved
-            result = engine.Start( pluginLive );
+            result = engine.StartItem( pluginLive );
 
             Assert.That( result.Success );
             Assert.That( pluginLive.IsRunning, Is.True );
             Assert.That( trackerLive.IsRunning, "Tracker plugin has started." );
 
-            result = engine.Stop( pluginLive );
+            result = engine.StopItem( pluginLive );
             Assert.That( result.Success );
             Assert.That( pluginLive.IsRunning, Is.False );
             Assert.That( trackerLive.IsRunning, Is.False, "Tracker plugin has stopped." );
@@ -79,7 +102,7 @@ namespace Yodii.Host.Tests
             Assert.That( result.Success );
 
             var pLive = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
-            result = engine.Start( pLive );
+            result = engine.StartItem( pLive );
             Assert.That( result.Success );
 
             Assert.That( service.CalledMethods.Count, Is.EqualTo( 3 ), "The service is started, we can call its methods." );
@@ -91,14 +114,14 @@ namespace Yodii.Host.Tests
             Assert.That( choucroute.CalledMethods.Count == 3 );
 
             Assert.That( pLive.Capability.CanStop == true );
-            result = engine.Stop( pLive );
+            result = engine.StopItem( pLive );
             Assert.That( result.Success );
             
             Assert.That( proxy.Status == PluginStatus.Stopped );
             Assert.That( choucroute.CalledMethods.Count, Is.EqualTo( 5 ), "Plugin is stopped but we can still directly access it." );
             Assert.Throws<ServiceStoppedException>( (delegate() { int i = service.CalledMethods.Count; }), "Since the service is stopped: ServiceNotAvailableException." );
 
-            result = engine.Start( pLive );
+            result = engine.StartItem( pLive );
             Assert.That( result.Success );
             Assert.That( service.CalledMethods.Count == 7, "The service is started, we can call its methods." );
 
@@ -143,7 +166,7 @@ namespace Yodii.Host.Tests
             FailureTransitionPlugin.CancelPreStop = false;
 
             Assert.That( pLive.IsRunning, Is.False );
-            result = engine.Start( pLive );
+            result = engine.StartItem( pLive );
             Assert.That( result.Success, Is.False );
             Assert.That( result.HostFailureResult.ErrorPlugins[0].CancellationInfo.ErrorMessage, Is.EqualTo( "Canceled!" ) );
             engine.CheckStopped( "Yodii.Host.Tests.IFailureTransitionPluginService" );
@@ -154,21 +177,21 @@ namespace Yodii.Host.Tests
             Assert.That( !trackerServiceLive.IsRunning && trackerServiceLive.Capability.CanStart, "ITrackerService has not started." );
 
             FailureTransitionPlugin.CancelPreStart = false;
-            result = engine.Start( pLive );
+            result = engine.StartItem( pLive );
             Assert.That( result.Success, Is.True );
             Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Started ), "Now Started: it will then be Stopped." );
             Assert.That( pShouldRun.IsRunning, Is.True, "It is still running by configuration." );
             Assert.That( anotherServiceLive.IsRunning, "IAnotherService is now running." );
             Assert.That( trackerServiceLive.IsRunning, "ITrackerService is now running." );
 
-            result = engine.Stop( pLive );
+            result = engine.StopItem( pLive );
             Assert.That( result.Success, Is.True );
             Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Stopped ) );
             Assert.That( pShouldRun.IsRunning, Is.True, "It is still running by configuration." );
             Assert.That( !anotherServiceLive.IsRunning, "IAnotherService is stopped." );
             Assert.That( !trackerServiceLive.IsRunning, "ITrackerService is stopped." );
 
-            result = engine.Start( pLive );
+            result = engine.StartItem( pLive );
             Assert.That( result.Success, Is.True );
             Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Started ) );
             Assert.That( pShouldRun.IsRunning, Is.True, "It is still running by configuration." );
@@ -176,7 +199,7 @@ namespace Yodii.Host.Tests
             Assert.That( trackerServiceLive.IsRunning, "ITrackerService is now running again." );
 
             FailureTransitionPlugin.CancelPreStop = true;
-            result = engine.Stop( pLive );
+            result = engine.StopItem( pLive );
             Assert.That( result.Success, Is.False );
             Assert.That( result.HostFailureResult.ErrorPlugins[0].CancellationInfo.ErrorMessage, Is.EqualTo( "Canceled!" ) );
             Assert.That( proxy.Status, Is.EqualTo( PluginStatus.Started ), "Still running!" );
@@ -202,25 +225,25 @@ namespace Yodii.Host.Tests
             FailureTransitionPlugin.CancelPreStart = true;
             FailureTransitionPlugin.CancelPreStop = false;
 
-            engine.Start( p.Live ).CheckHostFailure();
+            engine.StartItem( p.Live ).CheckHostFailure();
             p.CheckState( PluginStatus.Null );
 
             FailureTransitionPlugin.CancelPreStart = false;
-            engine.Start( p.Live ).CheckSuccess();
+            engine.StartItem( p.Live ).CheckSuccess();
             p.CheckState( PluginStatus.Started );
 
             FailureTransitionPlugin.CancelPreStop = true;
-            engine.Stop( p.Live ).CheckHostFailure();
+            engine.StopItem( p.Live ).CheckHostFailure();
             p.CheckState( PluginStatus.Started );
 
             engine.Configuration.Layers.Default.Items.Set( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckHostFailure();
             p.CheckState( PluginStatus.Started );
 
             FailureTransitionPlugin.CancelPreStop = false;
-            engine.Stop( p.Live ).CheckSuccess();
+            engine.StopItem( p.Live ).CheckSuccess();
             p.CheckState( PluginStatus.Stopped );
 
-            engine.Start( p.Live ).CheckSuccess();
+            engine.StartItem( p.Live ).CheckSuccess();
             p.CheckState( PluginStatus.Started );
 
             engine.Configuration.Layers.Default.Items.Set( p.Live.PluginInfo.PluginFullName, ConfigurationStatus.Disabled ).CheckSuccess();

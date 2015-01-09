@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Yodii.Lab\NotificationEventArgs.cs) is part of CiviKey. 
+* This file ([FILE]) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -20,28 +20,3 @@
 * All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
-
-using System;
-
-namespace Yodii.Lab
-{
-    /// <summary>
-    /// Event args for a new Notification.
-    /// </summary>
-    internal class NotificationEventArgs : EventArgs
-    {
-        /// <summary>
-        /// Notification to display.
-        /// </summary>
-        public readonly Notification Notification;
-
-        /// <summary>
-        /// Creates a new instance of NotificationEventArgs.
-        /// </summary>
-        /// <param name="n">Notification to display.</param>
-        public NotificationEventArgs( Notification n )
-        {
-            Notification = n;
-        }
-    }
-}

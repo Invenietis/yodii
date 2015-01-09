@@ -1,4 +1,27 @@
-﻿using System;
+﻿#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Model\YodiiModelExtension.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,16 +42,17 @@ namespace Yodii.Model
         /// <param name="pluginFullName">Name of the plugin to start.</param>
         /// <param name="impact">Startup impact on references.</param>
         /// <exception cref="InvalidOperationException">
-        /// The <see cref="ILiveYodiiItem.Capability">.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
         /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
         /// </exception>
         /// <exception cref="ArgumentException">The plugin must exist.</exception>
         /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
-        public static IYodiiEngineResult StartPlugin( this IYodiiEngineBase @this, string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        public static IYodiiEngineResult StartPlugin( this IYodiiEngine @this, string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var p = @this.LiveInfo.FindPlugin( pluginFullName );
             if( p == null ) throw new ArgumentException();
-            return @this.Start( p, impact );
+            return @this.StartItem( p, impact );
         }
 
         /// <summary>
@@ -43,11 +67,12 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The service must exist.</exception>
         /// <returns>Result detailing whether the service was successfully started or not.</returns>
-        public static IYodiiEngineResult StartService( this IYodiiEngineBase @this, string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        public static IYodiiEngineResult StartService( this IYodiiEngine @this, string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var s = @this.LiveInfo.FindService( serviceFullName );
             if( s == null ) throw new ArgumentException();
-            return @this.Start( s, impact );
+            return @this.StartItem( s, impact );
         }
 
         /// <summary>
@@ -60,11 +85,12 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The plugin must exist.</exception>
         /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
-        public static IYodiiEngineResult StopPlugin( this IYodiiEngineBase @this, string pluginFullName )
+        public static IYodiiEngineResult StopPlugin( this IYodiiEngine @this, string pluginFullName )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var p = @this.LiveInfo.FindPlugin( pluginFullName );
             if( p == null ) throw new ArgumentException();
-            return @this.Stop( p );
+            return @this.StopItem( p );
         }
 
         /// <summary>
@@ -77,11 +103,12 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The service must exist.</exception>
         /// <returns>Result detailing whether the service was successfully stopped or not.</returns>
-        public static IYodiiEngineResult StopService( this IYodiiEngineBase @this, string serviceFullName )
+        public static IYodiiEngineResult StopService( this IYodiiEngine @this, string serviceFullName )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var s = @this.LiveInfo.FindService( serviceFullName );
             if( s == null ) throw new ArgumentException();
-            return @this.Stop( s );
+            return @this.StopItem( s );
         }
 
         /// <summary>
@@ -172,7 +199,6 @@ namespace Yodii.Model
         /// Concatenates multiple strings with an internal separator.
         /// </summary>
         /// <param name="this">Set of strings.</param>
-        /// <param name="separator"></param>
         /// <param name="separator">The separator string.</param>
         /// <returns>The joined string.</returns>
         public static string Concatenate( this IEnumerable<string> @this, string separator = ", " )
@@ -180,9 +206,31 @@ namespace Yodii.Model
             return new StringBuilder().Append( @this, separator ).ToString();
         }
 
-        public static void TryStart<T>( this ServiceStatusChangedEventArgs @this, IService<T> service, Action<T> onStarted ) where T : IYodiiService
+        /// <summary>
+        /// This method can be used to dynamically start a service.
+        /// There is no guaranty of success here: this is a deffered action that may not be applicable.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the service to start.</typeparam>
+        /// <param name="this">This event argument.</param>
+        /// <param name="service">Reference to the service that should be started.</param>
+        /// <param name="onSuccess">Optional action that will be executed when and if the service starts.</param>
+        /// <param name="onError">Optional action that will be executed if the service has not been started.</param>
+        public static void TryStart<T>( this ServiceStatusChangedEventArgs @this, IService<T> service, Action onSuccess = null, Action<IYodiiEngineResult> onError = null ) where T : IYodiiService
         {
-            @this.TryStart( service, StartDependencyImpact.Unknown, onStarted );
+            @this.TryStart( service, StartDependencyImpact.Unknown, onSuccess, onError );
+        }
+
+        /// <summary>
+        /// This method can be used to dynamically start a service or a plugin.
+        /// There is no guaranty of success here: this is a deffered action that may not be applicable.
+        /// </summary>
+        /// <param name="this">This event argument.</param>
+        /// <param name="serviceOrPluginFullName">Full name of the service or plugin to start.</param>
+        /// <param name="onSuccess">Optional action that will be executed when and if the service starts.</param>
+        /// <param name="onError">Optional action that will be executed if the service has not been started.</param>
+        public static void TryStart( this ServiceStatusChangedEventArgs @this, string serviceOrPluginFullName, Action onSuccess = null, Action<IYodiiEngineResult> onError = null )
+        {
+            @this.TryStart( serviceOrPluginFullName, StartDependencyImpact.Unknown, onSuccess, onError );
         }
 
     }
