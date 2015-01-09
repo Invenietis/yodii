@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Model\IYodiiEngineHost.cs) is part of CiviKey. 
 *  
@@ -42,7 +42,11 @@ namespace Yodii.Model
         /// <param name="toDisable">List of plugins to stop and disable, effectively preventing them from running.</param>
         /// <param name="toStop">List of plugins to stop.</param>
         /// <param name="toStart">List of plugins to start.</param>
+        /// <param name="postActionsCollector">
+        /// Collector for actions triggered by the start or stop of the plugins.
+        /// Null when the engine is stopping (<paramref name="toDisable"/> contains all the plugins in this case). 
+        /// </param>
         /// <returns>List of exceptions encountered while each plugin changed state.</returns>
-        IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart ); 
+        IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> postActionsCollector ); 
     }
 }

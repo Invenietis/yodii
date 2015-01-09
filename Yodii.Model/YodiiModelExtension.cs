@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Model\YodiiModelExtension.cs) is part of CiviKey. 
 *  
@@ -47,8 +47,9 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The plugin must exist.</exception>
         /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
-        public static IYodiiEngineResult StartPlugin( this IYodiiEngineBase @this, string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        public static IYodiiEngineResult StartPlugin( this IYodiiEngine @this, string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var p = @this.LiveInfo.FindPlugin( pluginFullName );
             if( p == null ) throw new ArgumentException();
             return @this.StartItem( p, impact );
@@ -66,8 +67,9 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The service must exist.</exception>
         /// <returns>Result detailing whether the service was successfully started or not.</returns>
-        public static IYodiiEngineResult StartService( this IYodiiEngineBase @this, string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        public static IYodiiEngineResult StartService( this IYodiiEngine @this, string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var s = @this.LiveInfo.FindService( serviceFullName );
             if( s == null ) throw new ArgumentException();
             return @this.StartItem( s, impact );
@@ -83,8 +85,9 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The plugin must exist.</exception>
         /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
-        public static IYodiiEngineResult StopPlugin( this IYodiiEngineBase @this, string pluginFullName )
+        public static IYodiiEngineResult StopPlugin( this IYodiiEngine @this, string pluginFullName )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var p = @this.LiveInfo.FindPlugin( pluginFullName );
             if( p == null ) throw new ArgumentException();
             return @this.StopItem( p );
@@ -100,8 +103,9 @@ namespace Yodii.Model
         /// </exception>
         /// <exception cref="ArgumentException">The service must exist.</exception>
         /// <returns>Result detailing whether the service was successfully stopped or not.</returns>
-        public static IYodiiEngineResult StopService( this IYodiiEngineBase @this, string serviceFullName )
+        public static IYodiiEngineResult StopService( this IYodiiEngine @this, string serviceFullName )
         {
+            if( !@this.IsRunning ) throw new InvalidOperationException();
             var s = @this.LiveInfo.FindService( serviceFullName );
             if( s == null ) throw new ArgumentException();
             return @this.StopItem( s );

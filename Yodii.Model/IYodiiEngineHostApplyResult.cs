@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Model\IYodiiEngineHostApplyResult.cs) is part of CiviKey. 
 *  
@@ -40,10 +40,6 @@ namespace Yodii.Model
         /// </summary>
         IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; }
 
-        /// <summary>
-        /// Gets the actions that must be triggered. Never null (empty if none).
-        /// </summary>
-        IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; }
     }
 
 }

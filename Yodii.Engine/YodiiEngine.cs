@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Engine\YodiiEngine.cs) is part of CiviKey. 
 *  
@@ -44,6 +44,8 @@ namespace Yodii.Engine
 
         IDiscoveredInfo _discoveredInfo;
         ConfigurationSolver _currentSolver;
+        Queue<Action<IYodiiEngine>> _postActions;
+        bool _isStopping;
 
         class YodiiCommandList : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
         {
@@ -99,8 +101,20 @@ namespace Yodii.Engine
 
         IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
         {
+            bool isRootStart = false;
+            Action<Action<IYodiiEngine>> postActionCollector = null;
+            if( !_isStopping )
+            {
+                if( _postActions == null )
+                {
+                    _postActions = new Queue<Action<IYodiiEngine>>();
+                    isRootStart = true;
+                }
+                postActionCollector = _postActions.Enqueue;
+            }
+
             var dynResult = solver.DynamicResolution( existingCommandFilter != null ? _yodiiCommands.Where( existingCommandFilter ) : _yodiiCommands, cmd );
-            var hResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running );
+            var hResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running, postActionCollector );
             Debug.Assert( hResult != null && hResult.CancellationInfo != null );
             if( hResult.CancellationInfo.Any() )
             {
@@ -117,6 +131,16 @@ namespace Yodii.Engine
 
             _yodiiCommands.Merge( dynResult.Commands );
             if( wasStopped ) RaisePropertyChanged( "IsRunning" );
+
+            if( isRootStart )
+            {
+                Debug.Assert( _postActions != null );
+                while( _postActions.Count > 0 )
+                {
+                    _postActions.Dequeue()( this );
+                }
+                _postActions = null;
+            }
             return _successResult;
         }
 
@@ -147,15 +171,37 @@ namespace Yodii.Engine
             get { return _currentSolver != null; }
         }
 
+        public bool IsStopping
+        {
+            get { return _isStopping; }
+            private set 
+            { 
+                if( _isStopping != value )
+                {
+                    _isStopping = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
         public void StopEngine()
         {
             if( IsRunning )
             {
-                // Stopping the engine disables all plugins.
-                _host.Apply( _discoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>() );
+                IsStopping = true;
+                try
+                {
+                    // Stopping the engine disables all plugins.
+                    // No post action here: this is the hint for the host that we are stopping.
+                    _host.Apply( _discoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>(), null );
 
-                _liveInfo.Clear();
-                _currentSolver = null;
+                    _liveInfo.Clear();
+                    _currentSolver = null;
+                }
+                finally
+                {
+                    IsStopping = false;
+                }
                 RaisePropertyChanged( "IsRunning" );
             }
         }
@@ -208,7 +254,6 @@ namespace Yodii.Engine
         {
             return StaticResolutionOnly( false, false );
         }
-
 
         /// <summary>
         /// Attempts to start a service or a plugin. 
@@ -269,7 +314,6 @@ namespace Yodii.Engine
             YodiiCommand command = new YodiiCommand( false, pluginOrService.FullName, pluginOrService.IsPlugin, StartDependencyImpact.Unknown, null );
             return AddYodiiCommand( command );
         }
-
 
         /// <summary>
         /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).

@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Tests\Yodii.Engine.Tests\Tests\YodiiEngineTests.cs) is part of CiviKey. 
 *  
@@ -35,70 +35,141 @@ namespace Yodii.Engine.Tests
     class YodiiEngineTests
     {
         [Test]
-        public void EngineCreationTest()
+        public void checking_starting_and_stopping_parameters_and_state()
         {
-            BuggyYodiiEngineHostMock fakeMock = null;
-            var ex = Assert.Throws<ArgumentNullException>(() => new YodiiEngine(fakeMock));
-            Assert.That(ex.ParamName, Is.EqualTo( "host" ));
+            Assert.That( Assert.Throws<ArgumentNullException>( () => new YodiiEngine( null ) ).ParamName, Is.EqualTo( "host" ) );
 
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
             Assert.That( engine.Host, Is.Not.Null );
             Assert.That( engine.IsRunning, Is.False );
             Assert.That( engine.Configuration, Is.Not.Null );
+            Assert.That( engine.LiveInfo, Is.Not.Null );
+            Assert.That( engine.LiveInfo.Plugins.Count, Is.EqualTo( 0 ) );
+            Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 0 ) );
+
+            Assert.That( Assert.Throws<ArgumentNullException>( () => engine.SetDiscoveredInfo( null ) ).ParamName, Is.EqualTo( "info" ) );
+            DiscoveredInfo info = MockInfoFactory.CreateGraph003();
+            engine.SetDiscoveredInfo( info ).CheckSuccess();
+            Assert.That( engine.DiscoveredInfo == info );
+            engine.SetDiscoveredInfo( info ).CheckSuccess();
+
+            Assert.That( engine.LiveInfo.Plugins.Count, Is.EqualTo( 0 ) );
+            Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 0 ) );
+            Assert.That( engine.IsRunning, Is.False );
+            
+            engine.StartEngine().CheckSuccess();
+            Assert.That( engine.IsRunning );
+            Assert.That( engine.LiveInfo.Plugins.Count, Is.EqualTo( 2 ) );
+            Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 1 ) );
+            
+            engine.StartPlugin( "PluginA-1" );
+            Assert.Throws<ArgumentNullException>( () => engine.StartPlugin( null ) );
+            Assert.Throws<ArgumentException>( () => engine.StartPlugin( "Unexisiting plugin name." ) );
+            Assert.That( engine.IsRunning );
+            Assert.Throws<InvalidOperationException>( () => engine.StartEngine() );
+            engine.StopEngine();
+            Assert.That( engine.IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.Plugins.Count, Is.EqualTo( 0 ) );
+            Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 0 ) );
+            Assert.Throws<InvalidOperationException>( () => engine.StartPlugin( "PluginA-1" ) );
         }
 
         [Test]
-        public void EngineUseTest()
+        public void live_info_is_bound_to_discovered_infos()
         {
             IYodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
+            DiscoveredInfo info = MockInfoFactory.CreateGraph003();
 
-            Assert.Throws<ArgumentNullException>( () => engine.SetDiscoveredInfo( null ) );
+            engine.SetDiscoveredInfo( info ).CheckSuccess();
+            engine.StartEngine().CheckSuccess();
+            
+            PluginInfo pluginA1 = info.FindPlugin( "PluginA-1" );
+            PluginInfo pluginA2 = info.FindPlugin( "PluginA-2" );
+            ServiceInfo serviceA = info.FindService( "ServiceA" );
 
-            DiscoveredInfo discoveredInfo = MockInfoFactory.CreateGraph003();
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).PluginInfo, Is.SameAs( pluginA1 ) );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).PluginInfo, Is.SameAs( pluginA2 ) );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).ServiceInfo, Is.SameAs( serviceA ) );
 
-            IYodiiEngineResult result = engine.SetDiscoveredInfo( discoveredInfo );
-            Assert.That( result.Success, Is.True );
-            Assert.That( engine.DiscoveredInfo == discoveredInfo );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).IsRunning, Is.False );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).IsRunning, Is.False );
 
-            PluginInfo pluginA1 = discoveredInfo.FindPlugin( "PluginA-1" );
-            PluginInfo pluginA2 = discoveredInfo.FindPlugin( "PluginA-2" );
-            ServiceInfo serviceA = discoveredInfo.FindService( "ServiceA" );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).Service, Is.SameAs( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).Service, Is.SameAs( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).Generalization, Is.Null );
+
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
+
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).CurrentError, Is.Null );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).CurrentError, Is.Null );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).DisabledReason, Is.Null );
 
 
+            DiscoveredInfo otherInfo = MockInfoFactory.CreateGraph003();
+            PluginInfo otherPluginA1 = otherInfo.FindPlugin( "PluginA-1" );
+            PluginInfo otherPluginA2 = otherInfo.FindPlugin( "PluginA-2" );
+            ServiceInfo otherServiceA = otherInfo.FindService( "ServiceA" );
 
-            result = engine.StartEngine();
-            Assert.That( result.Success, Is.True );
-            Assert.That( engine.LiveInfo, Is.Not.Null );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).PluginInfo, Is.EqualTo( pluginA1 ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).PluginInfo, Is.EqualTo( pluginA2 ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ServiceInfo, Is.EqualTo( serviceA ) );
-
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).IsRunning, Is.False );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).IsRunning, Is.False );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).IsRunning, Is.False );
-
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
-
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).Service, Is.EqualTo( engine.LiveInfo.FindService( serviceA.ServiceFullName ) ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).Generalization, Is.Null );
-
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).ConfigOriginalStatus, Is.EqualTo( ConfigurationStatus.Optional ) );
-
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).WantedConfigSolvedStatus, Is.EqualTo( SolvedConfigurationStatus.Runnable ) );
-
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA1.PluginFullName ).CurrentError, Is.Null );
-            Assert.That( engine.LiveInfo.FindPlugin( pluginA2.PluginFullName ).CurrentError, Is.Null );
-            Assert.That( engine.LiveInfo.FindService( serviceA.ServiceFullName ).DisabledReason, Is.Null );
+            engine.SetDiscoveredInfo( otherInfo ).CheckSuccess();
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-1" ).PluginInfo, Is.Not.SameAs( pluginA1 ).And.SameAs( otherPluginA1 ) );
+            Assert.That( engine.LiveInfo.FindPlugin( "PluginA-2" ).PluginInfo, Is.Not.SameAs( pluginA2 ).And.SameAs( otherPluginA2 ) );
+            Assert.That( engine.LiveInfo.FindService( "ServiceA" ).ServiceInfo, Is.Not.SameAs( serviceA ).And.SameAs( otherServiceA ) );
 
             engine.StopEngine();
+        }
 
+        [Test]
+        public void post_actions_reentrancy_is_supported()
+        {
+            var host = new BuggyYodiiEngineHostMock();
+            var engine = new YodiiEngine( host );
+            var info = MockInfoFactory.CreateGraph003();
+            engine.SetDiscoveredInfo( info );
+            engine.StartEngine().CheckSuccess();
+
+            var pluginA1 = engine.LiveInfo.FindPlugin( "PluginA-1" );
+            var pluginA2 = engine.LiveInfo.FindPlugin( "PluginA-2" );
+            var serviceA = engine.LiveInfo.FindService( "ServiceA" );
+            
+            int callCount = 0;
+            host.PostActionToAdd = e => 
+            {
+                Assert.That( serviceA.IsRunning );
+                ++callCount;
+                if( callCount == 1 )
+                {
+                    Assert.That( pluginA1.IsRunning && !pluginA2.IsRunning );
+                    e.StartPlugin( "PluginA-2" ).CheckSuccess();
+                    Assert.That( pluginA2.IsRunning && !pluginA1.IsRunning );
+                }
+                else if( callCount == 2 )
+                {
+                    Assert.That( pluginA2.IsRunning && !pluginA1.IsRunning );
+                    e.StartPlugin( "PluginA-1" ).CheckSuccess();
+                    Assert.That( pluginA1.IsRunning && !pluginA2.IsRunning );
+                }
+                else if( callCount == 3 )
+                {
+                    Assert.That( pluginA1.IsRunning && !pluginA2.IsRunning );
+                    e.StartPlugin( "PluginA-2" ).CheckSuccess();
+                    Assert.That( pluginA2.IsRunning && !pluginA1.IsRunning );
+                }
+            };
+
+            engine.StartPlugin( "PluginA-1" ).CheckSuccess();
+            Assert.That( pluginA2.IsRunning && !pluginA1.IsRunning );
+            Assert.That( callCount, Is.EqualTo( 4 ) );
         }
     }
 }

@@ -92,18 +92,18 @@ namespace Yodii.Host
 
         class Event : ServiceStatusChangedEventArgs
         {
-            readonly IList<Action<IYodiiEngine>> _postStart;
+            readonly Action<Action<IYodiiEngine>> _postStart;
             readonly ServiceProxyBase _service;
             readonly PluginProxyBase _originalImpl;
             readonly PluginProxyBase _swappingPlugin;
 
-            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, IList<Action<IYodiiEngine>> postStart )
+            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, Action<Action<IYodiiEngine>> postStartActionsCollector )
             {
                 Debug.Assert( s._status != ServiceStatus.StoppingSwapped || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
                 _service = s;
                 _originalImpl = s._impl;
                 _swappingPlugin = swappingPlugin;
-                _postStart = postStart;
+                _postStart = postStartActionsCollector;
             }
 
             public override bool IsSwapping
@@ -131,21 +131,24 @@ namespace Yodii.Host
             {
                 Action<IYodiiEngine> a = e => 
                 {
-                    ILiveYodiiItem item = e.LiveInfo.FindYodiiItem( serviceOrPluginFullName );
-                    if( item != null && item.Capability.CanStartWith( impact ) )
+                    if( e.IsRunning )
                     {
-                        var r = e.StartItem( item, impact );
-                        if( r.Success )
+                        ILiveYodiiItem item = e.LiveInfo.FindYodiiItem( serviceOrPluginFullName );
+                        if( item != null && item.Capability.CanStartWith( impact ) )
                         {
-                            if( onSuccess != null ) onSuccess();
-                        }
-                        else
-                        {
-                            if( onError != null ) onError( r );
+                            var r = e.StartItem( item, impact );
+                            if( r.Success )
+                            {
+                                if( onSuccess != null ) onSuccess();
+                            }
+                            else
+                            {
+                                if( onError != null ) onError( r );
+                            }
                         }
                     }
                 };
-                _postStart.Add( a );
+                _postStart( a );
             }
         }
 
@@ -163,12 +166,12 @@ namespace Yodii.Host
             internal set { _status = value; }
 		}
 
-        internal void RaiseStatusChanged( IList<Action<IYodiiEngine>> postStart, PluginProxyBase swappingPlugin = null )
+        internal void RaiseStatusChanged( Action<Action<IYodiiEngine>> postStartActionsCollector, PluginProxyBase swappingPlugin = null )
 		{
             var h = ServiceStatusChanged;
             if( h != null )
 			{
-                Event ev = new Event( this, swappingPlugin, postStart );
+                Event ev = new Event( this, swappingPlugin, postStartActionsCollector );
                 foreach( EventHandler<ServiceStatusChangedEventArgs> f in h.GetInvocationList() )
                 {
                     f( this, ev );

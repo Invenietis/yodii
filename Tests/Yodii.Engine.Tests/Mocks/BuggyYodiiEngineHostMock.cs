@@ -44,7 +44,9 @@ namespace Yodii.Engine
         {
         }
 
-        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        public Action<IYodiiEngine> PostActionToAdd;
+
+        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> actionCollector )
         {
             Debug.Assert( toDisable.Any() || toStop.Any() || toStart.Any() );
 
@@ -68,7 +70,7 @@ namespace Yodii.Engine
                     pluginErrors.Add( cancelInfo );
                 }
             }
-
+            if( actionCollector != null && PostActionToAdd != null ) actionCollector( PostActionToAdd );
             return new Result( pluginErrors.AsReadOnlyList(), actions.AsReadOnlyList() );
         }
 

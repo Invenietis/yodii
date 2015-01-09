@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Lab\LabStateManager.cs) is part of CiviKey. 
 *  
@@ -373,21 +373,17 @@ namespace Yodii.Lab
 
         class Result : IYodiiEngineHostApplyResult
         {
-            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors )
             {
                 CancellationInfo = errors;
-                PostStartActions = actions;
             }
 
             public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
-
-            public IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; private set; }
         }
 
-        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> actionCollector )
         {
             List<IPluginHostApplyCancellationInfo> cancellationInfos = new List<IPluginHostApplyCancellationInfo>();
-            List<Action<IYodiiEngine>> postStartActions = new List<Action<IYodiiEngine>>();
 
             // TODO
             Console.WriteLine( "Disabling:" );
@@ -420,7 +416,7 @@ namespace Yodii.Lab
                 }
             }
 
-            return new Result( cancellationInfos.AsReadOnlyList(), postStartActions.AsReadOnlyList());
+            return new Result( cancellationInfos.AsReadOnlyList());
         }
 
         #endregion
