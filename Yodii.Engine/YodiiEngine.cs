@@ -224,11 +224,11 @@ namespace Yodii.Engine
             Debug.Assert( callerKey != null );
             if( IsRunning )
             {
-                return DoDynamicResolution( _currentSolver, cmd => cmd.CallerKey != callerKey, null );
+                return DoDynamicResolution( _currentSolver, c => c.CallerKey != callerKey, null );
             }
             else
             {
-                _yodiiCommands.RemoveWhereAndReturnsRemoved( cmd => cmd.CallerKey == callerKey ).Count();
+                _yodiiCommands.RemoveWhereAndReturnsRemoved( c => c.CallerKey == callerKey ).Count();
                 return _successResult;
             }
         }
@@ -254,6 +254,8 @@ namespace Yodii.Engine
         {
             return StaticResolutionOnly( false, false );
         }
+
+        #region Start/Stop item, plugin and service methods.
 
         /// <summary>
         /// Attempts to start a service or a plugin. 
@@ -282,8 +284,8 @@ namespace Yodii.Engine
             {
                 throw new InvalidOperationException( "You must call Capability.CanStart with the wanted impact and ensure that it returns true before calling Start." );
             }
-            YodiiCommand command = new YodiiCommand( true, pluginOrService.FullName, pluginOrService.IsPlugin, impact, null );
-            return AddYodiiCommand( command );
+            var cmd = new YodiiCommand( true, pluginOrService.FullName, pluginOrService.IsPlugin, impact, null );
+            return AddYodiiCommand( cmd );
         }
 
         /// <summary>
@@ -311,9 +313,83 @@ namespace Yodii.Engine
             {
                 throw new InvalidOperationException( "You must call Capability.CanStop and ensure that it returns true before calling Stop." );
             }
-            YodiiCommand command = new YodiiCommand( false, pluginOrService.FullName, pluginOrService.IsPlugin, StartDependencyImpact.Unknown, null );
-            return AddYodiiCommand( command );
+            var cmd = new YodiiCommand( false, pluginOrService.FullName, pluginOrService.IsPlugin, StartDependencyImpact.Unknown, null );
+            return AddYodiiCommand( cmd );
         }
+
+        /// <summary>
+        /// Attempts to start a plugin. 
+        /// </summary>
+        /// <param name="pluginFullName">Name of the plugin to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
+        public IYodiiEngineResult StartPlugin( string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        {
+            if( !IsRunning ) throw new InvalidOperationException();
+            var p = _liveInfo.FindPlugin( pluginFullName );
+            if( p == null ) throw new ArgumentException();
+            return StartItem( p, impact );
+        }
+
+        /// <summary>
+        /// Attempts to start a service. 
+        /// </summary>
+        /// <param name="serviceFullName">Name of the service to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully started or not.</returns>
+        public IYodiiEngineResult StartService( string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown )
+        {
+            if( !IsRunning ) throw new InvalidOperationException();
+            var s = _liveInfo.FindService( serviceFullName );
+            if( s == null ) throw new ArgumentException();
+            return StartItem( s, impact );
+        }
+
+        /// <summary>
+        /// Attempts to stop a service or a plugin. 
+        /// </summary>
+        /// <param name="pluginFullName">Name of the plugin to stop.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        public IYodiiEngineResult StopPlugin( string pluginFullName )
+        {
+            if( !IsRunning ) throw new InvalidOperationException();
+            var p = _liveInfo.FindPlugin( pluginFullName );
+            if( p == null ) throw new ArgumentException();
+            return StopItem( p );
+        }
+
+        /// <summary>
+        /// Attempts to stop a service. 
+        /// </summary>
+        /// <param name="serviceFullName">Name of the service to stop.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully stopped or not.</returns>
+        public IYodiiEngineResult StopService( string serviceFullName )
+        {
+            if( !IsRunning ) throw new InvalidOperationException();
+            var s = _liveInfo.FindService( serviceFullName );
+            if( s == null ) throw new ArgumentException();
+            return StopItem( s );
+        }
+
+        #endregion
 
         /// <summary>
         /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).

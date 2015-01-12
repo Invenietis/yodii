@@ -352,7 +352,7 @@ namespace Yodii.Engine
             ///  Following code checks that each runnable, one by one, can CoRun with this plugin.
             ///  This was deemed confusing to the user: this does not guaranty that the Start of a Service
             ///  when another dependency is running, will not stop this plugin.
-            ///  Preventing suicide seems to require more things like a set of CoRunnig( i1 ... in ) that states
+            ///  Preventing suicide seems to require more things like a set of CoRunning( i1 ... in ) that states
             ///  that nothing prevents any of these sets of items to be running together.
             ///    
             ///     HashSet<IYodiiItemData> runnable = new HashSet<IYodiiItemData>();
@@ -401,6 +401,10 @@ namespace Yodii.Engine
             /// The current IService<T> (the proxy) exposes the Start()/Stop() methods. This is annoying: we don't know/control who is calling us.
             /// One need an internal IInternalYodiiEngine interface that will be injected into each plugin (if they require it) that captures the plugin identity
             /// and exposes Start/Stop capabilities and, ideally, access to IInternalLiveInfo observable models without Start/Stop capabilities.
+            /// 
+            /// 2015-10-01: Start/Stop have been moved away from ILive info objects to IYodiiEngine. Live info can now be exposed directly to plugins, they do not
+            /// have to be per-plugin.
+            /// 
             ///
         //    return true;
         //}

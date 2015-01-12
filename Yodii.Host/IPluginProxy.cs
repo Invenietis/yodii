@@ -29,6 +29,10 @@ using Yodii.Model;
 
 namespace Yodii.Host
 {
+    /// <summary>
+    /// Exposes plugin wrapper readonly informations.
+    /// This is mainly for debugging/tests purposes that this interface in exposed.
+    /// </summary>
     public interface IPluginProxy
     {
         /// <summary>

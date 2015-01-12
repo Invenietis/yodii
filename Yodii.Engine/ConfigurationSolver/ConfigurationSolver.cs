@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Engine\ConfigurationSolver\ConfigurationSolver.cs) is part of CiviKey. 
 *  
@@ -296,7 +296,7 @@ namespace Yodii.Engine
 
             foreach( var previous in pastCommands )
             {
-                if( newOne == null || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
+                if( newOne == null || newOne.PluginFullName != previous.PluginFullName || newOne.ServiceFullName != previous.ServiceFullName )
                 {
                     if( ApplyAndTellMeIfCommandMustBeKept( previous, false ) )
                     {

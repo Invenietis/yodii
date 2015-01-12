@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Model\IYodiiEngineBase.cs) is part of CiviKey. 
 *  
@@ -101,6 +101,53 @@ namespace Yodii.Model
         /// </exception>
         IYodiiEngineResult StopItem( ILiveYodiiItem pluginOrService );
 
+        /// <summary>
+        /// Attempts to start a plugin. 
+        /// </summary>
+        /// <param name="pluginFullName">Name of the plugin to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
+        IYodiiEngineResult StartPlugin( string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown );
+
+        /// <summary>
+        /// Attempts to stop a plugin. 
+        /// </summary>
+        /// <param name="pluginFullName">Name of the plugin to stop.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        IYodiiEngineResult StopPlugin( string pluginFullName );
+
+        /// <summary>
+        /// Attempts to start a service. 
+        /// </summary>
+        /// <param name="serviceFullName">Name of the service to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully started or not.</returns>
+        IYodiiEngineResult StartService( string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown );
+
+        /// <summary>
+        /// Attempts to stop a service. 
+        /// </summary>
+        /// <param name="serviceFullName">Name of the service to stop.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully stopped or not.</returns>
+        IYodiiEngineResult StopService( string serviceFullName );
 
     }
 }
