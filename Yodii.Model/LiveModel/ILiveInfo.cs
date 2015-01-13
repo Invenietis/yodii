@@ -33,7 +33,7 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Live information of a running engine.
-    /// This is the observable façade to the whole <see cref="IYodiiEngine"/>.
+    /// This is the observable façade to the whole <see cref="IYodiiEngineExternal"/>.
     /// </summary>
     /// <remarks>
     /// Gives information about which services and plugins were successfully resolved and started and supports 

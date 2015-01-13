@@ -169,6 +169,24 @@ namespace Yodii.Host {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Host.Engine must be set before starting the Engine..
+        /// </summary>
+        internal static string HostEngineMustBeSetBeforeStartingTheEngine {
+            get {
+                return ResourceManager.GetString("HostEngineMustBeSetBeforeStartingTheEngine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host.Engine must be set only once..
+        /// </summary>
+        internal static string HostEngineMustBeSetOnlyOnce {
+            get {
+                return ResourceManager.GetString("HostEngineMustBeSetOnlyOnce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Interface must extend IYodiiService to be a Dynamic Service..
         /// </summary>
         internal static string InterfaceMustExtendIYodiiService {

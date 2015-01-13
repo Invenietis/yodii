@@ -87,7 +87,7 @@ namespace Yodii.Engine.Tests.Mocks
                 }
             }
 
-            e.SetDiscoveredInfo( d );
+            e.Configuration.SetDiscoveredInfo( d );
 
             return e;
         }

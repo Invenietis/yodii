@@ -38,7 +38,7 @@ namespace Yodii.Model
         /// <summary>
         /// Gets the engine that generated this result.
         /// </summary>
-        IYodiiEngine Engine { get; }
+        IYodiiEngineExternal Engine { get; }
 
         /// <summary>
         /// Gets whether the operation is a success: <see cref="ConfigurationFailureResult"/>, <see cref="StaticFailureResult"/> and <see cref="HostFailureResult"/> are null.

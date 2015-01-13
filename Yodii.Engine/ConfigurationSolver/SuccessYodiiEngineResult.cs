@@ -31,7 +31,7 @@ namespace Yodii.Engine
 {
     class SuccessYodiiEngineResult : IYodiiEngineResult
     {
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
 
         public static IYodiiEngineResult NullEngineSuccessResult = new SuccessYodiiEngineResult( null );
 
@@ -40,7 +40,7 @@ namespace Yodii.Engine
             _engine = engine;
         }
 
-        public IYodiiEngine Engine
+        public IYodiiEngineExternal Engine
         {
             get { return _engine; }
         }

@@ -55,7 +55,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             ResetConfiguration();
         }
 
-        internal IYodiiEngine Engine { get { return _engine; } }
+        internal IYodiiEngineExternal Engine { get { return _engine; } }
 
         /// <summary>
         /// Sets the discovered info. Once done, start the engine with Engine.Start().
@@ -66,7 +66,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             IAssemblyInfo ia = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.Wpf.dll" ) );
             IAssemblyInfo ia2 = _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.WpfHostDemo.exe" ) );
             IDiscoveredInfo info = _discoverer.GetDiscoveredInfo();
-            IYodiiEngineResult discoveredInfoResult = _engine.SetDiscoveredInfo( info );
+            IYodiiEngineResult discoveredInfoResult = _engine.Configuration.SetDiscoveredInfo( info );
             Debug.Assert( discoveredInfoResult.Success );
         }
 
@@ -118,7 +118,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
         /// <returns></returns>
         object ResolveUnknownType( Type t )
         {
-            if( typeof( IYodiiEngine ).IsAssignableFrom( t ) ) return _engine;
+            if( typeof( IYodiiEngineExternal ).IsAssignableFrom( t ) ) return _engine;
 
             throw new InvalidOperationException( String.Format( "Could not resolve unknown type '{0}'", t.FullName ) );
         }

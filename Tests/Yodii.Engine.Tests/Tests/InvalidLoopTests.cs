@@ -318,7 +318,7 @@ namespace Yodii.Engine.Tests
             d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2" ), fromPlugin1ToService2 );
 
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( d );
+            engine.Configuration.SetDiscoveredInfo( d );
             engine.Configuration.Layers.Default.Items.Set( "Plugin1", plugin1Config, plugin1Impact );
 
             return engine;
@@ -356,7 +356,7 @@ namespace Yodii.Engine.Tests
             */
             #endregion
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( MockInfoFactory.CreateGraphDynamicInvalidLoop() );
+            engine.Configuration.SetDiscoveredInfo( MockInfoFactory.CreateGraphDynamicInvalidLoop() );
             RunAnotherLoop( engine, ConfigurationStatus.Optional );
             RunAnotherLoop( engine, ConfigurationStatus.Runnable );
             RunAnotherLoop( engine, ConfigurationStatus.Running );
@@ -549,7 +549,7 @@ namespace Yodii.Engine.Tests
             d.FindPlugin( "Plugin3" ).AddServiceReference( d.FindService( "Service2" ), DependencyRequirement.Running );
 
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( d );
+            engine.Configuration.SetDiscoveredInfo( d );
             engine.Configuration.Layers.Default.Items.Set( "Service1", service1Config, service1Impact );
             return engine;
         }
@@ -703,7 +703,7 @@ namespace Yodii.Engine.Tests
             d.FindService( ">Service1" ).Generalization = d.FindService( "Service2" );
 
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( d );
+            engine.Configuration.SetDiscoveredInfo( d );
 
             return engine;
         }

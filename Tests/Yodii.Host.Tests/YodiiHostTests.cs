@@ -47,7 +47,7 @@ namespace Yodii.Host.Tests
         {
             YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
+            engine.Configuration.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
             IYodiiEngineResult result = engine.StartEngine();
             Assert.That( result.Success );
 
@@ -96,7 +96,7 @@ namespace Yodii.Host.Tests
             Assert.Throws<ServiceNotAvailableException>( (delegate() { int i = service.CalledMethods.Count; }), "Since the service has not implementation yet: ServiceNotAvailableException." );
 
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
+            engine.Configuration.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 
             var result = engine.StartEngine();
             Assert.That( result.Success );
@@ -128,7 +128,7 @@ namespace Yodii.Host.Tests
             StandardDiscoverer discoverer = new StandardDiscoverer();
             discoverer.ReadAssembly( Assembly.GetExecutingAssembly().Location );
             IDiscoveredInfo info2 = discoverer.GetDiscoveredInfo();
-            engine.SetDiscoveredInfo( info2 );
+            engine.Configuration.SetDiscoveredInfo( info2 );
             // Test that the pluginproxy hasn't changed after a getDiscoveredInfo
             IPluginProxy proxy2 = host.FindLoadedPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
             var pLive2 = engine.LiveInfo.FindPlugin( "Yodii.Host.Tests.TrackMethodCallsPlugin" );
@@ -144,7 +144,7 @@ namespace Yodii.Host.Tests
         {
             YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
+            engine.Configuration.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
             engine.Configuration.Layers.Default.Items.Set( "Yodii.Host.Tests.ITrackMethodCallsPluginService", ConfigurationStatus.Running );
 
             var result = engine.StartEngine();
@@ -215,7 +215,7 @@ namespace Yodii.Host.Tests
         {
             YodiiHost host = new YodiiHost();
             YodiiEngine engine = new YodiiEngine( host );
-            engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
+            engine.Configuration.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 
             var p = new PluginWrapper<FailureTransitionPluginDisposable>( engine, host );
 

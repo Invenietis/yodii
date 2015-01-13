@@ -289,16 +289,17 @@ namespace Yodii.Engine
             List<YodiiCommand> commands = new List<YodiiCommand>();
             if( newOne != null )
             {
-                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne, true );
+                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne, 0 );
                 Debug.Assert( alwaysTrue, "The newly added command is necessarily okay." );
                 commands.Add( newOne );
             }
 
+            int iCommand = 0;
             foreach( var previous in pastCommands )
             {
                 if( newOne == null || newOne.PluginFullName != previous.PluginFullName || newOne.ServiceFullName != previous.ServiceFullName )
                 {
-                    if( ApplyAndTellMeIfCommandMustBeKept( previous, false ) )
+                    if( ApplyAndTellMeIfCommandMustBeKept( previous, ++iCommand ) )
                     {
                         commands.Add( previous );
                     }
@@ -343,7 +344,7 @@ namespace Yodii.Engine
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
         
-        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, bool isFirst )
+        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, int idxCommand )
         {
             // If the plugin does not exist, we keep the command.
             bool success = true;
@@ -353,7 +354,7 @@ namespace Yodii.Engine
                 ServiceData s;
                 if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
                 {
-                    success = cmd.Start ? s.DynamicStartByCommand( (cmd.Impact | s.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : s.DynamicStopByCommand();
+                    success = cmd.Start ? s.DynamicStartByCommand( (cmd.Impact | s.ConfigSolvedImpact).ClearUselessTryBits(), idxCommand == 0 ) : s.DynamicStopByCommand();
                 }
             }
             else
@@ -361,10 +362,10 @@ namespace Yodii.Engine
                 PluginData p;
                 if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
                 {
-                    success = cmd.Start ? p.DynamicStartByCommand( (cmd.Impact | p.ConfigSolvedImpact).ClearUselessTryBits(), isFirst ) : p.DynamicStopByCommand();
+                    success = cmd.Start ? p.DynamicStartByCommand( (cmd.Impact | p.ConfigSolvedImpact).ClearUselessTryBits(), idxCommand == 0 ) : p.DynamicStopByCommand();
                 }
             }
-            return success;
+            return success || idxCommand < 50;
         }
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )

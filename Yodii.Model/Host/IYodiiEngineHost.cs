@@ -47,6 +47,6 @@ namespace Yodii.Model
         /// Null when the engine is stopping (<paramref name="toDisable"/> contains all the plugins in this case). 
         /// </param>
         /// <returns>List of exceptions encountered while each plugin changed state.</returns>
-        IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> postActionsCollector ); 
+        IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> postActionsCollector ); 
     }
 }

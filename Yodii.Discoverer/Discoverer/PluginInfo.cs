@@ -32,33 +32,42 @@ using System.Runtime.InteropServices;
 
 namespace Yodii.Discoverer
 {
-    internal sealed class PluginInfo : IPluginInfo, IDiscoveredItem
+    internal sealed class PluginInfo : IPluginInfo, IDiscoveredItem, IPluginCtorInfo
     {
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
-        List<IServiceReferenceInfo> _serviceReferences;
-        IServiceInfo _service;
-        string _errorMessage;
+        readonly IReadOnlyList<IServiceReferenceInfo> _serviceReferences;
+        readonly int _parameterCount;
+        readonly IReadOnlyList<IPluginCtorKnownParameterInfo> _knownParameters;
+        readonly IServiceInfo _service;
+        readonly string _errorMessage;
 
-        internal PluginInfo( string pluginFullName, IAssemblyInfo assemblyInfo )
+        internal PluginInfo( string pluginFullName, IAssemblyInfo assemblyInfo, IServiceInfo implService, List<ServiceReferenceInfo> services, int ctorParameterCount, List<PluginInfoKnownParameter> knownParameters )
         {
             Debug.Assert( !String.IsNullOrEmpty( pluginFullName ) );
             Debug.Assert( assemblyInfo != null );
 
             _pluginFullName = pluginFullName;
             _assemblyInfo = assemblyInfo;
-            _serviceReferences = new List<IServiceReferenceInfo>();
+            _service = implService;
+            _parameterCount = ctorParameterCount;
+            if( services != null )
+            {
+                foreach( var sRef in services ) sRef.Owner = this;
+                _serviceReferences = services.ToReadOnlyList();
+            }
+            else _serviceReferences = CKReadOnlyListEmpty<ServiceReferenceInfo>.Empty;
+            _knownParameters = knownParameters != null ? knownParameters.ToReadOnlyList() : CKReadOnlyListEmpty<PluginInfoKnownParameter>.Empty;
         }
 
-        internal void BindServiceRequirement( IServiceReferenceInfo reference )
+        internal PluginInfo( string pluginFullName, IAssemblyInfo assemblyInfo, string errorMessage )
         {
-            Debug.Assert( !_serviceReferences.Contains( reference ) );
-            Debug.Assert( reference.Owner == this );
-
-            _serviceReferences.Add( reference );
+            _pluginFullName = pluginFullName;
+            _assemblyInfo = assemblyInfo;
+            _errorMessage = errorMessage;
+            _serviceReferences = CKReadOnlyListEmpty<ServiceReferenceInfo>.Empty;
+            _knownParameters = CKReadOnlyListEmpty<PluginInfoKnownParameter>.Empty;
         }
-
-        #region IPluginInfo Members
 
         public string PluginFullName
         {
@@ -70,7 +79,7 @@ namespace Yodii.Discoverer
             get { return _assemblyInfo; }
         }
 
-        public List<IServiceReferenceInfo> ServiceReferencess
+        public IReadOnlyList<IServiceReferenceInfo> ServiceReferences
         {
             get { return _serviceReferences; }
         }
@@ -78,10 +87,22 @@ namespace Yodii.Discoverer
         public IServiceInfo Service
         {
             get { return _service; }
-            internal set { _service = value; }
         }
 
-        #endregion
+        public IPluginCtorInfo ConstructorInfo
+        {
+            get { return this; }
+        }
+
+        int IPluginCtorInfo.ParameterCount
+        {
+            get { return _parameterCount; }
+        }
+
+        IReadOnlyList<IPluginCtorKnownParameterInfo> IPluginCtorInfo.KnownParameters
+        {
+            get { return _knownParameters; }
+        }
 
         public bool HasError
         {
@@ -91,12 +112,9 @@ namespace Yodii.Discoverer
         public string ErrorMessage
         {
             get { return _errorMessage; }
-            set { _errorMessage = value; }
         }
 
-        IReadOnlyList<IServiceReferenceInfo> IPluginInfo.ServiceReferences
-        {
-            get { return _serviceReferences.AsReadOnlyList(); }
-        }
+
+
     }
 }

@@ -92,12 +92,12 @@ namespace Yodii.Host
 
         class Event : ServiceStatusChangedEventArgs
         {
-            readonly Action<Action<IYodiiEngine>> _postStart;
+            readonly Action<Action<IYodiiEngineExternal>> _postStart;
             readonly ServiceProxyBase _service;
             readonly PluginProxyBase _originalImpl;
             readonly PluginProxyBase _swappingPlugin;
 
-            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, Action<Action<IYodiiEngine>> postStartActionsCollector )
+            public Event( ServiceProxyBase s, PluginProxyBase swappingPlugin, Action<Action<IYodiiEngineExternal>> postStartActionsCollector )
             {
                 Debug.Assert( s._status != ServiceStatus.StoppingSwapped || swappingPlugin != null, "Swapping ==> swappingPlugin != null" );
                 _service = s;
@@ -129,7 +129,7 @@ namespace Yodii.Host
 
             public override void TryStart( string serviceOrPluginFullName, StartDependencyImpact impact, Action onSuccess, Action<IYodiiEngineResult> onError )
             {
-                Action<IYodiiEngine> a = e => 
+                Action<IYodiiEngineExternal> a = e => 
                 {
                     if( e.IsRunning )
                     {
@@ -166,7 +166,7 @@ namespace Yodii.Host
             internal set { _status = value; }
 		}
 
-        internal void RaiseStatusChanged( Action<Action<IYodiiEngine>> postStartActionsCollector, PluginProxyBase swappingPlugin = null )
+        internal void RaiseStatusChanged( Action<Action<IYodiiEngineExternal>> postStartActionsCollector, PluginProxyBase swappingPlugin = null )
 		{
             var h = ServiceStatusChanged;
             if( h != null )

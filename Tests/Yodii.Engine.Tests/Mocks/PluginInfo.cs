@@ -32,7 +32,7 @@ using CK.Core;
 
 namespace Yodii.Engine.Tests.Mocks
 {
-    public class PluginInfo : IPluginInfo
+    public class PluginInfo : IPluginInfo, IPluginCtorInfo
     {
         readonly string _pluginFullName;
         readonly IAssemblyInfo _assemblyInfo;
@@ -58,8 +58,6 @@ namespace Yodii.Engine.Tests.Mocks
             _serviceReferences.Add( reference );
         }
 
-        #region IPluginInfo Members
-
         public string PluginFullName
         {
             get { return _pluginFullName; }
@@ -82,6 +80,21 @@ namespace Yodii.Engine.Tests.Mocks
             return r;
         }
 
+        public IPluginCtorInfo ConstructorInfo
+        {
+            get { return this; }
+        }
+
+        int IPluginCtorInfo.ParameterCount
+        {
+            get { return _serviceReferences.Count; }
+        }
+
+        IReadOnlyList<IPluginCtorKnownParameterInfo> IPluginCtorInfo.KnownParameters
+        {
+            get { return CKReadOnlyListEmpty<IPluginCtorKnownParameterInfo>.Empty; }
+        }
+
         public IServiceInfo Service
         {
             get { return _service; }
@@ -92,8 +105,6 @@ namespace Yodii.Engine.Tests.Mocks
                 if ( _service != null ) ((ServiceInfo)_service).AddPlugin( this );
             }
         }
-
-        #endregion
 
         public bool HasError
         {

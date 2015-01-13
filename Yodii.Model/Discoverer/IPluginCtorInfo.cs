@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Yodii.Model\Solver\IYodiiEngineStaticOnlyResult.cs) is part of CiviKey. 
+* This file (Yodii.Model\Discoverer\IPluginInfo.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -25,17 +25,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
     /// <summary>
-    /// Exposes information specific to <see cref="IYodiiEngineExternal.StaticResolutionOnly"/> method.
+    /// Describes the plugin constructor that has been selected.
     /// </summary>
-    public interface IYodiiEngineStaticOnlyResult : IYodiiEngineResult
+    public interface IPluginCtorInfo
     {
         /// <summary>
-        /// Always gives access to the solved configuration, be the result on success or on failure.
+        /// Gets the number of parameters of the selected constructor.
         /// </summary>
-        IStaticSolvedConfiguration StaticSolvedConfiguration { get; }
+        int ParameterCount { get; }
+
+        /// <summary>
+        /// Gets the subset of known parameters.
+        /// This relies on conventions (even services already described in <see cref="IPluginInfo.IServiceReferenceInfo"/> may appear here).
+        /// Standard <see cref="IDiscoverer"/> currently only detects "IActivityMonitor" and "IYodiiEngine" parameters.
+        /// </summary>
+        IReadOnlyList<IPluginCtorKnownParameterInfo> KnownParameters { get; }
     }
 }

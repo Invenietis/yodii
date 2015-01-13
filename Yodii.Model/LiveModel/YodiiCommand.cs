@@ -34,6 +34,7 @@ namespace Yodii.Model
     /// <summary>
     /// Immutable object that describes the start or stop of a plugin or a service.
     /// </summary>
+    [Serializable]
     public class YodiiCommand
     {
         readonly string _callerKey;

@@ -1,4 +1,4 @@
-#region LGPL License
+﻿#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Model\IYodiiEngine.cs) is part of CiviKey. 
 *  
@@ -32,44 +32,115 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Yodii engine is the primary object of Yodii.
-    /// It is in charge of maintaining coherency among available plugins and services, their configuration and the evolution at runtime.
+    /// Yodii engine base interface for <see cref="IYodiiEngineExternal"/> and <see cref="IInnerYodiiEngine"/>.
+    /// It exposes all relevant information to the external or internal world thanks to its <see cref="LiveInfo"/>.
     /// </summary>
-    public interface IYodiiEngine : IYodiiEngineBase, INotifyPropertyChanged
+    public interface IYodiiEngine
     {
         /// <summary>
-        /// Whether this engine is currently running.
+        /// Gets the configuration: gives access to static configuration that will 
+        /// necessarily be always satisfied.
         /// </summary>
-        bool IsRunning { get; }
+        IConfigurationManager Configuration { get; }
+        
+        /// <summary>
+        /// Live information about the running services and plugins, when the engine is started.
+        /// </summary>
+        ILiveInfo LiveInfo { get; }
 
         /// <summary>
-        /// Starts the engine (that must be stopped), performs all possible resolutions,
-        /// and begins monitoring configuration for changes.
+        /// Attempts to start a service or a plugin. 
         /// </summary>
-        /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
-        /// <returns>Engine start result.</returns>
-        /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
-        IYodiiEngineResult StartEngine( IEnumerable<YodiiCommand> persistedCommands = null );
-
-        /// <summary>
-        /// Stops the engine: stops all plugins and stops monitoring configuration.
-        /// </summary>
-        void StopEngine();
-
-        /// <summary>
-        /// Triggers the static resolution of the graph (with the current <see cref="IYodiiEngineBase.Configuration">Configuration</see>).
-        /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
-        /// </summary>
-        /// <returns>
+        /// <param name="pluginOrService">The plugin or service live object to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <param name="callerKey">Identifier of the caller. Can be any string. It is the plugin full name when called from a plugin.</param>
+        /// <exception cref="InvalidOperationException">
         /// <para>
-        /// The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an 
-        /// available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.
+        /// The <see cref="ILiveYodiiItem.Capability">pluginOrService.Capability</see> property <see cref="ILiveRunCapability.CanStart"/> 
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
         /// </para>
+        /// or
         /// <para>
-        /// This method is useful only for advanced scenarios (for instance before starting the engine).
+        /// This engine is not running.
         /// </para>
-        /// </returns>
-        IYodiiEngineStaticOnlyResult StaticResolutionOnly();
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// The parameter <paramref name="pluginOrService"/> is null.
+        /// </exception>
+        /// <returns>Result detailing whether the service or plugin was successfully started or not.</returns>
+        IYodiiEngineResult StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null );
+
+        /// <summary>
+        /// Attempts to stop this service or plugin.
+        /// </summary>
+        /// <param name="pluginOrService">The plugin or service live object to stop.</param>
+        /// <param name="callerKey">Identifier of the caller. Can be any string. It is the plugin full name when called from a plugin.</param>
+        /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// <para>
+        /// The <see cref="ILiveYodiiItem.Capability">pluginOrService.Capability</see> property <see cref="ILiveRunCapability.CanStop"/> must be true.
+        /// </para>
+        /// or
+        /// <para>
+        /// This engine is not running.
+        /// </para>
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// The parameter <paramref name="pluginOrService"/> is null.
+        /// </exception>
+        IYodiiEngineResult StopItem( ILiveYodiiItem pluginOrService, string callerKey = null );
+
+        /// <summary>
+        /// Attempts to start a plugin. 
+        /// </summary>
+        /// <param name="pluginFullName">Name of the plugin to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <param name="callerKey">Identifier of the caller. Can be any string. It is the plugin full name when called from a plugin.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
+        IYodiiEngineResult StartPlugin( string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null );
+
+        /// <summary>
+        /// Attempts to stop a plugin. 
+        /// </summary>
+        /// <param name="pluginFullName">Name of the plugin to stop.</param>
+        /// <param name="callerKey">Identifier of the caller. Can be any string. It is the plugin full name when called from a plugin.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The plugin must exist.</exception>
+        /// <returns>Result detailing whether the service or plugin was successfully stopped or not.</returns>
+        IYodiiEngineResult StopPlugin( string pluginFullName, string callerKey = null );
+
+        /// <summary>
+        /// Attempts to start a service. 
+        /// </summary>
+        /// <param name="serviceFullName">Name of the service to start.</param>
+        /// <param name="impact">Startup impact on references.</param>
+        /// <param name="callerKey">Identifier of the caller. Can be any string. It is the plugin full name when called from a plugin.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStart"/>  property  
+        /// or <see cref="ILiveRunCapability.CanStartWith"/> method must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully started or not.</returns>
+        IYodiiEngineResult StartService( string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null );
+
+        /// <summary>
+        /// Attempts to stop a service. 
+        /// </summary>
+        /// <param name="serviceFullName">Name of the service to stop.</param>
+        /// <param name="callerKey">Identifier of the caller. Can be any string. It is the plugin full name when called from a plugin.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="ILiveYodiiItem.Capability"/>.<see cref="ILiveRunCapability.CanStop"/>' property must be true.
+        /// </exception>
+        /// <exception cref="ArgumentException">The service must exist.</exception>
+        /// <returns>Result detailing whether the service was successfully stopped or not.</returns>
+        IYodiiEngineResult StopService( string serviceFullName, string callerKey = null );
 
     }
 }

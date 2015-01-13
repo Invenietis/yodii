@@ -26,13 +26,26 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Configuration manager interface. Contains a collection of <see cref="IConfigurationLayer"/>,
+    /// Configuration manager interface. Contains teh <see cref="DiscoveredInfo"/> and a collection of <see cref="IConfigurationLayer"/>,
     /// each having a collection of <see cref="IConfigurationItem"/>.
     /// Adding and removing layers triggers configuration resolution, and project the whole configuration into a single <see cref="FinalConfiguration"/>,
     /// which is essentially a single, read-only <see cref="IConfigurationLayer"/>.
     /// </summary>
     public interface IConfigurationManager : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Gets the current information about available plugins and services.
+        /// </summary>
+        IDiscoveredInfo DiscoveredInfo { get; }
+
+        /// <summary>
+        /// Sets the discovery information that describes available plugins and services.
+        /// If <see cref="IYodiiEngineExternal.IsRunning"/> is true, this can be rejected: the result will indicate the reason of the failure.
+        /// </summary>
+        /// <param name="dicoveredInfo">New discovered information to work with. Can not be null.</param>
+        /// <returns>Engine operation result.</returns>
+        IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
+
         /// <summary>
         /// Triggered when a configuration change was not canceled, once a new FinalConfiguration is available.
         /// </summary>

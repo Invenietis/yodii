@@ -44,14 +44,14 @@ namespace Yodii.Engine
         {
         }
 
-        public Action<IYodiiEngine> PostActionToAdd;
+        public Action<IYodiiEngineExternal> PostActionToAdd;
 
-        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> actionCollector )
+        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> actionCollector )
         {
             Debug.Assert( toDisable.Any() || toStop.Any() || toStart.Any() );
 
             List<IPluginHostApplyCancellationInfo> pluginErrors = new List<IPluginHostApplyCancellationInfo>();
-            List<Action<IYodiiEngine>> actions = new List<Action<IYodiiEngine>>();
+            List<Action<IYodiiEngineExternal>> actions = new List<Action<IYodiiEngineExternal>>();
 
             IEnumerable<IPluginInfo> toCheck = toDisable.Concat( toStop ).Concat( toStart );
 
@@ -76,7 +76,7 @@ namespace Yodii.Engine
 
         class Result : IYodiiEngineHostApplyResult
         {
-            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngine>> actions )
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, IReadOnlyList<Action<IYodiiEngineExternal>> actions )
             {
                 CancellationInfo = errors;
                 PostStartActions = actions;
@@ -84,7 +84,7 @@ namespace Yodii.Engine
 
             public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
 
-            public IReadOnlyList<Action<IYodiiEngine>> PostStartActions { get; private set; }
+            public IReadOnlyList<Action<IYodiiEngineExternal>> PostStartActions { get; private set; }
         }
 
         class PluginHostApplyCancellationInfo : IPluginHostApplyCancellationInfo

@@ -145,7 +145,7 @@ namespace Yodii.ObjectExplorer.Wpf
 
         public IEnumerable<IAssemblyInfo> YodiiAssemblies
         {
-            get { return _engine.DiscoveredInfo.AssemblyInfos.Where( a => a.Plugins.Count > 0 || a.Services.Count > 0 ); }
+            get { return _engine.Configuration.DiscoveredInfo.AssemblyInfos.Where( a => a.Plugins.Count > 0 || a.Services.Count > 0 ); }
         }
 
         public IObservableReadOnlyList<ILiveServiceInfo> ServiceInfos

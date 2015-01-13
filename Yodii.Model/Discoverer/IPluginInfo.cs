@@ -53,5 +53,10 @@ namespace Yodii.Model
         /// Gets the service that this plugin implements. Null if the plugin does not implement any service.
         /// </summary>
         IServiceInfo Service { get; }
+
+        /// <summary>
+        /// Gets a desription of the constructor that has been selected and should be used to instanciate a plugin.
+        /// </summary>
+        IPluginCtorInfo ConstructorInfo { get; }
     }
 }

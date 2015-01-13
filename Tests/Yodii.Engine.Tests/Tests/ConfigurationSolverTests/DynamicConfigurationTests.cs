@@ -512,7 +512,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
         [Test]
         public void RuntimeAssertionTest()
         {
-            IYodiiEngine engine = MockXmlUtils.CreateEngineFromXmlResource( "BaseGraph4" );
+            IYodiiEngineExternal engine = MockXmlUtils.CreateEngineFromXmlResource( "BaseGraph4" );
 
             engine.StartEngine();
 

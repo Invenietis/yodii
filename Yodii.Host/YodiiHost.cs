@@ -38,6 +38,7 @@ namespace Yodii.Host
         readonly ServiceHost _serviceHost;
         readonly Dictionary<string, PluginProxy> _plugins;
         Func<IPluginInfo,object[],IYodiiPlugin> _pluginCreator;
+        IYodiiEngine _engine;
 
         public YodiiHost()
             : this( null, CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
@@ -68,8 +69,23 @@ namespace Yodii.Host
         }
 
         /// <summary>
+        /// Gets or sets the associated <see cref="IYodiiEngine"/>. 
+        /// It must be set before starting the engine and only once.
+        /// </summary>
+        public IYodiiEngine Engine
+        {
+            get { return _engine; }
+            set
+            {
+                if( _plugins.Count > 0 ) throw new InvalidOperationException( R.HostEngineMustBeSetBeforeStartingTheEngine );
+                if( _engine != null && _engine != value ) throw new InvalidOperationException( R.HostEngineMustBeSetOnlyOnce );
+                _engine = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a function that is in charge of obtaining concrete plugin instances.
-        /// The dynamic services parameters is available in the order 
+        /// The dynamic services parameters are available in the order 
         /// of <see cref="IServiceReferenceInfo.ConstructorParameterIndex">ConstructorParameterIndex</see> property 
         /// of <see cref="IPluginInfo.ServiceReferences">PluginInfo.ServiceReferences</see> objects.
         /// </summary>
@@ -122,7 +138,7 @@ namespace Yodii.Host
             IEnumerable<IPluginInfo> disabledPlugins, 
             IEnumerable<IPluginInfo> stoppedPlugins, 
             IEnumerable<IPluginInfo> runningPlugins,
-            Action<Action<IYodiiEngine>> postStartActionsCollector )
+            Action<Action<IYodiiEngineExternal>> postStartActionsCollector )
         {
             if( disabledPlugins == null ) throw new ArgumentNullException( "disabledPlugins" );
             if( stoppedPlugins == null ) throw new ArgumentNullException( "stoppedPlugins" );
@@ -153,7 +169,7 @@ namespace Yodii.Host
             IEnumerable<IPluginInfo> disabledPlugins, 
             IEnumerable<IPluginInfo> stoppedPlugins, 
             IEnumerable<IPluginInfo> runningPlugins,
-            Action<Action<IYodiiEngine>> postStartActionsCollector )
+            Action<Action<IYodiiEngineExternal>> postStartActionsCollector )
         {
             HashSet<IPluginInfo> uniqueCheck = new HashSet<IPluginInfo>();
             foreach( var input in disabledPlugins.Concat( stoppedPlugins ).Concat( runningPlugins ) )
@@ -438,7 +454,7 @@ namespace Yodii.Host
         }
 
         static void SetServiceSatus(
-            Action<Action<IYodiiEngine>> postStartActionsCollector, 
+            Action<Action<IYodiiEngineExternal>> postStartActionsCollector, 
             List<StStopContext> toStop, 
             List<StStartContext> toStart, 
             bool isTransition )
@@ -522,7 +538,7 @@ namespace Yodii.Host
             }
             else
             {
-                result = new PluginProxy( pluginInfo );
+                result = new PluginProxy( _engine, pluginInfo );
                 _plugins.Add( pluginInfo.PluginFullName, result );
             }
             return result;

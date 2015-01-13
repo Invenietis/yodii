@@ -45,7 +45,7 @@ namespace Yodii.Engine.Tests
             engineA = MockXmlUtils.CreateEngineFromXmlResource( "Graph005" );
             var info = MockInfoFactory.CreateGraph005();
 
-            EquivalenceExtensions.AssertDiscoveredInfoEquivalence( engineA.DiscoveredInfo, info );
+            EquivalenceExtensions.AssertDiscoveredInfoEquivalence( engineA.Configuration.DiscoveredInfo, info );
         }
     }
 }

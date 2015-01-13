@@ -33,10 +33,14 @@ using System.Reflection;
 namespace Yodii.Host
 {
 
-    class PluginProxy : PluginProxyBase, IPluginProxy
+    class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngine
     {
-        public PluginProxy( IPluginInfo pluginKey )
+        readonly IYodiiEngine _engine;
+        IActivityMonitor _monitor;
+
+        public PluginProxy( IYodiiEngine e, IPluginInfo pluginKey )
         {
+            _engine = e;
             PluginInfo = pluginKey;
         }
 
@@ -44,25 +48,69 @@ namespace Yodii.Host
 
         internal bool TryLoad( ServiceHost serviceHost, Func<IPluginInfo, object[], IYodiiPlugin> pluginCreator )
         {
-            var serviceReferences = PluginInfo.ServiceReferences;
-
-            int paramCount = 0;
-
-            // Fixes potential Array Out of Bounds for constructors with params ordered like ( MyType, IYodiiService ).
-            // Unknown constructor parameters (here index 0) will be null.
-            // Non-service parameters present after the last service (like ( IYodiiService, MyType )) will still be out of bounds :
-            // we don't know the actual size or contents of the constructor.
-            // So if you're injecting and/or allow unknown types, pluginCreator should check that it's neither null nor out-of-bounds.
-            if( serviceReferences.Count > 0 ) paramCount = serviceReferences.Max( x => x.ConstructorParameterIndex ) + 1;
-
-            object[] ctorParameters = new object[paramCount];
-
-            for( int i = 0; i < serviceReferences.Count; ++i )
+            if( _monitor == null ) _monitor = new ActivityMonitor( PluginInfo.PluginFullName );
+            object[] ctorParameters = new object[ PluginInfo.ConstructorInfo.ParameterCount ];
+            foreach( var sRef in PluginInfo.ServiceReferences )
             {
-                ctorParameters[serviceReferences[i].ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( serviceReferences[i].Reference );
+                ctorParameters[sRef.ConstructorParameterIndex] = serviceHost.EnsureProxyForDynamicService( sRef.Reference );
+            }
+            foreach( var knownParam in PluginInfo.ConstructorInfo.KnownParameters )
+            {
+                if( knownParam.DescriptiveType == "IYodiiEngine" )
+                {
+                    ctorParameters[knownParam.ParameterIndex] = _engine;
+                }
+                else if( knownParam.DescriptiveType == "IActivityMonitor" )
+                {
+                    ctorParameters[knownParam.ParameterIndex] = _monitor;
+                }
             }
             return TryLoad( serviceHost, () => pluginCreator( PluginInfo, ctorParameters ), PluginInfo.PluginFullName );
         }
 
+
+        #region IYodiiEngine Members
+
+        IConfigurationManager IYodiiEngine.Configuration
+        {
+            get { return _engine.Configuration; }
+        }
+
+        ILiveInfo IYodiiEngine.LiveInfo
+        {
+            get { return _engine.LiveInfo; }
+        }
+
+        IYodiiEngineResult IYodiiEngine.StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact, string callerKey )
+        {
+            return _engine.StartItem( pluginOrService, impact, callerKey ?? PluginInfo.PluginFullName );
+        }
+
+        IYodiiEngineResult IYodiiEngine.StopItem( ILiveYodiiItem pluginOrService, string callerKey )
+        {
+            return _engine.StopItem( pluginOrService, callerKey ?? PluginInfo.PluginFullName );
+        }
+
+        IYodiiEngineResult IYodiiEngine.StartPlugin( string pluginFullName, StartDependencyImpact impact, string callerKey )
+        {
+            return _engine.StartPlugin( pluginFullName, impact, callerKey ?? PluginInfo.PluginFullName );
+        }
+
+        IYodiiEngineResult IYodiiEngine.StopPlugin( string pluginFullName, string callerKey )
+        {
+            return _engine.StopPlugin( pluginFullName, callerKey ?? PluginInfo.PluginFullName );
+        }
+
+        IYodiiEngineResult IYodiiEngine.StartService( string serviceFullName, StartDependencyImpact impact, string callerKey )
+        {
+            return _engine.StartService( serviceFullName, impact, callerKey ?? PluginInfo.PluginFullName );
+        }
+
+        IYodiiEngineResult IYodiiEngine.StopService( string serviceFullName, string callerKey )
+        {
+            return _engine.StopService( serviceFullName, callerKey ?? PluginInfo.PluginFullName );
+        }
+
+        #endregion
     }
 }

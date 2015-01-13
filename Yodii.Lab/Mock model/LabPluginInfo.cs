@@ -34,11 +34,11 @@ namespace Yodii.Lab.Mocks
     [DebuggerDisplay( "Lab plugin: {PluginInfo.PluginFullName}" )]
     public class LabPluginInfo : ViewModelBase
     {
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
         readonly PluginInfo _pluginInfo;
         ILivePluginInfo _livePluginInfo;
 
-        internal LabPluginInfo( IYodiiEngine engine, PluginInfo pluginInfo )
+        internal LabPluginInfo( IYodiiEngineExternal engine, PluginInfo pluginInfo )
         {
             Debug.Assert( engine != null && pluginInfo != null );
             _engine = engine;

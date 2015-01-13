@@ -153,6 +153,12 @@
   <data name="HostApplyPluginMustBeInOneList" xml:space="preserve">
     <value>Plugin '{0}' appears in more than one list. Lists of plugins to disable, stop end start must be disjoint.</value>
   </data>
+  <data name="HostEngineMustBeSetBeforeStartingTheEngine" xml:space="preserve">
+    <value>Host.Engine must be set before starting the Engine.</value>
+  </data>
+  <data name="HostEngineMustBeSetOnlyOnce" xml:space="preserve">
+    <value>Host.Engine must be set only once.</value>
+  </data>
   <data name="InterfaceMustExtendIYodiiService" xml:space="preserve">
     <value>Interface must extend IYodiiService to be a Dynamic Service.</value>
   </data>

@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Yodii.Model\Solver\IYodiiEngineStaticOnlyResult.cs) is part of CiviKey. 
+* This file (Yodii.Model\Discoverer\IPluginInfo.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -25,17 +25,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Yodii.Model
 {
     /// <summary>
-    /// Exposes information specific to <see cref="IYodiiEngineExternal.StaticResolutionOnly"/> method.
+    /// Description of known parameters: instead of exposing actual type information
+    /// with potential parameter attributes, this is a simplified approach that relies on 
+    /// a mere <see cref="DescriptiveType"/> that can be used to express condensed, simple information.
+    /// For instance, the "IActivityMonitor" or "IYodiiEngine" is enough to handle the injection of those 
+    /// two objects whenever a plugin is instanciated.
     /// </summary>
-    public interface IYodiiEngineStaticOnlyResult : IYodiiEngineResult
+    public interface IPluginCtorKnownParameterInfo
     {
         /// <summary>
-        /// Always gives access to the solved configuration, be the result on success or on failure.
+        /// Gets the parameter name.
         /// </summary>
-        IStaticSolvedConfiguration StaticSolvedConfiguration { get; }
+        string ParameterName { get; }
+
+        /// <summary>
+        /// Gets the parameter index.
+        /// </summary>
+        int ParameterIndex { get; }
+
+        /// <summary>
+        /// Gets a description of the parameter that must identify the parameter 
+        /// in terms of type: this must be enough to build/acquire/bind an actual object.
+        /// Basic defined types are: "IActivityMonitor" and "IYodiiEngine". 
+        /// </summary>
+        string DescriptiveType { get; }
     }
 }

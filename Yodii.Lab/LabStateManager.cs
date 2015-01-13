@@ -72,7 +72,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Yodii engine to use. Created in constructor
         /// </summary>
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
         #endregion
 
         #region Constructor
@@ -185,7 +185,7 @@ namespace Yodii.Lab
         {
             var newInfo = new DiscoveredInfoClone( ServiceInfos, PluginInfos );
 
-            var result = _engine.SetDiscoveredInfo( newInfo );
+            var result = _engine.Configuration.SetDiscoveredInfo( newInfo );
 
             if( !result.Success )
             {
@@ -267,7 +267,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Active IYodiiEngine.
         /// </summary>
-        public IYodiiEngine Engine
+        public IYodiiEngineExternal Engine
         {
             get { return _engine; }
         }
@@ -381,7 +381,7 @@ namespace Yodii.Lab
             public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
         }
 
-        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngine>> actionCollector )
+        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> actionCollector )
         {
             List<IPluginHostApplyCancellationInfo> cancellationInfos = new List<IPluginHostApplyCancellationInfo>();
 

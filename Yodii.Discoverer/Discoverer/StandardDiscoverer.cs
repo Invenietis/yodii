@@ -41,6 +41,7 @@ namespace Yodii.Discoverer
         readonly Dictionary<TypeDefinition, PluginInfo> _plugins;
         
         readonly AssemblyDefinition _yodiiModel;
+        readonly TypeDefinition _tDefIYodiiEngine;
         readonly TypeDefinition _tDefIYodiiService;
         readonly TypeDefinition _tDefIYodiiPlugin;
         readonly TypeDefinition _tDefIService;
@@ -105,6 +106,7 @@ namespace Yodii.Discoverer
             var pathYodiiModel = new Uri( typeof( IYodiiService ).Assembly.CodeBase ).LocalPath;
             _yodiiModel = _resolver.ReadAssembly( pathYodiiModel );
 
+            _tDefIYodiiEngine = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiEngine ).FullName );
             _tDefIYodiiService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiService ).FullName );
             _tDefIYodiiPlugin = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiPlugin ).FullName );
 
@@ -194,45 +196,80 @@ namespace Yodii.Discoverer
             PluginInfo p;
             if( _plugins.TryGetValue( t, out p ) ) return p;
 
-            p = new PluginInfo( t.FullName, _assemblies[t.Module.Assembly.FullName].YodiiInfo );
-            _plugins.Add( t, p );
-
-            p.Service = GetDirectImplementedService( t );
-
-            var ctors = t.Methods.Where( m => m.IsConstructor );
-            var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
-            if( longerCtor != null )
+            IAssemblyInfo assembly = _assemblies[t.Module.Assembly.FullName].YodiiInfo;
+            try
             {
-                foreach( ParameterDefinition param in longerCtor.Parameters )
+                ServiceInfo implService = GetDirectImplementedService( t );
+                int paramCount = 0;
+                List<PluginInfoKnownParameter> knownParameters = null;
+                List<ServiceReferenceInfo> services = null;
+
+                var ctors = t.Methods.Where( m => m.IsConstructor );
+                var longerCtor = ctors.OrderBy( c => c.Parameters.Count ).LastOrDefault();
+                if( longerCtor != null )
                 {
-                    var paramType = param.ParameterType.Resolve();
-                    if( !paramType.IsInterface ) continue;
-
-                    ServiceReferenceInfo serviceRef;
-                    if( paramType.HasGenericParameters )
+                    var parameters = longerCtor.Parameters;
+                    paramCount = parameters.Count;
+                    foreach( ParameterDefinition param in longerCtor.Parameters )
                     {
-                        if( paramType.GenericParameters.Count > 1 ) continue;
+                        var paramType = param.ParameterType.Resolve();
+                        if( !paramType.IsInterface ) continue;
 
-                        TypeReference actualServiceref = ((GenericInstanceType)param.ParameterType).GenericArguments[0];
-                        if( actualServiceref == null ) continue;
-                        TypeDefinition actualService = actualServiceref.Resolve();
-                        if( !IsYodiiService( actualService ) ) continue;
-                        TypeDefinition wrapper = paramType.GenericParameters[0].DeclaringType.Resolve();
-                        DependencyRequirement req;
-                        if( !IsDependencyRequirement( wrapper, out req ) ) continue;
-                                    
-                        ServiceInfo sRef = FindOrCreateService( actualService );
-                        serviceRef = new ServiceReferenceInfo( p, sRef, req, param.Name, param.Index, false );
+                        PluginInfoKnownParameter knownParameter = null;
+                        ServiceReferenceInfo serviceRef = null;
+                        if( paramType.HasGenericParameters )
+                        {
+                            if( paramType.GenericParameters.Count > 1 ) continue;
+
+                            TypeReference actualServiceref = ((GenericInstanceType)param.ParameterType).GenericArguments[0];
+                            if( actualServiceref == null ) continue;
+                            TypeDefinition actualService = actualServiceref.Resolve();
+                            if( !IsYodiiService( actualService ) ) continue;
+                            TypeDefinition wrapper = paramType.GenericParameters[0].DeclaringType.Resolve();
+                            DependencyRequirement req;
+                            if( !IsDependencyRequirement( wrapper, out req ) ) continue;
+
+                            ServiceInfo sRef = FindOrCreateService( actualService );
+                            serviceRef = new ServiceReferenceInfo( sRef, req, param.Name, param.Index, false );
+                        }
+                        else
+                        {
+                            if( IsYodiiService( paramType ) )
+                            {
+                                ServiceInfo sRef = FindOrCreateService( paramType );
+                                serviceRef = new ServiceReferenceInfo( sRef, DependencyRequirement.Running, param.Name, param.Index, true );
+                            }
+                            else
+                            {
+                                if( paramType.Resolve().Equals( _tDefIYodiiEngine ) )
+                                {
+                                    knownParameter = new PluginInfoKnownParameter( param.Name, param.Index, "IYodiiEngine" );
+                                }
+                                else if( paramType.FullName == "CK.Core.IActivityMonitor" )
+                                {
+                                    knownParameter = new PluginInfoKnownParameter( param.Name, param.Index, "IActivityMonitor" );
+                                }
+                            }
+                        }
+                        if( serviceRef != null )
+                        {
+                            if( services == null ) services = new List<ServiceReferenceInfo>();
+                            services.Add( serviceRef );
+                        }
+                        if( knownParameter != null )
+                        {
+                            if( knownParameters == null ) knownParameters = new List<PluginInfoKnownParameter>();
+                            knownParameters.Add( knownParameter );
+                        }
                     }
-                    else
-                    {
-                        if( !IsYodiiService( paramType ) ) continue;
-                        ServiceInfo sRef = FindOrCreateService( paramType );
-                        serviceRef = new ServiceReferenceInfo( p, sRef, DependencyRequirement.Running, param.Name, param.Index, true );
-                    }
-                    p.BindServiceRequirement( serviceRef );
                 }
+                p = new PluginInfo( t.FullName, assembly, implService, services, paramCount, knownParameters );
             }
+            catch( Exception ex )
+            {
+                p = new PluginInfo( t.FullName, assembly, ex.Message );
+            }
+            _plugins.Add( t, p );
             return p;
         }
 

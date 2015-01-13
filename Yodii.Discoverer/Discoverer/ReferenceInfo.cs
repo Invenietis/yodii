@@ -33,19 +33,16 @@ namespace Yodii.Discoverer
 {
     internal sealed class ServiceReferenceInfo : IServiceReferenceInfo
     {
-        readonly IPluginInfo _owner;
         readonly IServiceInfo _reference;
         readonly DependencyRequirement _requirement;
         readonly string _ctorParamName;
         readonly int _ctorParamIndex;
         readonly bool _isNakedRunningService;
+        IPluginInfo _owner;
 
-        internal ServiceReferenceInfo( IPluginInfo ownerPlugin, IServiceInfo referencedService, DependencyRequirement requirement, string paramName, int paramIndex, bool isNakedService )
+        internal ServiceReferenceInfo( IServiceInfo referencedService, DependencyRequirement requirement, string paramName, int paramIndex, bool isNakedService )
         {
-            Debug.Assert( ownerPlugin != null );
             Debug.Assert( referencedService != null );
-
-            _owner = ownerPlugin;
             _reference = referencedService;
             _requirement = requirement;
             _ctorParamName = paramName;
@@ -56,6 +53,7 @@ namespace Yodii.Discoverer
         public IPluginInfo Owner
         {
             get { return _owner; }
+            internal set { _owner = value; }
         }
 
         public IServiceInfo Reference

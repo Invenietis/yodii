@@ -87,7 +87,7 @@ namespace Yodii.Engine
 
         public bool CanStartWith( StartDependencyImpact impact )
         {
-            return _startableStatus.CanStartWith( impact );
+            return _startableStatus != null ? _startableStatus.CanStartWith( impact ) : false;
         }
 
         public void RaisePropertyChanged( string propertyName )

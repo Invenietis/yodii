@@ -40,6 +40,7 @@ namespace Yodii.Engine
     {
         internal readonly ConfigurationLayerCollection Layers;
         FinalConfiguration _finalConfiguration;
+        IDiscoveredInfo _discoveredInfo;
 
         ConfigurationChangingEventArgs _currentEventArgs;
 
@@ -61,11 +62,45 @@ namespace Yodii.Engine
             }
         }
 
+        public IDiscoveredInfo DiscoveredInfo 
+        {
+            get { return _discoveredInfo; }
+            private set
+            {
+                if( _discoveredInfo != value )
+                {
+                    _discoveredInfo = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
+        {
+            if( info == null ) throw new ArgumentNullException( "info" );
+            if( info == _discoveredInfo ) return Engine.SuccessResult;
+
+            if( Engine.IsRunning )
+            {
+                var r = ConfigurationSolver.CreateAndApplyStaticResolution( Engine, FinalConfiguration, info, false, false, false );
+                if( r.Item1 != null )
+                {
+                    Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
+                    Debug.Assert( r.Item1.Engine == this );
+                    return r.Item1;
+                }
+                return Engine.DoDynamicResolution( r.Item2, null, null, () => DiscoveredInfo = info );
+            }
+            else DiscoveredInfo = info;
+            return Engine.SuccessResult;
+        }
+
         internal ConfigurationManager( YodiiEngine engine )
         {
             Engine = engine;
             Layers = new ConfigurationLayerCollection( this );
             _finalConfiguration = new FinalConfiguration();
+            _discoveredInfo = EmptyDiscoveredInfo.Empty;
         }
 
         public readonly YodiiEngine Engine;
@@ -156,7 +191,7 @@ namespace Yodii.Engine
             FinalConfiguration finalConfiguration = new FinalConfiguration( final );
             if( Engine.IsRunning )
             {
-                Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> t = Engine.StaticResolutionByConfigurationManager( finalConfiguration );
+                Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> t = Engine.StaticResolutionByConfigurationManager( _discoveredInfo, finalConfiguration );
                 if( t.Item1 != null )
                 {
                     Debug.Assert( !t.Item1.Success );
@@ -184,7 +219,6 @@ namespace Yodii.Engine
             }
             return null;
         }
-
 
         internal void OnConfigurationChanged()
         {

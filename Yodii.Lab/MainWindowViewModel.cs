@@ -96,7 +96,7 @@ namespace Yodii.Lab
         readonly ActivityMonitor _activityMonitor;
         readonly DispatcherTimer _autosaveTimer;
 
-        readonly IYodiiEngine _engine; // Loaded from LabStateManager.
+        readonly IYodiiEngineExternal _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;

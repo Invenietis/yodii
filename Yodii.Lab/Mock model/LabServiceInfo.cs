@@ -36,13 +36,13 @@ namespace Yodii.Lab.Mocks
     {
         #region Fields
 
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
         readonly ServiceInfo _serviceInfo;
         ILiveServiceInfo _liveServiceInfo;
 
         #endregion Fields
 
-        internal LabServiceInfo( IYodiiEngine engine, ServiceInfo serviceInfo )
+        internal LabServiceInfo( IYodiiEngineExternal engine, ServiceInfo serviceInfo )
         {
             Debug.Assert( serviceInfo != null );
 

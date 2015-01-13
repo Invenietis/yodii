@@ -37,7 +37,7 @@ namespace Yodii.Lab.Mocks
     /// Mock plugin info, for Yodii.Lab.
     /// </summary>
     [DebuggerDisplay( "{PluginFullName}" )]
-    public class PluginInfo : ViewModelBase, IPluginInfo
+    public class PluginInfo : ViewModelBase, IPluginInfo, IPluginCtorInfo
     {
         readonly IAssemblyInfo _assemblyInfo;
         readonly CKObservableSortedArrayList<MockServiceReferenceInfo> _serviceReferences;
@@ -78,6 +78,21 @@ namespace Yodii.Lab.Mocks
             {
                 return PluginFullName;
             }
+        }
+
+        public IPluginCtorInfo ConstructorInfo
+        {
+            get { return this; }
+        }
+
+        int IPluginCtorInfo.ParameterCount 
+        { 
+            get { return 0; } 
+        }
+
+        IReadOnlyList<IPluginCtorKnownParameterInfo> IPluginCtorInfo.KnownParameters 
+        { 
+            get { return CKReadOnlyListEmpty<IPluginCtorKnownParameterInfo>.Empty; } 
         }
 
         /// <summary>

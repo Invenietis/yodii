@@ -61,7 +61,7 @@ namespace Yodii.Host.Tests
         {
             Host = new YodiiHost();
             Engine = new YodiiEngine( Host );
-            Engine.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
+            Engine.Configuration.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInThisAssembly() );
 
             ServiceRoot = new ServiceWrapper<ITestRootService>( Engine, Host );
             ServiceSubA = new ServiceWrapper<ITestRootSubAService>( Engine, Host );

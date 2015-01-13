@@ -50,7 +50,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        IYodiiEngine _engine;
+        IYodiiEngineExternal _engine;
         ILivePluginInfo _objectExplorer;
         ObjectExplorerManager _manager;
 
@@ -75,7 +75,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             ObjectExplorerPlugin = _engine.LiveInfo.FindPlugin( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin" );
         }
 
-        public IYodiiEngine Engine { get { return _engine; } }
+        public IYodiiEngineExternal Engine { get { return _engine; } }
 
         public ILivePluginInfo ObjectExplorerPlugin
         {

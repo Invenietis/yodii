@@ -69,6 +69,8 @@
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
     <Compile Include="Discoverer\IDiscoverer.cs" />
+    <Compile Include="Discoverer\IPluginCtorKnownParameterInfo.cs" />
+    <Compile Include="Discoverer\IPluginCtorInfo.cs" />
     <Compile Include="Host\IgnoreExceptionAttribute.cs" />
     <Compile Include="Host\IgnoreServiceStoppedAttribute.cs" />
     <Compile Include="Host\Plugin\IPluginHostApplyCancellationInfo.cs" />
@@ -87,8 +89,9 @@
     <Compile Include="Host\Service\IYodiiService.cs" />
     <Compile Include="Host\Service\ServiceStatus.cs" />
     <Compile Include="Host\Service\ServiceStatusChangedEventArgs.cs" />
-    <Compile Include="IYodiiEngineBase.cs" />
-    <Compile Include="IYodiiEngineHostApplyResult.cs" />
+    <Compile Include="IYodiiEngine.cs" />
+    <Compile Include="Host\IYodiiEngineHostApplyResult.cs" />
+    <Compile Include="IYodiiEngineInternal.cs" />
     <Compile Include="LiveModel\ILiveRunCapability.cs" />
     <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
     <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />
@@ -104,7 +107,7 @@
     <Compile Include="Discoverer\IPluginInfo.cs" />
     <Compile Include="Discoverer\IServiceInfo.cs" />
     <Compile Include="Discoverer\IServiceReferenceInfo.cs" />
-    <Compile Include="IYodiiEngineHost.cs" />
+    <Compile Include="Host\IYodiiEngineHost.cs" />
     <Compile Include="IYodiiEngineResult.cs" />
     <Compile Include="LiveModel\ILiveInfo.cs" />
     <Compile Include="LiveModel\ILiveYodiiItem.cs" />
@@ -112,7 +115,7 @@
     <Compile Include="LiveModel\YodiiCommand.cs" />
     <Compile Include="LiveModel\ILivePluginInfo.cs" />
     <Compile Include="LiveModel\ILiveServiceInfo.cs" />
-    <Compile Include="IYodiiEngine.cs" />
+    <Compile Include="IYodiiEngineExternal.cs" />
     <Compile Include="LiveModel\RunningStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solver\IDynamicFailureResult.cs" />

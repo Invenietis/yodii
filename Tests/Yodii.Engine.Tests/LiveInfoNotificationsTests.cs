@@ -53,7 +53,7 @@ namespace Yodii.Engine.Tests
              */
             DiscoveredInfo info = MockInfoFactory.CreateGraph003();
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.SetDiscoveredInfo( info );
+            engine.Configuration.SetDiscoveredInfo( info );
             engine.StartEngine();
             ILiveServiceInfo sA = engine.LiveInfo.FindService( "ServiceA" );
             ILivePluginInfo p1 = engine.LiveInfo.FindPlugin( "PluginA-1" );

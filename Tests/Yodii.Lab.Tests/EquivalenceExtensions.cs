@@ -163,9 +163,9 @@ namespace Yodii.Engine.Tests
         /// </summary>
         /// <param name="a">A</param>
         /// <param name="b">B</param>
-        public static void AssertEngineInfoEquivalence(IYodiiEngine a, IYodiiEngine b)
+        public static void AssertEngineInfoEquivalence(IYodiiEngineExternal a, IYodiiEngineExternal b)
         {
-            AssertDiscoveredInfoEquivalence( a.DiscoveredInfo, b.DiscoveredInfo );
+            AssertDiscoveredInfoEquivalence( a.Configuration.DiscoveredInfo, b.Configuration.DiscoveredInfo );
 
             AssertManagerEquivalence( a.Configuration, b.Configuration );
         }

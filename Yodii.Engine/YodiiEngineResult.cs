@@ -33,7 +33,7 @@ namespace Yodii.Engine
 {
     class YodiiEngineResult : IYodiiEngineStaticOnlyResult
     {
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
         readonly IConfigurationFailureResult _configurationFailureResult;
         readonly IStaticFailureResult _staticFailureResult;
         readonly IDynamicFailureResult _hostFailureResult;
@@ -115,7 +115,7 @@ namespace Yodii.Engine
             _configurationFailureResult = configurationFailureResult;
         }
 
-        public IYodiiEngine Engine { get { return _engine; } }
+        public IYodiiEngineExternal Engine { get { return _engine; } }
 
         public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
 
