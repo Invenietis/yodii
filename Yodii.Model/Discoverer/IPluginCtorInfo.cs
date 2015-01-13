@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Yodii.Model\Discoverer\IPluginInfo.cs) is part of CiviKey. 
+* This file (Yodii.Model\Discoverer\IPluginCtorInfo.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
