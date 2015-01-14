@@ -27,7 +27,7 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Configuration layer, containing configuration items.
-    /// <see cref="IConfigurationManager"/>
+    /// <see cref="IConfigurationManager"/>.
     /// </summary>
     public interface IConfigurationLayer : INotifyPropertyChanged
     {
@@ -45,5 +45,41 @@ namespace Yodii.Model
         /// Display name of the layer.
         /// </summary>
         string LayerName { get; set; }
+
+        /// <summary>
+        /// Attempts to add or set a configuration item with a status and an impact.
+        /// </summary>
+        /// <param name="serviceOrPluginFullName">Service or plugin name.</param>
+        /// <param name="status">Required configuration status.</param>
+        /// <param name="impact">Required impact.</param>
+        /// <param name="description">Optional description of the change.</param>
+        /// <returns>Yodii engine change result.</returns>
+        IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string description = null );
+
+        /// <summary>
+        /// Attempts to add or set a status on an item.
+        /// </summary>
+        /// <param name="serviceOrPluginFullName">Service or plugin name.</param>
+        /// <param name="status">Required configuration status.</param>
+        /// <param name="description">Optional description of the change.</param>
+        /// <returns>Yodii engine change result.</returns>
+        IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, string description = null );
+
+        /// <summary>
+        /// Attempts to add or set an impact on an item.
+        /// </summary>
+        /// <param name="serviceOrPluginFullName">Service or plugin name.</param>
+        /// <param name="impact">Required impact.</param>
+        /// <param name="description">Optional description of the change.</param>
+        /// <returns>Yodii engine change result.</returns>
+        IYodiiEngineResult Set( string serviceOrPluginFullName, StartDependencyImpact impact, string description = null );
+
+        /// <summary>
+        /// Attempts to remove a configuration item, effectively making it Optional.
+        /// </summary>
+        /// <param name="serviceOrPluginFullName">Service or plugin name to remove.</param>
+        /// <returns>Yodii engine change result.</returns>
+        IYodiiEngineResult Remove( string serviceOrPluginFullName );
+
     }
 }

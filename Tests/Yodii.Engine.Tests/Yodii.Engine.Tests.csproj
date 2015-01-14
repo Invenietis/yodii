@@ -40,12 +40,13 @@
     <AssemblyOriginatorKeyFile>SharedKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CK.Core, Version=4.0.1.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
+    <Reference Include="CK.Core, Version=4.1.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\CK.Core.4.0.1\lib\net40\CK.Core.dll</HintPath>
+      <HintPath>..\..\packages\CK.Core.4.1.0\lib\net40\CK.Core.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,13 +68,13 @@
     <Compile Include="..\Yodii.Lab.Tests\EquivalenceExtensions.cs">
       <Link>EquivalenceExtensions.cs</Link>
     </Compile>
+    <Compile Include="ConfigurationLayerTests.cs" />
     <Compile Include="Extensions\ConfigurationManagerExtensions.cs" />
     <Compile Include="Tests\ConfigurationManagerTests.cs" />
     <Compile Include="Tests\ConfigurationSolverTests\DynamicConfigurationTests.cs" />
     <Compile Include="Tests\ConfigurationSolverTests\StaticConfigurationTests.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Tests\ConfigurationSolverTests\CurrentFailure\CurrentFailureTests.cs" />
     <Compile Include="Extensions\StaticOnlyTestExtensions.cs" />
     <Compile Include="Extensions\DynamicTestExtensions.cs" />
     <Compile Include="LiveInfoNotificationsTests.cs" />

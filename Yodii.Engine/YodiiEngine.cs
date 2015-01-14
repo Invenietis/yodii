@@ -34,6 +34,9 @@ using System.Collections.ObjectModel;
 
 namespace Yodii.Engine
 {
+    /// <summary>
+    /// Yodii engine implementation.
+    /// </summary>
     public class YodiiEngine : IYodiiEngineExternal
     {
         readonly ConfigurationManager _manager;
@@ -71,6 +74,9 @@ namespace Yodii.Engine
             }
         }
 
+        /// <summary>
+        /// Raised whenever <see cref="IsRunning"/> or <see cref="IsStopping"/> changed.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
         public YodiiEngine( IYodiiEngineHost host )
@@ -78,6 +84,7 @@ namespace Yodii.Engine
             if( host == null ) throw new ArgumentNullException( "host" );
             _successResult = new SuccessYodiiEngineResult( this );
             _host = host;
+            host.Engine = this;
             _manager = new ConfigurationManager( this );
             _yodiiCommands = new YodiiCommandList();
             _liveInfo = new LiveInfo( this );

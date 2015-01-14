@@ -102,19 +102,22 @@ namespace Yodii.Engine
 
         public new IYodiiEngineResult Clear()
         {
-            if( StoreCount == 1 ) return ConfigurationManager.Engine.SuccessResult;
-            IYodiiEngineResult result = ConfigurationManager != null ? ConfigurationManager.OnConfigurationClearing() : SuccessYodiiEngineResult.NullEngineSuccessResult;
+            var c = ConfigurationManager;
+            if( StoreCount == 1 ) return c != null ? c.Engine.SuccessResult : SuccessYodiiEngineResult.NullEngineSuccessResult;
+            IYodiiEngineResult result = c != null ? c.OnConfigurationClearing() : SuccessYodiiEngineResult.NullEngineSuccessResult;
             if( result.Success )
             {
                 var prev = Store;
                 Store = new ConfigurationLayer[] { _default };
-                foreach( ConfigurationLayer l in prev )
+                for( int i = 0; i < StoreCount; ++i )
                 {
+                    ConfigurationLayer l = (ConfigurationLayer)prev[i];
                     if( l == _default ) l.ClearDefaultLayer();
                     else l.Owner = null;
                 }
+                StoreCount = 1;
                 RaiseReset();
-                if( ConfigurationManager != null ) ConfigurationManager.OnConfigurationChanged();
+                if( c != null ) c.OnConfigurationChanged();
             }
             return result;
         }

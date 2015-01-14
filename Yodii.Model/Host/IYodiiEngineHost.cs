@@ -34,6 +34,12 @@ namespace Yodii.Model
     public interface IYodiiEngineHost
     {
         /// <summary>
+        /// Gets or sets the associated <see cref="IYodiiEngine"/>. 
+        /// It must be set before starting the engine and only once.
+        /// </summary>
+        IYodiiEngine Engine { get; set; }
+
+        /// <summary>
         /// Applies the given plugin configuration to the system.
         /// </summary>
         /// <remarks>

@@ -44,6 +44,8 @@ namespace Yodii.Engine
         {
         }
 
+        public IYodiiEngine Engine { get; set; }
+
         public Action<IYodiiEngineExternal> PostActionToAdd;
 
         public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> actionCollector )

@@ -35,183 +35,129 @@ namespace Yodii.Engine.Tests
     public class ConfigurationLayerTests
     {
         [Test]
-        public void ConfigurationLayerWithoutManagerTests()
+        public void items_manipulations()
         {
+            var engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
+            
             int countCollectionChangedEvent = 0;
             int countPropertyChangedEvent = 0;
-            ConfigurationLayer layer = new ConfigurationLayer();
+            IConfigurationLayer layer = engine.Configuration.Layers.Create( "FirstOne" );
             layer.Items.CollectionChanged += ( s, e ) => countCollectionChangedEvent++;
 
-            //initialization tests
+            // Initialization tests
             Assert.That( layer.Items.Count, Is.EqualTo( 0 ) );
-            Assert.Throws<IndexOutOfRangeException>( () => { ConfigurationItem lambdaItem = layer.Items[42]; } );
-            Assert.That( layer.Items["schmurtz"], Is.Null );
-            Assert.That( layer.Items.Contains( "schmurtz" ), Is.False );
+            Assert.Throws<IndexOutOfRangeException>( () => { var lambdaItem = layer.Items[42]; } );
+            Assert.That( layer.Items["unk"], Is.Null );
+            Assert.That( layer.Items.Contains( "unk" ), Is.False );
 
-            //actions without items
-            ConfigurationResult result = layer.Items.Remove( "schmurtz" );
-            Assert.That( result == false ); //use a implicit cast
-            Assert.That( result.IsSuccessful, Is.False );
-            Assert.That( result.FailureCauses.Count, Is.EqualTo( 1 ) );
-            Assert.That( result.FailureCauses.Contains("Item not found"), Is.True );
-
+            // Actions without items
+            layer.Items.Remove( "unk" ).CheckSuccess();
             Assert.That( countCollectionChangedEvent, Is.EqualTo( 0 ) );
 
-            //exception in add fonction
-            Assert.Throws<ArgumentException>( () => layer.Items.Add( null, ConfigurationStatus.Optional ) );
-            Assert.Throws<ArgumentException>( () => layer.Items.Add( "", ConfigurationStatus.Optional ) );
+            // Exception in add fonction
+            Assert.Throws<ArgumentException>( () => layer.Set( null, ConfigurationStatus.Optional ) );
+            Assert.Throws<ArgumentException>( () => layer.Set( "", ConfigurationStatus.Optional ) );
 
-            //add function tests
-            result = layer.Items.Add( "schmurtz", ConfigurationStatus.Optional );
-            Assert.That( result == true );
-            Assert.That( result.IsSuccessful, Is.True );
-            Assert.That( result.FailureCauses, Is.Not.Null );
-            Assert.That( result.FailureCauses.Count, Is.EqualTo( 0 ) );
+            // Add function tests
+            layer.Set( "schmurtz", ConfigurationStatus.Optional, "Hop!" ).CheckSuccess();
             Assert.That( countCollectionChangedEvent, Is.EqualTo( 1 ) );
             Assert.That( layer.Items.Count, Is.EqualTo( 1 ) );
             Assert.That( layer.Items["schmurtz"], Is.Not.Null );
-            Assert.DoesNotThrow( () => { ConfigurationItem lambdaItem = layer.Items[0]; } );
+            Assert.DoesNotThrow( () => { var lambdaItem = layer.Items[0]; } );
             Assert.That( layer.Items["schmurtz"].Layer, Is.EqualTo( layer ) );
             Assert.That( layer.Items["schmurtz"].Layer.Items["schmurtz"], Is.Not.Null );
-            Assert.That( layer.Items["schmurtz"].ServiceOrPluginId, Is.EqualTo( "schmurtz" ) );
+            Assert.That( layer.Items["schmurtz"].ServiceOrPluginFullName, Is.EqualTo( "schmurtz" ) );
             Assert.That( layer.Items["schmurtz"].Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( layer.Items["schmurtz"].StatusReason, Is.EqualTo( "" ) );
+            Assert.That( layer.Items["schmurtz"].Description, Is.EqualTo( "Hop!" ) );
 
-            //basic tests with item reference
-            ConfigurationItem item = layer.Items["schmurtz"];
+            // Basic tests with item reference
+            var item = layer.Items["schmurtz"];
             item.PropertyChanged += ( s, e ) => countPropertyChangedEvent++;
-            item.StatusReason = null;
-            Assert.That( item.StatusReason, Is.EqualTo( "" ) );
+            item.Description = "Hoooop!";
+            Assert.That( item.Description, Is.EqualTo( "Hoooop!" ) );
             Assert.That( countPropertyChangedEvent, Is.EqualTo( 1 ) );
-            Assert.DoesNotThrow( () => item.StatusReason = "schmurtz" );
+            Assert.DoesNotThrow( () => item.Description = "Hop!Hop!" );
             Assert.That( countPropertyChangedEvent, Is.EqualTo( 2 ) );
-            Assert.DoesNotThrow( () => item.StatusReason = "" );
+            Assert.That( item.Description, Is.EqualTo( "Hop!Hop!" ) );
+            Assert.DoesNotThrow( () => item.Description = null );
             Assert.That( countPropertyChangedEvent, Is.EqualTo( 3 ) );
+            Assert.That( item.Description, Is.EqualTo( "" ) );
 
-            //setstatus tests
-            Assert.That( item.SetStatus( ConfigurationStatus.Disable ).IsSuccessful, Is.True );
-            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Disable ) );
-            Assert.That( item.SetStatus( ConfigurationStatus.Optional ).IsSuccessful, Is.True );
+            // Set tests
+            item.Set( ConfigurationStatus.Disabled ).CheckSuccess();
+            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Disabled ) );
+            item.Set( ConfigurationStatus.Optional ).CheckSuccess();
             Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( item.SetStatus( ConfigurationStatus.Runnable ).IsSuccessful, Is.True );
+            item.Set( ConfigurationStatus.Runnable ).CheckSuccess();
             Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Runnable ) );
-            Assert.That( item.SetStatus( ConfigurationStatus.Running ).IsSuccessful, Is.True );
+            item.Set( ConfigurationStatus.Running ).CheckSuccess();
             Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Running ) );
             Assert.That( countPropertyChangedEvent, Is.EqualTo( 7 ) );
 
-            Assert.DoesNotThrow( () => item.SetStatus( ConfigurationStatus.Optional, null ) );
-            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( item.StatusReason, Is.EqualTo( "" ) );
-            Assert.That( countPropertyChangedEvent, Is.EqualTo( 9 ) );
+            item.Set( StartDependencyImpact.FullStart ).CheckSuccess();
+            Assert.That( item.Impact, Is.EqualTo( StartDependencyImpact.FullStart ) );
+            Assert.That( countPropertyChangedEvent, Is.EqualTo( 8 ) );
 
-            //add function tests when the item already exist
-            result = layer.Items.Add( "schmurtz", ConfigurationStatus.Disable );
-            Assert.That( result == true );
-            Assert.That( layer.Items.Count, Is.EqualTo( 1 ) );
-            Assert.That( layer.Items["schmurtz"].Status, Is.EqualTo( ConfigurationStatus.Disable ) );
-            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Disable ) );
-            result = layer.Items.Add( "schmurtz", ConfigurationStatus.Optional );
-            Assert.That( result == true );
-            Assert.That( layer.Items.Count, Is.EqualTo( 1 ) );
-            Assert.That( layer.Items["schmurtz"].Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-            result = layer.Items.Add( "schmurtz", ConfigurationStatus.Runnable );
-            Assert.That( result == true );
-            Assert.That( layer.Items.Count, Is.EqualTo( 1 ) );
-            Assert.That( layer.Items["schmurtz"].Status, Is.EqualTo( ConfigurationStatus.Runnable ) );
+            item.Set( ConfigurationStatus.Runnable,  StartDependencyImpact.IsStartRunnableOnly ).CheckSuccess();
             Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Runnable ) );
-            result = layer.Items.Add( "schmurtz", ConfigurationStatus.Running );
-            Assert.That( result == true );
-            Assert.That( layer.Items.Count, Is.EqualTo( 1 ) );
-            Assert.That( layer.Items["schmurtz"].Status, Is.EqualTo( ConfigurationStatus.Running ) );
-            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Running ) );
-            Assert.That( countPropertyChangedEvent, Is.EqualTo( 13 ) );
+            Assert.That( item.Impact, Is.EqualTo( StartDependencyImpact.IsStartRunnableOnly ) );
+            Assert.That( countPropertyChangedEvent, Is.EqualTo( 10 ) );
 
-            //OnRemoved tests
-            layer.Items.Remove( "schmurtz" );
-            Assert.That( result == true );
-            Assert.That( result.IsSuccessful, Is.True);
-            Assert.That( result.FailureCauses, Is.Not.Null );
-            Assert.That( result.FailureCauses.Count, Is.EqualTo( 0 ) );
-            Assert.That( countCollectionChangedEvent, Is.EqualTo( 2 ) );
-            Assert.That( layer.Items["schmurtz"], Is.Null );
-            Assert.Throws < IndexOutOfRangeException>( () => { ConfigurationItem lambdaItem = layer.Items[0]; } );
-
-            //tests with item reference when item is removed
-            Assert.That( item.Layer, Is.EqualTo( null ) );
-            Assert.That( item.ServiceOrPluginId, Is.EqualTo( "schmurtz" ) );
+            item.Set( ConfigurationStatus.Optional, "Hello..." ).CheckSuccess();
             Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-            Assert.That( item.StatusReason, Is.EqualTo( null ) );
-            Assert.Throws<InvalidOperationException>( () => item.StatusReason = "schmurtz" );
-            Assert.Throws<InvalidOperationException>( () => item.SetStatus( ConfigurationStatus.Runnable ) );
+            Assert.That( item.Description, Is.EqualTo( "Hello..." ) );
+            Assert.That( countPropertyChangedEvent, Is.EqualTo( 12 ) );
 
-            //tests with multiple add
-            result = layer.Items.Add( "schmurtz2", ConfigurationStatus.Optional, "schmurtz?" );
-            Assert.That( result == true );
-            result = layer.Items.Add( "schmurtz1", ConfigurationStatus.Disable, "schmurtz?" );
-            Assert.That( result == true );
+            // OnRemoved tests
+            layer.Remove( "schmurtz" ).CheckSuccess();
+            Assert.That( layer.Items["schmurtz"], Is.Null );
+            Assert.Throws<IndexOutOfRangeException>( () => { var lambdaItem = layer.Items[0]; } );
+
+            // Tests with item reference when item is removed
+            Assert.That( item.Layer, Is.EqualTo( null ) );
+            Assert.That( item.ServiceOrPluginFullName, Is.EqualTo( "schmurtz" ) );
+            Assert.That( item.Status, Is.EqualTo( ConfigurationStatus.Optional ) );
+            Assert.That( item.Description, Is.Null );
+            Assert.Throws<InvalidOperationException>( () => item.Set( ConfigurationStatus.Optional ) );
+            Assert.Throws<InvalidOperationException>( () => item.Set( StartDependencyImpact.FullStart ) );
+            Assert.Throws<InvalidOperationException>( () => item.Description = "Not settable when item is detached!" );
+
+            // Tests with multiple add
+            layer.Set( "schmurtz2", ConfigurationStatus.Optional, "desc2" ).CheckSuccess();
+            layer.Set( "schmurtz1", ConfigurationStatus.Disabled, "desc1" ).CheckSuccess();
             Assert.That( layer.Items.Count, Is.EqualTo( 2 ) );
 
-            //sort tests
-            ConfigurationItem schmurtz1 = layer.Items["schmurtz1"];
-            ConfigurationItem schmurtz2 = layer.Items["schmurtz2"];
+            // Sort tests
+            var schmurtz1 = layer.Items["schmurtz1"];
+            var schmurtz2 = layer.Items["schmurtz2"];
             Assert.That( schmurtz1, Is.EqualTo( layer.Items[0] ) );
             Assert.That( schmurtz2, Is.EqualTo( layer.Items[1] ) );
-            Assert.That( schmurtz1.StatusReason, Is.EqualTo( "schmurtz?" ) );
-            Assert.That( schmurtz2.StatusReason, Is.EqualTo( "schmurtz?" ) );
+            Assert.That( schmurtz1.Description, Is.EqualTo( "desc1" ) );
+            Assert.That( schmurtz2.Description, Is.EqualTo( "desc2" ) );
 
-            result = layer.Items.Add( "schmurtz0", ConfigurationStatus.Running );
-            ConfigurationItem schmurtz0 = layer.Items["schmurtz0"];
+            layer.Set( "schmurtz0", ConfigurationStatus.Running ).CheckSuccess();
+            var schmurtz0 = layer.Items["schmurtz0"];
             Assert.That( schmurtz0, Is.EqualTo( layer.Items[0] ) );
             Assert.That( schmurtz1, Is.EqualTo( layer.Items[1] ) );
-            Assert.That( schmurtz2, Is.EqualTo( layer.Items[2] ) );
-            
+            Assert.That( schmurtz2, Is.EqualTo( layer.Items[2] ) );    
         }
 
         [Test]
-        public void ConfigurationLayerWithManagerTests()
+        public void clearing_layers()
         {
-            ConfigurationManager manager = new ConfigurationManager();
-            ConfigurationLayer layer = new ConfigurationLayer( "system" );
+            var engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
 
-            ConfigurationResult result = manager.Layers.Add( layer );
-            Assert.That( result == true );
-            Assert.That( layer.ConfigurationManager, Is.EqualTo( manager ) );
-            Assert.That( layer.LayerName, Is.EqualTo( "system" ) );
-            Assert.DoesNotThrow( () => layer.LayerName = "" );
-            Assert.That( layer.LayerName, Is.EqualTo( "" ) );
+            var def = engine.Configuration.Layers.Default;
+            var layer1 = engine.Configuration.Layers.Create( "Layer1" );
+            var layer2 = engine.Configuration.Layers.Create( "Layer2" );
+            layer1.Set( "p", ConfigurationStatus.Disabled ).CheckSuccess();
+            layer2.Set( "s", ConfigurationStatus.Runnable ).CheckSuccess();
+            def.Set( "o", StartDependencyImpact.IsTryStartOptionalOnly ).CheckSuccess();
 
-            result = layer.Items.Add( "schmurtz1", ConfigurationStatus.Optional );
-            Assert.That( result == true );
-
-            ConfigurationManager manager2 = new ConfigurationManager();
-            result = manager2.Layers.Add( layer );
-            Assert.That( result == false );
-
-            result = manager.Layers.Remove( layer );
-            Assert.That( result == true );
-            Assert.That( layer.ConfigurationManager, Is.EqualTo( null ) );
-
-            result = manager.Layers.Add( layer );
-            Assert.That( result == true );
-
-            manager.ConfigurationChanging += ( s, e ) => e.Cancel( "schmurtz!" );
-            result = layer.Items.Add( "schmurtz1", ConfigurationStatus.Runnable );
-            Assert.That( result == false );
-            Assert.That( result.IsSuccessful, Is.False );
-            Assert.That( result.FailureCauses[0], Is.EqualTo( "schmurtz!" ) );
-            Assert.That( layer.Items["schmurtz1"].Status, Is.EqualTo( ConfigurationStatus.Optional ) );
-
-            result = layer.Items.Add( "schmurtz2", ConfigurationStatus.Optional );
-            Assert.That( result == false );
-            Assert.That( result.IsSuccessful, Is.False );
-            Assert.That( result.FailureCauses[0], Is.EqualTo( "schmurtz!" ) );
-            Assert.That( layer.Items["schmurtz"], Is.EqualTo( null ) );
-
-            result = manager.Layers.Remove( layer );
-            Assert.That( result == false );
-            Assert.That( layer.ConfigurationManager, Is.EqualTo( manager ) );
-
+            Assert.That( engine.Configuration.FinalConfiguration.Items.Count, Is.EqualTo( 3 ) );
+            engine.Configuration.Layers.Clear();
+            Assert.That( engine.Configuration.FinalConfiguration.Items.Count, Is.EqualTo( 0 ) );
+            Assert.That( engine.Configuration.Layers.Default, Is.SameAs( def ) );
         }
     }
 }

@@ -59,8 +59,12 @@ namespace Yodii.Host
             using( _monitor.OpenTrace().Send( "Using DefaultCreator for {0}.", pluginInfo.PluginFullName ) )
             {
                 var tPlugin = Assembly.Load( pluginInfo.AssemblyInfo.AssemblyName ).GetType( pluginInfo.PluginFullName, true );
-                var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).Last();
-                if( ctorParameters.Length != ctor.GetParameters().Length || ctorParameters.Any( p => p == null ) )
+                var ctor = tPlugin.GetConstructors().OrderBy( c => c.GetParameters().Length ).LastOrDefault();
+                if( ctor == null || ctor.GetParameters().Length != pluginInfo.ConstructorInfo.ParameterCount )
+                {
+                    throw new CKException( R.DefaultPluginCreatorUnableToFindCtor, pluginInfo.ConstructorInfo.ParameterCount, pluginInfo.PluginFullName );
+                }
+                if( ctorParameters.Any( p => p == null ) )
                 {
                     throw new CKException( R.DefaultPluginCreatorUnresolvedParams );
                 }

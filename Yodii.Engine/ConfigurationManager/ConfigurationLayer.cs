@@ -64,6 +64,7 @@ namespace Yodii.Engine
                         _layerName = value;
                         _owner.CheckPosition( i );
                     }
+                    else _layerName = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -102,6 +103,27 @@ namespace Yodii.Engine
         {
             Debug.Assert( _layerName.Length == 0 );
             Items.Clear();
+        }
+
+
+        IYodiiEngineResult IConfigurationLayer.Set( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string description )
+        {
+            return Items.Set( serviceOrPluginFullName, status, impact, description );
+        }
+
+        IYodiiEngineResult IConfigurationLayer.Set( string serviceOrPluginFullName, ConfigurationStatus status, string description )
+        {
+            return Items.Set( serviceOrPluginFullName, status, description );
+        }
+
+        IYodiiEngineResult IConfigurationLayer.Set( string serviceOrPluginFullName, StartDependencyImpact impact, string description )
+        {
+            return Items.Set( serviceOrPluginFullName, impact, description );
+        }
+
+        IYodiiEngineResult IConfigurationLayer.Remove( string serviceOrPluginFullName )
+        {
+            return Items.Remove( serviceOrPluginFullName );
         }
 
     }

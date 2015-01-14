@@ -43,7 +43,6 @@ namespace Yodii.Lab
     /// </summary>
     public class LabStateManager : IYodiiEngineHost
     {
-        #region Fields
         /// <summary>
         /// Collection of mock IServiceInfos.
         /// </summary>
@@ -73,9 +72,13 @@ namespace Yodii.Lab
         /// Yodii engine to use. Created in constructor
         /// </summary>
         readonly IYodiiEngineExternal _engine;
-        #endregion
 
-        #region Constructor
+        IYodiiEngine IYodiiEngineHost.Engine
+        {
+            get { return _engine; }
+            set {}
+        }
+
         /// <summary>
         /// Creates a new instance of this LabStateManager, as well as a new IYodiiEngine.
         /// </summary>
@@ -193,8 +196,6 @@ namespace Yodii.Lab
                 MessageBox.Show( String.Format( "Engine would have this error:\n\n{0}", result.Describe() ), "Change refused", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
             }
         }
-
-        #endregion
 
         #region Event handlers
         void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )

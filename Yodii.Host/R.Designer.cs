@@ -106,6 +106,15 @@ namespace Yodii.Host {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find a constructor with [0}  parameters for plugin {1}..
+        /// </summary>
+        internal static string DefaultPluginCreatorUnableToFindCtor {
+            get {
+                return ResourceManager.GetString("DefaultPluginCreatorUnableToFindCtor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some parameters for the plugin constructor could not be resolved. Ensure that all plugin constructor parameters are either Yodii services (interfaces implementing IYodiiService), IService&lt;T&gt; where T : IYodiiService or are types that have been injected (through PluginHost.InjectExternalService). If you need to inject other types through more standard dependency injection, you should set your own PluginCreator..
         /// </summary>
         internal static string DefaultPluginCreatorUnresolvedParams {
