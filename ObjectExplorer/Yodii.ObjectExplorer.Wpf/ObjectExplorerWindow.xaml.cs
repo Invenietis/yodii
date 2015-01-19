@@ -49,13 +49,13 @@ namespace Yodii.ObjectExplorer.Wpf
     {
         readonly ObjectExplorerWindowViewModel _vm;
         readonly YodiiLayout _graphLayout;
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineBase _engine;
         ILivePluginInfo _objectExplorerLiveInfo;
 
         /// <summary>
         /// Creates the main window.
         /// </summary>
-        public ObjectExplorerWindow( IYodiiEngine engine )
+        public ObjectExplorerWindow( IYodiiEngineBase engine )
         {
             _engine = engine;
 

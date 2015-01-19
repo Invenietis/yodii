@@ -1,4 +1,4 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Engine\ConfigurationSolver\ConfigurationSolver.cs) is part of CiviKey. 
 *  

@@ -36,6 +36,11 @@ namespace Yodii.Model
     public abstract class ServiceStatusChangedEventArgs : EventArgs
     {
         /// <summary>
+        /// Gets whether the engine is stopping: when true, calling <see cref="TryStart"/> has no effect.
+        /// </summary>
+        public abstract bool IsEngineStopping { get; }
+
+        /// <summary>
         /// Gets whether implementation is swapping: <see cref="IServiceUntyped.Status"/> is <see cref="ServiceStatus.StoppingSwapped"/> or <see cref="ServiceStatus.StartingSwapped"/>.
         /// </summary>
         public abstract bool IsSwapping { get; }
@@ -49,6 +54,7 @@ namespace Yodii.Model
         /// <summary>
         /// This method can be used to dynamically start a service. 
         /// There is no guaranty of success here: this is a deffered action that may not be applicable.
+        /// If <see cref="IsEngineStopping"/> is true this has no effect.
         /// </summary>
         /// <typeparam name="T">Actual type of the service to start.</typeparam>
         /// <param name="service">Reference to the service that should be started.</param>
@@ -60,6 +66,7 @@ namespace Yodii.Model
         /// <summary>
         /// This method can be used to dynamically start a service or a plugin. 
         /// There is no guaranty of success here: this is a deffered action that may not be applicable.
+        /// If <see cref="IsEngineStopping"/> is true this has no effect.
         /// </summary>
         /// <param name="serviceOrPluginFullName">Full name of the service or plugin to start.</param>
         /// <param name="impact">Impact of the start.</param>

@@ -44,7 +44,9 @@ namespace Yodii.Engine
         {
         }
 
-        public IYodiiEngine Engine { get; set; }
+        public IYodiiEngineExternal Engine { get; set; }
+
+        public bool CatchPreStartOrPreStopExceptions { get; set; }
 
         public Action<IYodiiEngineExternal> PostActionToAdd;
 

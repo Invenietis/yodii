@@ -34,11 +34,11 @@
     <Position X="0.5" Y="0.5" Width="4.5" />
     <AssociationLine Name="Layers" Type="Yodii.Model.IConfigurationLayerCollection">
       <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
-        <Position X="0.079" Y="0.31" Height="0.162" Width="0.628" />
+        <Position X="0.31" Y="0.079" Height="0.162" Width="0.628" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AEAAQAEAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
+      <HashCode>AEEAQAEAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationManager.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -47,9 +47,9 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayer">
-    <Position X="2.75" Y="5" Width="3.25" />
+    <Position X="4.5" Y="5.75" Width="3.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAECAAAAAAAAAAAAAAAABAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAEDAAAAAAABAAAAAAAABAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayer.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -57,38 +57,38 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayerCollection">
-    <Position X="1" Y="2.5" Width="3.5" />
+    <Position X="1" Y="3.25" Width="3.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAACAAAJAAAAAAAAEAAAAAAAABAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayerCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItemCollection">
-    <Position X="5.25" Y="6.75" Width="3" />
+    <Position X="7.25" Y="8.25" Width="3" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAQAAABAAACAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItemCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItem">
-    <Position X="8.75" Y="7.25" Width="2.25" />
+    <Position X="11" Y="7.25" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAEAAAgBAAAAAAAEAAAAABAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationFailureResult">
-    <Position X="3.25" Y="9.25" Width="2.75" />
+    <Position X="4.25" Y="10.25" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>IConfigurationManagerFailureResult.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IYodiiEngineResult">
-    <Position X="0.5" Y="6.75" Width="3.25" />
+    <Position X="0.75" Y="7.5" Width="3.25" />
     <AssociationLine Name="ConfigurationFailureResult" Type="Yodii.Model.IConfigurationFailureResult">
       <MemberNameLabel ManuallyPlaced="true">
-        <Position X="0.152" Y="0.185" />
+        <Position X="0.185" Y="0.152" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>

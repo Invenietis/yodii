@@ -28,8 +28,8 @@ using System.Reflection;
 [assembly: AssemblyProduct( "Yodii" )]
 [assembly: AssemblyCopyright( "Copyright © Invenietis 2013" )]
 [assembly: AssemblyTrademark( "" )]
-//[assembly: CLSCompliant( true )] //TODO : fix this
-[assembly: AssemblyVersion( "0.0.2" )]
+[assembly: CLSCompliant( true )] 
+[assembly: AssemblyVersion( "0.0.3" )]
 
 
 #if DEBUG

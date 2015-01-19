@@ -3,46 +3,46 @@
   <Class Name="Yodii.Model.ServiceStatusChangedEventArgs">
     <Position X="11" Y="1" Width="2.75" />
     <TypeIdentifier>
-      <HashCode>BAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <HashCode>BAAAAAAAAAAIAAAAAAAAAAAAgAAAAAAAAAAAAgAAAAA=</HashCode>
       <FileName>Host\Service\ServiceStatusChangedEventArgs.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="Yodii.Model.IOptionalRecommendedService&lt;T&gt;" Collapsed="true">
-    <Position X="2.75" Y="3.75" Width="2.75" />
+    <Position X="2.75" Y="4.75" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Service\IOptionalRecommendedService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IOptionalService&lt;T&gt;" Collapsed="true">
-    <Position X="0.5" Y="3.75" Width="2" />
+    <Position X="0.5" Y="4.75" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Service\IOptionalService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IRunnableRecommendedService&lt;T&gt;" Collapsed="true">
-    <Position X="7.75" Y="3.75" Width="2.75" />
+    <Position X="7.75" Y="4.75" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Service\IRunnableRecommendedService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IRunnableService&lt;T&gt;" Collapsed="true">
-    <Position X="5.75" Y="3.75" Width="1.75" />
+    <Position X="5.75" Y="4.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Service\IRunnableService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IRunningService&lt;T&gt;" Collapsed="true">
-    <Position X="10.75" Y="3.75" Width="2" />
+    <Position X="10.75" Y="4.75" Width="2" />
     <InheritanceLine Type="Yodii.Model.IService&lt;T&gt;" ManuallyRouted="true">
       <Path>
-        <Point X="7" Y="2.733" />
-        <Point X="7" Y="3.391" />
-        <Point X="11.75" Y="3.391" />
-        <Point X="11.75" Y="3.75" />
+        <Point X="7.25" Y="3.733" />
+        <Point X="7.25" Y="4.349" />
+        <Point X="11.75" Y="4.349" />
+        <Point X="11.75" Y="4.75" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -51,7 +51,7 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IService&lt;T&gt;">
-    <Position X="5.75" Y="1.5" Width="2.5" />
+    <Position X="6" Y="2.5" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Service\IService.cs</FileName>
@@ -72,31 +72,38 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IPreStartContext">
-    <Position X="4" Y="5" Width="3" />
+    <Position X="4" Y="6" Width="3" />
     <TypeIdentifier>
       <HashCode>ACAAgAAAQAAAAAAAAAACAAAABIAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Plugin\IPreStartContext.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IPreStopContext">
-    <Position X="0.75" Y="5" Width="3" />
+    <Position X="0.75" Y="6" Width="3" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAQAAAAAAAAAACAAAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAQAAAAAAAAAACAAAAgIAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Plugin\IPreStopContext.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IStartContext">
-    <Position X="7.25" Y="5" Width="3" />
+    <Position X="7.25" Y="6" Width="3" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABIAACAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Plugin\IStartContext.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IStopContext">
-    <Position X="10.5" Y="5" Width="2.75" />
+    <Position X="10.5" Y="6" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAgAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Host\Plugin\IStopContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IServiceUntyped">
+    <Position X="6" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAAAAAAAAAAAAAQAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Host\Service\IServiceUntyped.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Enum Name="Yodii.Model.DependencyRequirement">

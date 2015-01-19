@@ -36,7 +36,7 @@ namespace Yodii.Model
     public interface IYodiiEngineResult
     {
         /// <summary>
-        /// Gets the engine that generated this result.
+        /// Gets the external engine view to which this result applies.
         /// </summary>
         IYodiiEngineExternal Engine { get; }
 

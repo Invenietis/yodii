@@ -207,6 +207,10 @@ namespace Yodii.Host.Tests
             Assert.That( anotherServiceLive.IsRunning, "IAnotherService is still running." );
             Assert.That( trackerServiceLive.IsRunning, "ITrackerService is still running." );
 
+            // When the engine stops, cancelling PreStop is forbidden.
+            Assert.Throws<InvalidOperationException>( () => engine.StopEngine() );
+            
+            FailureTransitionPlugin.CancelPreStop = false;
             engine.StopEngine();
         }
 

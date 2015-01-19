@@ -1,4 +1,4 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Model\YodiiModelExtension.cs) is part of CiviKey. 
 *  

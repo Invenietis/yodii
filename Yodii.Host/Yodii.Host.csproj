@@ -91,6 +91,7 @@
     <Compile Include="Plugin\PluginProxyBase.cs" />
     <Compile Include="Plugin\PluginProxy.cs" />
     <Compile Include="YodiiHost.cs" />
+    <Compile Include="YodiiHost.HardStopping.cs" />
     <Compile Include="PluginStatus.cs" />
     <Compile Include="Plugin\StContext.cs" />
     <Compile Include="Plugin\StStartContext.cs" />

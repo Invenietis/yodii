@@ -68,7 +68,7 @@ namespace Yodii.ObjectExplorer.Wpf
 
         readonly ActivityMonitor _activityMonitor;
 
-        readonly IYodiiEngine _engine; // Loaded from LabStateManager.
+        readonly IYodiiEngineBase _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
 
         bool _hideNotifications = false;
@@ -84,7 +84,7 @@ namespace Yodii.ObjectExplorer.Wpf
         /// Creates a new instance of this ViewModel.
         /// </summary>
         /// <param name="loadDefaultState">True if the default XML state should be loaded, false to start on an empty state.</param>
-        public ObjectExplorerWindowViewModel( IYodiiEngine engine )
+        public ObjectExplorerWindowViewModel( IYodiiEngineBase engine )
         {
             _engine = engine;
 
@@ -138,7 +138,7 @@ namespace Yodii.ObjectExplorer.Wpf
             }
         }
 
-        public IYodiiEngine Engine
+        public IYodiiEngineBase Engine
         {
             get { return _engine; }
         }

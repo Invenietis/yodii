@@ -31,16 +31,19 @@ namespace Yodii.Host
 {
     class StStopContext : StContext, IPreStopContext, IStopContext
     {
-        public StStopContext( PluginProxy plugin, Dictionary<object, object> shared, bool mustDisable, bool disableOnly )
+        public StStopContext( PluginProxy plugin, Dictionary<object, object> shared, bool mustDisable, bool disableOnly, bool engineStopping )
             : base( plugin, shared )
         {
             MustDisable = mustDisable;
             IsDisabledOnly = disableOnly;
+            IsEngineStopping = engineStopping;
         }
 
         internal readonly bool IsDisabledOnly;
 
         internal readonly bool MustDisable;
+
+        public bool IsEngineStopping { get; private set; }
 
         public Action<IStartContext> RollbackAction { get; set; }
 
@@ -49,6 +52,12 @@ namespace Yodii.Host
         bool IStopContext.HotSwapping
         {
             get { return Status == StStatus.StoppingHotSwap; }
+        }
+
+        public override void Cancel( string message = null, Exception ex = null )
+        {
+            if( IsEngineStopping ) throw new InvalidOperationException( R.CannotCancelSinceEngineIsStopping );
+            base.Cancel( message, ex );
         }
 
         public override string ToString()

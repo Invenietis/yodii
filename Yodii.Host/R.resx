@@ -123,6 +123,9 @@
   <data name="CallingServiceFromCtor" xml:space="preserve">
     <value>Calling a Service method from a Plugin constructor is not allowed.</value>
   </data>
+  <data name="CallingServiceFromDisable" xml:space="preserve">
+    <value>Calling a Service method from a Dispose method is not allowed.</value>
+  </data>
   <data name="CallingServiceFromPreStart" xml:space="preserve">
     <value>Calling a Service method from a Plugin PreStart method is not allowed.</value>
   </data>
@@ -130,7 +133,10 @@
     <value>Calling a Service method from a Plugin PreStart rollback action is not allowed.</value>
   </data>
   <data name="CallingServiceFromStop" xml:space="preserve">
-    <value>Calling a Service method from a Stop method (Plugin '{0}') is not allowed.</value>
+    <value>Calling a Service method from a Stop method is not allowed.</value>
+  </data>
+  <data name="CannotCancelSinceEngineIsStopping" xml:space="preserve">
+    <value>IPreStopContext.Cancel can not be called since the engine is stopping.</value>
   </data>
   <data name="DefaultPluginCreatorUnableToFindCtor" xml:space="preserve">
     <value>Unable to find a constructor with [0}  parameters for plugin {1}.</value>
@@ -146,6 +152,9 @@
   </data>
   <data name="ExternalLogErrorMissException" xml:space="preserve">
     <value>Missing Exception object in call to ExternalLogError.</value>
+  </data>
+  <data name="HostApplyHasStoppedOrRunningPluginWhileEngineIsStopping" xml:space="preserve">
+    <value>There must be no Stopped or Running plugins when stopping engine, ony disabled ones must exist.</value>
   </data>
   <data name="HostApplyInvalidGeneralizationMismatchStart" xml:space="preserve">
     <value>Invalid generalization mismatch: 2 plugins implementing the same Service must both start.</value>

@@ -89,9 +89,9 @@
     <Compile Include="Host\Service\IYodiiService.cs" />
     <Compile Include="Host\Service\ServiceStatus.cs" />
     <Compile Include="Host\Service\ServiceStatusChangedEventArgs.cs" />
-    <Compile Include="IYodiiEngine.cs" />
+    <Compile Include="IYodiiEngineBase.cs" />
     <Compile Include="Host\IYodiiEngineHostApplyResult.cs" />
-    <Compile Include="IYodiiEngineInternal.cs" />
+    <Compile Include="IYodiiEngine.cs" />
     <Compile Include="LiveModel\ILiveRunCapability.cs" />
     <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
     <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />

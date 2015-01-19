@@ -33,12 +33,12 @@ using System.Reflection;
 namespace Yodii.Host
 {
 
-    class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngine
+    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngine
     {
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
         IActivityMonitor _monitor;
 
-        public PluginProxy( IYodiiEngine e, IPluginInfo pluginKey )
+        public PluginProxy( IYodiiEngineExternal e, IPluginInfo pluginKey )
         {
             _engine = e;
             PluginInfo = pluginKey;
@@ -58,7 +58,7 @@ namespace Yodii.Host
             {
                 if( knownParam.DescriptiveType == "IYodiiEngine" )
                 {
-                    ctorParameters[knownParam.ParameterIndex] = _engine;
+                    ctorParameters[knownParam.ParameterIndex] = this;
                 }
                 else if( knownParam.DescriptiveType == "IActivityMonitor" )
                 {
@@ -71,42 +71,47 @@ namespace Yodii.Host
 
         #region IYodiiEngine Members
 
-        IConfigurationManager IYodiiEngine.Configuration
+        IYodiiEngineExternal IYodiiEngine.ExternalEngine
+        {
+            get { return _engine; }
+        }
+
+        IConfigurationManager IYodiiEngineBase.Configuration
         {
             get { return _engine.Configuration; }
         }
 
-        ILiveInfo IYodiiEngine.LiveInfo
+        ILiveInfo IYodiiEngineBase.LiveInfo
         {
             get { return _engine.LiveInfo; }
         }
 
-        IYodiiEngineResult IYodiiEngine.StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact, string callerKey )
+        IYodiiEngineResult IYodiiEngineBase.StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact, string callerKey )
         {
             return _engine.StartItem( pluginOrService, impact, callerKey ?? PluginInfo.PluginFullName );
         }
 
-        IYodiiEngineResult IYodiiEngine.StopItem( ILiveYodiiItem pluginOrService, string callerKey )
+        IYodiiEngineResult IYodiiEngineBase.StopItem( ILiveYodiiItem pluginOrService, string callerKey )
         {
             return _engine.StopItem( pluginOrService, callerKey ?? PluginInfo.PluginFullName );
         }
 
-        IYodiiEngineResult IYodiiEngine.StartPlugin( string pluginFullName, StartDependencyImpact impact, string callerKey )
+        IYodiiEngineResult IYodiiEngineBase.StartPlugin( string pluginFullName, StartDependencyImpact impact, string callerKey )
         {
             return _engine.StartPlugin( pluginFullName, impact, callerKey ?? PluginInfo.PluginFullName );
         }
 
-        IYodiiEngineResult IYodiiEngine.StopPlugin( string pluginFullName, string callerKey )
+        IYodiiEngineResult IYodiiEngineBase.StopPlugin( string pluginFullName, string callerKey )
         {
             return _engine.StopPlugin( pluginFullName, callerKey ?? PluginInfo.PluginFullName );
         }
 
-        IYodiiEngineResult IYodiiEngine.StartService( string serviceFullName, StartDependencyImpact impact, string callerKey )
+        IYodiiEngineResult IYodiiEngineBase.StartService( string serviceFullName, StartDependencyImpact impact, string callerKey )
         {
             return _engine.StartService( serviceFullName, impact, callerKey ?? PluginInfo.PluginFullName );
         }
 
-        IYodiiEngineResult IYodiiEngine.StopService( string serviceFullName, string callerKey )
+        IYodiiEngineResult IYodiiEngineBase.StopService( string serviceFullName, string callerKey )
         {
             return _engine.StopService( serviceFullName, callerKey ?? PluginInfo.PluginFullName );
         }

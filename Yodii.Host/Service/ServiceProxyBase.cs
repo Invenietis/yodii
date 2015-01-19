@@ -53,7 +53,7 @@ namespace Yodii.Host
         object _unavailableImpl;
         ServiceHost _serviceHost;
         ServiceStatus _status;
-        bool _isExternalService;
+        public bool IsExternalService;
 
 		protected ServiceProxyBase( object unavailableImpl, Type typeInterface, IList<MethodInfo> mRefs, IList<EventInfo> eRefs )
 		{
@@ -76,7 +76,7 @@ namespace Yodii.Host
         internal void Initialize( ServiceHost serviceHost, bool isExternalService )
         {
             _serviceHost = serviceHost;
-            _isExternalService = isExternalService;
+            IsExternalService = isExternalService;
             if( isExternalService ) _status = ServiceStatus.Started;
         }
 
@@ -106,6 +106,11 @@ namespace Yodii.Host
                 _postStart = postStartActionsCollector;
             }
 
+            public override bool IsEngineStopping
+            {
+                get { return _postStart == null; }
+            }
+
             public override bool IsSwapping
             {
                 get { return _service._status.IsSwapping(); }
@@ -129,6 +134,7 @@ namespace Yodii.Host
 
             public override void TryStart( string serviceOrPluginFullName, StartDependencyImpact impact, Action onSuccess, Action<IYodiiEngineResult> onError )
             {
+                if( _postStart == null ) return;
                 Action<IYodiiEngineExternal> a = e => 
                 {
                     if( e.IsRunning )
@@ -192,7 +198,7 @@ namespace Yodii.Host
         /// <param name="implementation">Plugin implementation.</param>
         public void SetExternalImplementation( object implementation )
         {
-            if( !_isExternalService ) throw new CKException( R.ServiceIsPluginBased, _typeInterface );
+            if( !IsExternalService ) throw new CKException( R.ServiceIsPluginBased, _typeInterface );
             if( implementation == null ) implementation = _unavailableImpl;
             if( implementation != RawImpl )
             {
@@ -202,7 +208,7 @@ namespace Yodii.Host
 
         internal void SetPluginImplementation( PluginProxyBase implementation )
         {
-            if( _isExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName );
+            if( IsExternalService ) throw new CKException( R.ServiceIsAlreadyExternal, _typeInterface, implementation.GetType().AssemblyQualifiedName );
             _impl = implementation;
             if( _impl == null )
             {

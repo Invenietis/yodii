@@ -48,7 +48,7 @@ namespace Yodii.ObjectExplorer.Wpf
 
         internal bool LockGraphUpdates = false;
 
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineBase _engine;
 
         /// <summary>
         /// Used for GraphX serialization. Not implemented.
@@ -56,7 +56,7 @@ namespace Yodii.ObjectExplorer.Wpf
         public YodiiGraph()
         { }
 
-        internal YodiiGraph( IYodiiEngine engine )
+        internal YodiiGraph( IYodiiEngineBase engine )
             : base()
         {
             Debug.Assert( engine != null );
@@ -80,7 +80,7 @@ namespace Yodii.ObjectExplorer.Wpf
             ReprocessVerticesWithConfiguration( _engine.Configuration.FinalConfiguration );
         }
 
-        public IYodiiEngine Engine { get { return _engine; } }
+        public IYodiiEngineBase Engine { get { return _engine; } }
 
         #region Properties
         internal IConfigurationManager ConfigurationManager

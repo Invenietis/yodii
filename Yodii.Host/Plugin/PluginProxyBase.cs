@@ -88,7 +88,7 @@ namespace Yodii.Host
         /// If IDisposable is implemented, a call to Dispose may throw an exception (it is routed to the ServiceHost.LogMethodError), but the _instance 
         /// reference is set to null: a new object will always have to be created if the plugin needs to be started again.
         /// </summary>
-        internal void Disable( ServiceHost serviceHost )
+        internal void Disable( IActivityMonitor m, bool setToNull = false )
         {
             Debug.Assert( Status == PluginStatus.Stopped, "Status has been set to Stopped." );
             IDisposable di = _instance as IDisposable;
@@ -98,13 +98,13 @@ namespace Yodii.Host
             }
             catch( Exception ex )
             {
-                serviceHost.LogMethodError( GetImplMethodInfoDispose(), ex );
+                m.Error().Send( ex );
             }
             finally
             {
                 // Clear _instance after Dispose: if an exception is raised,
                 // GetImplMethodInfoDispose() may be called by the logger.
-                if( di != null )
+                if( setToNull || di != null )
                 {
                     Status = PluginStatus.Null;
                     _instance = null;

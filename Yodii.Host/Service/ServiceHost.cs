@@ -92,12 +92,27 @@ namespace Yodii.Host
             set { _eventSender = value; }
         }
 
+        internal void HardStop()
+        {
+            foreach( var s in _proxies.Values )
+            {
+                if( !s.IsExternalService ) s.SetPluginImplementation( null );
+            }
+        }
+
         /// <summary>
         /// This is set to a non null function when calls to services are not allowed:
         /// when loading a plugin (from its constructor) or when executing PreStart and Stop method.
         /// The input type is the called interface type.
         /// </summary>
         internal Func<Type,ServiceCallBlockedException> CallServiceBlocker;
+
+        internal IDisposable BlockServiceCall( Func<Type,ServiceCallBlockedException> f )
+        {
+            Debug.Assert( CallServiceBlocker == null );
+            CallServiceBlocker = f;
+            return Util.CreateDisposableAction( () => CallServiceBlocker = null );
+        }
 
         internal ServiceProxyBase EnsureProxyForDynamicService( IServiceInfo service )
         {

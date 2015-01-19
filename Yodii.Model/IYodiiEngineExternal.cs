@@ -35,7 +35,7 @@ namespace Yodii.Model
     /// Yodii engine is the primary object of Yodii.
     /// It is in charge of maintaining coherency among available plugins and services, their configuration and the evolution at runtime.
     /// </summary>
-    public interface IYodiiEngineExternal : IYodiiEngine, INotifyPropertyChanged
+    public interface IYodiiEngineExternal : IYodiiEngineBase, INotifyPropertyChanged
     {
         /// <summary>
         /// Whether this engine is currently running.
@@ -62,7 +62,7 @@ namespace Yodii.Model
         void StopEngine();
 
         /// <summary>
-        /// Triggers the static resolution of the graph (with the current <see cref="IYodiiEngine.Configuration">Configuration</see>).
+        /// Triggers the static resolution of the graph (with the current <see cref="IYodiiEngineBase.Configuration">Configuration</see>).
         /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
         /// </summary>
         /// <returns>

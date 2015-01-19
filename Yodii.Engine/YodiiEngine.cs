@@ -119,12 +119,24 @@ namespace Yodii.Engine
             }
 
             var dynResult = solver.DynamicResolution( existingCommandFilter != null ? _yodiiCommands.Where( existingCommandFilter ) : _yodiiCommands, cmd );
-            var hResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running, postActionCollector );
-            Debug.Assert( hResult != null && hResult.CancellationInfo != null );
-            if( hResult.CancellationInfo.Any() )
+            IYodiiEngineHostApplyResult hostResult = null;
+            try
             {
-                IYodiiEngineResult result =  solver.CreateDynamicFailureResult( hResult.CancellationInfo );
-                _liveInfo.UpdateRuntimeErrors( hResult.CancellationInfo, solver.FindExistingPlugin );
+                hostResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running, postActionCollector );
+            }
+            catch
+            {
+                _liveInfo.Clear();
+                _currentSolver = null;
+                RaisePropertyChanged( "IsRunning" );
+                throw;
+            }
+
+            Debug.Assert( hostResult != null && hostResult.CancellationInfo != null );
+            if( hostResult.CancellationInfo.Any() )
+            {
+                IYodiiEngineResult result =  solver.CreateDynamicFailureResult( hostResult.CancellationInfo );
+                _liveInfo.UpdateRuntimeErrors( hostResult.CancellationInfo, solver.FindExistingPlugin );
                 return result;
             }
             // Success:
@@ -182,12 +194,11 @@ namespace Yodii.Engine
                     // Stopping the engine disables all plugins.
                     // No post action here: this is the hint for the host that we are stopping.
                     _host.Apply( _manager.DiscoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>(), null );
-
-                    _liveInfo.Clear();
-                    _currentSolver = null;
                 }
                 finally
                 {
+                    _liveInfo.Clear();
+                    _currentSolver = null;
                     IsStopping = false;
                 }
                 RaisePropertyChanged( "IsRunning" );

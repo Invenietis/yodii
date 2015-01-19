@@ -43,7 +43,7 @@ namespace Yodii.Host
 
         public ServiceManager.Impact ServiceImpact { get; set; }
 
-        public void Cancel( string message = null, Exception ex = null )
+        public virtual void Cancel( string message = null, Exception ex = null )
         {
             _info = new CancellationInfo( Plugin.PluginInfo ) { ErrorMessage = message, Error = ex };
         }

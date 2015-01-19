@@ -42,12 +42,12 @@ namespace Yodii.ObjectExplorer.Wpf
     /// </remarks>
     public class ObjectExplorerPlugin :  YodiiPluginBase
     {
-        IYodiiEngine _activeEngine;
+        IYodiiEngineBase _activeEngine;
         ObjectExplorerWindow _window;
         bool _closing = false;
         bool _tryingToClose = false;
 
-        public ObjectExplorerPlugin( IYodiiEngine e )
+        public ObjectExplorerPlugin( IYodiiEngineBase e )
         {
             Debug.Assert( e != null, "A YodiiEngine must be injected." );
 

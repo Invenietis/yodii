@@ -34,11 +34,18 @@ namespace Yodii.Model
     public interface IYodiiEngineHost
     {
         /// <summary>
-        /// Gets or sets the associated <see cref="IYodiiEngine"/>. 
+        /// Gets or sets the associated <see cref="IYodiiEngineExternal"/>. 
         /// It must be set before starting the engine and only once.
         /// </summary>
-        IYodiiEngine Engine { get; set; }
+        IYodiiEngineExternal Engine { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether exceptions that occurred during calls to <see cref="IYodiiPlugin.PreStart"/> 
+        /// or <see cref="IYodiiPlugin.PreStop"/> are intercepted and considered as if the PreStart/Stop rejected the transition.
+        /// Defaults to false. Can be changed at any moment.
+        /// </summary>
+        bool CatchPreStartOrPreStopExceptions { get; set; }
+        
         /// <summary>
         /// Applies the given plugin configuration to the system.
         /// </summary>

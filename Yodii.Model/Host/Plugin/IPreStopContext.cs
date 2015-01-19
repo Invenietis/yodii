@@ -34,8 +34,15 @@ namespace Yodii.Model
     public interface IPreStopContext
     {
         /// <summary>
+        /// Gets whether the engine is stopping which means that the plugin can not refuse to stop: 
+        /// calls to <see cref="Cancel"/> will throw an <see cref="InvalidOperationException"/>.
+        /// </summary>
+        bool IsEngineStopping { get; }
+
+        /// <summary>
         /// Cancels the stop with an optional exception and/or message.
         /// If for any reason a plugin can not or refuse to stop, this method must be called.
+        /// Can be called only if <see cref="IsEngineStopping"/> is false otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <param name="message">Reason to reject the stop.</param>
         /// <param name="ex">Optional exception that occurred.</param>

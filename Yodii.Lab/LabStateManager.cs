@@ -1,4 +1,4 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Yodii.Lab\LabStateManager.cs) is part of CiviKey. 
 *  
@@ -73,7 +73,7 @@ namespace Yodii.Lab
         /// </summary>
         readonly IYodiiEngineExternal _engine;
 
-        IYodiiEngine IYodiiEngineHost.Engine
+        IYodiiEngineExternal IYodiiEngineHost.Engine
         {
             get { return _engine; }
             set {}

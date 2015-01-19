@@ -1,4 +1,4 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
 * This file (Tests\Yodii.Engine.Tests\Tests\YodiiEngineTests.cs) is part of CiviKey. 
 *  
