@@ -79,6 +79,8 @@ namespace Yodii.Lab
             set {}
         }
 
+        bool IYodiiEngineHost.CatchPreStartOrPreStopExceptions { get; set; }
+
         /// <summary>
         /// Creates a new instance of this LabStateManager, as well as a new IYodiiEngine.
         /// </summary>
