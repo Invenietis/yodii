@@ -430,7 +430,7 @@ namespace Yodii.Engine.Tests
                     Assert.That( e.LiveInfo.FindPlugin( "Plugin1" ).Capability.CanStartWithStartRecommended );
                     Assert.That( e.LiveInfo.FindPlugin( "Plugin1" ).Capability.CanStartWith( StartDependencyImpact.IsStartRunnableOnly ), Is.False );
                     Assert.That( e.LiveInfo.FindPlugin( "Plugin1" ).Capability.CanStartWithFullStart == false );
-                    Assert.Throws<InvalidOperationException>( () => e.StartPlugin( "Plugin1", StartDependencyImpact.FullStart ) );
+                    Assert.That( e.StartPlugin( "Plugin1", StartDependencyImpact.FullStart ).Success, Is.False );
 
                     Assert.That( e.LiveInfo.FindService( "Service1" ).Capability.CanStart );
                     Assert.That( e.LiveInfo.FindService( "Service1" ).Capability.CanStartWithFullStart, "Since Plugin1.1 is available and has no dependency." );

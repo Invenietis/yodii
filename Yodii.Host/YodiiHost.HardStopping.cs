@@ -42,10 +42,13 @@ namespace Yodii.Host
                 CancellingPreStart = cancellingPreStart;
             }
 
-            public bool IsEngineStopping { get { return true; } }
+            public bool IsCancellable { get { return false; } }
 
             public void Cancel( string message = null, Exception ex = null )
             {
+                // Avoids throwing an exception here. This breaks the contract of the IPreXXXContext
+                // but since we are hard stopping and already in emergency state, this is clearly not an issue
+                // and avoids unnessecary exceptions.
             }
 
             public IDictionary<object, object> SharedMemory { get; private set; }

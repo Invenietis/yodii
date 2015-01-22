@@ -48,7 +48,7 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 0 ) );
 
             Assert.That( Assert.Throws<ArgumentNullException>( () => engine.Configuration.SetDiscoveredInfo( null ) ).ParamName, Is.EqualTo( "info" ) );
-            DiscoveredInfo info = MockInfoFactory.CreateGraph003();
+            DiscoveredInfo info = MockInfoFactory.ServiceWithTwoPlugins();
             engine.Configuration.SetDiscoveredInfo( info ).CheckSuccess();
             Assert.That( engine.Configuration.DiscoveredInfo == info );
             engine.Configuration.SetDiscoveredInfo( info ).CheckSuccess();
@@ -62,9 +62,9 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.Plugins.Count, Is.EqualTo( 2 ) );
             Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 1 ) );
             
-            engine.StartPlugin( "PluginA-1" );
+            engine.StartPlugin( "PluginA-1" ).CheckSuccess();
             Assert.Throws<ArgumentNullException>( () => engine.StartPlugin( null ) );
-            Assert.Throws<ArgumentException>( () => engine.StartPlugin( "Unexisiting plugin name." ) );
+            Assert.That( engine.StartPlugin( "Unexisiting plugin name." ).Success, Is.False );
             Assert.That( engine.IsRunning );
             Assert.Throws<InvalidOperationException>( () => engine.StartEngine() );
             engine.StopEngine();
@@ -78,7 +78,7 @@ namespace Yodii.Engine.Tests
         public void live_info_is_bound_to_discovered_infos()
         {
             IYodiiEngineExternal engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            DiscoveredInfo info = MockInfoFactory.CreateGraph003();
+            DiscoveredInfo info = MockInfoFactory.ServiceWithTwoPlugins();
 
             engine.Configuration.SetDiscoveredInfo( info ).CheckSuccess();
             engine.StartEngine().CheckSuccess();
@@ -116,7 +116,7 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.FindService( "ServiceA" ).DisabledReason, Is.Null );
 
 
-            DiscoveredInfo otherInfo = MockInfoFactory.CreateGraph003();
+            DiscoveredInfo otherInfo = MockInfoFactory.ServiceWithTwoPlugins();
             PluginInfo otherPluginA1 = otherInfo.FindPlugin( "PluginA-1" );
             PluginInfo otherPluginA2 = otherInfo.FindPlugin( "PluginA-2" );
             ServiceInfo otherServiceA = otherInfo.FindService( "ServiceA" );
@@ -134,7 +134,7 @@ namespace Yodii.Engine.Tests
         {
             var host = new BuggyYodiiEngineHostMock();
             var engine = new YodiiEngine( host );
-            var info = MockInfoFactory.CreateGraph003();
+            var info = MockInfoFactory.ServiceWithTwoPlugins();
             engine.Configuration.SetDiscoveredInfo( info );
             engine.StartEngine().CheckSuccess();
 

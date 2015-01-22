@@ -30,6 +30,7 @@ using System.Diagnostics;
 using Yodii.Model;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Yodii.Engine
 {
@@ -46,6 +47,10 @@ namespace Yodii.Engine
         PluginData[] _orderedPlugins;
         int _independentPluginsCount;
 
+        public readonly int UniqueNumber;
+        
+        static int _currentUniqueNumber;
+
         internal static Tuple<IYodiiEngineStaticOnlyResult, ConfigurationSolver> CreateAndApplyStaticResolution( YodiiEngine engine, FinalConfiguration finalConfiguration, IDiscoveredInfo discoveredInfo, bool revertServices, bool revertPlugins, bool createStaticSolvedConfigOnSuccess )
         {
             ConfigurationSolver temporarySolver = new ConfigurationSolver(  engine,revertServices, revertPlugins );
@@ -59,6 +64,7 @@ namespace Yodii.Engine
 
         ConfigurationSolver( YodiiEngine engine, bool revertServices = false, bool revertPlugins = false )
         {
+            UniqueNumber = Interlocked.Increment( ref _currentUniqueNumber );
             _engine = engine;
             _services = new Dictionary<string, ServiceData>();
             _serviceFamilies = new List<ServiceData.ServiceFamily>();
@@ -274,10 +280,11 @@ namespace Yodii.Engine
         /// Solves undetermined status based on commands.
         /// </summary>
         /// <param name="pastCommands">Previously honored commands.</param>
+        /// <param name="existingCommandFilter">Optional filter applied to previous commands.</param>
         /// <param name="newOne">Optional new command to honor first.</param>
         /// <returns>This method returns a <see cref="DynamicSolverResult"/> that contains the plugins to start/stop or disable for the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
-        internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
+        internal DynamicSolverResult DynamicResolution( YodiiCommandList pastCommands, Func<InternalYodiiCommand, bool> existingCommandFilter = null, InternalYodiiCommand newOne = null )
         {
             foreach( var f in _serviceFamilies ) f.DynamicResetState();
             foreach( var p in _plugins.Values ) p.DynamicResetState();
@@ -286,20 +293,23 @@ namespace Yodii.Engine
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null );
                 f.DynamicOnAllPluginsStateInitialized();
             }
-            List<YodiiCommand> commands = new List<YodiiCommand>();
+            List<InternalYodiiCommand> commands = new List<InternalYodiiCommand>();
             if( newOne != null )
             {
-                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne, 0 );
+                newOne.BindToConfigSolverData( this );
+                bool alwaysTrue = newOne.ApplyCommand( 0 );
                 Debug.Assert( alwaysTrue, "The newly added command is necessarily okay." );
                 commands.Add( newOne );
             }
 
+            pastCommands.EnsureBindingsTo( this );
             int iCommand = 0;
-            foreach( var previous in pastCommands )
+            var prevCommands = existingCommandFilter != null ? pastCommands.Commands.Where( existingCommandFilter ) : pastCommands.Commands;
+            foreach( var previous in prevCommands )
             {
-                if( newOne == null || newOne.PluginFullName != previous.PluginFullName || newOne.ServiceFullName != previous.ServiceFullName )
+                if( newOne == null || !previous.IsMaskedBy( newOne ) )
                 {
-                    if( ApplyAndTellMeIfCommandMustBeKept( previous, ++iCommand ) )
+                    if( previous.ApplyCommand( ++iCommand ) )
                     {
                         commands.Add( previous );
                     }
@@ -342,30 +352,6 @@ namespace Yodii.Engine
                 }
             }
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
-        }
-        
-        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd, int idxCommand )
-        {
-            // If the plugin does not exist, we keep the command.
-            bool success = true;
-            if( cmd.ServiceFullName != null )
-            {
-                // If the service does not exist, we keep the command.
-                ServiceData s;
-                if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
-                {
-                    success = cmd.Start ? s.DynamicStartByCommand( (cmd.Impact | s.ConfigSolvedImpact).ClearUselessTryBits(), idxCommand == 0 ) : s.DynamicStopByCommand();
-                }
-            }
-            else
-            {
-                PluginData p;
-                if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
-                {
-                    success = cmd.Start ? p.DynamicStartByCommand( (cmd.Impact | p.ConfigSolvedImpact).ClearUselessTryBits(), idxCommand == 0 ) : p.DynamicStopByCommand();
-                }
-            }
-            return success || idxCommand < 50;
         }
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )

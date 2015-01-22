@@ -38,7 +38,7 @@ namespace Yodii.Engine.Tests
         public void TestXmlDeserialization()
         {
             YodiiEngine engineA = MockXmlUtils.CreateEngineFromXmlResource( "Valid001a" );
-            YodiiEngine engineB = StaticConfigurationTests.CreateValid001a();
+            YodiiEngine engineB = StaticConfigurationTests.CreateSimpleGraphWithRunnables();
 
             EquivalenceExtensions.AssertEngineInfoEquivalence( engineA, engineB );
 

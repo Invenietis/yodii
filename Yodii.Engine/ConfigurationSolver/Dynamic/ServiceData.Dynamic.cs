@@ -30,7 +30,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    partial class ServiceData
+    partial class ServiceData : IDynamicItem
     {
         RunningStatus? _dynamicStatus;
         ServiceRunningStatusReason _dynamicReason;

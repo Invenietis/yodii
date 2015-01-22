@@ -49,6 +49,12 @@ namespace Yodii.Model
         /// Details of errors encountered during resolution of configuration.
         /// When not null, <see cref="StaticFailureResult"/> and <see cref="HostFailureResult"/> are null.
         /// </summary>
+        ICommandFailureResult CommandFailureResult { get; }
+
+        /// <summary>
+        /// Details of errors encountered during resolution of configuration.
+        /// When not null, <see cref="StaticFailureResult"/> and <see cref="HostFailureResult"/> are null.
+        /// </summary>
         IConfigurationFailureResult ConfigurationFailureResult { get; }
 
         /// <summary>

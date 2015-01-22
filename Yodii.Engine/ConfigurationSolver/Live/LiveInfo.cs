@@ -96,7 +96,7 @@ namespace Yodii.Engine
 
             // 2 - Builds two lists of new Services and new Plugins and for already existing ones,
             //     updates them with the new information.
-            //     This update does not trigger any ProprtyChanged events and consider only 
+            //     This update does not trigger any PropretyChanged events and consider only 
             //     direct properties of the object.
             //     Changes to linked items (such as a Generalization reference for instance will be 
             //     done later thanks to their Bind method.

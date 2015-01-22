@@ -55,6 +55,11 @@ namespace Yodii.Engine
             get { return null; }
         }
 
+        ICommandFailureResult IYodiiEngineResult.CommandFailureResult
+        {
+            get { return null; }
+        }
+
         IStaticFailureResult IYodiiEngineResult.StaticFailureResult
         {
             get { return null; }

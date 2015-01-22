@@ -32,7 +32,7 @@ namespace Yodii.Engine.Tests.Mocks
 {
     internal static class MockInfoFactory
     {
-        public static DiscoveredInfo CreateGraph001()
+        public static DiscoveredInfo SimpleGraph()
         {
             /**
              *                  +--------+                              +--------+
@@ -135,7 +135,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        public static DiscoveredInfo CreateGraph003()
+        public static DiscoveredInfo ServiceWithTwoPlugins()
         {
             /**
              *  +--------+

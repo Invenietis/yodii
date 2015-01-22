@@ -71,6 +71,7 @@
     <Compile Include="Discoverer\IDiscoverer.cs" />
     <Compile Include="Discoverer\IPluginCtorKnownParameterInfo.cs" />
     <Compile Include="Discoverer\IPluginCtorInfo.cs" />
+    <Compile Include="Host\IDeferredActions.cs" />
     <Compile Include="Host\IgnoreExceptionAttribute.cs" />
     <Compile Include="Host\IgnoreServiceStoppedAttribute.cs" />
     <Compile Include="Host\Plugin\IPluginHostApplyCancellationInfo.cs" />
@@ -89,6 +90,7 @@
     <Compile Include="Host\Service\IYodiiService.cs" />
     <Compile Include="Host\Service\ServiceStatus.cs" />
     <Compile Include="Host\Service\ServiceStatusChangedEventArgs.cs" />
+    <Compile Include="ICommandFailureResult.cs" />
     <Compile Include="IYodiiEngineBase.cs" />
     <Compile Include="Host\IYodiiEngineHostApplyResult.cs" />
     <Compile Include="IYodiiEngine.cs" />

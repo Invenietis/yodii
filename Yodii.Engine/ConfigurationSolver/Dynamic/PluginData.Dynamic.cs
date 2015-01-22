@@ -30,7 +30,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    partial class PluginData
+    partial class PluginData : IDynamicItem
     {
         RunningStatus? _dynamicStatus;
         PluginRunningStatusReason _dynamicReason;

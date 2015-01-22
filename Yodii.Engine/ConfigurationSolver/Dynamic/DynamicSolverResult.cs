@@ -34,9 +34,9 @@ namespace Yodii.Engine
         public readonly IReadOnlyList<IPluginInfo> Disabled;
         public readonly IReadOnlyList<IPluginInfo> Stopped;
         public readonly IReadOnlyList<IPluginInfo> Running;
-        public readonly IReadOnlyList<YodiiCommand> Commands;
+        public readonly IReadOnlyList<InternalYodiiCommand> Commands;
 
-        public DynamicSolverResult( IReadOnlyList<IPluginInfo> disabled, IReadOnlyList<IPluginInfo> stopped, IReadOnlyList<IPluginInfo> running, IReadOnlyList<YodiiCommand> commands )
+        public DynamicSolverResult( IReadOnlyList<IPluginInfo> disabled, IReadOnlyList<IPluginInfo> stopped, IReadOnlyList<IPluginInfo> running, IReadOnlyList<InternalYodiiCommand> commands )
         {
             Disabled = disabled;
             Stopped = stopped;

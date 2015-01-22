@@ -49,31 +49,6 @@ namespace Yodii.Engine
         Queue<Action<IYodiiEngineExternal>> _postActions;
         bool _isStopping;
 
-        class YodiiCommandList : ObservableCollection<YodiiCommand>, IObservableReadOnlyList<YodiiCommand>
-        {
-            public void Merge( IReadOnlyList<YodiiCommand> newCommands )
-            {
-                if( newCommands.Count == 0 )
-                {
-                    this.Clear();
-                    return;
-                }
-                if( this.Count == 0 )
-                {
-                    this.AddRange( newCommands );
-                    return;
-                }
-
-                if( this[0] != newCommands[0] ) this.InsertItem( 0, newCommands[0] );
-                for( int i = 1; i < newCommands.Count; i++ )
-                {
-                    if( newCommands[i] != this[i] ) this.RemoveAt( i-- );
-                }
-                while( this.Count > newCommands.Count ) this.RemoveAt( Count - 1 );
-                Debug.Assert( this.Count == newCommands.Count );
-            }
-        }
-
         /// <summary>
         /// Raised whenever <see cref="IsRunning"/> or <see cref="IsStopping"/> changed.
         /// </summary>
@@ -104,7 +79,7 @@ namespace Yodii.Engine
             return ConfigurationSolver.CreateAndApplyStaticResolution( this, finalConfiguration, info, false, false, false );
         }
 
-        internal IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<YodiiCommand, bool> existingCommandFilter, YodiiCommand cmd, Action onPreSuccess = null )
+        internal IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<InternalYodiiCommand, bool> existingCommandFilter, InternalYodiiCommand cmd, Action onPreSuccess = null )
         {
             bool isRootStart = false;
             Action<Action<IYodiiEngineExternal>> postActionCollector = null;
@@ -118,7 +93,7 @@ namespace Yodii.Engine
                 postActionCollector = _postActions.Enqueue;
             }
 
-            var dynResult = solver.DynamicResolution( existingCommandFilter != null ? _yodiiCommands.Where( existingCommandFilter ) : _yodiiCommands, cmd );
+            var dynResult = solver.DynamicResolution( _yodiiCommands, existingCommandFilter, cmd );
             IYodiiEngineHostApplyResult hostResult = null;
             try
             {
@@ -137,6 +112,7 @@ namespace Yodii.Engine
             {
                 IYodiiEngineResult result =  solver.CreateDynamicFailureResult( hostResult.CancellationInfo );
                 _liveInfo.UpdateRuntimeErrors( hostResult.CancellationInfo, solver.FindExistingPlugin );
+                if( _currentSolver != solver ) _yodiiCommands.ClearBindings(); 
                 return result;
             }
             // Success:
@@ -212,9 +188,11 @@ namespace Yodii.Engine
             return DoDynamicResolution( temporarySolver, null, null );
         }
 
-        internal IYodiiEngineResult AddYodiiCommand( YodiiCommand cmd )
+        internal IYodiiEngineResult AddYodiiCommand( InternalYodiiCommand cmd )
         {
             Debug.Assert( IsRunning, "Cannot call this function when the engine is not running" );
+            Debug.Assert( cmd.LiveItem != null, "New commands are necessarily bound to an existing live item." );
+            if( !cmd.IsNewValidLiveCommand ) return new YodiiEngineResult( new CommandFailureResult( cmd ), this );
             return DoDynamicResolution( _currentSolver, null, cmd );
         }
 
@@ -223,11 +201,11 @@ namespace Yodii.Engine
             Debug.Assert( callerKey != null );
             if( IsRunning )
             {
-                return DoDynamicResolution( _currentSolver, c => c.CallerKey != callerKey, null );
+                return DoDynamicResolution( _currentSolver, c => c.Command.CallerKey != callerKey, null );
             }
             else
             {
-                _yodiiCommands.RemoveWhereAndReturnsRemoved( c => c.CallerKey == callerKey ).Count();
+                _yodiiCommands.Commands.RemoveWhereAndReturnsRemoved( c => c.Command.CallerKey == callerKey ).Count();
                 return _successResult;
             }
         }
@@ -244,6 +222,30 @@ namespace Yodii.Engine
             return StartEngine( false, false, persistedCommands );
         }
 
+
+        /// <summary>
+        /// Starts the engine (that must be stopped).
+        /// </summary>
+        /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
+        /// <param name="revertPlugins">True to revert the list of the plugins (based on their <see cref="IPluginInfo.PluginFullName"/>).</param>
+        /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
+        /// <returns>The result.</returns>
+        /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
+        public IYodiiEngineResult StartEngine( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
+        {
+            if( IsRunning ) throw new InvalidOperationException();
+            _yodiiCommands.Commands.Clear();
+            if( persistedCommands != null ) _yodiiCommands.Commands.AddRange( persistedCommands.Select( c => new InternalYodiiCommand( c, null ) ) );
+            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _manager.DiscoveredInfo, revertServices, revertPlugins, false );
+            if( r.Item1 != null )
+            {
+                Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
+                Debug.Assert( r.Item1.Engine == this );
+                return r.Item1;
+            }
+            return DoDynamicResolution( r.Item2, null, null );
+        }
+        
         /// <summary>
         /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
         /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
@@ -280,12 +282,7 @@ namespace Yodii.Engine
         {
             if( pluginOrService == null ) throw new ArgumentNullException();
             if( !IsRunning ) throw new InvalidOperationException();
-            if( !pluginOrService.Capability.CanStartWith( impact ) )
-            {
-                throw new InvalidOperationException( "You must call Capability.CanStart with the wanted impact and ensure that it returns true before calling Start." );
-            }
-            var cmd = new YodiiCommand( true, pluginOrService.FullName, pluginOrService.IsPlugin, impact, callerKey );
-            return AddYodiiCommand( cmd );
+            return AddYodiiCommand( new InternalYodiiCommand( pluginOrService, true, impact, callerKey ) );
         }
 
         /// <summary>
@@ -310,12 +307,12 @@ namespace Yodii.Engine
         {
             if( pluginOrService == null ) throw new ArgumentNullException();
             if( !IsRunning ) throw new InvalidOperationException();
-            if( !pluginOrService.Capability.CanStop )
-            {
-                throw new InvalidOperationException( "You must call Capability.CanStop and ensure that it returns true before calling Stop." );
-            }
-            var cmd = new YodiiCommand( false, pluginOrService.FullName, pluginOrService.IsPlugin, StartDependencyImpact.Unknown, callerKey );
-            return AddYodiiCommand( cmd );
+            return AddYodiiCommand( new InternalYodiiCommand( pluginOrService, false, StartDependencyImpact.Unknown, callerKey ) );
+        }
+
+        IYodiiEngineResult ItemNotFoundFailure( string name )
+        {
+            return new YodiiEngineResult( new CommandFailureResult( name, false, true ), this );
         }
 
         /// <summary>
@@ -332,10 +329,11 @@ namespace Yodii.Engine
         /// <returns>Result detailing whether the plugin was successfully started or not.</returns>
         public IYodiiEngineResult StartPlugin( string pluginFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null )
         {
+            if( pluginFullName == null ) throw new ArgumentNullException();
             if( !IsRunning ) throw new InvalidOperationException();
             var p = _liveInfo.FindPlugin( pluginFullName );
-            if( p == null ) throw new ArgumentException();
-            return StartItem( p, impact, callerKey );
+            if( p == null ) return ItemNotFoundFailure( pluginFullName );
+            return AddYodiiCommand( new InternalYodiiCommand( p, true, impact, callerKey ) );
         }
 
         /// <summary>
@@ -352,10 +350,11 @@ namespace Yodii.Engine
         /// <returns>Result detailing whether the service was successfully started or not.</returns>
         public IYodiiEngineResult StartService( string serviceFullName, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null )
         {
+            if( serviceFullName == null ) throw new ArgumentNullException();
             if( !IsRunning ) throw new InvalidOperationException();
             var s = _liveInfo.FindService( serviceFullName );
-            if( s == null ) throw new ArgumentException();
-            return StartItem( s, impact, callerKey );
+            if( s == null ) return ItemNotFoundFailure( serviceFullName );
+            return AddYodiiCommand( new InternalYodiiCommand( s, true, impact, callerKey ) );
         }
 
         /// <summary>
@@ -372,8 +371,8 @@ namespace Yodii.Engine
         {
             if( !IsRunning ) throw new InvalidOperationException();
             var p = _liveInfo.FindPlugin( pluginFullName );
-            if( p == null ) throw new ArgumentException();
-            return StopItem( p, callerKey );
+            if( p == null ) return ItemNotFoundFailure( pluginFullName ); 
+            return AddYodiiCommand( new InternalYodiiCommand( p, false, StartDependencyImpact.Unknown, callerKey ) );
         }
 
         /// <summary>
@@ -390,8 +389,8 @@ namespace Yodii.Engine
         {
             if( !IsRunning ) throw new InvalidOperationException();
             var s = _liveInfo.FindService( serviceFullName );
-            if( s == null ) throw new ArgumentException();
-            return StopItem( s, callerKey );
+            if( s == null ) return ItemNotFoundFailure( serviceFullName ); 
+            return AddYodiiCommand( new InternalYodiiCommand( s, false, StartDependencyImpact.Unknown, callerKey ) );
         }
 
         #endregion
@@ -413,28 +412,6 @@ namespace Yodii.Engine
             return r.Item1;
         }
 
-        /// <summary>
-        /// Starts the engine (that must be stopped).
-        /// </summary>
-        /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
-        /// <param name="revertPlugins">True to revert the list of the plugins (based on their <see cref="IPluginInfo.PluginFullName"/>).</param>
-        /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
-        /// <returns>The result.</returns>
-        /// <exception cref="InvalidOperationException">This engine must not be running (<see cref="IsRunning"/> must be false).</exception>
-        public IYodiiEngineResult StartEngine( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
-        {
-            if( IsRunning ) throw new InvalidOperationException();
-            _yodiiCommands.Clear();
-            if( persistedCommands != null ) _yodiiCommands.AddRange( persistedCommands );
-            var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _manager.DiscoveredInfo, revertServices, revertPlugins, false );
-            if( r.Item1 != null )
-            {
-                Debug.Assert( !r.Item1.Success, "Not null means necessarily an error." );
-                Debug.Assert( r.Item1.Engine == this );
-                return r.Item1;
-            }
-            return DoDynamicResolution( r.Item2, null, null );
-        }
 
         /// <summary>
         /// YodiiCommands are exposed by LiveInfo, not by the IYodiiEngine itself.

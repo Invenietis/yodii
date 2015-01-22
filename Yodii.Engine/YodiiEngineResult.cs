@@ -35,6 +35,7 @@ namespace Yodii.Engine
     {
         readonly IYodiiEngineExternal _engine;
         readonly IConfigurationFailureResult _configurationFailureResult;
+        readonly ICommandFailureResult _commandFailureResult;
         readonly IStaticFailureResult _staticFailureResult;
         readonly IDynamicFailureResult _hostFailureResult;
         readonly IReadOnlyList<IPluginInfo> _pluginCulprits;
@@ -55,6 +56,19 @@ namespace Yodii.Engine
             _pluginCulprits = CKReadOnlyListEmpty<IPluginInfo>.Empty;
             _serviceCulprits = CKReadOnlyListEmpty<IServiceInfo>.Empty;
             _engine = engine;
+        }
+
+        /// <summary>
+        /// Static only success resolution constructor.
+        /// </summary>
+        public YodiiEngineResult( ICommandFailureResult commandFailure, YodiiEngine engine )
+        {
+            Debug.Assert( commandFailure != null );
+            Debug.Assert( engine != null );
+            _pluginCulprits = CKReadOnlyListEmpty<IPluginInfo>.Empty;
+            _serviceCulprits = CKReadOnlyListEmpty<IServiceInfo>.Empty;
+            _engine = engine;
+            _commandFailureResult = commandFailure;
         }
 
         /// <summary>
@@ -117,7 +131,7 @@ namespace Yodii.Engine
 
         public IYodiiEngineExternal Engine { get { return _engine; } }
 
-        public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
+        public bool Success { get { return _configurationFailureResult == null && _commandFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
 
         public IConfigurationFailureResult ConfigurationFailureResult
         {
@@ -132,6 +146,11 @@ namespace Yodii.Engine
         public IDynamicFailureResult HostFailureResult
         {
             get { return _hostFailureResult; }
+        }
+
+        public ICommandFailureResult CommandFailureResult
+        {
+            get { return _commandFailureResult; }
         }
 
         public IReadOnlyList<IPluginInfo> PluginCulprits

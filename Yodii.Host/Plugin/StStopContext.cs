@@ -36,14 +36,14 @@ namespace Yodii.Host
         {
             MustDisable = mustDisable;
             IsDisabledOnly = disableOnly;
-            IsEngineStopping = engineStopping;
+            IsCancellable = engineStopping;
         }
 
         internal readonly bool IsDisabledOnly;
 
         internal readonly bool MustDisable;
 
-        public bool IsEngineStopping { get; private set; }
+        public bool IsCancellable { get; private set; }
 
         public Action<IStartContext> RollbackAction { get; set; }
 
@@ -56,7 +56,7 @@ namespace Yodii.Host
 
         public override void Cancel( string message = null, Exception ex = null )
         {
-            if( IsEngineStopping ) throw new InvalidOperationException( R.CannotCancelSinceEngineIsStopping );
+            if( IsCancellable ) throw new InvalidOperationException( R.CannotCancelSinceEngineIsStopping );
             base.Cancel( message, ex );
         }
 
