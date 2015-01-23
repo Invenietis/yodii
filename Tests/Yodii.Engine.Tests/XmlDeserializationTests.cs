@@ -43,7 +43,7 @@ namespace Yodii.Engine.Tests
             EquivalenceExtensions.AssertEngineInfoEquivalence( engineA, engineB );
 
             engineA = MockXmlUtils.CreateEngineFromXmlResource( "Graph005" );
-            var info = MockInfoFactory.CreateGraph005();
+            var info = MockInfoFactory.MutualExclusionsViaRunningDependencies();
 
             EquivalenceExtensions.AssertDiscoveredInfoEquivalence( engineA.Configuration.DiscoveredInfo, info );
         }

@@ -37,7 +37,7 @@ namespace Yodii.Engine.Tests.Mocks
             /**
              *                  +--------+                              +--------+
              *      +---------->|ServiceA+-------+   *----------------->|ServiceB|
-             *      |           |        |       |   | Need Running     |        |   
+             *      |           |        |       |   |      Running     |        |   
              *      |           +---+----+       |   |                  +---+----+
              *      |               |            |   |                      |
              *      |               |            |   |                      |
@@ -76,12 +76,12 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        public static DiscoveredInfo CreateGraph002()
+        public static DiscoveredInfo SimpleGraphWithSpecializedService()
         {
             /**
              *                 +--------+                              +--------+
              *     +---------->|ServiceA+-------+   *----------------->|ServiceB|
-             *     |           +---+----+       |   | Need Running     +---+----+
+             *     |           +---+----+       |   |      Running     +---+----+
              *     |               |            |   |                      |
              *     |               |            |   |                      |
              *     |               |            |   |                      |
@@ -165,7 +165,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        public static DiscoveredInfo CreateGraph004()
+        public static DiscoveredInfo ThreeServicesAndTwoPlugins()
         {
             /**
              *  +--------+
@@ -207,7 +207,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        public static DiscoveredInfo CreateGraph005()
+        public static DiscoveredInfo MutualExclusionsViaRunningDependencies()
         {
             #region graph
             /*
@@ -224,9 +224,9 @@ namespace Yodii.Engine.Tests.Mocks
             *  +----+----+     |Optional |                            |Optional |         |Optional |
             *       |          +---------+                            +---------+         +-----+---+
             *       |                   |                                 |                     |
-            *       |                   |                                 |                     |
-            *       |                   |                                 |                     |
-            *       |                   |                                 |                     |
+            *       |                   |                                 |                     | Running
+            *       |                   | Running                         |                     |
+            *       | Running           |                                 | Running             |
             *       |                   |                                 |                     |
              *      |                   |                                 |                     |
             *       |                   |                                 |                     |
@@ -314,7 +314,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        public static DiscoveredInfo CreateGraph005b()
+        public static DiscoveredInfo SystematicMutualExclusionsViaRunningDependencies()
         {
             #region graph
             /*
@@ -421,52 +421,52 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        public static DiscoveredInfo CreateGraph005c()
+        public static DiscoveredInfo OtherMutualExclusionsViaRunningDependencies()
         {
             #region graph
             /*
             *                  +--------+                            +--------+
             *      +-----------|Service1+                            |Service2|---------------+
-            *      |           |Running |                            |Running |               |      
+            *      |           |        |                            |        |               |      
             *      |           +---+----+                            +----+---+               |      
             *      |               |                                      |                   |      
             *      |               |                                      |                   |      
             *      |               |                                      |                   |      
             *  +---+-----+         |                                      |                   |      
             *  |Plugin1  |     +---+-----+                            +---+-----+         +---+-----+
-            *  |Optional |     |Plugin2  |                            |Plugin3  |         |Plugin4  +--------------------+
-            *  +----+----+     |Optional |------------------------+   |Optional |         |Optional |                    | 
+            *  |         |     |Plugin2  |             Running        |Plugin3  |         |Plugin4  +--------------------+
+            *  +----+----+     |         |------------------------+   |         |         |         |                    | 
             *       |          +---------+                        |   +---------+         +---------+                    | 
             *       |                   |                         |       |                                              | 
-            *       |                   |                         |       |                                              | 
-            *       |                   |                         |       |                                              | 
+            *       | Running           |                         |       | Running                                      | Running
+            *       |                   | Running                 |       |                                              | 
             *       |                   |                         |       |                                              | 
             *       |                   |                         |       |                                              | 
              *      |                   |                         |       |                                              | 
             *       |                   |                         |       |                                              | 
             *       |                   |           +--------+    |       |                                              |          
             *       |                   |           |Service3+    |       |                   +--------+                 |          
-            *       |       +-----------|-----------|Optional|    |       |                   |Service4+                 |          
-            *       |       |           |           +---+----+    |       |       +-----------|Optional|-------+         |            
+            *       |       +-----------|-----------|        |    |       |                   |Service4+                 |          
+            *       |       |           |           +---+----+    |       |       +-----------|        |-------+         |            
             *       |       |           |               |         |       |       |           +---+----+       |         |               
             *       |       |           |               |         |       |       |                            |         |           
             *       |   +---+-------+   |          +----+------+  |       |       |                            |         |           
             *       |   |Service3.1 |   |          |Service3.2 |  |       |    +--+--------+             +-----+-----+   |       
-            *       +-->|Optional   |   |          |Optional   |  +-------|--->|Service4.1 |             |Service4.2 |   |       
-             *          +-----------+   |          +-----+-----+          |    |Optional   |             |Optional   |<--+       
+            *       +-->|           |   |          |           |  +-------|--->|Service4.1 |             |Service4.2 |   |       
+             *          +-----------+   |          +-----+-----+          |    |           |             |           |<--+       
              *              |           |                |                |    +-----------+             +-----+-----+     
              *              |           |                |                |        |                           |           
              *          +---+-------+   +--------->+-----+-----+          |        |                           |
              *          |Service3.3 |              |Service3.4 |          | +---+-------+              +----+------+  
-             *          |Optional   |              |Optional   |          +>|Service4.3 |              |Service4.4 |  
-             *          +--+--------+              +-----------+            |Optional   |              |Optional   |  
+             *          |           |              |           |          +>|Service4.3 |              |Service4.4 |  
+             *          +--+--------+              +-----------+            |           |              |           |  
              *             |                            |                   +--+--------+              +-----------+ 
              *             |                            |                      |                            |
              *             |                            |                      |                            |
              *          +--+-----+                  +---+----+                 |                            |
              *          |Plugin5 |                  |Plugin6 |              +--+-----+                  +---+----+
-             *          |Optional|                  |Optional|              |Plugin7 |                  |Plugin8 |
-             *          +--------+                  +--------+              |Optional|                  |Optional|
+             *          |        |                  |        |              |Plugin7 |                  |Plugin8 |
+             *          +--------+                  +--------+              |        |                  |        |
              *                                                              +--------+                  +--------+
             */
             #endregion
@@ -532,7 +532,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        internal static IDiscoveredInfo CreateGraph005d()
+        internal static IDiscoveredInfo TwoExclusiveReferences( DependencyRequirement requirement )
         {
             DiscoveredInfo d = new DiscoveredInfo();
 
@@ -540,41 +540,41 @@ namespace Yodii.Engine.Tests.Mocks
             /*
             *                  +--------+                            
             *      +-----------|Service1+                            
-            *      |           |Running |                            
+            *      |           |        |                            
             *      |           +---+----+                            
             *      |               |                                 
             *      |               |                                 
             *      |               |                                 
             *  +---+-----+         |                                 
             *  |Plugin1  |     +---+-----+                           
-            *  |Optional |     |Plugin2  |                           
-            *  +----+----+     |Optional |-----------------------+ 
+            *  |         |     |Plugin2  |           requirement                
+            *  +----+----+     |         |-----------------------+ 
             *       |          +---------+                       |
             *       |                                            |
             *       |                                            |
             *       |                                            |
             *       |                                            |
-            *       |Runnable                                    |
+            *       |requirement                                 |
              *      |                                            |
             *       |                                            |
              *      |                                            |
             *       |                              +---------+   |          
             *       |                              |Service2 |   |         
-            *       |       +----------------------|Optional |   |          
+            *       |       +----------------------|         |   |          
             *       |       |                       +---+----+   |            
             *       |       |                          |         |              
             *       |       |                          |         |          
             *       |   +---+-------+             +----+------+  |          
             *       |   |Service2.1 |             |Service2.2 |<-+      
-            *       +-->|Optional   |             |Optional   |        
+            *       +-->|           |             |           |        
             *           +-----------+             +-----+-----+            
             *               |                           |            
             *               |                           |            
             *               |                         +--+-----+
             *               |                         |Plugin4 |
-            *            +--+-----+                   |Optional|
+            *            +--+-----+                   |        |
             *            |Plugin3 |                   +--------+
-            *            |Optional|          
+            *            |        |          
             *            +--------+          
             *                           
             *                           
@@ -593,86 +593,11 @@ namespace Yodii.Engine.Tests.Mocks
 
             d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
-            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2.1" ), DependencyRequirement.Runnable );
+            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2.1" ), requirement );
 
             d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service1" );
-            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.Runnable );
-
-            d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service2.1" );
-            d.PluginInfos.Add( new PluginInfo( "Plugin4", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin4" ).Service = d.FindService( "Service2.2" );
-
-            return d;
-        }
-
-        internal static IDiscoveredInfo CreateGraph005e()
-        {
-            DiscoveredInfo d = new DiscoveredInfo();
-
-            #region graph
-            /*
-            *                  +--------+                            
-            *      +-----------|Service1+                            
-            *      |           |Running |                            
-            *      |           +---+----+                            
-            *      |               |                                 
-            *      |               |                                 
-            *      |               |                                 
-            *  +---+-----+         |                                 
-            *  |Plugin1  |     +---+-----+                           
-            *  |Optional |     |Plugin2  |                           
-            *  +----+----+     |Optional |-----------------------+ 
-            *       |          +---------+                       |
-            *       |                                            |
-            *       |                                            |
-            *       |                                            |
-            *       |                                            |
-            *       |Optional                                    |
-             *      |                                            |
-            *       |                                            |
-             *      |                                            |
-            *       |                              +---------+   |          
-            *       |                              |Service2 |   |         
-            *       |       +----------------------|Optional |   |          
-            *       |       |                       +---+----+   |            
-            *       |       |                          |         |              
-            *       |       |                          |         |          
-            *       |   +---+-------+             +----+------+  |          
-            *       |   |Service2.1 |             |Service2.2 |<-+      
-            *       +-->|Optional   |             |Optional   |        
-            *           +-----------+             +-----+-----+            
-            *               |                           |            
-            *               |                           |            
-            *               |                         +--+-----+
-            *               |                         |Plugin4 |
-            *            +--+-----+                   |Optional|
-            *            |Plugin3 |                   +--------+
-            *            |Optional|          
-            *            +--------+          
-            *                           
-            *                           
-            *                                                        
-            */
-            #endregion
-
-            d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
-            d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
-
-            d.ServiceInfos.Add( new ServiceInfo( "Service2.1", d.DefaultAssembly ) );
-            d.FindService( "Service2.1" ).Generalization = d.FindService( "Service2" );
-
-            d.ServiceInfos.Add( new ServiceInfo( "Service2.2", d.DefaultAssembly ) );
-            d.FindService( "Service2.2" ).Generalization = d.FindService( "Service2" );
-
-            d.PluginInfos.Add( new PluginInfo( "Plugin1", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin1" ).Service = d.FindService( "Service1" );
-            d.FindPlugin( "Plugin1" ).AddServiceReference( d.FindService( "Service2.1" ), DependencyRequirement.Optional );
-
-            d.PluginInfos.Add( new PluginInfo( "Plugin2", d.DefaultAssembly ) );
-            d.FindPlugin( "Plugin2" ).Service = d.FindService( "Service1" );
-            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service2.2" ), DependencyRequirement.Optional );
+            d.FindPlugin( "Plugin2" ).AddServiceReference( d.FindService( "Service2.2" ), requirement );
 
             d.PluginInfos.Add( new PluginInfo( "Plugin3", d.DefaultAssembly ) );
             d.FindPlugin( "Plugin3" ).Service = d.FindService( "Service2.1" );
@@ -797,10 +722,6 @@ namespace Yodii.Engine.Tests.Mocks
         {
             DiscoveredInfo d = new DiscoveredInfo();
 
-            #region graph
-            //See PNG for better viewing
-            #endregion
-
             d.ServiceInfos.Add( new ServiceInfo( "Service1", d.DefaultAssembly ) );
             d.ServiceInfos.Add( new ServiceInfo( "Service2", d.DefaultAssembly ) );
             d.ServiceInfos.Add( new ServiceInfo( "Service3", d.DefaultAssembly ) );
@@ -897,7 +818,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        internal static IDiscoveredInfo CreateGraph008()
+        internal static IDiscoveredInfo BigGraph()
         {
             DiscoveredInfo d = new DiscoveredInfo();
 
@@ -1005,7 +926,7 @@ namespace Yodii.Engine.Tests.Mocks
             return d;
         }
 
-        internal static IDiscoveredInfo CreateGraphDynamicInvalidLoop()
+        internal static IDiscoveredInfo DynamicInvalidLoop()
         {
             DiscoveredInfo d = new DiscoveredInfo();
 

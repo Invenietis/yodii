@@ -356,7 +356,7 @@ namespace Yodii.Engine.Tests
             */
             #endregion
             YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
-            engine.Configuration.SetDiscoveredInfo( MockInfoFactory.CreateGraphDynamicInvalidLoop() );
+            engine.Configuration.SetDiscoveredInfo( MockInfoFactory.DynamicInvalidLoop() );
             RunAnotherLoop( engine, ConfigurationStatus.Optional );
             RunAnotherLoop( engine, ConfigurationStatus.Runnable );
             RunAnotherLoop( engine, ConfigurationStatus.Running );
