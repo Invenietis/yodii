@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Tests\Yodii.Discoverer.Tests\ChoucrouteTest2\UntaggedPlugin.cs) is part of CiviKey. 
+* This file (Tests\Yodii.Discoverer.Tests\SampleTest1\SamplePlugin.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -23,13 +23,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public class UntaggedPlugin
+    public class SamplePlugin : YodiiPluginBase, ISampleService
     {
-        public UntaggedPlugin() { }
+        IService<IAnotherService> _serviceOpt;
+
+        public SamplePlugin( IOptionalService<IAnotherService> s, Microsoft.SqlServer.Server.SqlContext context )
+        {
+            _serviceOpt = s;
+        }
+
+        void ISampleService.DoSomething()
+        {
+            Debug.WriteLine( "Done" );
+        }
     }
 }

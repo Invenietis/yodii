@@ -17,7 +17,7 @@ namespace Yodii.Engine.Tests
         public void serialization_with_null_discovered_info()
         {
             var c = CreateConfiguration();
-            YodiiConfiguration copy = SerializeAndDeserialize( c );
+            YodiiConfiguration copy = SerializationCopy( c );
             CheckConfiguration( copy );
             Assert.That( copy.DiscoveredInfo, Is.Null );
         }
@@ -27,7 +27,7 @@ namespace Yodii.Engine.Tests
         {
             var c = CreateConfiguration();
             c.DiscoveredInfo = MockInfoFactory.BigGraph();
-            YodiiConfiguration copy = SerializeAndDeserialize( c );
+            YodiiConfiguration copy = SerializationCopy( c );
             CheckConfiguration( copy );
             Assert.That( copy.DiscoveredInfo, Is.Null );
         }
@@ -59,24 +59,28 @@ namespace Yodii.Engine.Tests
         {
             var c = CreateConfiguration();
             c.DiscoveredInfo = new SerializableDiscoveredInfo() { SerializedData = "It is serialized." };
-            YodiiConfiguration copy = SerializeAndDeserialize( c );
+            YodiiConfiguration copy = SerializationCopy( c );
             CheckConfiguration( copy );
             Assert.That( copy.DiscoveredInfo, Is.Not.Null );
             Assert.That( copy.DiscoveredInfo, Is.InstanceOf<SerializableDiscoveredInfo>() );
             Assert.That( ((SerializableDiscoveredInfo)copy.DiscoveredInfo).SerializedData, Is.EqualTo( "It is serialized." ) );
         }
 
-        static YodiiConfiguration SerializeAndDeserialize( YodiiConfiguration c )
+        [Test]
+        public void EmptyDiscoveredInfo_is_serializable()
         {
-            YodiiConfiguration copy;
+            Assert.That( SerializationCopy( EmptyDiscoveredInfo.Empty ), Is.SameAs( EmptyDiscoveredInfo.Empty ) );
+        }
+
+        static T SerializationCopy<T>( T o )
+        {
             using( var s = new MemoryStream() )
             {
                 BinaryFormatter f = new BinaryFormatter();
-                f.Serialize( s, c );
+                f.Serialize( s, o );
                 s.Position = 0;
-                copy = (YodiiConfiguration)f.Deserialize( s );
+                return (T)f.Deserialize( s );
             }
-            return copy;
         }
 
         static void CheckConfiguration( YodiiConfiguration copy )

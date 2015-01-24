@@ -31,6 +31,7 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer
 {
+    [Serializable]
     internal sealed class ServiceReferenceInfo : IServiceReferenceInfo
     {
         readonly IServiceInfo _reference;

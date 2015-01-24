@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Tests\Yodii.Discoverer.Tests\ChoucrouteTest1\ChoucroutePlugin.cs) is part of CiviKey. 
+* This file (Tests\Yodii.Discoverer.Tests\SampleTest3\ITest3Service2.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -23,26 +23,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public class ChoucroutePlugin : YodiiPluginBase, IChoucrouteService
+    public interface ITest3Service2 : ITest3Service1
     {
-        IService<IAnotherService> _serviceOpt;
-
-        public ChoucroutePlugin( IOptionalService<IAnotherService> s, Microsoft.SqlServer.Server.SqlContext context )
-        {
-            _serviceOpt = s;
-        }
-
-        void IChoucrouteService.DoSomething()
-        {
-            Debug.WriteLine( "Done" );
-        }
     }
 }

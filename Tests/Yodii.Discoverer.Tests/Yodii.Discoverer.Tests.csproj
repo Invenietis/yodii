@@ -58,18 +58,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChoucrouteTest1\ChoucroutePlugin.cs" />
-    <Compile Include="ChoucrouteTest1\IAnotherService.cs" />
-    <Compile Include="ChoucrouteTest1\IChoucrouteService.cs" />
-    <Compile Include="ChoucrouteTest2\IService1.cs" />
-    <Compile Include="ChoucrouteTest2\IService2.cs" />
-    <Compile Include="ChoucrouteTest2\Plugin1.cs" />
-    <Compile Include="ChoucrouteTest2\UntaggedPlugin.cs" />
-    <Compile Include="ChoucrouteTest3\ITest3Service1.cs" />
-    <Compile Include="ChoucrouteTest3\ITest3Service2.cs" />
-    <Compile Include="ChoucrouteTest3\Plugin1Bis.cs" />
-    <Compile Include="ChoucrouteTest4\AbstractClass.cs" />
-    <Compile Include="ChoucrouteTest4\DerivedClass.cs" />
+    <Compile Include="DiscoveredInfoTests.cs" />
+    <Compile Include="PluginsAndServices\SamplePlugin.cs" />
+    <Compile Include="PluginsAndServices\IAnotherService.cs" />
+    <Compile Include="PluginsAndServices\ISampleService.cs" />
+    <Compile Include="PluginsAndServices\IService1.cs" />
+    <Compile Include="PluginsAndServices\IService2.cs" />
+    <Compile Include="PluginsAndServices\Plugin1.cs" />
+    <Compile Include="PluginsAndServices\ITest3Service1.cs" />
+    <Compile Include="PluginsAndServices\ITest3Service2.cs" />
+    <Compile Include="PluginsAndServices\Plugin1Bis.cs" />
+    <Compile Include="PluginsAndServices\AbstractPlugin.cs" />
+    <Compile Include="PluginsAndServices\DerivedPlugin.cs" />
     <Compile Include="DiscovererTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

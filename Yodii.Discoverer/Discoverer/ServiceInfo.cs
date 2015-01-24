@@ -31,7 +31,7 @@ using CK.Core;
 
 namespace Yodii.Discoverer
 {
-    [DebuggerDisplay( "{_serviceFullName} < {_generalization}" )]
+    [Serializable]
     internal sealed class ServiceInfo : IServiceInfo, IDiscoveredItem
     {
         readonly string _serviceFullName;

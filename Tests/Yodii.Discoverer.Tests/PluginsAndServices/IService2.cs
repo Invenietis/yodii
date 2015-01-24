@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Tests\Yodii.Discoverer.Tests\ChoucrouteTest1\IChoucrouteService.cs) is part of CiviKey. 
+* This file (Tests\Yodii.Discoverer.Tests\SampleTest2\IService2.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -29,8 +29,7 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public interface IChoucrouteService : IYodiiService
+    public interface IService2 : IYodiiService
     {
-        void DoSomething();
     }
 }

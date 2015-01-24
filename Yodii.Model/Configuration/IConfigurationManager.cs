@@ -47,6 +47,12 @@ namespace Yodii.Model
         IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
 
         /// <summary>
+        /// Gets a <see cref="YodiiConfiguration"/> object that is a copy of the current configuration.
+        /// </summary>
+        /// <returns>A new <see cref="YodiiConfiguration"/> object.</returns>
+        YodiiConfiguration GetConfiguration();
+
+        /// <summary>
         /// Triggered when a configuration change was not canceled, once a new FinalConfiguration is available.
         /// </summary>
         event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;

@@ -103,6 +103,22 @@ namespace Yodii.Engine
             _discoveredInfo = EmptyDiscoveredInfo.Empty;
         }
 
+        public YodiiConfiguration GetConfiguration()
+        {
+            var c = new YodiiConfiguration();
+            c.DiscoveredInfo = _discoveredInfo;
+            foreach( var layer in Layers )
+            {
+                var l = new YodiiConfigurationLayer() { Name = layer.LayerName };
+                foreach( var item in layer.Items )
+                {
+                    var i = new YodiiConfigurationItem() { ServiceOrPluginFullName = item.ServiceOrPluginFullName, Status = item.Status, Impact = item.Impact, Description = item.Description };
+                    l.Items.Add( i );
+                }
+            }
+            return c;
+        }
+
         public readonly YodiiEngine Engine;
 
         ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, FinalConfigurationItem> final, Func<ConfigurationItem, bool> filter = null )

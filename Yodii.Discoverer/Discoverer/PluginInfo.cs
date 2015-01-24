@@ -32,6 +32,7 @@ using System.Runtime.InteropServices;
 
 namespace Yodii.Discoverer
 {
+    [Serializable]
     internal sealed class PluginInfo : IPluginInfo, IDiscoveredItem, IPluginCtorInfo
     {
         readonly string _pluginFullName;

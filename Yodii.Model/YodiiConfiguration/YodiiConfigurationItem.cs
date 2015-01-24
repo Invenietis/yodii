@@ -10,7 +10,7 @@ namespace Yodii.Model
     /// This is a simple serializable POCO.
     /// </summary>
     [Serializable]
-    public sealed class YodiiConfigurationItem
+    public sealed class YodiiConfigurationItem : IConfigurationItemData
     {
         string _name;
         string _description;

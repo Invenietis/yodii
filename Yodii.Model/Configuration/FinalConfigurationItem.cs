@@ -78,10 +78,10 @@ namespace Yodii.Model
         /// <summary>
         /// This function encapsulates all configuration constraints regarding the <see cref="ConfigurationStatus"/> of an item.
         /// </summary>
-        /// <param name="s1">Current <see cref="ConfigurationStatus"/></param>
-        /// <param name="s2">Wanted <see cref="ConfigurationStatus"/></param>
+        /// <param name="s1">First <see cref="ConfigurationStatus"/>.</param>
+        /// <param name="s2">Second <see cref="ConfigurationStatus"/>.</param>
         /// <param name="invalidCombination">string expliciting the error. Empty if all is well</param>
-        /// <returns></returns>
+        /// <returns>Resulting combined status.</returns>
         public static ConfigurationStatus Combine( ConfigurationStatus s1, ConfigurationStatus s2, out string invalidCombination )
         {
             invalidCombination = "";
@@ -100,7 +100,9 @@ namespace Yodii.Model
                 }
                 else
                 {
-                    invalidCombination = string.Format( "Something went terribly, terribly wrong..." );
+                    bool invalidS1 = !Enum.IsDefined( typeof( ConfigurationStatus ), s1 );
+                    Debug.Assert( invalidS1 || !Enum.IsDefined( typeof( ConfigurationStatus ), s2 ) );
+                    invalidCombination = string.Format( "Invalid status value: {0}", invalidS1 ? (int)s1 : (int)s2 );
                     return s1;
                 }
             }

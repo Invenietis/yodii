@@ -31,6 +31,7 @@ using CK.Core;
 
 namespace Yodii.Discoverer
 {
+    [Serializable]
     internal class DiscoveredInfo : IDiscoveredInfo
     {
         readonly IReadOnlyList<IAssemblyInfo> _assemblies;

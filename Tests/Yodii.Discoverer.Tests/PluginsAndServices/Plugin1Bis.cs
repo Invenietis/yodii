@@ -1,6 +1,6 @@
 #region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Tests\Yodii.Discoverer.Tests\ChoucrouteTest2\IService1.cs) is part of CiviKey. 
+* This file (Tests\Yodii.Discoverer.Tests\SampleTest3\Plugin1Bis.cs) is part of CiviKey. 
 *  
 * CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
@@ -22,14 +22,17 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Yodii.Model;
 
 namespace Yodii.Discoverer.Tests
 {
-    public interface IService1 : IYodiiService
+    public class Plugin1Bis : YodiiPluginBase
     {
+        readonly IService<ITest3Service2> _service;
+
+        public Plugin1Bis( IRunnableRecommendedService<ITest3Service2> service )
+        {
+            _service = service;
+        }
     }
 }

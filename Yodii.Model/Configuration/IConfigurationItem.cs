@@ -26,19 +26,14 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Configuration item.
+    /// Configuration item bound to a <see cref="IConfigurationManager"/>.
     /// </summary>
-    public interface IConfigurationItem : INotifyPropertyChanged
+    public interface IConfigurationItem : IConfigurationItemData, INotifyPropertyChanged
     {
         /// <summary>
         /// Gets the parent configuration layer.
         /// </summary>
         IConfigurationLayer Layer { get; }
-
-        /// <summary>
-        /// Service or plugin identifier this configuration applies to.
-        /// </summary>
-        string ServiceOrPluginFullName { get; }
 
         /// <summary>
         /// Attempts to change the required <see cref="Status"/> of this item.
@@ -66,19 +61,9 @@ namespace Yodii.Model
         IYodiiEngineResult Set( ConfigurationStatus newStatus, StartDependencyImpact newImpact, string newDescription = null );
 
         /// <summary>
-        /// Gets the required configuration status for this item.
-        /// </summary>
-        ConfigurationStatus Status { get; }
-
-        /// <summary>
-        /// Gets the required configuration impact for this item.
-        /// </summary>
-        StartDependencyImpact Impact { get; }
-
-        /// <summary>
         /// Gets or sets an optional description for this configuration.
         /// This is null when <see cref="Layer"/> is null (this item does no more belong to its layer).
         /// </summary>
-        string Description { get; set; }
+        new string Description { get; set; }
     }
 }

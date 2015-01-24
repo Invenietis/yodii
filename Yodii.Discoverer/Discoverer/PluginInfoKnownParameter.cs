@@ -29,13 +29,14 @@ using Yodii.Model;
 
 namespace Yodii.Discoverer
 {
+    [Serializable]
     class PluginInfoKnownParameter : IPluginCtorKnownParameterInfo
     {
         readonly string _parameterName;
         readonly int _parameterIndex;
         readonly string _descriptiveType;
 
-        public PluginInfoKnownParameter(string parameterName, int parameterIndex, string descriptiveType )
+        public PluginInfoKnownParameter( string parameterName, int parameterIndex, string descriptiveType )
         {
             _parameterName = parameterName;
             _parameterIndex = parameterIndex;
