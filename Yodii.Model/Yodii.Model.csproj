@@ -68,6 +68,9 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="YodiiConfiguration\YodiiConfiguration.cs" />
+    <Compile Include="YodiiConfiguration\YodiiConfigurationItem.cs" />
+    <Compile Include="YodiiConfiguration\YodiiConfigurationLayer.cs" />
     <Compile Include="Discoverer\IDiscoverer.cs" />
     <Compile Include="Discoverer\IPluginCtorKnownParameterInfo.cs" />
     <Compile Include="Discoverer\IPluginCtorInfo.cs" />
@@ -145,6 +148,7 @@
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

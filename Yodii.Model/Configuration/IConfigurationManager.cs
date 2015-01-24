@@ -26,7 +26,7 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Configuration manager interface. Contains teh <see cref="DiscoveredInfo"/> and a collection of <see cref="IConfigurationLayer"/>,
+    /// Configuration manager interface. Contains the <see cref="DiscoveredInfo"/> and a collection of <see cref="IConfigurationLayer"/>,
     /// each having a collection of <see cref="IConfigurationItem"/>.
     /// Adding and removing layers triggers configuration resolution, and project the whole configuration into a single <see cref="FinalConfiguration"/>,
     /// which is essentially a single, read-only <see cref="IConfigurationLayer"/>.
