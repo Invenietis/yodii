@@ -9,7 +9,9 @@
             <ResourceDictionary.MergedDictionaries>
                 <!--Attach Default Fluent Control's Theme-->
                 <ResourceDictionary
-                    Source="pack://application:,,,/Fluent;Component/Themes/Office2010/Silver.xaml" />
+                    Source="/Fluent;Component/Themes/Generic.xaml" />
+                <ResourceDictionary
+                    Source="/Fluent;Component/Themes/Office2010/Silver.xaml" />
                 <!-- Icon assets -->
                 <ResourceDictionary
                     Source="Assets/ModernUiIconsDictionary.xaml" />
