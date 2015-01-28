@@ -33,18 +33,27 @@ namespace Yodii.Model
     /// </summary>
     public class ConfigurationChangedEventArgs : EventArgs
     {
-        private FinalConfiguration _finalConfiguration;
-
-        private FinalConfigurationChange _finalConfigurationChanged;
-        private IConfigurationItem _configurationItemChanged;
-        private IConfigurationLayer _configurationLayerChanged;
+        readonly FinalConfiguration _finalConfiguration;
+        readonly FinalConfigurationChange _finalConfigurationChanged;
+        readonly IConfigurationItem _configurationItemChanged;
+        readonly IConfigurationLayer _configurationLayerChanged;
+        readonly IDiscoveredInfo _newInfo;
 
         /// <summary>
-        /// New FinalConfiguration.
+        /// Gets the new FinalConfiguration.
+        /// Null if the current <see cref="IConfigurationManager.DiscoveredInfo"/> has not changed.
         /// </summary>
         public FinalConfiguration FinalConfiguration
         {
             get { return _finalConfiguration; }
+        }
+
+        /// <summary>
+        /// Gets the new discovered information if it has changed.
+        /// </summary>
+        public IDiscoveredInfo NewDiscoveredInfo
+        {
+            get { return _newInfo; }
         }
 
         /// <summary>
@@ -72,7 +81,7 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Creates a new instance of ConfigurationChangedEventArgs provoked by a ConfigurationItem.
+        /// Creates a new instance of ConfigurationChangedEventArgs triggered by a ConfigurationItem.
         /// </summary>
         /// <param name="finalConfiguration">New FinalConfiguration</param>
         /// <param name="finalConfigurationChanged">Changes of the new FinalConfiguration</param>
@@ -85,16 +94,18 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Creates a new instance of ConfigurationChangedEventArgs provoked by a ConfigurationLayer.
+        /// Creates a new instance of ConfigurationChangedEventArgs triggered by a ConfigurationLayer or a global change.
         /// </summary>
         /// <param name="finalConfiguration">New FinalConfiguration</param>
         /// <param name="finalConfigurationChanged">Changes of the new FinalConfiguration</param>
-        /// <param name="configurationLayer">Layer that changed</param>
-        public ConfigurationChangedEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer )
+        /// <param name="configurationLayer">Layer that changed. Can be null for global change.</param>
+        /// <param name="newInfo">Optional new discovered info set.</param>
+        public ConfigurationChangedEventArgs( FinalConfiguration finalConfiguration, FinalConfigurationChange finalConfigurationChanged, IConfigurationLayer configurationLayer, IDiscoveredInfo newInfo )
         {
             _finalConfiguration = finalConfiguration;
             _finalConfigurationChanged = finalConfigurationChanged;
             _configurationLayerChanged = configurationLayer;
+            _newInfo = newInfo;
         }
     }
 }

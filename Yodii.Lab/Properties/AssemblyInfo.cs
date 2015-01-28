@@ -21,6 +21,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using System;
 using System.Reflection;
 using System.Resources;
 using System.Runtime.CompilerServices;
@@ -33,6 +34,7 @@ using System.Windows;
 [assembly: AssemblyTitle( "Yodii.Lab" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyCulture( "" )]
+[assembly: CLSCompliant( false )] 
 
 [assembly: ComVisible( false )]
 

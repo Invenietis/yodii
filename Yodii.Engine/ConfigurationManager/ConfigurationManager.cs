@@ -39,6 +39,8 @@ namespace Yodii.Engine
     internal class ConfigurationManager : IConfigurationManager
     {
         internal readonly ConfigurationLayerCollection Layers;
+        internal readonly YodiiEngine Engine;
+
         FinalConfiguration _finalConfiguration;
         IDiscoveredInfo _discoveredInfo;
 
@@ -52,6 +54,22 @@ namespace Yodii.Engine
             get { return Layers; }
         }
 
+        internal ConfigurationManager( YodiiEngine engine )
+        {
+            Engine = engine;
+            Layers = new ConfigurationLayerCollection( this );
+            _finalConfiguration = new FinalConfiguration();
+            _discoveredInfo = EmptyDiscoveredInfo.Empty;
+        }
+
+
+        /// <summary>
+        /// Read-only collection container of read-only configuration items.
+        /// </summary>
+        /// <remarks>
+        /// This final configuration is automatically maintained.
+        /// Any change to the configuration can be canceled thanks to <see cref="IConfigurationManager.ConfigurationChanging"/>.
+        /// </remarks>
         public FinalConfiguration FinalConfiguration
         {
             get { return _finalConfiguration; }
@@ -62,6 +80,9 @@ namespace Yodii.Engine
             }
         }
 
+        /// <summary>
+        /// Gets the current information about available plugins and services.
+        /// </summary>
         public IDiscoveredInfo DiscoveredInfo 
         {
             get { return _discoveredInfo; }
@@ -75,11 +96,16 @@ namespace Yodii.Engine
             }
         }
 
+        /// <summary>
+        /// Sets the discovery information that describes available plugins and services.
+        /// If <see cref="IYodiiEngineExternal.IsRunning"/> is true, this can be rejected: the result will indicate the reason of the failure.
+        /// </summary>
+        /// <param name="dicoveredInfo">New discovered information to work with. When null, <see cref="EmptyDiscoveredInfo.Empty"/> is set.</param>
+        /// <returns>Engine operation result.</returns>
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
         {
-            if( info == null ) throw new ArgumentNullException( "info" );
+            if( info == null ) info = EmptyDiscoveredInfo.Empty;
             if( info == _discoveredInfo ) return Engine.SuccessResult;
-
             if( Engine.IsRunning )
             {
                 var r = ConfigurationSolver.CreateAndApplyStaticResolution( Engine, FinalConfiguration, info, false, false, false );
@@ -95,14 +121,10 @@ namespace Yodii.Engine
             return Engine.SuccessResult;
         }
 
-        internal ConfigurationManager( YodiiEngine engine )
-        {
-            Engine = engine;
-            Layers = new ConfigurationLayerCollection( this );
-            _finalConfiguration = new FinalConfiguration();
-            _discoveredInfo = EmptyDiscoveredInfo.Empty;
-        }
-
+        /// <summary>
+        /// Gets a <see cref="YodiiConfiguration"/> object that is a copy of the current configuration.
+        /// </summary>
+        /// <returns>A new <see cref="YodiiConfiguration"/> object.</returns>
         public YodiiConfiguration GetConfiguration()
         {
             var c = new YodiiConfiguration();
@@ -119,34 +141,114 @@ namespace Yodii.Engine
             return c;
         }
 
-        public readonly YodiiEngine Engine;
-
-        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, FinalConfigurationItem> final, Func<ConfigurationItem, bool> filter = null )
+        /// <summary>
+        /// Sets a <see cref="YodiiConfiguration"/> object. Layers with the same name are merged by default (note that layers with a null, empty 
+        /// or white space name are always into the default layer).
+        /// This totally reconfigures the engine if it is possible.
+        /// </summary>
+        /// <param name="configuration">New configuration to apply. Can not be null.</param>
+        /// <param name="mergeLayersWithSameName">False to keep multiple layers with the same name. By default layers with the same name are merged into one layer.</param>
+        /// <returns>Yodii engine change result.</returns>
+        public IYodiiEngineResult SetConfiguration( YodiiConfiguration configuration, bool mergeLayersWithSameName = true )
         {
-            foreach( ConfigurationLayer layer in Layers )
-            {
-                ConfigurationStatus combinedStatus;
-                string invalidCombination;
+            if( configuration == null ) throw new ArgumentNullException( "configuration" );
+            IDiscoveredInfo newInfo = configuration.DiscoveredInfo ?? EmptyDiscoveredInfo.Empty;
+            if( newInfo == _discoveredInfo ) newInfo = null;
 
-                foreach( ConfigurationItem item in layer.Items )
+            IEnumerable<KeyValuePair<string, Dictionary<string, YodiiConfigurationItem>>> rawLayers;
+            Dictionary<string,Dictionary<string,YodiiConfigurationItem>> merged = null;
+            List<KeyValuePair<string, Dictionary<string, YodiiConfigurationItem>>> unmerged = null;
+            Dictionary<string, YodiiConfigurationItem> unmergedDefault = null;
+            if( mergeLayersWithSameName )
+            {
+                merged = mergeLayersWithSameName ? new Dictionary<string, Dictionary<string, YodiiConfigurationItem>>() : null;
+                rawLayers = merged;
+            }
+            else
+            {
+                unmerged = new List<KeyValuePair<string, Dictionary<string, YodiiConfigurationItem>>>();
+                unmergedDefault = new Dictionary<string, YodiiConfigurationItem>();
+                unmerged.Add( new KeyValuePair<string, Dictionary<string, YodiiConfigurationItem>>( String.Empty, unmergedDefault ) );
+                rawLayers = unmerged;
+            }
+            foreach( var layer in configuration.Layers )
+            {
+                if( layer != null )
                 {
-                    if( filter == null || filter( item ) )
+                    string name = layer.Name;
+                    if( String.IsNullOrWhiteSpace( name ) ) name = String.Empty;
+
+                    Dictionary<string, YodiiConfigurationItem> mLayer;
+                    if( mergeLayersWithSameName ) mLayer = merged.GetOrSet( name, n => new Dictionary<string, YodiiConfigurationItem>() );
+                    else
                     {
-                        FinalConfigurationItem data;
-                        if( final.TryGetValue( item.ServiceOrPluginFullName, out data ) )
-                        {
-                            combinedStatus = FinalConfigurationItem.Combine( item.Status, data.Status, out invalidCombination );
-                            if( string.IsNullOrEmpty( invalidCombination ) )
-                            {
-                                StartDependencyImpact combinedImpact = (data.Impact|item.Impact).ClearUselessTryBits();
-                                final[item.ServiceOrPluginFullName] = new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact );
-                            }
-                            else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
-                        }            
+                        if( name.Length == 0 ) mLayer = unmergedDefault;
                         else
                         {
-                            final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
+                            mLayer = new Dictionary<string, YodiiConfigurationItem>();
+                            unmerged.Add( new KeyValuePair<string, Dictionary<string, YodiiConfigurationItem>>( name, mLayer ) );
                         }
+                    }
+                    foreach( var item in layer.Items )
+                    {
+                        if( item != null )
+                        {
+                            YodiiConfigurationItem existing;
+                            if( mLayer.TryGetValue( item.ServiceOrPluginFullName, out existing ) )
+                            {
+                                string invalidCombination;
+                                ConfigurationStatus combinedStatus = FinalConfigurationItem.Combine( item.Status, existing.Status, out invalidCombination );
+                                if( String.IsNullOrEmpty( invalidCombination ) )
+                                {
+                                    existing.Status = combinedStatus;
+                                    existing.Impact = (item.Impact | existing.Impact).ClearUselessTryBits();
+                                    if( item.Description.Length > existing.Description.Length ) existing.Description = item.Description;
+                                }
+                                else return new YodiiEngineResult( new ConfigurationFailureResult( String.Format( "Unable to merge Layer '{0}' for item '{1}': {2}", layer.Name, item.ServiceOrPluginFullName, invalidCombination ) ), Engine );
+                            }
+                            else mLayer.Add( item.ServiceOrPluginFullName, item );
+                        }
+                    }
+                }
+            }
+            var finalConf = new Dictionary<string, FinalConfigurationItem>();
+            ConfigurationFailureResult internalResult = FillFinalConfigDictionary( "SetConfiguration", rawLayers.SelectMany( l => l.Value.Values ), finalConf );
+            if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine );
+            
+            IYodiiEngineResult result = OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration( finalConf ), newInfo ) );
+            if( !result.Success ) return result;
+            Layers.OnSetConfiguration( rawLayers );
+            OnConfigurationChanged();
+            return Engine.SuccessResult;
+        }
+
+        ConfigurationFailureResult FillFromConfiguration( string currentOperation, Dictionary<string, FinalConfigurationItem> final, Func<IConfigurationItem, bool> filter = null )
+        {
+            var current = Layers.SelectMany( l => l.Items );
+            return FillFinalConfigDictionary( currentOperation, filter == null ? current : current.Where( filter ), final );
+        }
+
+        ConfigurationFailureResult FillFinalConfigDictionary( string currentOperation, IEnumerable<IConfigurationItemData> items, Dictionary<string, FinalConfigurationItem> final )
+        {
+            foreach( var item in items )
+            {
+                if( item != null )
+                {
+                    FinalConfigurationItem data;
+                    if( final.TryGetValue( item.ServiceOrPluginFullName, out data ) )
+                    {
+                        string invalidCombination;
+                        ConfigurationStatus combinedStatus = FinalConfigurationItem.Combine( item.Status, data.Status, out invalidCombination );
+                        if( String.IsNullOrEmpty( invalidCombination ) )
+                        {
+                            StartDependencyImpact combinedImpact = (data.Impact | item.Impact).ClearUselessTryBits();
+                            final[item.ServiceOrPluginFullName] = new FinalConfigurationItem( item.ServiceOrPluginFullName, combinedStatus, combinedImpact );
+                        }
+                        else return new ConfigurationFailureResult( String.Format( "{0}: {1} for {2}", currentOperation, invalidCombination, item.ServiceOrPluginFullName ) );
+                    }
+                    else
+                    {
+                        final.Add( item.ServiceOrPluginFullName, new FinalConfigurationItem( item.ServiceOrPluginFullName, item.Status, item.Impact ) );
                     }
                 }
             }
@@ -168,7 +270,7 @@ namespace Yodii.Engine
             if( item.Status != data.Status ) status |= FinalConfigurationChange.StatusChanged;
             if( item.Impact != data.Impact ) status |= FinalConfigurationChange.ImpactChanged;
 
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, status, item ) );
+            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration( final ), status, item ) );
         }
 
         internal IYodiiEngineResult OnConfigurationItemAdding( ConfigurationItem newItem )
@@ -179,7 +281,7 @@ namespace Yodii.Engine
             ConfigurationFailureResult internalResult = FillFromConfiguration( "Adding configuration item", final );
             if( !internalResult.Success ) return new YodiiEngineResult( internalResult, Engine );
 
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ItemAdded, newItem ) );
+            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.ItemAdded, newItem ) );
         }
 
         internal IYodiiEngineResult OnConfigurationItemRemoving( ConfigurationItem item )
@@ -189,7 +291,7 @@ namespace Yodii.Engine
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c != item );
             Debug.Assert( internalResult.Success, "Removing a configuration item can not lead to an impossibility." );
 
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.ItemRemoved, item ) );
+            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.ItemRemoved, item ) );
         }
 
         internal IYodiiEngineResult OnConfigurationLayerRemoving( ConfigurationLayer layer )
@@ -199,30 +301,31 @@ namespace Yodii.Engine
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c.Layer != layer );
             Debug.Assert( internalResult.Success, "Removing a configuration layer can not lead to an impossibility." );
 
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf, FinalConfigurationChange.LayerRemoved, layer ) );
+            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerRemoved, layer ) );
         }
 
-        IYodiiEngineResult OnConfigurationChanging( Dictionary<string, FinalConfigurationItem> final, Func<FinalConfiguration, ConfigurationChangingEventArgs> createChangingEvent )
+        IYodiiEngineResult OnConfigurationChanging( ConfigurationChangingEventArgs changingEvent )
         {
-            FinalConfiguration finalConfiguration = new FinalConfiguration( final );
             if( Engine.IsRunning )
             {
-                Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> t = Engine.StaticResolutionByConfigurationManager( _discoveredInfo, finalConfiguration );
+                Tuple<IYodiiEngineStaticOnlyResult,ConfigurationSolver> t = Engine.StaticResolutionByConfigurationManager( changingEvent.NewDiscoveredInfo ?? _discoveredInfo, changingEvent.FinalConfiguration );
                 if( t.Item1 != null )
                 {
                     Debug.Assert( !t.Item1.Success );
                     Debug.Assert( t.Item1.Engine == Engine );
                     return t.Item1;
                 }
-                return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.OnConfigurationChanging( t.Item2 );
+                Action infoSetter = null;
+                if( changingEvent.NewDiscoveredInfo != null ) infoSetter = () => DiscoveredInfo = changingEvent.NewDiscoveredInfo;
+                return OnConfigurationChangingForExternalWorld( changingEvent ) ?? Engine.OnConfigurationChanging( t.Item2, infoSetter );
             }
-            return OnConfigurationChangingForExternalWorld( createChangingEvent( finalConfiguration ) ) ?? Engine.SuccessResult;
+            return OnConfigurationChangingForExternalWorld( changingEvent ) ?? Engine.SuccessResult;
         }
 
         internal IYodiiEngineResult OnConfigurationClearing()
         {
             Dictionary<string,FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
-            return OnConfigurationChanging( final, finalConf => new ConfigurationChangingEventArgs( finalConf ) );
+            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration() ) );
         }
 
         IYodiiEngineResult OnConfigurationChangingForExternalWorld( ConfigurationChangingEventArgs eventChanging )
@@ -250,7 +353,7 @@ namespace Yodii.Engine
             }
             else
             {
-                RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationLayerChanged ) );
+                RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationLayerChanged, _currentEventArgs.NewDiscoveredInfo ) );
             }
             _currentEventArgs = null;
         }

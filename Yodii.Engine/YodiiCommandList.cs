@@ -13,36 +13,47 @@ namespace Yodii.Engine
 {
         class YodiiCommandList : IObservableReadOnlyList<YodiiCommand>
         {
-            public readonly ObservableCollection<InternalYodiiCommand> Commands;
+            readonly ObservableCollection<InternalYodiiCommand> _commands;
             int _currentSoverNumber;
 
             public YodiiCommandList()
             {
-                Commands = new ObservableCollection<InternalYodiiCommand>();
-                Commands.CollectionChanged += RelayCollectionChanged;
-                ((INotifyPropertyChanged)Commands).PropertyChanged += RelayPropertyChanged;
+                _commands = new ObservableCollection<InternalYodiiCommand>();
+                _commands.CollectionChanged += RelayCollectionChanged;
+                ((INotifyPropertyChanged)_commands).PropertyChanged += RelayPropertyChanged;
             }
 
             public void Merge( IReadOnlyList<InternalYodiiCommand> newCommands )
             {
                 if( newCommands.Count == 0 )
                 {
-                    Commands.Clear();
+                    _commands.Clear();
                     return;
                 }
-                if( Commands.Count == 0 )
+                if( _commands.Count == 0 )
                 {
-                    Commands.AddRange( newCommands );
+                    _commands.AddRange( newCommands );
                     return;
                 }
 
-                if( Commands[0] != newCommands[0] ) Commands.Insert( 0, newCommands[0] );
+                if( _commands[0] != newCommands[0] ) _commands.Insert( 0, newCommands[0] );
                 for( int i = 1; i < newCommands.Count; i++ )
                 {
-                    if( newCommands[i] != Commands[i] ) Commands.RemoveAt( i-- );
+                    if( newCommands[i] != _commands[i] ) _commands.RemoveAt( i-- );
                 }
-                while( Commands.Count > newCommands.Count ) Commands.RemoveAt( Count - 1 );
+                while( _commands.Count > newCommands.Count ) _commands.RemoveAt( Count - 1 );
                 Debug.Assert( this.Count == newCommands.Count );
+            }
+
+            public void RemoveCaller( string callerKey )
+            {
+                _commands.RemoveWhereAndReturnsRemoved( c => c.Command.CallerKey == callerKey ).Count();
+            }
+
+            public void ResetOnStart( IEnumerable<YodiiCommand> persistedCommands = null )
+            {
+                _commands.Clear();
+                if( persistedCommands != null ) _commands.AddRange( persistedCommands.Select( c => new InternalYodiiCommand( c, null ) ) );
             }
 
             internal void EnsureBindingsTo( ConfigurationSolver solver )
@@ -50,16 +61,31 @@ namespace Yodii.Engine
                 if( _currentSoverNumber != solver.UniqueNumber )
                 {
                     _currentSoverNumber = solver.UniqueNumber;
-                    foreach( var c in Commands ) c.BindToConfigSolverData( solver );
+                    foreach( var c in _commands ) c.BindToConfigSolverData( solver );
                 }
             }
 
             internal void ClearBindings()
             {
                 _currentSoverNumber = 0;
-                foreach( var c in Commands ) c.BindToConfigSolverData( null );
+                foreach( var c in _commands ) c.BindToConfigSolverData( null );
             }
 
+            internal void ApplyCommands( Func<InternalYodiiCommand, bool> existingCommandFilter, InternalYodiiCommand newOne, List<InternalYodiiCommand> collector )
+            {
+                int iCommand = 0;
+                var prevCommands = existingCommandFilter != null ? _commands.Where( existingCommandFilter ) : _commands;
+                foreach( var previous in prevCommands )
+                {
+                    if( newOne == null || !previous.IsMaskedBy( newOne ) )
+                    {
+                        if( previous.ApplyCommand( ++iCommand ) )
+                        {
+                            collector.Add( previous );
+                        }
+                    }
+                }
+            }
             #region IObservableReadOnlyList<YodiiCommand> support
 
             void RelayCollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
@@ -76,12 +102,12 @@ namespace Yodii.Engine
 
             public int Count
             {
-                get { return Commands.Count; }
+                get { return _commands.Count; }
             }
 
             IEnumerator<YodiiCommand> IEnumerable<YodiiCommand>.GetEnumerator()
             {
-                return Commands.Select( c => c.Command ).GetEnumerator();
+                return _commands.Select( c => c.Command ).GetEnumerator();
             }
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -95,7 +121,7 @@ namespace Yodii.Engine
 
             YodiiCommand IReadOnlyList<YodiiCommand>.this[int index]
             {
-                get { return Commands[index].Command; }
+                get { return _commands[index].Command; }
             }
 
             #endregion

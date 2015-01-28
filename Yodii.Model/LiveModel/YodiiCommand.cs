@@ -72,6 +72,11 @@ namespace Yodii.Model
         public string ServiceFullName { get { return _isPlugin ? null : _fullName; } }
 
         /// <summary>
+        /// Gets the plugin or service full name that must be started or stopped. 
+        /// </summary>
+        public string FullName { get { return _fullName; } }
+
+        /// <summary>
         /// Identifies the object that emitted the command.
         /// Callers can be revoked thanks to <see cref="ILiveInfo.RevokeCaller(string)"/>.
         /// </summary>

@@ -78,6 +78,16 @@ namespace Yodii.Model
         /// <summary>
         /// The whole configuration has been cleared.
         /// </summary>
-        Cleared = 64
+        Cleared = 64,
+
+        /// <summary>
+        /// The whole configuration has been set.
+        /// </summary>
+        Set = 128,
+
+        /// <summary>
+        /// The discovered info has been changed.
+        /// </summary>
+        NewDiscoveredInfo = 256
     }
 }

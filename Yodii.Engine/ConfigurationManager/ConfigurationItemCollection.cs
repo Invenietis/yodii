@@ -56,6 +56,30 @@ namespace Yodii.Engine
             get { return ParentLayer.Owner == null ? null : ParentLayer.Owner.ConfigurationManager; }
         }
 
+        internal void SilentClear( bool silentClear )
+        {
+            if( silentClear )
+            {
+                Array.Clear( Store, 0, StoreCount );
+                StoreCount = 0;
+                StoreVersion += 2;
+            }
+            else DoClear();
+        }
+
+        internal void OnSetConfiguration( ICollection<YodiiConfigurationItem> rawConfig )
+        {
+            Store = rawConfig.Select( c => new ConfigurationItem( ParentLayer, c.ServiceOrPluginFullName, c.Status, c.Impact, c.Description ) ).OrderBy( c => c.ServiceOrPluginFullName ).ToArray();
+            StoreCount = Store.Length;
+            StoreVersion += 2;
+            RaiseReset();
+        }
+
+        internal void RaiseResetEvent()
+        {
+            RaiseReset();
+        }
+
         public IYodiiEngineResult Set( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string description )
         {
             return DoSet( serviceOrPluginFullName, status, impact, description );
@@ -106,11 +130,6 @@ namespace Yodii.Engine
             return result;
         }
 
-        /// <summary>
-        /// Removes a configuration for plugin or a service.
-        /// </summary>
-        /// <param name="serviceOrPluginFullName">The identifier.</param>
-        /// <returns>Detailed result of the operation.</returns>
         public new IYodiiEngineResult Remove( string serviceOrPluginFullName )
         {
             if( String.IsNullOrEmpty( serviceOrPluginFullName ) ) throw new ArgumentException( "serviceOrPluginFullName is null or empty" );

@@ -53,6 +53,16 @@ namespace Yodii.Model
         YodiiConfiguration GetConfiguration();
 
         /// <summary>
+        /// Sets a <see cref="YodiiConfiguration"/> object. Layers with the same name are merged by default (note that layers with a null, empty 
+        /// or white space name are always into the default layer).
+        /// This totally reconfigures the engine if it is possible.
+        /// </summary>
+        /// <param name="configuration">New configuration to apply. Can not be null.</param>
+        /// <param name="mergeLayersWithSameName">False to keep multiple layers with the same name. By default layers with the same name are merged into one layer.</param>
+        /// <returns>Yodii engine change result.</returns>
+        IYodiiEngineResult SetConfiguration( YodiiConfiguration configuration, bool mergeLayersWithSameName = true );
+
+        /// <summary>
         /// Triggered when a configuration change was not canceled, once a new FinalConfiguration is available.
         /// </summary>
         event EventHandler<ConfigurationChangedEventArgs> ConfigurationChanged;

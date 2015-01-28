@@ -73,12 +73,14 @@ namespace Yodii.Engine
         internal ConfigurationLayerCollection Owner 
         {
             get { return _owner; }
-            set
-            {
-                Debug.Assert( _owner != value );
-                _owner = value;
-                NotifyPropertyChanged();
-            }
+        }
+
+        internal void Detach()
+        {
+            Debug.Assert( _owner != null );
+            _owner = null;
+            NotifyPropertyChanged( "ConfigurationManager" );
+            Items.Clear();
         }
 
         IConfigurationManager IConfigurationLayer.ConfigurationManager
@@ -99,13 +101,6 @@ namespace Yodii.Engine
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
-        internal void ClearDefaultLayer()
-        {
-            Debug.Assert( _layerName.Length == 0 );
-            Items.Clear();
-        }
-
-
         IYodiiEngineResult IConfigurationLayer.Set( string serviceOrPluginFullName, ConfigurationStatus status, StartDependencyImpact impact, string description )
         {
             return Items.Set( serviceOrPluginFullName, status, impact, description );
@@ -125,6 +120,7 @@ namespace Yodii.Engine
         {
             return Items.Remove( serviceOrPluginFullName );
         }
+
 
     }
 }

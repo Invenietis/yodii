@@ -47,7 +47,7 @@ namespace Yodii.Engine.Tests
             Assert.That( engine.LiveInfo.Plugins.Count, Is.EqualTo( 0 ) );
             Assert.That( engine.LiveInfo.Services.Count, Is.EqualTo( 0 ) );
 
-            Assert.That( Assert.Throws<ArgumentNullException>( () => engine.Configuration.SetDiscoveredInfo( null ) ).ParamName, Is.EqualTo( "info" ) );
+            Assert.DoesNotThrow( () => engine.Configuration.SetDiscoveredInfo( null ) );
             DiscoveredInfo info = MockInfoFactory.ServiceWithTwoPlugins();
             engine.Configuration.SetDiscoveredInfo( info ).CheckSuccess();
             Assert.That( engine.Configuration.DiscoveredInfo == info );

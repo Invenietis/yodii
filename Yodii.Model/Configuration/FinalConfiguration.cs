@@ -93,7 +93,7 @@ namespace Yodii.Model
         /// </summary>
         public FinalConfiguration()
         {
-            _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginFullName, ( x, y ) => StringComparer.Ordinal.Compare( x, y ) );
+            _items = new CKSortedArrayKeyList<FinalConfigurationItem, string>( e => e.ServiceOrPluginFullName, StringComparer.Ordinal.Compare );
         }
     }
 }

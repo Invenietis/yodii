@@ -303,18 +303,8 @@ namespace Yodii.Engine
             }
 
             pastCommands.EnsureBindingsTo( this );
-            int iCommand = 0;
-            var prevCommands = existingCommandFilter != null ? pastCommands.Commands.Where( existingCommandFilter ) : pastCommands.Commands;
-            foreach( var previous in prevCommands )
-            {
-                if( newOne == null || !previous.IsMaskedBy( newOne ) )
-                {
-                    if( previous.ApplyCommand( ++iCommand ) )
-                    {
-                        commands.Add( previous );
-                    }
-                }
-            }
+            pastCommands.ApplyCommands( existingCommandFilter, newOne, commands );
+
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
@@ -353,6 +343,7 @@ namespace Yodii.Engine
             }
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
+
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )
         {

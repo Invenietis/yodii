@@ -182,10 +182,10 @@ namespace Yodii.Engine
         }
 
 
-        internal IYodiiEngineResult OnConfigurationChanging( ConfigurationSolver temporarySolver )
+        internal IYodiiEngineResult OnConfigurationChanging( ConfigurationSolver temporarySolver, Action onPreSuccess )
         {
             Debug.Assert( IsRunning, "Cannot call this function when the engine is not running" );
-            return DoDynamicResolution( temporarySolver, null, null );
+            return DoDynamicResolution( temporarySolver, null, null, onPreSuccess );
         }
 
         internal IYodiiEngineResult AddYodiiCommand( InternalYodiiCommand cmd )
@@ -205,7 +205,7 @@ namespace Yodii.Engine
             }
             else
             {
-                _yodiiCommands.Commands.RemoveWhereAndReturnsRemoved( c => c.Command.CallerKey == callerKey ).Count();
+                _yodiiCommands.RemoveCaller( callerKey );
                 return _successResult;
             }
         }
@@ -234,8 +234,7 @@ namespace Yodii.Engine
         public IYodiiEngineResult StartEngine( bool revertServices, bool revertPlugins, IEnumerable<YodiiCommand> persistedCommands = null )
         {
             if( IsRunning ) throw new InvalidOperationException();
-            _yodiiCommands.Commands.Clear();
-            if( persistedCommands != null ) _yodiiCommands.Commands.AddRange( persistedCommands.Select( c => new InternalYodiiCommand( c, null ) ) );
+            _yodiiCommands.ResetOnStart( persistedCommands );
             var r = ConfigurationSolver.CreateAndApplyStaticResolution( this, _manager.FinalConfiguration, _manager.DiscoveredInfo, revertServices, revertPlugins, false );
             if( r.Item1 != null )
             {

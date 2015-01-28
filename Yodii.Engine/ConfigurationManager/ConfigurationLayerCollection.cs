@@ -84,6 +84,7 @@ namespace Yodii.Engine
                 if( result.Success )
                 {
                     base.Remove( l );
+                    l.Detach();
                     ConfigurationManager.OnConfigurationChanged();
                 }
                 return result;
@@ -91,6 +92,7 @@ namespace Yodii.Engine
             else
             {
                 base.Remove( l );
+                l.Detach();
                 return SuccessYodiiEngineResult.NullEngineSuccessResult;
             }
         }
@@ -107,19 +109,61 @@ namespace Yodii.Engine
             IYodiiEngineResult result = c != null ? c.OnConfigurationClearing() : SuccessYodiiEngineResult.NullEngineSuccessResult;
             if( result.Success )
             {
-                var prev = Store;
-                Store = new ConfigurationLayer[] { _default };
-                for( int i = 0; i < StoreCount; ++i )
-                {
-                    ConfigurationLayer l = (ConfigurationLayer)prev[i];
-                    if( l == _default ) l.ClearDefaultLayer();
-                    else l.Owner = null;
-                }
-                StoreCount = 1;
+                RawClearContent( false );
                 RaiseReset();
                 if( c != null ) c.OnConfigurationChanged();
             }
             return result;
+        }
+
+        void RawClearContent( bool silentDefaultLayerClear )
+        {
+            var prev = Store;
+            Store = new ConfigurationLayer[] { _default };
+            for( int i = 0; i < StoreCount; ++i )
+            {
+                ConfigurationLayer l = (ConfigurationLayer)prev[i];
+                if( l == _default ) l.Items.SilentClear( silentDefaultLayerClear );
+                else l.Detach();
+            }
+            StoreCount = 1;
+        }
+
+        /// <summary>
+        /// Called by the configuration manager when a successful SetConfiguration occurred.
+        /// </summary>
+        /// <param name="rawLayers">Configuration layers with their items.</param>
+        internal void OnSetConfiguration( IEnumerable<KeyValuePair<string, Dictionary<string, YodiiConfigurationItem>>> rawLayers )
+        {
+            // This is not optimal but works: named layers are detached and the default one is silently cleared.
+            // There could be a merge algorithm here but does it worth it? It is not that simple since it will have to decide how homonym layers must be reused...
+            // Detached layers are cleared: their "ConfigurationManager" property is notified and their content is cleared so that observers are aware of the removal.
+            // Since the default layer is silently cleared: Reset event will be raised when setting the new items or at the end.
+            RawClearContent( true );
+            bool defaultSet = false;
+            var newOnes = new List<ConfigurationLayer>();
+            newOnes.Add( _default );
+            foreach( var rawLayer in rawLayers )
+            {
+                string name = rawLayer.Key;
+                if( name.Length == 0 ) 
+                {
+                    _default.Items.OnSetConfiguration( rawLayer.Value.Values );
+                    defaultSet = true;
+                }
+                else
+                {
+                    var conf = new ConfigurationLayer( this, name );
+                    conf.Items.OnSetConfiguration( rawLayer.Value.Values );
+                    newOnes.Add( conf );
+                }
+            }
+            newOnes.Sort( ( x, y ) => StringComparer.Ordinal.Compare( x.LayerName, y.LayerName ) );
+            Store = newOnes.ToArray();
+            StoreCount = newOnes.Count;
+            StoreVersion += 2;
+            if( !defaultSet ) _default.Items.RaiseResetEvent();
+            RaiseReset();
         }
 
         IReadOnlyCollection<IConfigurationLayer> IConfigurationLayerCollection.this[string layerName]
