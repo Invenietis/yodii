@@ -130,7 +130,7 @@
                         </Image.Style>
                     </Image>
                     <!-- Start button -->
-                    <Button
+                    <local:DropDownButton
                         Margin="3pt,0,0,0"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -140,9 +140,9 @@
                         Command="{Binding Path=StartItemCommand}"
                         CommandParameter="{x:Static ym:StartDependencyImpact.Unknown}"
                         FontFamily="Webdings">
-                        <Button.Style>
+                        <local:DropDownButton.Style>
                             <Style
-                                TargetType="{x:Type Button}">
+                                TargetType="{x:Type local:DropDownButton}">
                                 <Setter
                                     Property="Visibility"
                                     Value="Collapsed" />
@@ -156,59 +156,43 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </Button.Style>
+                        </local:DropDownButton.Style>
                         <Image
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             SnapsToDevicePixels="True"
                             Source="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png">
                         </Image>
-                        <!--<local:DropDownButton.DropDown>
+                        <local:DropDownButton.DropDown>
                             <ContextMenu>
                                 <MenuItem
                                     Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.Unknown}"
+                                    Header="Unknown: Start using default configuration" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
                                     CommandParameter="{x:Static ym:StartDependencyImpact.Minimal}"
-                                    Header="Minimal" />
+                                    Header="Minimal: Only the required services will be started" />
                                 <MenuItem
                                     Command="{Binding Path=StartItemCommand}"
                                     CommandParameter="{x:Static ym:StartDependencyImpact.FullStart}"
-                                    Header="FullStart" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.FullStop}"
-                                    Header="FullStop" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.StopOptionalAndRunnable}"
-                                    Header="StopOptionalAndRunnable" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.StartRecommended}"
-                                    Header="StartRecommended" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.IsTryOnly}"
-                                    Header="IsTryOnly" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryFullStop}"
-                                    Header="TryFullStop" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryStopOptionalAndRunnable}"
-                                    Header="TryStopOptionalAndRunnable" />
-                                <MenuItem
-                                    Command="{Binding Path=StartItemCommand}"
-                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryStartRecommended}"
-                                    Header="TryStartRecommended" />
+                                    Header="FullStart: All referenced services will be started" />
                                 <MenuItem
                                     Command="{Binding Path=StartItemCommand}"
                                     CommandParameter="{x:Static ym:StartDependencyImpact.TryFullStart}"
-                                    Header="TryFullStart" />
+                                    Header="TryFullStart: All referenced services will try to start" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.StartRecommended}"
+                                    Header="StartRecommended: Recommended referenced services will be started" />
+                                <MenuItem
+                                    Command="{Binding Path=StartItemCommand}"
+                                    CommandParameter="{x:Static ym:StartDependencyImpact.TryStartRecommended}"
+                                    Header="TryStartRecommended: Recommended referenced services will try to start" />
                             </ContextMenu>
-                        </local:DropDownButton.DropDown>-->
+                        </local:DropDownButton.DropDown>
                         
-                    </Button>
+                    </local:DropDownButton>
                     <!-- Stop button -->
                     <Button
                         Margin="3pt,0,0,0"
