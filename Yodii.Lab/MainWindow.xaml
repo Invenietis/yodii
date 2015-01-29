@@ -521,14 +521,10 @@
             </Grid.ColumnDefinitions>
 
             <Grid.Resources>
-                <DataTemplate
-                    x:Key="YodiiVertexTemplate"
-                    DataType="{x:Type local:YodiiGraphVertex}">
-
+                <DataTemplate x:Key="YodiiVertexTemplate" DataType="{x:Type local:YodiiGraphVertex}">
                     <local:YodiiVertexControl
                         Vertex="{Binding Mode=OneWay}"
                         ConfigurationManager="{Binding ElementName=MainWindowRoot, Path=DataContext.ConfigurationManager}" />
-
                 </DataTemplate>
                 <Style
                     TargetType="{x:Type GraphX:VertexControl}">
@@ -622,25 +618,14 @@
                     <Style.Triggers>
                         <!-- Specialization -->
                         <DataTrigger
-                            Binding="{Binding Path=IsSpecialization}"
-                            Value="true">
-                            <Setter
-                                Property="Foreground"
-                                Value="Red" />
-                            <Setter
-                                Property="StrokeThickness"
-                                Value="5" />
+                            Binding="{Binding Path=IsSpecialization}" Value="true">
+                            <Setter Property="Foreground" Value="Red" />
+                            <Setter Property="StrokeThickness" Value="5" />
                         </DataTrigger>
                         <!-- Implementation -->
-                        <DataTrigger
-                            Binding="{Binding Path=IsImplementation}"
-                            Value="true">
-                            <Setter
-                                Property="Foreground"
-                                Value="Blue" />
-                            <Setter
-                                Property="StrokeThickness"
-                                Value="3" />
+                        <DataTrigger Binding="{Binding Path=IsImplementation}" Value="true">
+                            <Setter Property="Foreground" Value="Blue" />
+                            <Setter Property="StrokeThickness" Value="3" />
                         </DataTrigger>
                         <!-- Ref. Optional -->
                         <DataTrigger
@@ -873,19 +858,11 @@
                                                         <Style
                                                             TargetType="Image">
                                                             <Style.Triggers>
-                                                                <DataTrigger
-                                                                    Binding="{Binding Path=Start, Mode=OneWay}"
-                                                                    Value="true">
-                                                                    <Setter
-                                                                        Property="Source"
-                                                                        Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
+                                                                <DataTrigger Binding="{Binding Path=Start, Mode=OneWay}" Value="true">
+                                                                    <Setter Property="Source" Value="/Yodii.Lab;component/Assets/Icons/RunningStatusRunning.png" />
                                                                 </DataTrigger>
-                                                                <DataTrigger
-                                                                    Binding="{Binding Path=Start, Mode=OneWay}"
-                                                                    Value="false">
-                                                                    <Setter
-                                                                        Property="Source"
-                                                                        Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
+                                                                <DataTrigger Binding="{Binding Path=Start, Mode=OneWay}" Value="false">
+                                                                    <Setter Property="Source" Value="/Yodii.Lab;component/Assets/Icons/RunningStatusStopped.png" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -904,17 +881,16 @@
                                                     Text="{Binding Path=FullName}"
                                                     FontWeight="Bold"
                                                     TextWrapping="NoWrap"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    Foreground="Red">
+                                                    TextTrimming="CharacterEllipsis" >
                                                     <TextBlock.Style>
                                                         <Style
                                                             TargetType="TextBlock">
                                                             <Style.Triggers>
-                                                                <DataTrigger
-                                                                    Binding="{Binding Path=IsPlugin}" Value="true">
-                                                                    <Setter
-                                                                        Property="Foreground"
-                                                                        Value="Blue" />
+                                                                <DataTrigger Binding="{Binding Path=IsPlugin}" Value="true">
+                                                                    <Setter Property="Foreground" Value="Blue" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Path=IsPlugin}" Value="false">
+                                                                    <Setter Property="Foreground" Value="Red" />
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>

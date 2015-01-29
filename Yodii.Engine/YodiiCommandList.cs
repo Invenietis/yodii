@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using CK.Core;
 using Yodii.Model;
@@ -88,10 +90,22 @@ namespace Yodii.Engine
             }
             #region IObservableReadOnlyList<YodiiCommand> support
 
+            static readonly ConstructorInfo _ctorNCEventArgs = typeof( NotifyCollectionChangedEventArgs ).GetConstructor( BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof( NotifyCollectionChangedAction ), typeof( IList ), typeof( IList ), typeof( int ), typeof( int ) }, null );
+            
             void RelayCollectionChanged( object sender, NotifyCollectionChangedEventArgs e )
             {
                 var h = CollectionChanged;
-                if( h != null ) h( this, e );
+                if( h != null ) 
+                {
+                    // Awful trick: uses reflection to access the NotifyCollectionChangedEventArgs( NotifyCollectionChangedAction action, IList newItems, IList oldItems, int newIndex, int oldIndex )
+                    // internal constructor to map the instances exposed by the event.
+                    var newItems = e.NewItems;
+                    if( newItems != null ) newItems = newItems.Cast<InternalYodiiCommand>().Select( c => c.Command ).ToList();
+                    var oldItems = e.OldItems;
+                    if( oldItems != null ) oldItems = oldItems.Cast<InternalYodiiCommand>().Select( c => c.Command ).ToList();
+                    var ev = (NotifyCollectionChangedEventArgs)_ctorNCEventArgs.Invoke( new object[] { e.Action, newItems, oldItems, e.NewStartingIndex, e.OldStartingIndex } );
+                    h( this, ev );
+                }
             }
 
             void RelayPropertyChanged( object sender, PropertyChangedEventArgs e )

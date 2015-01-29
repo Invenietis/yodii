@@ -138,7 +138,7 @@
                         Width="12pt"
                         DockPanel.Dock="Right"
                         Command="{Binding Path=StartItemCommand}"
-                        CommandParameter="{x:Static ym:StartDependencyImpact.Minimal}"
+                        CommandParameter="{x:Static ym:StartDependencyImpact.Unknown}"
                         FontFamily="Webdings">
                         <Button.Style>
                             <Style
