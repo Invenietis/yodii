@@ -32,7 +32,7 @@ using Yodii.Engine.Tests.Mocks;
 namespace Yodii.Engine.Tests
 {
     [TestFixture]
-    class YodiiEngineTests
+    public class YodiiEngineTests
     {
         [Test]
         public void checking_starting_and_stopping_parameters_and_state()
@@ -170,6 +170,20 @@ namespace Yodii.Engine.Tests
             engine.StartPlugin( "PluginA-1" ).CheckSuccess();
             Assert.That( pluginA2.IsRunning && !pluginA1.IsRunning );
             Assert.That( callCount, Is.EqualTo( 4 ) );
+        }
+
+        [Test]
+        public void impact_combinations()
+        {
+            Assert.That( (StartDependencyImpact.TryStartRecommended).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.TryStartRecommended ) );
+            Assert.That( (StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal ) );
+
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended ) );
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.Minimal ) );
+
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.IsTryStartOptionalOnly).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.IsTryStartOptionalOnly ) );
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.IsTryStartOptionalOnly | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.IsTryStartOptionalOnly | StartDependencyImpact.Minimal ) );
+
         }
     }
 }

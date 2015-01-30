@@ -77,7 +77,7 @@ namespace Yodii.Model
         {
             var noTry = @this & StartDependencyImpact.FullStart;
             var tryMask = (StartDependencyImpact)~((int)noTry << 4);
-            return (noTry & tryMask) | (@this & StartDependencyImpact.Minimal);
+            return (@this & tryMask) | (@this & StartDependencyImpact.Minimal);
         }
 
 
