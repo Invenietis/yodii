@@ -52,6 +52,19 @@ namespace Yodii.Engine.Tests
         }
 
         [Test]
+        public void StartDependencyImpact_ClearUselessTryBits()
+        {
+            Assert.That( (StartDependencyImpact.TryStartRecommended).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.TryStartRecommended ) );
+            Assert.That( (StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal ) );
+
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended ) );
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.Minimal ) );
+
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.IsTryStartOptionalOnly).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.IsTryStartOptionalOnly ) );
+            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.IsTryStartOptionalOnly | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.IsTryStartOptionalOnly | StartDependencyImpact.Minimal ) );
+
+        }
+        [Test]
         public void LayerCreationTest()
         {
             YodiiEngine e = new YodiiEngine( new BuggyYodiiEngineHostMock() );

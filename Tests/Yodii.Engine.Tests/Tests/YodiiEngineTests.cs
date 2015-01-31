@@ -172,18 +172,6 @@ namespace Yodii.Engine.Tests
             Assert.That( callCount, Is.EqualTo( 4 ) );
         }
 
-        [Test]
-        public void impact_combinations()
-        {
-            Assert.That( (StartDependencyImpact.TryStartRecommended).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.TryStartRecommended ) );
-            Assert.That( (StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal ) );
 
-            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended ) );
-            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.Minimal ) );
-
-            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.IsTryStartOptionalOnly).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.IsTryStartOptionalOnly ) );
-            Assert.That( (StartDependencyImpact.StartRecommended | StartDependencyImpact.TryStartRecommended | StartDependencyImpact.IsTryStartOptionalOnly | StartDependencyImpact.Minimal).ClearUselessTryBits(), Is.EqualTo( StartDependencyImpact.StartRecommended | StartDependencyImpact.IsTryStartOptionalOnly | StartDependencyImpact.Minimal ) );
-
-        }
     }
 }
