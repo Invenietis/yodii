@@ -2050,5 +2050,26 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             return engine;
         }
+
+        internal static YodiiEngine CreateCoDependencyGraph() 
+        {
+            var d = new DiscoveredInfo();
+            d.ServiceInfos.Add( new ServiceInfo( "IA", d.DefaultAssembly ) );
+            d.ServiceInfos.Add( new ServiceInfo( "IB", d.DefaultAssembly ) );
+
+            d.PluginInfos.Add( new PluginInfo( "A", d.DefaultAssembly ) );
+            d.PluginInfos.Add( new PluginInfo( "B", d.DefaultAssembly ) );
+
+            d.FindPlugin( "A" ).Service = d.FindService( "IA" );
+            d.FindPlugin( "B" ).Service = d.FindService( "IB" );
+
+            d.FindPlugin( "A" ).AddServiceReference( d.FindService( "IB" ), DependencyRequirement.Running );
+            d.FindPlugin( "B" ).AddServiceReference( d.FindService( "IA" ), DependencyRequirement.Running );
+
+            YodiiEngine engine = new YodiiEngine( new BuggyYodiiEngineHostMock() );
+            engine.Configuration.SetDiscoveredInfo( d );
+
+            return engine;
+        }
     }
 }

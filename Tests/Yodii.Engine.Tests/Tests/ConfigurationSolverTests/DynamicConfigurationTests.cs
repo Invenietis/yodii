@@ -406,6 +406,16 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
             } );
         }
 
+        [Test]
+        public void CodependencyGraphTest()
+        {
+            StaticConfigurationTests.CreateCoDependencyGraph().FullStartAndStop( ( engine, res ) =>
+            {
+                engine.StartPlugin( "B", StartDependencyImpact.Minimal ).CheckSuccess();
+                engine.CheckAllRunning( "A, B, IA, IB" );
+            });
+        }
+
         //[Test]
         //public void ValidOptionalRecommendedReferences()
         //{
@@ -523,5 +533,7 @@ namespace Yodii.Engine.Tests.ConfigurationSolverTests
 
             Assert.That( result.Success == false );
         }
+
+        
     }
 }
