@@ -182,7 +182,7 @@ namespace Yodii.Engine
                 {
                     return _dynamicStatus.Value >= RunningStatus.Running;
                 }
-                if( Family.Solver.RecursiveStartableServiceSet.Add( this ) ) return true;
+                if( !Family.Solver.RecursiveStartableServiceSet.Add( this ) ) return true;
                 bool canStart = FindFirstPluginData( p => p.CanStartOrIsStarted ) != null;
                 Family.Solver.RecursiveStartableServiceSet.Remove( this );
                 return canStart;
