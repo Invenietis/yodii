@@ -95,6 +95,19 @@ namespace Yodii.Engine
         /// </summary>
         /// <param name="s">The ServiceData for which status must be propagated.</param>
         void DeferPropagation( ServiceData s );
+
+        /// <summary>
+        /// Gets a set of ServiceData that enables the handling of co-dependent Service/Plugin for
+        /// computing the Service.CanStartOrIsStarted property during dynamic resolution.
+        /// This set is created by the first call to the DynamicResolution method.
+        /// When Service.CanStartOrIsStarted needs to find at least one plugin that CanStartOrIsStarted
+        /// it first checks it it already appears in this set:
+        ///   - if yes: we return true since this means that we are already checking it and if everything else
+        ///     is okay, the Service will actually be able to start.
+        ///   - if no: the Service adds itself to the set, tries to find a plugin that can start, and removes 
+        ///     itself from the set.
+        /// </summary>
+        ISet<ServiceData> RecursiveStartableServiceSet { get; }
     }
 
 }

@@ -116,7 +116,7 @@ namespace Yodii.Engine
         internal void DynamicStartBy( ServiceRunningStatusReason reason )
         {
             Debug.Assert( _dynamicStatus == null || _dynamicStatus.Value >= RunningStatus.Running );
-            Debug.Assert( CanStartOrIsStarted( true ) );
+            Debug.Assert( CanStartOrIsStarted );
             Debug.Assert( reason == ServiceRunningStatusReason.StartedByCommand
                             || reason == ServiceRunningStatusReason.StartedByPropagation
                             || reason == ServiceRunningStatusReason.StartedByOptionalReference
@@ -143,7 +143,7 @@ namespace Yodii.Engine
             else
             {
                 if( _dynamicStatus != null ) return _dynamicStatus.Value >= RunningStatus.Running;
-                Debug.Assert( CanStartOrIsStarted( true ) );
+                Debug.Assert( CanStartOrIsStarted );
                 SetDynamicImpact( impact.ToTryBits() );
             }
             DynamicStartBy( ServiceRunningStatusReason.StartedByCommand );
@@ -174,13 +174,19 @@ namespace Yodii.Engine
             }
         }
 
-        internal bool CanStartOrIsStarted( bool checkIfCallerCanStart )
+        internal bool CanStartOrIsStarted
         {            
-            if( _dynamicStatus.HasValue )
+            get
             {
-                return _dynamicStatus.Value >= RunningStatus.Running;
+                if( _dynamicStatus.HasValue )
+                {
+                    return _dynamicStatus.Value >= RunningStatus.Running;
+                }
+                if( Family.Solver.RecursiveStartableServiceSet.Add( this ) ) return true;
+                bool canStart = FindFirstPluginData( p => p.CanStartOrIsStarted ) != null;
+                Family.Solver.RecursiveStartableServiceSet.Remove( this );
+                return canStart;
             }
-            return  checkIfCallerCanStart ? FindFirstPluginData( p => p.CanStartOrIsStarted ) != null : true;
         
         }
 
@@ -197,7 +203,7 @@ namespace Yodii.Engine
             {
                 case DependencyRequirement.Running:
                     {
-                        Debug.Assert( CanStartOrIsStarted( false ) );
+                        Debug.Assert( CanStartOrIsStarted );
                         if( _dynamicStatus == null ) DynamicStartBy( ServiceRunningStatusReason.StartedByRunningReference );
                         break;
                     }
@@ -205,7 +211,7 @@ namespace Yodii.Engine
                     {
                         if( (impact & StartDependencyImpact.IsStartRunnableRecommended) != 0 )
                         {
-                            Debug.Assert(CanStartOrIsStarted( false ) );
+                            Debug.Assert(CanStartOrIsStarted );
                             if( _dynamicStatus == null ) DynamicStartBy( ServiceRunningStatusReason.StartedByRunnableRecommendedReference );
                         }
                         else if( (impact & StartDependencyImpact.IsTryStartRunnableRecommended) != 0 ) return true;
@@ -215,7 +221,7 @@ namespace Yodii.Engine
                     {
                         if( (impact & StartDependencyImpact.IsStartRunnableOnly) != 0 )
                         {
-                            Debug.Assert(CanStartOrIsStarted( false ) );
+                            Debug.Assert(CanStartOrIsStarted );
                             if( _dynamicStatus == null ) DynamicStartBy( ServiceRunningStatusReason.StartedByRunnableReference );
                         }
                         else if( (impact & StartDependencyImpact.IsTryStartRunnableOnly) != 0 ) return true;
@@ -225,7 +231,7 @@ namespace Yodii.Engine
                     {
                         if( (impact & StartDependencyImpact.IsStartOptionalRecommended) != 0 )
                         {
-                            Debug.Assert(CanStartOrIsStarted( false ) );
+                            Debug.Assert(CanStartOrIsStarted );
                             if( _dynamicStatus == null ) DynamicStartBy( ServiceRunningStatusReason.StartedByOptionalRecommendedReference );
                         }
                         else if( (impact & StartDependencyImpact.IsTryStartOptionalRecommended) != 0 ) return true;
@@ -235,7 +241,7 @@ namespace Yodii.Engine
                     {
                         if( (impact & StartDependencyImpact.IsStartOptionalOnly) != 0 )
                         {
-                            Debug.Assert(CanStartOrIsStarted( false ) );
+                            Debug.Assert(CanStartOrIsStarted );
                             if( _dynamicStatus == null ) DynamicStartBy( ServiceRunningStatusReason.StartedByOptionalReference );
                         }
                         else if( (impact & StartDependencyImpact.IsTryStartOptionalOnly) != 0 ) return true;

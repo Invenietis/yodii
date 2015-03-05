@@ -105,27 +105,27 @@ namespace Yodii.Engine
                     {
                         case DependencyRequirement.Running:
                             {
-                                if( !s.CanStartOrIsStarted( false ) ) return false;
+                                if( !s.CanStartOrIsStarted ) return false;
                                 break;
                             }
                         case DependencyRequirement.RunnableRecommended:
                             {
-                                if( (DynamicImpact & StartDependencyImpact.IsStartRunnableRecommended) != 0 && !s.CanStartOrIsStarted( false ) ) return false;
+                                if( (DynamicImpact & StartDependencyImpact.IsStartRunnableRecommended) != 0 && !s.CanStartOrIsStarted ) return false;
                                 break;
                             }
                         case DependencyRequirement.Runnable:
                             {
-                                if( (DynamicImpact & StartDependencyImpact.IsStartRunnableOnly) != 0 && !s.CanStartOrIsStarted( false ) ) return false;
+                                if( (DynamicImpact & StartDependencyImpact.IsStartRunnableOnly) != 0 && !s.CanStartOrIsStarted ) return false;
                                 break;
                             }
                         case DependencyRequirement.OptionalRecommended:
                             {
-                                if( (DynamicImpact & StartDependencyImpact.IsStartOptionalRecommended) != 0 && !s.CanStartOrIsStarted( false ) ) return false;
+                                if( (DynamicImpact & StartDependencyImpact.IsStartOptionalRecommended) != 0 && !s.CanStartOrIsStarted ) return false;
                                 break;
                             }
                         case DependencyRequirement.Optional:
                             {
-                                if( (DynamicImpact & StartDependencyImpact.IsStartOptionalOnly) != 0 && !s.CanStartOrIsStarted( false ) ) return false;
+                                if( (DynamicImpact & StartDependencyImpact.IsStartOptionalOnly) != 0 && !s.CanStartOrIsStarted ) return false;
                                 break;
                             }
                     }

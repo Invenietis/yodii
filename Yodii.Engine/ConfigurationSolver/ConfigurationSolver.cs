@@ -46,6 +46,7 @@ namespace Yodii.Engine
         ServiceData[] _orderedServices;
         PluginData[] _orderedPlugins;
         int _independentPluginsCount;
+        ISet<ServiceData> _recursiveStartableServiceSet;
 
         public readonly int UniqueNumber;
         
@@ -119,6 +120,11 @@ namespace Yodii.Engine
         public IEnumerable<ServiceData> AllServices { get { return _orderedServices; } }
         
         public IEnumerable<PluginData> AllPlugins { get { return _orderedPlugins; } }
+
+        /// <summary>
+        /// See <see cref="IConfigurationSolver.RecursiveStartableServiceSet"/> documentation.
+        /// </summary>
+        public ISet<ServiceData> RecursiveStartableServiceSet { get { return _recursiveStartableServiceSet; } }
 
         IYodiiEngineStaticOnlyResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info, bool createStaticSolvedConfigOnSuccess )
         {
@@ -286,6 +292,7 @@ namespace Yodii.Engine
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
         internal DynamicSolverResult DynamicResolution( YodiiCommandList pastCommands, Func<InternalYodiiCommand, bool> existingCommandFilter = null, InternalYodiiCommand newOne = null )
         {
+            if( _recursiveStartableServiceSet == null ) _recursiveStartableServiceSet = new HashSet<ServiceData>();
             foreach( var f in _serviceFamilies ) f.DynamicResetState();
             foreach( var p in _plugins.Values ) p.DynamicResetState();
             foreach( var f in _serviceFamilies )
