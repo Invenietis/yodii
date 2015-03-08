@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\YodiiEngineResult.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,8 +33,9 @@ namespace Yodii.Engine
 {
     class YodiiEngineResult : IYodiiEngineStaticOnlyResult
     {
-        readonly IYodiiEngine _engine;
+        readonly IYodiiEngineExternal _engine;
         readonly IConfigurationFailureResult _configurationFailureResult;
+        readonly ICommandFailureResult _commandFailureResult;
         readonly IStaticFailureResult _staticFailureResult;
         readonly IDynamicFailureResult _hostFailureResult;
         readonly IReadOnlyList<IPluginInfo> _pluginCulprits;
@@ -32,6 +56,19 @@ namespace Yodii.Engine
             _pluginCulprits = CKReadOnlyListEmpty<IPluginInfo>.Empty;
             _serviceCulprits = CKReadOnlyListEmpty<IServiceInfo>.Empty;
             _engine = engine;
+        }
+
+        /// <summary>
+        /// Static only success resolution constructor.
+        /// </summary>
+        public YodiiEngineResult( ICommandFailureResult commandFailure, YodiiEngine engine )
+        {
+            Debug.Assert( commandFailure != null );
+            Debug.Assert( engine != null );
+            _pluginCulprits = CKReadOnlyListEmpty<IPluginInfo>.Empty;
+            _serviceCulprits = CKReadOnlyListEmpty<IServiceInfo>.Empty;
+            _engine = engine;
+            _commandFailureResult = commandFailure;
         }
 
         /// <summary>
@@ -64,16 +101,16 @@ namespace Yodii.Engine
         /// <summary>
         /// Dynamic failure constructor.
         /// </summary>
-        internal YodiiEngineResult( IConfigurationSolver solver, IEnumerable<Tuple<IPluginInfo, Exception>> errorInfo, YodiiEngine engine )
+        internal YodiiEngineResult( IConfigurationSolver solver, IReadOnlyList<IPluginHostApplyCancellationInfo> applyErrors, YodiiEngine engine )
         {
             Debug.Assert( solver != null );
-            Debug.Assert( errorInfo != null && errorInfo.Any() );
+            Debug.Assert( applyErrors != null && applyErrors.Any() );
             Debug.Assert( engine != null );
 
             var allP = solver.AllPlugins.Select( p => new SolvedPluginSnapshot( p ) ).ToDictionary( ps => ps.PluginInfo );
             var allS = solver.AllServices.Select( s => new SolvedServiceSnapshot( s ) ).ToReadOnlyList();
 
-            var errors = errorInfo.Select( e => new PluginRuntimeError( allP[e.Item1], e.Item2 ) ).ToReadOnlyList();
+            var errors = applyErrors.Select( e => new PluginRuntimeError( allP[e.Plugin], e ) ).ToReadOnlyList();
             _pluginCulprits = errors.Select( e => e.Plugin.PluginInfo ).ToReadOnlyList();
             _serviceCulprits = _pluginCulprits.Select( p => p.Service ).Where( s => s != null ).ToReadOnlyList();
             _engine = engine;
@@ -92,9 +129,9 @@ namespace Yodii.Engine
             _configurationFailureResult = configurationFailureResult;
         }
 
-        public IYodiiEngine Engine { get { return _engine; } }
+        public IYodiiEngineExternal Engine { get { return _engine; } }
 
-        public bool Success { get { return _configurationFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
+        public bool Success { get { return _configurationFailureResult == null && _commandFailureResult == null && _staticFailureResult == null && _hostFailureResult == null; } }
 
         public IConfigurationFailureResult ConfigurationFailureResult
         {
@@ -109,6 +146,11 @@ namespace Yodii.Engine
         public IDynamicFailureResult HostFailureResult
         {
             get { return _hostFailureResult; }
+        }
+
+        public ICommandFailureResult CommandFailureResult
+        {
+            get { return _commandFailureResult; }
         }
 
         public IReadOnlyList<IPluginInfo> PluginCulprits

@@ -1,20 +1,22 @@
-﻿#region LGPL License
+#region LGPL License
 /*----------------------------------------------------------------------------
-* This file (Yodii.Engine\Properties\AssemblyInfo.cs) is part of Yodii project. 
+* This file (Yodii.Engine\Properties\AssemblyInfo.cs) is part of CiviKey. 
 *  
-* Yodii is free software: you can redistribute it and/or modify 
+* CiviKey is free software: you can redistribute it and/or modify 
 * it under the terms of the GNU Lesser General Public License as published 
 * by the Free Software Foundation, either version 3 of the License, or 
 * (at your option) any later version. 
 *  
-* Yodii is distributed in the hope that it will be useful, 
+* CiviKey is distributed in the hope that it will be useful, 
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
 * GNU Lesser General Public License for more details. 
 * You should have received a copy of the GNU Lesser General Public License 
-* along with Yodii.  If not, see <http://www.gnu.org/licenses/>. 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
 *  
-* Copyright © 2013, Invenietis <http://www.invenietis.com>
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
 * All rights reserved. 
 *-----------------------------------------------------------------------------*/
 #endregion
@@ -28,6 +30,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle( "Yodii.Engine" )]
 [assembly: AssemblyDescription( "Yodii engine." )]
 [assembly: AssemblyCulture( "" )]
+[assembly: CLSCompliant( true )] 
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

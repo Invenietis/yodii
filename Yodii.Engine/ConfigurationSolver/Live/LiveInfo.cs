@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\Live\LiveInfo.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,15 +61,22 @@ namespace Yodii.Engine
             get { return _services; }
         }
 
-        public ILiveServiceInfo FindService( string fullName )
+        public ILiveServiceInfo FindService( string serviceFullName )
         {
-            if( fullName == null ) throw new ArgumentNullException( "fullName" );
-            return _services.GetByKey( fullName );
+            if( serviceFullName == null ) throw new ArgumentNullException( "serviceFullName" );
+            return _services.GetByKey( serviceFullName );
         }
 
         public ILivePluginInfo FindPlugin( string pluginFullName )
         {
+            if( pluginFullName == null ) throw new ArgumentNullException( "pluginFullName" );
             return _plugins.GetByKey( pluginFullName );
+        }
+
+        public ILiveYodiiItem FindYodiiItem( string pluginOrserviceFullName )
+        {
+            if( pluginOrserviceFullName == null ) throw new ArgumentNullException( "pluginOrserviceFullName" );
+            return (ILiveYodiiItem)_plugins.GetByKey( pluginOrserviceFullName ) ?? _services.GetByKey( pluginOrserviceFullName );
         }
 
         public bool Contains( string serviceFullName )
@@ -66,7 +96,7 @@ namespace Yodii.Engine
 
             // 2 - Builds two lists of new Services and new Plugins and for already existing ones,
             //     updates them with the new information.
-            //     This update does not trigger any ProprtyChanged events and consider only 
+            //     This update does not trigger any PropretyChanged events and consider only 
             //     direct properties of the object.
             //     Changes to linked items (such as a Generalization reference for instance will be 
             //     done later thanks to their Bind method.
@@ -112,23 +142,23 @@ namespace Yodii.Engine
             notifier.RaiseEvents();
         }
 
-        internal void UpdateRuntimeErrors( IEnumerable<Tuple<IPluginInfo, Exception>> errors, Func<string,PluginData> pluginDataFinderForNewPlugin )
+        internal void UpdateRuntimeErrors( IReadOnlyList<IPluginHostApplyCancellationInfo> errors, Func<string, PluginData> pluginDataFinderForNewPlugin )
         {
             foreach( var e in errors )
             {
-                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Item1.PluginFullName );
+                LivePluginInfo pluginInfo = _plugins.GetByKey( e.Plugin.PluginFullName );
                 if( pluginInfo == null )
                 {
-                    pluginInfo = new LivePluginInfo( pluginDataFinderForNewPlugin( e.Item1.PluginFullName ), _engine );
-                    pluginInfo.CurrentError = e.Item2;
+                    pluginInfo = new LivePluginInfo( pluginDataFinderForNewPlugin( e.Plugin.PluginFullName ), _engine );
+                    pluginInfo.CurrentError = e;
                     _plugins.Add( pluginInfo );
                 }
-                else pluginInfo.CurrentError = e.Item2;
+                else pluginInfo.CurrentError = e;
             }
         }
 
         /// <summary>
-        /// Called by YodiiEngine.Stop().
+        /// Called by YodiiEngine.StopEngine().
         /// </summary>
         internal void Clear()
         {

@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Model\Configuration\FinalConfigurationItem.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -55,10 +78,10 @@ namespace Yodii.Model
         /// <summary>
         /// This function encapsulates all configuration constraints regarding the <see cref="ConfigurationStatus"/> of an item.
         /// </summary>
-        /// <param name="s1">Current <see cref="ConfigurationStatus"/></param>
-        /// <param name="s2">Wanted <see cref="ConfigurationStatus"/></param>
+        /// <param name="s1">First <see cref="ConfigurationStatus"/>.</param>
+        /// <param name="s2">Second <see cref="ConfigurationStatus"/>.</param>
         /// <param name="invalidCombination">string expliciting the error. Empty if all is well</param>
-        /// <returns></returns>
+        /// <returns>Resulting combined status.</returns>
         public static ConfigurationStatus Combine( ConfigurationStatus s1, ConfigurationStatus s2, out string invalidCombination )
         {
             invalidCombination = "";
@@ -77,152 +100,13 @@ namespace Yodii.Model
                 }
                 else
                 {
-                    invalidCombination = string.Format( "Something went terribly, terribly wrong..." );
+                    bool invalidS1 = !Enum.IsDefined( typeof( ConfigurationStatus ), s1 );
+                    Debug.Assert( invalidS1 || !Enum.IsDefined( typeof( ConfigurationStatus ), s2 ) );
+                    invalidCombination = string.Format( "Invalid status value: {0}", invalidS1 ? (int)s1 : (int)s2 );
                     return s1;
                 }
             }
             return s1;
-        }
-
-        /// <summary>
-        /// This function encapsulates all configuration constraints regarding the <see cref="StartDependencyImpact"/> of an item.
-        /// </summary>
-        /// <param name="s1">Current <see cref="StartDependencyImpact"/></param>
-        /// <param name="s2">Wanted <see cref="StartDependencyImpact"/></param>
-        /// <param name="invalidCombination">string expliciting the error. Empty if all is well</param>
-        public static StartDependencyImpact Combine( StartDependencyImpact i1, StartDependencyImpact i2, out string invalidCombination ) 
-        {
-            invalidCombination = "";
-            if( i1 == i2 ) return i1;
-
-            if( i1 == StartDependencyImpact.Unknown ) i1 = StartDependencyImpact.Minimal;
-            if( i2 == StartDependencyImpact.Unknown ) i2 = StartDependencyImpact.Minimal;
-
-            switch( i1 )
-            {
-                case StartDependencyImpact.FullStop:
-                    if( i2 == StartDependencyImpact.StopOptionalAndRunnable 
-                        || i2 == StartDependencyImpact.Minimal
-                        || i2 == StartDependencyImpact.TryFullStop 
-                        || i2 == StartDependencyImpact.TryFullStart
-                        || i2 == StartDependencyImpact.TryStartRecommended
-                        || i2 == StartDependencyImpact.TryStopOptionalAndRunnable 
-                        || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
-                    ///Impacts causing conflict: FullStart, StartRecommended, StartRecommendedAndStopOptionalAndRunnable
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.StopOptionalAndRunnable:
-                    if( i2 == StartDependencyImpact.Minimal 
-                        || i2 == StartDependencyImpact.TryFullStart
-                        || i2 == StartDependencyImpact.TryFullStop
-                        || i2 == StartDependencyImpact.TryStartRecommended
-                        || i2 == StartDependencyImpact.TryStopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
-                    if( i2 == StartDependencyImpact.FullStop || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    ///Impacts causing conflict: FullStart, StartRecommanded
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.Minimal:
-                    return i2;
-
-                case StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable:
-                    if( i2 == StartDependencyImpact.Minimal
-                        || i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.StopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryFullStart
-                        || i2 == StartDependencyImpact.TryFullStop
-                        || i2 == StartDependencyImpact.TryStartRecommended
-                        || i2 == StartDependencyImpact.TryStopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
-                        //Impacts causing conflicts: FullStart, FullStop
-                    else invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.StartRecommended:
-                    if( i2 == StartDependencyImpact.Minimal
-                        || i2 == StartDependencyImpact.TryFullStart
-                        || i2 == StartDependencyImpact.TryFullStop
-                        || i2 == StartDependencyImpact.TryStartRecommended
-                        || i2 == StartDependencyImpact.TryStopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
-                    else if( i2 == StartDependencyImpact.FullStart || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    ///Impacts causing conflicts: FullStop, StopOptionalAndRunnable
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.FullStart:
-                    if( i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.Minimal
-                        || i2 == StartDependencyImpact.TryFullStart
-                        || i2 == StartDependencyImpact.TryFullStop
-                        || i2 == StartDependencyImpact.TryStartRecommended
-                        || i2 == StartDependencyImpact.TryStopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i1;
-                    ///Impacts causing conflict: FullStop, StopOptionalAndRunnable, StartRecommendedAndStopOptionalAndRunnable
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.TryFullStop:
-                    if( i2 == StartDependencyImpact.FullStart
-                        || i2 == StartDependencyImpact.FullStop
-                        || i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.StopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    else if( i2 == StartDependencyImpact.Minimal || i2 == StartDependencyImpact.TryStopOptionalAndRunnable ) return i1;
-                    ///Impacts causing conflict: TryFullStart, TryStartRecommended, TryStartRecommendedAndStopOptionalAndRunnable
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.TryFullStart:
-                    if( i2 == StartDependencyImpact.FullStart
-                        || i2 == StartDependencyImpact.FullStop
-                        || i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.StopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    else if( i2 == StartDependencyImpact.Minimal || i2 == StartDependencyImpact.TryStartRecommended ) return i1;
-                    ///Impacts causing conflict: TryFullStop, TryStopOptionalAndRunnable, TryStartRecommendedAndStopOptionalAndRunnable
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.TryStartRecommended:
-                    if( i2 == StartDependencyImpact.FullStart
-                        || i2 == StartDependencyImpact.FullStop
-                        || i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.StopOptionalAndRunnable 
-                        || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryFullStart 
-                        || i2 == StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable ) return i2;
-                    else if( i2 == StartDependencyImpact.Minimal ) return i1;
-                    ///Impacts causing conflict: TryFullStop, TryStopOptionalAndRunnable
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.TryStartRecommendedAndStopOptionalAndRunnable:
-                    if( i2 == StartDependencyImpact.FullStart
-                        || i2 == StartDependencyImpact.FullStop
-                        || i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.StartRecommendedAndStopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.StopOptionalAndRunnable
-                        || i2 == StartDependencyImpact.TryStartRecommended
-                        || i2 == StartDependencyImpact.TryStopOptionalAndRunnable ) return i2;
-                    //Impacts causing conflict: TryFullStart, TryFullStop
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break;
-
-                case StartDependencyImpact.TryStopOptionalAndRunnable:
-                    if( i2 == StartDependencyImpact.FullStart
-                        || i2 == StartDependencyImpact.FullStop
-                        || i2 == StartDependencyImpact.StartRecommended
-                        || i2 == StartDependencyImpact.StopOptionalAndRunnable 
-                        || i2 == StartDependencyImpact.TryFullStop ) return i2;
-                    else if( i2 == StartDependencyImpact.Minimal ) return i1;
-                    ///Impacts causing conflict: TryFullStart, TryStartRecommanded
-                    invalidCombination = string.Format( "{0} and {1} cannot be combined", i1, i2 );
-                    break; 
-            }
-            return StartDependencyImpact.Unknown;
         }
     }
 }

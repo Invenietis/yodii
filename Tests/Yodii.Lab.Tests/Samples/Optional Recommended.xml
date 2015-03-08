@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="S1">
+      <Generalization />
+      <X>-0.997149806514201</X>
+      <Y>-1.53178428863433</Y>
+    </Service>
+    <Service FullName="S2">
+      <Generalization />
+      <X>144.840682186536</X>
+      <Y>-12.4644983741254</Y>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>P1</FullName>
+      <Service>S1</Service>
+      <ServiceReferences>
+        <ServiceReference Service="S2" Requirement="OptionalRecommended" />
+      </ServiceReferences>
+      <X>-5.54756136168864</X>
+      <Y>104.803066870226</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>P2</FullName>
+      <Service>S2</Service>
+      <ServiceReferences />
+      <X>143.904369272463</X>
+      <Y>96.5912722471219</Y>
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="" />
+  </Configuration>
+</Yodii.Lab>

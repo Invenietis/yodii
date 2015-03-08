@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Yodii.Lab>
+  <Services>
+    <Service FullName="ICarRepairService">
+      <Generalization />
+      <X>-322.90256627442</X>
+      <Y>411.810639770257</Y>
+    </Service>
+    <Service FullName="IDeliveryService">
+      <Generalization />
+      <X>216.00432450896</X>
+      <Y>400.568311583519</Y>
+    </Service>
+    <Service FullName="IMarketPlaceService">
+      <Generalization />
+      <X>0</X>
+      <Y>0</Y>
+    </Service>
+    <Service FullName="IOutSourcingService">
+      <Generalization />
+      <X>-111.308207032319</X>
+      <Y>541.599385159438</Y>
+    </Service>
+    <Service FullName="ISecuredDeliveryService">
+      <Generalization>IDeliveryService</Generalization>
+      <X>207.540212500397</X>
+      <Y>575.801174306276</Y>
+    </Service>
+    <Service FullName="ITimerService">
+      <Generalization />
+      <X>465.456340287103</X>
+      <Y>230.117359582774</Y>
+    </Service>
+  </Services>
+  <Plugins>
+    <Plugin>
+      <FullName>Client1</FullName>
+      <Service />
+      <ServiceReferences>
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
+      </ServiceReferences>
+      <X>423.586979062769</X>
+      <Y>5.17382947981469</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Company1</FullName>
+      <Service />
+      <ServiceReferences>
+        <ServiceReference Service="IDeliveryService" Requirement="Running" />
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
+      </ServiceReferences>
+      <X>-139.247717843324</X>
+      <Y>225.9524702854</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Company2</FullName>
+      <Service />
+      <ServiceReferences>
+        <ServiceReference Service="IDeliveryService" Requirement="Running" />
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
+      </ServiceReferences>
+      <X>-0.993764006741117</X>
+      <Y>225.394111871924</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Company3</FullName>
+      <Service />
+      <ServiceReferences>
+        <ServiceReference Service="IDeliveryService" Requirement="Running" />
+        <ServiceReference Service="IMarketPlaceService" Requirement="Running" />
+      </ServiceReferences>
+      <X>129.100767344101</X>
+      <Y>228.430782664237</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Garage</FullName>
+      <Service>ICarRepairService</Service>
+      <ServiceReferences />
+      <X>-574.947191450851</X>
+      <Y>429.499685217279</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>LaPoste</FullName>
+      <Service>ISecuredDeliveryService</Service>
+      <ServiceReferences />
+      <X>292.144571825582</X>
+      <Y>745.074854912525</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>LivrExpress</FullName>
+      <Service>IDeliveryService</Service>
+      <ServiceReferences>
+        <ServiceReference Service="ICarRepairService" Requirement="Running" />
+        <ServiceReference Service="IOutSourcingService" Requirement="Running" />
+      </ServiceReferences>
+      <X>-27.4330153421001</X>
+      <Y>437.300550435528</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>ManPower</FullName>
+      <Service>IOutSourcingService</Service>
+      <ServiceReferences />
+      <X>-412.895755181912</X>
+      <Y>590.997268169726</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>MarketPlace</FullName>
+      <Service>IMarketPlaceService</Service>
+      <ServiceReferences />
+      <X>-0.952637833913741</X>
+      <Y>-102.941007489913</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>Timer</FullName>
+      <Service>ITimerService</Service>
+      <ServiceReferences />
+      <X>461.854361785822</X>
+      <Y>156.323101340324</Y>
+    </Plugin>
+    <Plugin>
+      <FullName>UPS</FullName>
+      <Service>ISecuredDeliveryService</Service>
+      <ServiceReferences />
+      <X>75.519700687199</X>
+      <Y>730.33710398591</Y>
+    </Plugin>
+  </Plugins>
+  <Configuration>
+    <ConfigurationLayer Name="DefaultLayer">
+      <ConfigurationItem ServiceOrPluginId="MarketPlace" Status="Running" Reason="Right-click change" />
+    </ConfigurationLayer>
+  </Configuration>
+</Yodii.Lab>

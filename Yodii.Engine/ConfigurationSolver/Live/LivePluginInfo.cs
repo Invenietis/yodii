@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\Live\LivePluginInfo.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -13,7 +36,7 @@ namespace Yodii.Engine
     {
         IPluginInfo _pluginInfo;
         ILiveServiceInfo _service;
-        Exception _currentError;
+        IPluginHostApplyCancellationInfo _currentError;
 
         internal LivePluginInfo( PluginData p, YodiiEngine engine )
             : base( engine, p, p.PluginInfo.PluginFullName )
@@ -21,7 +44,7 @@ namespace Yodii.Engine
             _pluginInfo = p.PluginInfo;
         }
 
-        protected override bool IsPlugin { get { return true; } }
+        public override bool IsPlugin { get { return true; } }
 
         internal void UpdateFrom( PluginData p, DelayedPropertyNotification notifier )
         {
@@ -47,7 +70,7 @@ namespace Yodii.Engine
             get { return _pluginInfo; }
         }
 
-        public Exception CurrentError
+        public IPluginHostApplyCancellationInfo CurrentError
         {
             get { return _currentError; }
             internal set

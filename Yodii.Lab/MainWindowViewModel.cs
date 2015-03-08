@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\MainWindowViewModel.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -68,11 +91,12 @@ namespace Yodii.Lab
         readonly ICommand _newFileCommand;
         readonly ICommand _revokeAllCommandsCommand;
         readonly ICommand _autoPositionCommand;
+        //readonly ICommand _revokeLastCommand;
 
         readonly ActivityMonitor _activityMonitor;
         readonly DispatcherTimer _autosaveTimer;
 
-        readonly IYodiiEngine _engine; // Loaded from LabStateManager.
+        readonly IYodiiEngineExternal _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
 
         ConfigurationEditorWindow _activeConfEditorWindow = null;
@@ -548,12 +572,12 @@ namespace Yodii.Lab
         {
             if( _labStateManager.Engine.IsRunning )
             {
-                LabState.Engine.Stop();
+                LabState.Engine.StopEngine();
             }
             else
             {
                 RaiseNewNotification( "Starting simulation", "Starting Yodii engine." );
-                var startResult = _engine.Start();
+                var startResult = _engine.StartEngine();
 
                 if( startResult == null )
                 {
@@ -1406,15 +1430,21 @@ namespace Yodii.Lab
             // Settings are not available outside app context.
             if( Application.Current == null ) return;
             _recentFiles.Clear();
-
-            StringCollection files = Properties.Settings.Default.RecentFiles;
-            if( files != null )
+            try
             {
-                foreach( string f in files )
+                StringCollection files = Properties.Settings.Default != null ? Properties.Settings.Default.RecentFiles : null;
+                if( files != null )
                 {
-                    RecentFile r = RecentFile.TryParse( _activityMonitor, f );
-                    if( r != null ) _recentFiles.Add( r );
+                    foreach( string f in files )
+                    {
+                        RecentFile r = RecentFile.TryParse( _activityMonitor, f );
+                        if( r != null ) _recentFiles.Add( r );
+                    }
                 }
+            }
+            catch( Exception ex )
+            {
+                _activityMonitor.Error().Send( ex, "While loading recent files." );
             }
         }
 

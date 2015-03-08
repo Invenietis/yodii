@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\Graph elements\YodiiGraphVertex.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -16,7 +39,6 @@ namespace Yodii.Lab
     public class YodiiGraphVertex : VertexBase, INotifyPropertyChanged
     {
         #region Fields
-        readonly bool _isPlugin;
         readonly LabServiceInfo _liveService;
         readonly LabPluginInfo _livePlugin;
         readonly YodiiGraph _parentGraph;
@@ -26,7 +48,7 @@ namespace Yodii.Lab
         bool _isSelected = false;
         ConfigurationStatus _configStatus;
         bool _hasConfiguration;
-        ILiveYodiiItem _liveItem;
+        ILiveYodiiItem _liveObject;
         #endregion
 
         #region Constructors
@@ -35,51 +57,8 @@ namespace Yodii.Lab
         /// </summary>
         private YodiiGraphVertex()
         {
-            _startItemCommand = new RelayCommand( StartLiveItemExecute, CanStartLiveItem );
-            _stopItemCommand = new RelayCommand( StopLiveItemExecute, CanStopLiveItem );
         }
 
-        private bool CanStartLiveItem( object obj )
-        {
-            if( LiveObject == null ) return false;
-            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Running ) return false;
-
-            StartDependencyImpact impact = StartDependencyImpact.Unknown;
-            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
-
-            return LiveObject.Capability.CanStartWith( impact );
-        }
-
-        private bool CanStopLiveItem( object obj )
-        {
-            if( LiveObject == null ) return false;
-            if( LiveObject.RunningStatus == RunningStatus.Disabled || LiveObject.RunningStatus == RunningStatus.RunningLocked || LiveObject.RunningStatus == RunningStatus.Stopped ) return false;
-
-            return true;
-        }
-
-        private void StartLiveItemExecute( object obj )
-        {
-            if( !CanStartLiveItem( obj ) ) return;
-
-            if( LiveObject.RunningStatus == RunningStatus.Stopped )
-            {
-                StartDependencyImpact impact = StartDependencyImpact.Unknown;
-                if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
-
-                LiveObject.Start(impact);
-            }
-        }
-
-        private void StopLiveItemExecute( object obj )
-        {
-            if( !CanStopLiveItem( obj ) ) return;
-
-            if( LiveObject.RunningStatus == RunningStatus.Running )
-            {
-                LiveObject.Stop();
-            }
-        }
         /// <summary>
         /// Creates a new plugin vertex.
         /// </summary>
@@ -91,12 +70,13 @@ namespace Yodii.Lab
             Debug.Assert( parentGraph != null );
             Debug.Assert( plugin != null );
 
-            _isPlugin = true;
             _livePlugin = plugin;
             _parentGraph = parentGraph;
+            _startItemCommand = _livePlugin.StartPluginCommand;
+            _stopItemCommand = _livePlugin.StopPluginCommand;
 
             _livePlugin.PluginInfo.PropertyChanged += StaticInfo_PropertyChanged;
-            _livePlugin.PropertyChanged += _labPlugin_PropertyChanged;
+            _livePlugin.PropertyChanged += _labPluginOrService_PropertyChanged;
         }
 
         /// <summary>
@@ -110,41 +90,30 @@ namespace Yodii.Lab
             Debug.Assert( parentGraph != null );
             Debug.Assert( service != null );
 
-            _isPlugin = false;
             _liveService = service;
             _parentGraph = parentGraph;
+            _startItemCommand = _liveService.StartServiceCommand;
+            _stopItemCommand = _liveService.StopServiceCommand;
 
             _liveService.ServiceInfo.PropertyChanged += StaticInfo_PropertyChanged;
-            _liveService.PropertyChanged += _labService_PropertyChanged;
+            _liveService.PropertyChanged += _labPluginOrService_PropertyChanged;
         }
 
         #endregion Constructors
 
-        void _labPlugin_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        void _labPluginOrService_PropertyChanged( object sender, PropertyChangedEventArgs e )
         {
-            switch( e.PropertyName )
+            if( e.PropertyName == "LivePluginInfo" || e.PropertyName == "LiveServiceInfo" )
             {
-                case "LivePluginInfo":
-                    LiveObject = _livePlugin.LivePluginInfo;
+                var o = _livePlugin != null ? (ILiveYodiiItem)_livePlugin.LivePluginInfo : _liveService.LiveServiceInfo;
+                if( o != _liveObject )
+                {
+                    _liveObject = o;
+                    RaisePropertyChanged( "LiveObject" );
                     RaisePropertyChanged( "IsLive" );
                     RaisePropertyChanged( "IsRunning" );
                     RaisePropertyChanged( "IsEditable" );
-                    break;
-
-            }
-        }
-
-        void _labService_PropertyChanged( object sender, PropertyChangedEventArgs e )
-        {
-            switch( e.PropertyName )
-            {
-                case "LiveServiceInfo":
-                    LiveObject = _liveService.LiveServiceInfo;
-                    RaisePropertyChanged( "IsLive" );
-                    RaisePropertyChanged( "IsRunning" );
-                    RaisePropertyChanged( "IsEditable" );
-                    break;
-
+                }
             }
         }
 
@@ -161,7 +130,7 @@ namespace Yodii.Lab
         /// <remarks>
         /// LabPluginInfo contains something in this case.
         /// </remarks>
-        public bool IsPlugin { get { return _isPlugin; } }
+        public bool IsPlugin { get { return _livePlugin != null; } }
 
         /// <summary>
         /// True if the element represented by this vertex is a service.
@@ -169,7 +138,7 @@ namespace Yodii.Lab
         /// <remarks>
         /// LabServiceInfo contains something in this case.
         /// </remarks>
-        public bool IsService { get { return !_isPlugin; } }
+        public bool IsService { get { return _liveService != null; } }
 
         /// <summary>
         /// Whether this vertex is currently selected by the user.
@@ -246,15 +215,7 @@ namespace Yodii.Lab
         /// </summary>
         public ILiveYodiiItem LiveObject
         {
-            get { return _liveItem; }
-            internal set
-            {
-                if( value != _liveItem )
-                {
-                    _liveItem = value;
-                    RaisePropertyChanged( "LiveObject" );
-                }
-            }
+            get { return _liveObject; }
         }
 
         /// <summary>

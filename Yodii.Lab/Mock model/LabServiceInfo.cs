@@ -1,4 +1,27 @@
-﻿using System.Diagnostics;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\Mock model\LabServiceInfo.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using Yodii.Model;
@@ -13,18 +36,17 @@ namespace Yodii.Lab.Mocks
     {
         #region Fields
 
-        ServiceInfo _serviceInfo;
-        //LabServiceInfo _generalization;
-
+        readonly IYodiiEngineExternal _engine;
+        readonly ServiceInfo _serviceInfo;
         ILiveServiceInfo _liveServiceInfo;
 
         #endregion Fields
 
-        #region Constructor
-        internal LabServiceInfo( ServiceInfo serviceInfo)
+        internal LabServiceInfo( IYodiiEngineExternal engine, ServiceInfo serviceInfo )
         {
             Debug.Assert( serviceInfo != null );
 
+            _engine = engine;
             _serviceInfo = serviceInfo;
 
             StartServiceCommand = new RelayCommand( ExecuteStartService, CanExecuteStartService );
@@ -33,13 +55,13 @@ namespace Yodii.Lab.Mocks
 
         private bool CanExecuteStopService( object obj )
         {
-            return LiveServiceInfo != null && LiveServiceInfo.RunningStatus == RunningStatus.Running;
+            return LiveServiceInfo != null && LiveServiceInfo.RunningStatus == RunningStatus.Running && LiveServiceInfo.Capability.CanStop;
         }
 
         private void ExecuteStopService( object obj )
         {
             if( !CanExecuteStopService( null ) ) return;
-            var result = LiveServiceInfo.Stop( "LabServiceInfo" );
+            var result = _engine.StopItem( LiveServiceInfo );
             if( !result.Success )
             {
                 MessageBox.Show( result.Describe() );
@@ -48,19 +70,22 @@ namespace Yodii.Lab.Mocks
 
         private bool CanExecuteStartService( object obj )
         {
-            return LiveServiceInfo != null && LiveServiceInfo.RunningStatus == RunningStatus.Stopped;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+            return LiveServiceInfo != null && LiveServiceInfo.Capability.CanStartWith( impact );
         }
 
         private void ExecuteStartService( object obj )
         {
-            if( !CanExecuteStartService( null ) ) return;
-            var result = LiveServiceInfo.Start( "LabServiceInfo" );
+            if( !CanExecuteStartService( obj ) ) return;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+            var result = _engine.StartItem( LiveServiceInfo, impact );
             if( !result.Success )
             {
                 MessageBox.Show( result.Describe() );
             }
         }
-        #endregion
 
         #region Properties
 
@@ -91,15 +116,10 @@ namespace Yodii.Lab.Mocks
             get { return _liveServiceInfo; }
             internal set
             {
-                if( value != null )
-                {
-                    Debug.Assert( value.ServiceInfo == ServiceInfo );
-                }
-
+                Debug.Assert( value == null || value.ServiceInfo == ServiceInfo );
                 _liveServiceInfo = value;
-
                 RaisePropertyChanged();
-                RaisePropertyChanged("IsLive");
+                RaisePropertyChanged( "IsLive" );
             }
         }
 

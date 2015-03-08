@@ -1,4 +1,27 @@
-﻿using System.Diagnostics;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\Mock model\LabPluginInfo.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using Yodii.Model;
@@ -11,13 +34,14 @@ namespace Yodii.Lab.Mocks
     [DebuggerDisplay( "Lab plugin: {PluginInfo.PluginFullName}" )]
     public class LabPluginInfo : ViewModelBase
     {
+        readonly IYodiiEngineExternal _engine;
         readonly PluginInfo _pluginInfo;
         ILivePluginInfo _livePluginInfo;
 
-        internal LabPluginInfo( PluginInfo pluginInfo )
+        internal LabPluginInfo( IYodiiEngineExternal engine, PluginInfo pluginInfo )
         {
-            Debug.Assert( pluginInfo != null );
-
+            Debug.Assert( engine != null && pluginInfo != null );
+            _engine = engine;
             _pluginInfo = pluginInfo;
 
             StartPluginCommand = new RelayCommand( ExecuteStartPlugin, CanExecuteStartPlugin );
@@ -26,13 +50,13 @@ namespace Yodii.Lab.Mocks
 
         private bool CanExecuteStopPlugin( object obj )
         {
-            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Running;
+            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Running && LivePluginInfo.Capability.CanStop;
         }
 
         private void ExecuteStopPlugin( object obj )
         {
-            if( !CanExecuteStopPlugin( null ) ) return;
-            var result = LivePluginInfo.Stop( "LabPluginInfo" );
+            if( !CanExecuteStopPlugin( obj ) ) return;
+            var result = _engine.StopItem( LivePluginInfo );
             if( !result.Success )
             {
                 MessageBox.Show( result.Describe() );
@@ -41,13 +65,17 @@ namespace Yodii.Lab.Mocks
 
         private bool CanExecuteStartPlugin( object obj )
         {
-            return LivePluginInfo != null && LivePluginInfo.RunningStatus == RunningStatus.Stopped;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+            return LivePluginInfo != null && LivePluginInfo.Capability.CanStartWith( impact );
         }
 
         private void ExecuteStartPlugin( object obj )
         {
-            if( !CanExecuteStartPlugin( null ) ) return;
-            var result = LivePluginInfo.Start( "LabPluginInfo" );
+            if( !CanExecuteStartPlugin( obj ) ) return;
+            StartDependencyImpact impact = StartDependencyImpact.Unknown;
+            if( obj != null && obj is StartDependencyImpact ) impact = (StartDependencyImpact)obj;
+            var result = _engine.StartItem( LivePluginInfo, impact );
             if( !result.Success )
             {
                 MessageBox.Show( result.Describe() );
@@ -83,15 +111,13 @@ namespace Yodii.Lab.Mocks
             get { return _livePluginInfo; }
             internal set
             {
-                if( value != null )
+                Debug.Assert( value == null || value.PluginInfo == PluginInfo );
+                if( value != _livePluginInfo )
                 {
-                    Debug.Assert( value.PluginInfo == PluginInfo );
+                    _livePluginInfo = value;
+                    RaisePropertyChanged();
+                    RaisePropertyChanged( "IsLive" );
                 }
-
-                _livePluginInfo = value;
-
-                RaisePropertyChanged();
-                RaisePropertyChanged( "IsLive" );
             }
         }
 

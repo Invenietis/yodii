@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\ServiceData.StaticPropagation.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +35,7 @@ namespace Yodii.Engine
 {
     partial class ServiceData
     {
-        internal class StaticPropagation : BasePropagation, IServiceDependentObject
+        internal class StaticPropagation : BasePropagation
         {
             public StaticPropagation( ServiceData s )
                 : base( s )
@@ -62,10 +85,9 @@ namespace Yodii.Engine
                 }
                 else
                 {
-                    StartDependencyImpact impact = Service.ConfigSolvedImpact;
-                    Debug.Assert( impact != StartDependencyImpact.Unknown && (impact & StartDependencyImpact.IsTryOnly) == 0 );
+                    StartDependencyImpact impact = Service.ConfigSolvedImpact | StartDependencyImpact.IsStartRunnableRecommended | StartDependencyImpact.IsStartRunnableOnly;
 
-                    foreach( var s in GetIncludedServices( impact, false ) )
+                    foreach( var s in GetIncludedServices( impact ) )
                     {
                         if( !s.SetRunningStatus( ServiceSolvedConfigStatusReason.FromPropagation ) )
                         {
@@ -74,6 +96,7 @@ namespace Yodii.Engine
                             return false;
                         }
                     }
+                    //Debug.Assert( Service.Disabled || GetExcludedServices( impact ).All( s => s.Disabled ) );
                     if( !Service.Disabled )
                     {
                         foreach( var s in GetExcludedServices( impact ) )
@@ -83,16 +106,6 @@ namespace Yodii.Engine
                     }
                 }
                 return true;
-            }
-
-            public SolvedConfigurationStatus FinalConfigSolvedStatus
-            {
-                get { return Service.FinalConfigSolvedStatus; }
-            }
-
-            public StartDependencyImpact ConfigSolvedImpact
-            {
-                get { return Service.ConfigSolvedImpact; }
             }
 
         }
@@ -130,6 +143,17 @@ namespace Yodii.Engine
             _propagation.Refresh();
             return _propagation;
         }
-        
+
+        public void FillTransitiveIncludedServices( HashSet<ServiceData> set )
+        {
+            if( !set.Add( this ) ) return;
+            var propagation = GetUsefulPropagationInfo();
+            if( propagation == null ) return;
+            foreach( var s in propagation.GetIncludedServices( ConfigSolvedImpact ) )
+            {
+                s.FillTransitiveIncludedServices( set );
+            }
+        }
+
     }
 }

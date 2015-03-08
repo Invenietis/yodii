@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\Dynamic\ServiceData.ServiceFamily.Dynamic.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -43,10 +66,9 @@ namespace Yodii.Engine
                             Debug.Assert( _runningService.DynamicStatus.HasValue && _runningService.DynamicStatus.Value == RunningStatus.RunningLocked );
                             DynamicSetRunningService( _runningService, ServiceRunningStatusReason.None );
                         }
-                        Root.OnAllPluginsDynamicStateInitialized();
                     }
                 }
-                else Root.OnAllPluginsDynamicStateInitialized();
+                Root.DebugCheckOnAllPluginsDynamicStateInitialized();
             }
 
             public void DynamicSetRunningPlugin( PluginData running )
@@ -145,10 +167,10 @@ namespace Yodii.Engine
                     ServiceData startPoint = _dynRunningService ?? Root;
                     if( startPoint.FinalConfigSolvedStatus == SolvedConfigurationStatus.Running  || (startPoint.DynamicStatus != null && startPoint.DynamicStatus.Value == RunningStatus.Running) )
                     {
-                        Debug.Assert( startPoint.DynamicCanStart( startPoint.ConfigSolvedImpact ) );
-                        PluginData firstRunnable = startPoint.FindFirstPluginData( p => p.DynamicCanStart( StartDependencyImpact.Minimal ) );
-                        Debug.Assert( firstRunnable != null );
-                        firstRunnable.DynamicStartBy( StartDependencyImpact.Minimal, PluginRunningStatusReason.StartedByFinalDecision );
+                        Debug.Assert( startPoint.CanStartOrIsStarted );
+                        PluginData firstRunnable = startPoint.FindFirstPluginData( p => p.CanStartOrIsStarted );
+                        Debug.Assert( firstRunnable != null && firstRunnable.CanStartOrIsStarted );
+                        firstRunnable.DynamicStartBy( PluginRunningStatusReason.StartedByFinalDecision );
                         Debug.Assert( _dynRunningPlugin == firstRunnable );
                         Debug.Assert( _dynRunningPlugin.DynamicStatus.Value == RunningStatus.Running
                                             && Root.FindFirstPluginData( p => p != _dynRunningPlugin && p.DynamicStatus.Value >= RunningStatus.Running ) == null,

@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\XmlSerializingUtils\LabXmlSerialization.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -68,7 +91,7 @@ namespace Yodii.Lab
                     PersistedConfigurationItem persistedItem = new PersistedConfigurationItem();
                     persistedItem.ServiceOrPluginId = i.ServiceOrPluginFullName;
                     persistedItem.Status = i.Status;
-                    persistedItem.StatusReason = i.StatusReason;
+                    persistedItem.StatusReason = i.Description;
 
                     persistedLayer.Items.Add( persistedItem );
                 }
@@ -215,7 +238,7 @@ namespace Yodii.Lab
         {
             if( state.Engine.IsRunning )
             {
-                state.Engine.Stop();
+                state.Engine.StopEngine();
             }
 
             while( r.Read() )
@@ -485,16 +508,8 @@ namespace Yodii.Lab
             // Stop running engine
             if( state.Engine.IsRunning )
             {
-                state.Engine.Stop();
+                state.Engine.StopEngine();
             }
-
-            // Clear configuration manager
-            foreach( var l in state.Engine.Configuration.Layers.ToList() )
-            {
-                var result = state.Engine.Configuration.Layers.Remove( l );
-                Debug.Assert( result.Success );
-            }
-
             // Clear services and plugins
             state.ClearState();
 
@@ -511,11 +526,11 @@ namespace Yodii.Lab
             // Load configuration manager data
             foreach( PersistedConfigurationLayer l in deserializedState.ConfigurationLayers )
             {
-                IConfigurationLayer newLayer = state.Engine.Configuration.Layers.Create( l.LayerName );
+                IConfigurationLayer newLayer = l.LayerName == "" ? state.Engine.Configuration.Layers.Default : state.Engine.Configuration.Layers.Create( l.LayerName );
 
                 foreach( PersistedConfigurationItem item in l.Items )
                 {
-                    var result = newLayer.Items.Add( item.ServiceOrPluginId, item.Status, item.StatusReason );
+                    var result = newLayer.Items.Set( item.ServiceOrPluginId, item.Status, item.StatusReason );
                     Debug.Assert( result.Success );
                 }
             }

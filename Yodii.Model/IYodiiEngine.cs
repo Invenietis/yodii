@@ -1,74 +1,47 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Model\IYodiiEngineInternal.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using CK.Core;
-using System.ComponentModel;
 
 namespace Yodii.Model
 {
     /// <summary>
-    /// Yodii engine is the primary object of Yodii.
-    /// It is in charge of maintaining coherency among available plugins and services, their configuration and the evolution at runtime.
-    /// It exposes all relevant information to the external world thanks to its <see cref="LiveInfo"/>.
+    /// This is the internal view of the engine: plugins can interact with it since it can be injected
+    /// into the plugin constructor.
+    /// <para>
+    /// It offers Start/Stop capabilities and since this is a per plugin view of the engine, the
+    /// caller key, when not specified (let to null) is automatically set to the plugin full name (see <see cref="IYodiiEngineBase.StartItem"/>).
+    /// </para>
+    /// <para>
+    /// The external <see cref="IYodiiEngineExternal"/> view is exposed (there is no reason to hide it from a plugin perspective), but
+    /// it should not be used directly except for specific plugins that may need to interact closely with the engine (by stopping it for instance).
+    /// </para>
     /// </summary>
-    public interface IYodiiEngine : INotifyPropertyChanged
+    public interface IYodiiEngine : IYodiiEngineBase
     {
-        /// <summary>
-        /// Gets the current information about available plugins and services.
-        /// </summary>
-        IDiscoveredInfo DiscoveredInfo { get; }
-
-        /// <summary>
-        /// Change the current set of <see cref="IPluginInfo"/> and <see cref="IServiceInfo"/>.
-        /// </summary>
-        /// <param name="dicoveredInfo">New discovered information to work with.</param>
-        /// <returns>Engine operation result.</returns>
-        IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo dicoveredInfo );
-
-        /// <summary>
-        /// Gets the configuration: gives access to static configuration that will 
-        /// necessarily be always satisfied.
-        /// </summary>
-        IConfigurationManager Configuration { get; }
-        
-        /// <summary>
-        /// Live information about the running services and plugins, when the engine is started.
-        /// </summary>
-        ILiveInfo LiveInfo { get; }
-
-        /// <summary>
-        /// Whether this IYodiiEngine is currently running.
-        /// </summary>
-        bool IsRunning { get; }
-
-        /// <summary>
-        /// Starts the engine, performs all possible resolutions,
-        /// and begins monitoring configuration for changes.
-        /// </summary>
-        /// <returns>Engine start result.</returns>
-        IYodiiEngineResult Start( IEnumerable<YodiiCommand> persistedCommands = null );
-
-        /// <summary>
-        /// Stops the engine: stops monitoring configuration.
-        /// </summary>
-        void Stop();
-        
-        /// <summary>
-        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
-        /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
-        /// </summary>
-        /// <returns>
-        /// <para>
-        /// The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an 
-        /// available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.
-        /// </para>
-        /// <para>
-        /// This method is useful only for advanced scenarios (for instance before starting the engine).
-        /// </para>
-        /// </returns>
-        IYodiiEngineStaticOnlyResult StaticResolutionOnly();
-
+        IYodiiEngineExternal ExternalEngine { get; }
     }
 }

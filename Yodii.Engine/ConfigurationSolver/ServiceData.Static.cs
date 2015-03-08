@@ -1,10 +1,34 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\ServiceData.Static.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using Yodii.Model;
 using CK.Core;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Yodii.Engine
 {
@@ -18,37 +42,32 @@ namespace Yodii.Engine
         readonly StartDependencyImpact _configSolvedImpact;
         readonly List<BackReference> _backReferences;
         FinalConfigStartableStatus _finalConfigStartableStatus;
-        
-        ServiceData( IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact )
+
+        ServiceData( IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact, ServiceData generalization )
         {
             _backReferences = new List<BackReference>();
             ServiceInfo = s;
             ConfigOriginalStatus = serviceStatus;
-            RawConfigSolvedImpact = ConfigOriginalImpact = impact;
-            if( RawConfigSolvedImpact == StartDependencyImpact.Unknown && Generalization != null )
+            Generalization = generalization;
+            // Impact
+            _configSolvedImpact = ConfigOriginalImpact = impact;
+            if( generalization != null )
             {
-                RawConfigSolvedImpact = Generalization.ConfigSolvedImpact;
+                _configSolvedImpact = (ConfigOriginalImpact | generalization.ConfigSolvedImpact).ClearUselessTryBits();
             }
-            _configSolvedImpact = RawConfigSolvedImpact;
-            if( _configSolvedImpact == StartDependencyImpact.Unknown || (_configSolvedImpact & StartDependencyImpact.IsTryOnly) != 0 )
+            if( _configSolvedImpact == StartDependencyImpact.Unknown )
             {
                 _configSolvedImpact = StartDependencyImpact.Minimal;
-            }
-
-            if( ConfigSolvedImpact == StartDependencyImpact.Unknown )
-            {
-                if( Generalization != null ) _configSolvedImpact = Generalization.ConfigOriginalImpact;
             }
         }
 
         internal ServiceData( IServiceInfo s, ServiceData generalization, ConfigurationStatus serviceStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
-            : this( s, serviceStatus, impact )
+            : this( s, serviceStatus, impact, generalization )
         {
             Family = generalization.Family;
             _inheritedServicesWithThis = new ServiceData[generalization._inheritedServicesWithThis.Length + 1];
             generalization._inheritedServicesWithThis.CopyTo( _inheritedServicesWithThis, 0 );
             _inheritedServicesWithThis[_inheritedServicesWithThis.Length - 1] = this;
-            Generalization = generalization;
             NextSpecialization = Generalization.FirstSpecialization;
             Generalization.FirstSpecialization = this;
             Initialize();
@@ -58,7 +77,7 @@ namespace Yodii.Engine
         }
 
         internal ServiceData( IConfigurationSolver solver, IServiceInfo s, ConfigurationStatus serviceStatus, StartDependencyImpact impact = StartDependencyImpact.Unknown )
-            : this( s, serviceStatus, impact )
+            : this( s, serviceStatus, impact, null )
         {
             Family = new ServiceFamily( solver, this );
             _inheritedServicesWithThis = new ServiceData[] { this };
@@ -100,6 +119,8 @@ namespace Yodii.Engine
                 _configDisabledReason = ServiceDisabledReason.AnotherServiceIsRunningByConfig;
             }
         }
+
+        public bool IsPlugin { get { return false; } }
 
         /// <summary>
         /// The ServiceInfo discovered object.
@@ -159,11 +180,6 @@ namespace Yodii.Engine
         public readonly StartDependencyImpact ConfigOriginalImpact;
 
         /// <summary>
-        /// The configured StartDependencyImpact (either ConfigOriginalImpact or the Generalization's one if ConfigOriginalImpact is unknown).
-        /// </summary>
-        public readonly StartDependencyImpact RawConfigSolvedImpact;
-
-        /// <summary>
         /// The solved StartDependencyImpact: it is this ConfigOriginalImpact if known or the Generalization's one if it exists.
         /// </summary>
         public StartDependencyImpact ConfigSolvedImpact
@@ -214,6 +230,7 @@ namespace Yodii.Engine
         }
 
         /// <summary>
+        /// Gets all the services in the family except this one, its ancestors and its specializations.
         /// Never null.
         /// </summary>
         internal IEnumerable<ServiceData> DirectExcludedServices
@@ -316,6 +333,17 @@ namespace Yodii.Engine
                 PluginDisabledReason reason = backRef.PluginData.GetDisableReasonForDisabledReference( backRef.Requirement );
                 if( reason != PluginDisabledReason.None && !backRef.PluginData.Disabled ) backRef.PluginData.SetDisabled( reason );
             }
+
+            if( Family.RunningService == this )
+            {
+                ServiceData g = Generalization;
+                while( g != null )
+                {
+                    if( !g.Disabled ) g.SetDisabled( ServiceDisabledReason.RunningServiceDisabled );
+                    g = g.Generalization;
+                }
+            }
+
             Debug.Assert( Family.RunningService != this || _inheritedServicesWithThis.All( s => s.Disabled ), "If we were the RunningService, no one else is running." );
         }
 
@@ -377,15 +405,17 @@ namespace Yodii.Engine
 
             if( !Disabled )
             {
-                availableServiceCollector( this );
                 ServiceData spec = FirstSpecialization;
                 while( spec != null )
                 {
                     if( !spec.Disabled ) spec.OnAllPluginsAdded( availableServiceCollector );
                     spec = spec.NextSpecialization;
                 }
-                Debug.Assert( !Disabled );
-                Family.Solver.DeferPropagation( this );
+                if( !Disabled )
+                {
+                    availableServiceCollector( this );
+                    Family.Solver.DeferPropagation( this );
+                }
             }
         }
 
@@ -414,10 +444,11 @@ namespace Yodii.Engine
         {
             if( !Disabled )
             {
-                _finalConfigStartableStatus = new FinalConfigStartableStatus( GetUsefulPropagationInfo() );
+                _finalConfigStartableStatus = new FinalConfigStartableStatusService( this );
             }
         }
 
+        [ExcludeFromCodeCoverage]
         public override string ToString()
         {
             StringBuilder b = new StringBuilder();
@@ -425,6 +456,8 @@ namespace Yodii.Engine
             return b.ToString();
         }
 
+
+        [ExcludeFromCodeCoverage]
         public void ToString( StringBuilder b, string prefix )
         {
             b.Append( prefix );
@@ -486,11 +519,6 @@ namespace Yodii.Engine
         StartDependencyImpact IYodiiItemData.ConfigOriginalImpact
         {
             get { return ConfigOriginalImpact; }
-        }
-
-        StartDependencyImpact IYodiiItemData.RawConfigSolvedImpact
-        {
-            get { return RawConfigSolvedImpact; }
         }
 
         #endregion

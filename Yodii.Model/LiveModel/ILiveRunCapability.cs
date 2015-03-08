@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Model\LiveModel\ILiveRunCapability.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -38,27 +61,10 @@ namespace Yodii.Model
         bool CanStartWithStartRecommended { get; }
 
         /// <summary>
-        /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.StopOptionalAndRunnable"/> mode.
-        /// Non recommended dependencies (<see cref="DependencyRequirement.Optional"/> and <see cref="DependencyRequirement.Runnable"/>) ares stopped,
-        /// recommended ones may run or not.
-        /// </summary>
-        bool CanStartWithStopOptionalAndRunnable { get; }
-
-        /// <summary>
-        /// Gets whether the plugin or service can be successfully started in <see cref="StartDependencyImpact.FullStop"/> mode.
-        /// This stops any dependencies that are not absolutely required (only the <see cref="DependencyRequirement.Running"/> are running, the other ones are stopped).
-        /// </summary>
-        bool CanStartWithFullStop { get; }
-
-        /// <summary>
         /// Tests whether the plugin or service can be successfully started with the given impact.
         /// </summary>
         /// <param name="impact">The impact that must be satisfied.</param>
         /// <returns>True if the plugin or service can successfully start with the given impact.</returns>
-        /// <remarks>
-        /// When impact is <see cref="StartDependencyImpact.Unknown"/> or if <see cref="StartDependencyImpact.IsTryOnly"/> bit is set, this 
-        /// corresponds to the <see cref="CanStart"/> property.
-        /// </remarks>
         bool CanStartWith( StartDependencyImpact impact );
 
     }

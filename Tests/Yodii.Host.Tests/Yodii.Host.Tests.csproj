@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{ECEB91C0-D028-4B19-8721-2E1B4469267F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Yodii.Host.Tests</RootNamespace>
+    <AssemblyName>Yodii.Host.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>69ce71ff</NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\CK.Core.4.2.0\lib\net45\CK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\ConfigurationManagerExtensions.cs">
+      <Link>Extensions\ConfigurationManagerExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\DynamicTestExtensions.cs">
+      <Link>Extensions\DynamicTestExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\StaticOnlyTestExtensions.cs">
+      <Link>Extensions\StaticOnlyTestExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Yodii.Engine.Tests\Extensions\TestExtensions.cs">
+      <Link>Extensions\TestExtensions.cs</Link>
+    </Compile>
+    <Compile Include="PluginAndServiceWrapper\PluginWrapper.cs" />
+    <Compile Include="PluginAndServiceWrapper\WrapperExtension.cs" />
+    <Compile Include="ServiceSpecializationContext.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubBSubService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubBService.cs" />
+    <Compile Include="PluginAndServiceWrapper\ServiceWrapper.cs" />
+    <Compile Include="TrackedPluginBase.cs" />
+    <Compile Include="TrackerPluginAndService.cs" />
+    <Compile Include="TrackMethodCalls\TrackMethodCallsPlugin.cs" />
+    <Compile Include="IAnotherService.cs" />
+    <Compile Include="TrackMethodCalls\ITrackMethodCallsPluginService.cs" />
+    <Compile Include="FailureTransitionPlugin\FailureTransitionPlugin.cs" />
+    <Compile Include="FailureTransitionPlugin\IFailureTransitionPluginService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootService.cs" />
+    <Compile Include="ServiceSpecialization\ITestRootSubAService.cs" />
+    <Compile Include="TestHelper.cs" />
+    <Compile Include="CtorParameterTests\ParameterTestPlugin.cs" />
+    <Compile Include="SpecializationTests.cs" />
+    <Compile Include="YodiiHostTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Yodii.Discoverer\Yodii.Discoverer.csproj">
+      <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
+      <Name>Yodii.Discoverer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Engine\Yodii.Engine.csproj">
+      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
+      <Name>Yodii.Engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Host\Yodii.Host.csproj">
+      <Project>{c9fcbf26-371b-48c2-aa78-06292ee30b9d}</Project>
+      <Name>Yodii.Host</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Model\Yodii.Model.csproj">
+      <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
+      <Name>Yodii.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

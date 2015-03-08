@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\Live\LiveYodiiItemInfo.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -35,7 +58,7 @@ namespace Yodii.Engine
             _configOriginalStatus = d.ConfigOriginalStatus;
             _configSolvedStatus = d.ConfigSolvedStatus;
             _configOriginalImpact = d.ConfigOriginalImpact;
-            _configSolvedImpact = d.RawConfigSolvedImpact;
+            _configSolvedImpact = d.ConfigSolvedImpact;
         }
 
         protected void UpdateItem( IYodiiItemData d, DelayedPropertyNotification notifier )
@@ -49,7 +72,7 @@ namespace Yodii.Engine
             notifier.Update( this, ref _configOriginalStatus, d.ConfigOriginalStatus, () => ConfigOriginalStatus );
             notifier.Update( this, ref _configSolvedStatus, d.ConfigSolvedStatus, () => WantedConfigSolvedStatus );
             notifier.Update( this, ref _configOriginalImpact, d.ConfigOriginalImpact, () => ConfigOriginalImpact );
-            notifier.Update( this, ref _configSolvedImpact, d.RawConfigSolvedImpact, () => ConfigSolvedImpact );
+            notifier.Update( this, ref _configSolvedImpact, d.ConfigSolvedImpact, () => ConfigSolvedImpact );
             if( wasRunning != (_runningStatus >= RunningStatus.Running) )
             {
                 notifier.Notify( this, () => IsRunning );
@@ -72,6 +95,8 @@ namespace Yodii.Engine
             get { return _fullName; }
         }
 
+        public abstract bool IsPlugin { get; }
+
         public bool IsRunning
         {
             get { return _runningStatus >= RunningStatus.Running; }
@@ -90,28 +115,6 @@ namespace Yodii.Engine
         public StartDependencyImpact ConfigSolvedImpact { get { return _configSolvedImpact; } }
 
         public RunningStatus RunningStatus { get { return _runningStatus; } }
-
-        protected abstract bool IsPlugin { get; }
-
-        public IYodiiEngineResult Start( string callerKey, StartDependencyImpact impact = StartDependencyImpact.Unknown )
-        {
-            if( !_capability.CanStartWith( impact ) )
-            {
-                throw new InvalidOperationException( "You must call Capability.CanStart with the wanted impact and ensure that it returns true before calling Start." );
-            }
-            YodiiCommand command = new YodiiCommand( true, _fullName, IsPlugin, impact, callerKey );
-            return _engine.AddYodiiCommand( command );
-        }
-
-        public IYodiiEngineResult Stop( string callerKey )
-        {
-            if( !_capability.CanStop )
-            {
-                throw new InvalidOperationException( "You must call Capability.CanStop and ensure that it returns true before calling Stop." );
-            }
-            YodiiCommand command = new YodiiCommand( false, _fullName, IsPlugin, StartDependencyImpact.Unknown, callerKey );
-            return _engine.AddYodiiCommand( command );
-        }
 
         public void RaisePropertyChanged( [CallerMemberName]string propertyName = null )
         {

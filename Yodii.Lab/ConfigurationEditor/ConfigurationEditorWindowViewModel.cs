@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\ConfigurationEditor\ConfigurationEditorWindowViewModel.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -127,7 +150,7 @@ namespace Yodii.Lab.ConfigurationEditor
 
             ConfigurationStatus newStatus = (ConfigurationStatus)box.SelectedItem;
 
-            var itemSetResult = item.SetStatus( newStatus, "ConfigurationEditor" );
+            var itemSetResult = item.Set( newStatus );
             if( !itemSetResult.Success )
             {
                 RaiseUserError( "Couldn't set item", String.Format( "Could not set {0} to {2}, as it would cause the following error:\n\n{1}",
@@ -175,7 +198,7 @@ namespace Yodii.Lab.ConfigurationEditor
                 string serviceOrPluginId = w.ViewModel.SelectedServiceOrPluginId;
                 if( serviceOrPluginId != null )
                 {
-                    var itemAddResult = layer.Items.Add( serviceOrPluginId, w.ViewModel.SelectedStatus );
+                    var itemAddResult = layer.Items.Set( serviceOrPluginId, w.ViewModel.SelectedStatus );
                     if( !itemAddResult.Success )
                     {
                         string message = itemAddResult.Describe();

@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationSolver\ConfigurationSolver.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +29,8 @@ using CK.Core;
 using System.Diagnostics;
 using Yodii.Model;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace Yodii.Engine
 {
@@ -21,6 +46,11 @@ namespace Yodii.Engine
         ServiceData[] _orderedServices;
         PluginData[] _orderedPlugins;
         int _independentPluginsCount;
+        ISet<ServiceData> _recursiveStartableServiceSet;
+
+        public readonly int UniqueNumber;
+        
+        static int _currentUniqueNumber;
 
         internal static Tuple<IYodiiEngineStaticOnlyResult, ConfigurationSolver> CreateAndApplyStaticResolution( YodiiEngine engine, FinalConfiguration finalConfiguration, IDiscoveredInfo discoveredInfo, bool revertServices, bool revertPlugins, bool createStaticSolvedConfigOnSuccess )
         {
@@ -35,6 +65,7 @@ namespace Yodii.Engine
 
         ConfigurationSolver( YodiiEngine engine, bool revertServices = false, bool revertPlugins = false )
         {
+            UniqueNumber = Interlocked.Increment( ref _currentUniqueNumber );
             _engine = engine;
             _services = new Dictionary<string, ServiceData>();
             _serviceFamilies = new List<ServiceData.ServiceFamily>();
@@ -86,14 +117,14 @@ namespace Yodii.Engine
             return _plugins.GetValueWithDefault( pluginFullName, null );
         }
 
-        void IConfigurationSolver.DeferPropagation( ServiceData s )
-        {
-            _deferedPropagation.Add( s );
-        }
-
         public IEnumerable<ServiceData> AllServices { get { return _orderedServices; } }
         
         public IEnumerable<PluginData> AllPlugins { get { return _orderedPlugins; } }
+
+        /// <summary>
+        /// See <see cref="IConfigurationSolver.RecursiveStartableServiceSet"/> documentation.
+        /// </summary>
+        public ISet<ServiceData> RecursiveStartableServiceSet { get { return _recursiveStartableServiceSet; } }
 
         IYodiiEngineStaticOnlyResult StaticResolution( FinalConfiguration finalConfig, IDiscoveredInfo info, bool createStaticSolvedConfigOnSuccess )
         {
@@ -147,13 +178,14 @@ namespace Yodii.Engine
                     }
                 }
                 ProcessDeferredPropagations();
+                DetectInvalidLoop();
             }
-
             // Finalizes static resolution by computing final Runnable statuses per impact for Optional and Runnable plugins or services.
             Step = ConfigurationSolverStep.InitializeFinalStartableStatus;
             {
-                foreach( ServiceData s in _orderedServices ) s.InitializeFinalStartableStatus();
+                // Must first initialize plugins FinalStartableStatus since services use them.
                 foreach( PluginData p in _orderedPlugins ) p.InitializeFinalStartableStatus();
+                foreach( ServiceData s in _orderedServices ) s.InitializeFinalStartableStatus();
             }
 
             List<PluginData> blockingPlugins = null;
@@ -200,8 +232,48 @@ namespace Yodii.Engine
             return null;
         }
 
+        /// <summary>
+        /// Goes through the plugin list to check for non-suported, running (or runnable if the plugin must be running) reference loops.
+        /// If a plugin is disabled during the process, it is repeated.
+        /// </summary>
+        private void DetectInvalidLoop()
+        {
+            bool atLeastOneFailed;
+            do
+            {
+                atLeastOneFailed = false;
+                foreach( var p in _orderedPlugins )
+                {
+                    if( !p.Disabled )
+                    {
+                        // If the plugin is running by configuration, we consider runnable references: we want runnable references to be able to start
+                        // and their start must not stop this plugin whatever the configured impact is.
+                        // If the plugin is only runnable, we take runnable references (and optional ones) into account depending on this configured impact.
+                        var impact = p.ConfigSolvedImpact;
+                        if( p.ConfigSolvedStatus == SolvedConfigurationStatus.Running ) impact |= StartDependencyImpact.IsStartRunnableOnly | StartDependencyImpact.IsStartRunnableRecommended;
+
+                        var running = p.GetIncludedServicesClosure( impact, true );
+                        if( running.Overlaps( p.GetExcludedServices( impact ) ) )
+                        {
+                            atLeastOneFailed = true;
+                            p.SetDisabled( PluginDisabledReason.InvalidStructureLoop );
+                            ProcessDeferredPropagations();
+                        }
+                    }
+                }
+            }
+            while( atLeastOneFailed );
+        }
+
+        void IConfigurationSolver.DeferPropagation( ServiceData s )
+        {
+            Debug.Assert( Step < ConfigurationSolverStep.WaitingForDynamicResolution );
+            _deferedPropagation.Add( s );
+        }
+
         void ProcessDeferredPropagations()
         {
+            Debug.Assert( Step < ConfigurationSolverStep.WaitingForDynamicResolution );
             while( _deferedPropagation.Count > 0 )
             {
                 ServiceData s = _deferedPropagation.First();
@@ -213,11 +285,14 @@ namespace Yodii.Engine
         /// <summary>
         /// Solves undetermined status based on commands.
         /// </summary>
-        /// <param name="commands"></param>
-        /// <returns>This method returns a Tuple <IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>,IEnumerable<IPluginInfo>> to the host.
+        /// <param name="pastCommands">Previously honored commands.</param>
+        /// <param name="existingCommandFilter">Optional filter applied to previous commands.</param>
+        /// <param name="newOne">Optional new command to honor first.</param>
+        /// <returns>This method returns a <see cref="DynamicSolverResult"/> that contains the plugins to start/stop or disable for the host.
         /// Plugins are either disabled, stopped (but can be started) or running (locked or not).</returns>
-        internal DynamicSolverResult DynamicResolution( IEnumerable<YodiiCommand> pastCommands, YodiiCommand newOne = null )
+        internal DynamicSolverResult DynamicResolution( YodiiCommandList pastCommands, Func<InternalYodiiCommand, bool> existingCommandFilter = null, InternalYodiiCommand newOne = null )
         {
+            if( _recursiveStartableServiceSet == null ) _recursiveStartableServiceSet = new HashSet<ServiceData>();
             foreach( var f in _serviceFamilies ) f.DynamicResetState();
             foreach( var p in _plugins.Values ) p.DynamicResetState();
             foreach( var f in _serviceFamilies )
@@ -225,33 +300,33 @@ namespace Yodii.Engine
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null );
                 f.DynamicOnAllPluginsStateInitialized();
             }
-            List<YodiiCommand> commands = new List<YodiiCommand>();
+            List<InternalYodiiCommand> commands = new List<InternalYodiiCommand>();
             if( newOne != null )
             {
-                bool alwaysTrue = ApplyAndTellMeIfCommandMustBeKept( newOne );
+                newOne.BindToConfigSolverData( this );
+                bool alwaysTrue = newOne.ApplyCommand( 0 );
                 Debug.Assert( alwaysTrue, "The newly added command is necessarily okay." );
                 commands.Add( newOne );
             }
 
-            foreach( var previous in pastCommands )
+            pastCommands.EnsureBindingsTo( this );
+            pastCommands.ApplyCommands( existingCommandFilter, newOne, commands );
+
+            foreach( var f in _serviceFamilies )
             {
-                if( newOne == null || newOne.ServiceFullName != previous.ServiceFullName || newOne.PluginFullName != previous.PluginFullName )
+                Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
+                if( !f.Root.Disabled )
                 {
-                    if( ApplyAndTellMeIfCommandMustBeKept( previous ) )
-                    {
-                        commands.Add( previous );
-                    }
+                    f.DynamicFinalDecision( true );
                 }
             }
             foreach( var f in _serviceFamilies )
             {
                 Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision( true );
-            }
-            foreach( var f in _serviceFamilies )
-            {
-                Debug.Assert( !f.Root.Disabled || f.Root.FindFirstPluginData( p => !p.Disabled ) == null, "All plugins must be disabled." );
-                if( !f.Root.Disabled ) f.DynamicFinalDecision( false );
+                if( !f.Root.Disabled )
+                {
+                    f.DynamicFinalDecision( false );
+                }
             }
 
             List<IPluginInfo> disabled = new List<IPluginInfo>();
@@ -275,38 +350,15 @@ namespace Yodii.Engine
             }
             return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
         }
-        
-        bool ApplyAndTellMeIfCommandMustBeKept( YodiiCommand cmd )
-        {
-            if( cmd.ServiceFullName != null )
-            {
-                // If the service does not exist, we keep the command.
-                ServiceData s;
-                if( _services.TryGetValue( cmd.ServiceFullName, out s ) )
-                {
-                    if ( cmd.Start ) return s.DynamicStartByCommand( cmd.Impact );
-                    return s.DynamicStopByCommand();
-                }
-                return true;
-            }
-            // Starts or stops the plugin.
-            // If the plugin does not exist, we keep the command.
-            PluginData p;
-            if( _plugins.TryGetValue(cmd.PluginFullName, out p) )
-            {
-                if ( cmd.Start ) return p.DynamicStartByCommand( cmd.Impact );
-                else return p.DynamicStopByCommand();
-            }
-            return true;
-        }
+
 
         ServiceData RegisterService( FinalConfiguration finalConfig, IServiceInfo s )
         {
             ServiceData data;
             if( _services.TryGetValue( s.ServiceFullName, out data ) ) return data;
 
-            //Set default status
-            ConfigurationStatus serviceStatus = finalConfig.GetStatus( s.ServiceFullName );
+            // Gets default status
+            FinalConfigurationItem serviceConf = finalConfig.GetFinalConfiguration( s.ServiceFullName );
             // Handle generalization.
             ServiceData dataGen = null;
             if( s.Generalization != null )
@@ -316,12 +368,12 @@ namespace Yodii.Engine
             Debug.Assert( (s.Generalization == null) == (dataGen == null) );
             if( dataGen == null )
             {
-                data = new ServiceData( this, s, serviceStatus );
+                data = new ServiceData( this, s, serviceConf.Status, serviceConf.Impact );
                 _serviceFamilies.Add( data.Family );
             }
             else
             {
-                data = new ServiceData( s, dataGen, serviceStatus );
+                data = new ServiceData( s, dataGen, serviceConf.Status, serviceConf.Impact );
             }
             _services.Add( s.ServiceFullName, data );
             return data;
@@ -332,19 +384,20 @@ namespace Yodii.Engine
             PluginData data;
             if( _plugins.TryGetValue( p.PluginFullName, out data ) ) return data;
 
-            ConfigurationStatus pluginStatus = finalConfig.GetStatus( p.PluginFullName );
+            FinalConfigurationItem pConf = finalConfig.GetFinalConfiguration( p.PluginFullName );
             ServiceData service = p.Service != null ? _services[p.Service.ServiceFullName] : null;
             if( service == null ) ++_independentPluginsCount;
-            data = new PluginData( this, p, service, pluginStatus );
+            data = new PluginData( this, p, service, pConf.Status, pConf.Impact );
             _plugins.Add( p.PluginFullName, data );
             return data;
         }
 
-        internal IYodiiEngineResult CreateDynamicFailureResult( IEnumerable<Tuple<IPluginInfo, Exception>> errors )
+        internal IYodiiEngineResult CreateDynamicFailureResult( IReadOnlyList<IPluginHostApplyCancellationInfo> errors )
         {
             return new YodiiEngineResult( this, errors, _engine );
         }
 
+        [ExcludeFromCodeCoverage]
         public override string ToString()
         {
             StringBuilder b = new StringBuilder();

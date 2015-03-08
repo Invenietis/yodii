@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Engine\ConfigurationManager\ConfigurationItem.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -10,7 +33,7 @@ using Yodii.Model;
 
 namespace Yodii.Engine
 {
-    public class ConfigurationItem : IConfigurationItem
+    class ConfigurationItem : IConfigurationItem
     {
         readonly string _serviceOrPluginFullName;
         readonly ConfigurationLayer _owner;
@@ -19,7 +42,7 @@ namespace Yodii.Engine
         StartDependencyImpact _impact;
         string _statusReason;
 
-        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason = "")
+        internal ConfigurationItem( ConfigurationLayer configurationLayer, string serviceOrPluginFullName, ConfigurationStatus initialStatus, StartDependencyImpact initialImpact, string initialStatusReason )
         {
             Debug.Assert( !String.IsNullOrEmpty( serviceOrPluginFullName ) );
             Debug.Assert( configurationLayer != null );
@@ -52,42 +75,56 @@ namespace Yodii.Engine
         }
 
         /// <summary>
-        /// Gets or sets an optional reason for this configuration status.
-        /// Null when <see cref="Layer"/> is null (this item does no more belong to its layer).
+        /// Gets or sets an optional description for this configuration.
+        /// This is null when <see cref="Layer"/> is null (this item does no more belong to its layer).
         /// </summary>
-        public string StatusReason
+        public string Description
         {
             get { return _statusReason; }
             set
             {
                 if ( _statusReason == null ) throw new InvalidOperationException();
-                _statusReason = value ?? String.Empty;
-                NotifyPropertyChanged();
+                if( value == null ) value = String.Empty;
+                if( _statusReason != value )
+                {
+                    _statusReason = value;
+                    NotifyPropertyChanged();
+                }
             }
         }
 
-        public IYodiiEngineResult SetStatus( ConfigurationStatus newStatus, string statusReason = "" )
+        public IYodiiEngineResult Set( ConfigurationStatus newStatus, string newDescription = null )
+        {
+            return Set( newStatus, _impact, newDescription );
+        }
+
+        public IYodiiEngineResult Set( StartDependencyImpact newImpact, string newDescription = null )
+        {
+            return Set( _status, newImpact, newDescription );
+        }
+
+        public IYodiiEngineResult Set( ConfigurationStatus newStatus, StartDependencyImpact newImpact, string newDescription = null )
         {
             if( _statusReason == null ) throw new InvalidOperationException();
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem(_serviceOrPluginFullName, _status, _impact ) ); 
-            if( result.Success )
+            var c = _owner.Items.ConfigurationManager;
+            bool changeStatus = _status != newStatus;
+            bool changeImpact = _impact != newImpact;
+            if( !changeImpact && !changeStatus )
             {
-                _status = newStatus;
-                NotifyPropertyChanged( "Status" );
-                if( StatusReason != statusReason ) StatusReason = statusReason;
-                if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
+                if( newDescription != null ) Description = newDescription;
+                return _owner.Items.ConfigurationManager.Engine.SuccessResult;
             }
-            return result;
-        }
-
-        public IYodiiEngineResult SetImpact( StartDependencyImpact newImpact )
-        {
-            IYodiiEngineResult result = _owner.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, _status, _impact ) );
+            IYodiiEngineResult result = c != null 
+                                            ? c.OnConfigurationItemChanging( this, new FinalConfigurationItem( _serviceOrPluginFullName, newStatus, newImpact ) ) 
+                                            : SuccessYodiiEngineResult.NullEngineSuccessResult;
             if( result.Success )
             {
                 _impact = newImpact;
-                NotifyPropertyChanged( "Impact" );
-                if( _owner.ConfigurationManager != null ) _owner.ConfigurationManager.OnConfigurationChanged();
+                _status = newStatus;
+                if( newDescription != null ) Description = newDescription;
+                if( changeImpact ) NotifyPropertyChanged( "Impact" );
+                if( changeStatus ) NotifyPropertyChanged( "Status" );
+                if( c != null ) c.OnConfigurationChanged();
             }
             return result;
         }

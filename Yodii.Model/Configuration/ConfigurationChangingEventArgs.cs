@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Model\Configuration\ConfigurationChangingEventArgs.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,17 +39,28 @@ namespace Yodii.Model
         readonly FinalConfigurationChange _finalConfigurationChange;
         readonly IConfigurationItem _configurationItemChanged;
         readonly IConfigurationLayer _configurationLayerChanged;
+        readonly IDiscoveredInfo _newDiscoveredInfo;
 
         List<string> _externalReasons;
 
         /// <summary>
-        /// New FinalConfiguration.
+        /// Gets the new FinalConfiguration.
         /// </summary>
         public FinalConfiguration FinalConfiguration
         {
             get { return _finalConfiguration; }
         }
 
+
+        /// <summary>
+        /// Gets the new <see cref="IDiscoveredInfo"/> if it is changing. 
+        /// Null if the current <see cref="IConfigurationManager.DiscoveredInfo"/> is not changing.
+        /// </summary>
+        public IDiscoveredInfo NewDiscoveredInfo
+        {
+            get { return _newDiscoveredInfo; }
+        }
+        
         /// <summary>
         /// Details of changes in the FinalConfiguration.
         /// </summary>
@@ -51,6 +85,7 @@ namespace Yodii.Model
             get { return _configurationLayerChanged; }
         }
 
+
         /// <summary>
         /// Whether the change was canceled.
         /// </summary>
@@ -60,7 +95,7 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// List of reasons of why the change was canceled.
+        /// List of reasons of why the change was canceled. Never null.
         /// </summary>
         public IReadOnlyList<string> FailureExternalReasons
         {
@@ -68,14 +103,20 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Creates a new instance of ConfigurationChangingEventArgs for a <see cref="IConfigurationLayerCollection.Clear"/>.
+        /// Creates a new instance of ConfigurationChangingEventArgs for a global change.
         /// </summary>
-        /// <param name="finalConfiguration">New empty FinalConfiguration. Must be empty otherwise an exception is thrown.</param>
-        public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration )
+        /// <param name="finalConfiguration">
+        /// New FinalConfiguration. 
+        /// When empty <see cref="P:FinalConfigurationChange"/> is set to <see cref="FinalConfigurationChange.Cleared"/>, 
+        /// otherwise it is set to <see cref="FinalConfigurationChange.Set"/>.
+        /// </param>
+        /// <param name="newInfo">Not null if the discovered information is a new one.</param>
+        public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration, IDiscoveredInfo newInfo = null )
         {
-            if( finalConfiguration == null || finalConfiguration.Items.Count > 0 ) throw new ArgumentException( "Must be not null and empty.", "finalConfiguration" );
+            if( finalConfiguration == null ) throw new ArgumentException( "Must be not null and empty.", "finalConfiguration" );
             _finalConfiguration = finalConfiguration;
-            _finalConfigurationChange = FinalConfigurationChange.Cleared;
+            _finalConfigurationChange = finalConfiguration.Items.Count == 0 ? FinalConfigurationChange.Cleared : FinalConfigurationChange.Set;
+            if( (_newDiscoveredInfo = newInfo) != null ) _finalConfigurationChange |= FinalConfigurationChange.NewDiscoveredInfo;
         }
 
         /// <summary>

@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C9FCBF26-371B-48C2-AA78-06292EE30B9D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Yodii.Host</RootNamespace>
+    <AssemblyName>Yodii.Host</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>1e82bff7</NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Yodii.Host.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\SharedKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CK.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CK.Core.4.2.0\lib\net45\CK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CK.Reflection">
+      <HintPath>..\packages\CK.Reflection.4.1.0\lib\net45\CK.Reflection.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="CatchExceptionGeneration.cs" />
+    <Compile Include="IPluginProxy.cs" />
+    <Compile Include="IServiceHost.cs" />
+    <Compile Include="IServiceHostConfiguration.cs" />
+    <Compile Include="ISimpleServiceHostConfiguration.cs" />
+    <Compile Include="Log\ILogCenter.cs" />
+    <Compile Include="Log\ILogEntry.cs" />
+    <Compile Include="Log\ILogErrorCaught.cs" />
+    <Compile Include="Log\ILogErrorCulprit.cs" />
+    <Compile Include="Log\ILogEventEntry.cs" />
+    <Compile Include="Log\ILogEventError.cs" />
+    <Compile Include="Log\ILogEventNotRunningError.cs" />
+    <Compile Include="Log\ILogExternalEntry.cs" />
+    <Compile Include="Log\ILogExternalErrorEntry.cs" />
+    <Compile Include="Log\ILogInterceptionEntry.cs" />
+    <Compile Include="Log\ILogMethodEntry.cs" />
+    <Compile Include="Log\ILogMethodError.cs" />
+    <Compile Include="Log\ILogWithParametersEntry.cs" />
+    <Compile Include="Log\LogEntryType.cs" />
+    <Compile Include="Log\LogEventArgs.cs" />
+    <Compile Include="Log\LogHostEventArgs.cs" />
+    <Compile Include="Plugin\CancellationInfo.cs" />
+    <Compile Include="Plugin\PluginProxyBase.cs" />
+    <Compile Include="Plugin\PluginProxy.cs" />
+    <Compile Include="YodiiHost.cs" />
+    <Compile Include="YodiiHost.HardStopping.cs" />
+    <Compile Include="PluginStatus.cs" />
+    <Compile Include="Plugin\StContext.cs" />
+    <Compile Include="Plugin\StStartContext.cs" />
+    <Compile Include="Plugin\StStopContext.cs" />
+    <Compile Include="Plugin\ServiceManager.cs" />
+    <Compile Include="Plugin\CancelPreStartContext.cs" />
+    <Compile Include="Plugin\CancelPreStopContext.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="R.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>R.resx</DependentUpon>
+    </Compile>
+    <Compile Include="ServiceLogEventOptions.cs" />
+    <Compile Include="ServiceLogMethodOptions.cs" />
+    <Compile Include="ServiceCallException.cs" />
+    <Compile Include="ServiceNotAvailableException.cs" />
+    <Compile Include="ServiceCallBlockedException.cs" />
+    <Compile Include="ServiceStoppedException.cs" />
+    <Compile Include="Service\LogExternalErrorEntry.cs" />
+    <Compile Include="Service\LogExternalEntry.cs" />
+    <Compile Include="Service\DefaultProxyDefinition.cs" />
+    <Compile Include="Service\IProxyDefinition.cs" />
+    <Compile Include="Service\LogEventEntry.cs" />
+    <Compile Include="Service\LogEventEntryError.cs" />
+    <Compile Include="Service\LogEventNotRunningError.cs" />
+    <Compile Include="Service\LogMethodEntry.cs" />
+    <Compile Include="Service\LogMethodEntryError.cs" />
+    <Compile Include="Service\LogMethodError.cs" />
+    <Compile Include="Service\ServiceProxyBase.cs" />
+    <Compile Include="Service\ProxyFactory.cs" />
+    <Compile Include="Service\ServiceHost.cs" />
+    <Compile Include="Service\SimpleServiceHostConfiguration.cs" />
+    <Compile Include="Service\UseTheProxyBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="R.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>R.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Yodii.Model\Yodii.Model.csproj">
+      <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
+      <Name>Yodii.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DynamicKeyPair\DynamicKeyPair.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="..\SharedKey.snk">
+      <Link>Properties\SharedKey.snk</Link>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="..\packages\Fody.1.27.1\build\Fody.targets" Condition="Exists('..\packages\Fody.1.27.1\build\Fody.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Fody.1.27.1\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.27.1\build\Fody.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

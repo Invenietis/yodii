@@ -1,4 +1,27 @@
-﻿using System;
+#region LGPL License
+/*----------------------------------------------------------------------------
+* This file (Yodii.Lab\LabStateManager.cs) is part of CiviKey. 
+*  
+* CiviKey is free software: you can redistribute it and/or modify 
+* it under the terms of the GNU Lesser General Public License as published 
+* by the Free Software Foundation, either version 3 of the License, or 
+* (at your option) any later version. 
+*  
+* CiviKey is distributed in the hope that it will be useful, 
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+* GNU Lesser General Public License for more details. 
+* You should have received a copy of the GNU Lesser General Public License 
+* along with CiviKey.  If not, see <http://www.gnu.org/licenses/>. 
+*  
+* Copyright © 2007-2015, 
+*     Invenietis <http://www.invenietis.com>,
+*     In’Tech INFO <http://www.intechinfo.fr>,
+* All rights reserved. 
+*-----------------------------------------------------------------------------*/
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,7 +43,6 @@ namespace Yodii.Lab
     /// </summary>
     public class LabStateManager : IYodiiEngineHost
     {
-        #region Fields
         /// <summary>
         /// Collection of mock IServiceInfos.
         /// </summary>
@@ -49,10 +71,16 @@ namespace Yodii.Lab
         /// <summary>
         /// Yodii engine to use. Created in constructor
         /// </summary>
-        readonly IYodiiEngine _engine;
-        #endregion
+        readonly IYodiiEngineExternal _engine;
 
-        #region Constructor
+        IYodiiEngineExternal IYodiiEngineHost.Engine
+        {
+            get { return _engine; }
+            set {}
+        }
+
+        bool IYodiiEngineHost.CatchPreStartOrPreStopExceptions { get; set; }
+
         /// <summary>
         /// Creates a new instance of this LabStateManager, as well as a new IYodiiEngine.
         /// </summary>
@@ -162,16 +190,14 @@ namespace Yodii.Lab
         {
             var newInfo = new DiscoveredInfoClone( ServiceInfos, PluginInfos );
 
-            var result = _engine.SetDiscoveredInfo( newInfo );
+            var result = _engine.Configuration.SetDiscoveredInfo( newInfo );
 
             if( !result.Success )
             {
-                Engine.Stop();
+                Engine.StopEngine();
                 MessageBox.Show( String.Format( "Engine would have this error:\n\n{0}", result.Describe() ), "Change refused", MessageBoxButton.OK, MessageBoxImage.Exclamation, MessageBoxResult.OK );
             }
         }
-
-        #endregion
 
         #region Event handlers
         void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
@@ -244,7 +270,7 @@ namespace Yodii.Lab
         /// <summary>
         /// Active IYodiiEngine.
         /// </summary>
-        public IYodiiEngine Engine
+        public IYodiiEngineExternal Engine
         {
             get { return _engine; }
         }
@@ -348,9 +374,19 @@ namespace Yodii.Lab
 
         #region IYodiiEngineHost Members
 
-        IEnumerable<Tuple<IPluginInfo, Exception>> IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart )
+        class Result : IYodiiEngineHostApplyResult
         {
-            List<Tuple<IPluginInfo, Exception>> exceptionList = new List<Tuple<IPluginInfo, Exception>>();
+            public Result( IReadOnlyList<IPluginHostApplyCancellationInfo> errors )
+            {
+                CancellationInfo = errors;
+            }
+
+            public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
+        }
+
+        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> actionCollector )
+        {
+            List<IPluginHostApplyCancellationInfo> cancellationInfos = new List<IPluginHostApplyCancellationInfo>();
 
             // TODO
             Console.WriteLine( "Disabling:" );
@@ -383,7 +419,7 @@ namespace Yodii.Lab
                 }
             }
 
-            return exceptionList;
+            return new Result( cancellationInfos.AsReadOnlyList());
         }
 
         #endregion
@@ -396,7 +432,7 @@ namespace Yodii.Lab
         /// </summary>
         internal void ClearState()
         {
-            if( _engine.IsRunning ) _engine.Stop();
+            if( _engine.IsRunning ) _engine.StopEngine();
 
             _labPluginInfos.Clear();
             _labServiceInfos.Clear();
@@ -404,11 +440,7 @@ namespace Yodii.Lab
             _serviceInfos.Clear();
 
             // Clear configuration manager
-            foreach( var l in Engine.Configuration.Layers.ToList() )
-            {
-                var result = Engine.Configuration.Layers.Remove( l );
-                Debug.Assert( result.Success );
-            }
+            Engine.Configuration.Layers.Clear();
         }
 
         internal bool IsService( string serviceFullName )
@@ -581,41 +613,29 @@ namespace Yodii.Lab
         /// Creates a lab wrapper item around an existing mock service, and adds it to our collection.
         /// </summary>
         /// <param name="s">Existing mock service</param>
-        private void CreateLabService( ServiceInfo s )
+        private LabServiceInfo CreateLabService( ServiceInfo s )
         {
             LabServiceInfo newServiceInfo;
-            if( s.Generalization != null )
-            {
-                LabServiceInfo generalizationLiveInfo = _labServiceInfos.GetByKey( (ServiceInfo)s.Generalization );
-                newServiceInfo = new LabServiceInfo( s ); // TODO: Running requirement
-            }
-            else
-            {
-                newServiceInfo = new LabServiceInfo( s );
-            }
+            newServiceInfo = new LabServiceInfo( _engine, s );
             _labServiceInfos.Add( newServiceInfo );
+            return newServiceInfo;
         }
 
         /// <summary>
         /// Creates a lab wrapper item around an existing mock plugin, and adds it to our collection.
         /// </summary>
         /// <param name="p">Existing mock plugin</param>
-        private void CreateLabPlugin( PluginInfo p )
+        private LabPluginInfo CreateLabPlugin( PluginInfo p )
         {
             LabPluginInfo lp;
-
             if( p.Service != null )
             {
                 p.Service.InternalImplementations.Add( p );
                 LabServiceInfo liveService = _labServiceInfos.GetByKey( p.Service );
-                lp = new LabPluginInfo( p );
             }
-            else
-            {
-                lp = new LabPluginInfo( p );
-            }
-
+            lp = new LabPluginInfo( _engine, p );
             _labPluginInfos.Add( lp );
+            return lp;
         }
 
         /// <summary>
@@ -735,7 +755,7 @@ namespace Yodii.Lab
         readonly IReadOnlyList<IServiceInfo> _serviceInfos;
         readonly IReadOnlyList<IPluginInfo> _pluginInfos;
 
-        internal DiscoveredInfoClone(IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins)
+        internal DiscoveredInfoClone( IEnumerable<IServiceInfo> services, IEnumerable<IPluginInfo> plugins )
         {
             _serviceInfos = new List<IServiceInfo>( services ).AsReadOnlyList();
             _pluginInfos = new List<IPluginInfo>( plugins ).AsReadOnlyList();
@@ -760,5 +780,10 @@ namespace Yodii.Lab
         }
 
         #endregion
+
+        public IReadOnlyList<IAssemblyInfo> AssemblyInfos
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }
