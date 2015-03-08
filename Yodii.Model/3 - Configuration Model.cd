@@ -18,6 +18,41 @@
       <Property Name="Items" />
     </ShowAsCollectionAssociation>
   </Class>
+  <Class Name="Yodii.Model.YodiiConfiguration">
+    <Position X="0.75" Y="11.75" Width="2.75" />
+    <Members>
+      <Field Name="_discoveredInfo" Hidden="true" />
+      <Field Name="_layers" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAACAAAgEAAAAAAAAEAA=</HashCode>
+      <FileName>YodiiConfiguration\YodiiConfiguration.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Yodii.Model.YodiiConfigurationItem">
+    <Position X="7.25" Y="11.75" Width="2.75" />
+    <Members>
+      <Field Name="_description" Hidden="true" />
+      <Field Name="_name" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAIAAEAAAgAAAEAAAAEAAAAABAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>YodiiConfiguration\YodiiConfigurationItem.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Yodii.Model.YodiiConfigurationLayer">
+    <Position X="4" Y="11.75" Width="2.75" />
+    <Members>
+      <Field Name="_items" Hidden="true" />
+      <Field Name="_name" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAIQAAAAAACAAAAAAAAAQAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>YodiiConfiguration\YodiiConfigurationLayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Struct Name="Yodii.Model.FinalConfigurationItem">
     <Position X="10.75" Y="0.75" Width="3.5" />
     <Members>
@@ -38,7 +73,7 @@
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AEEAQAEAAAAAAAAAAAAAAAAAAAAAAAEEAAAAAAAAAAA=</HashCode>
+      <HashCode>AEEAQAEACAAAAAAAAAAAAAAAAAAAAAEEgAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationManager.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -47,7 +82,7 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayer">
-    <Position X="4.5" Y="5.75" Width="3.25" />
+    <Position X="4.75" Y="5.75" Width="3.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAEDAAAAAAABAAAAAAAABAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayer.cs</FileName>
@@ -57,28 +92,28 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayerCollection">
-    <Position X="1" Y="3.25" Width="3.5" />
+    <Position X="0.75" Y="4" Width="3.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAACAAAJAAAAAAAAEAAAAAAAABAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayerCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItemCollection">
-    <Position X="7.25" Y="8.25" Width="3" />
+    <Position X="7.5" Y="8.25" Width="3" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAQAAABAAACAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItemCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItem">
-    <Position X="11" Y="7.25" Width="2.25" />
+    <Position X="11" Y="8.75" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAEAAAgBAAAAAAAEAAAAABAAAAEAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAgBAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationFailureResult">
-    <Position X="4.25" Y="10.25" Width="2.75" />
+    <Position X="4.25" Y="10" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>IConfigurationManagerFailureResult.cs</FileName>
@@ -92,7 +127,7 @@
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AAAAAEAACAAAAAAAAAAAAIAAAgAACAAABAAAAAAAAIA=</HashCode>
+      <HashCode>AAAAAEAACAAAAAAAAAAAAIAAAgAACAAABAAQAAAAAIA=</HashCode>
       <FileName>IYodiiEngineResult.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>

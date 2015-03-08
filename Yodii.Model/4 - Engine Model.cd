@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
   <Class Name="Yodii.Model.YodiiCommand">
-    <Position X="9.5" Y="0.5" Width="2.5" />
+    <Position X="10.75" Y="0.5" Width="2.5" />
     <Members>
       <Field Name="_callerKey" Hidden="true" />
       <Field Name="_fullName" Hidden="true" />
@@ -10,30 +10,30 @@
       <Field Name="_start" Hidden="true" />
     </Members>
     <TypeIdentifier>
-      <HashCode>AAAAQAAEACAAgAAEAAAgEAIAAAQAQACAAAAAAAAAIAA=</HashCode>
+      <HashCode>AAAAQAAEACAAgIAEAAAgEAIAAAQAQACAAAAAAAAAIAA=</HashCode>
       <FileName>LiveModel\YodiiCommand.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Interface Name="Yodii.Model.IYodiiEngine">
-    <Position X="0.5" Y="3.5" Width="3.25" />
+    <Position X="4" Y="3.75" Width="3.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
       <FileName>IYodiiEngine.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILiveInfo">
-    <Position X="4.75" Y="0.5" Width="3.75" />
+    <Position X="6" Y="0.5" Width="3.75" />
     <TypeIdentifier>
       <HashCode>gEAAQAAAAAAAAAAAAAAAAAAAAgAAAQAAAgAAAAgAAAA=</HashCode>
       <FileName>LiveModel\ILiveInfo.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILivePluginInfo">
-    <Position X="7" Y="9.75" Width="2.5" />
+    <Position X="10.5" Y="10" Width="2.5" />
     <InheritanceLine Type="Yodii.Model.IDynamicSolvedPlugin" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="8.75" Y="7.983" />
-        <Point X="8.75" Y="9.75" />
+        <Point X="12.25" Y="8.233" />
+        <Point X="12.25" Y="10" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -42,11 +42,11 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILiveServiceInfo">
-    <Position X="3.75" Y="9.75" Width="2.5" />
+    <Position X="7.25" Y="10" Width="2.5" />
     <InheritanceLine Type="Yodii.Model.IDynamicSolvedService" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="4.625" Y="7.983" />
-        <Point X="4.625" Y="9.75" />
+        <Point X="8.125" Y="8.233" />
+        <Point X="8.125" Y="10" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -55,70 +55,77 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILiveYodiiItem">
-    <Position X="5.5" Y="6.75" Width="2.25" />
+    <Position X="9" Y="7" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAIAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>LiveModel\ILiveYodiiItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IDynamicSolvedService">
-    <Position X="3.25" Y="6.75" Width="2" />
+    <Position X="6.75" Y="7" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Solver\IDynamicSolvedService.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IDynamicSolvedPlugin">
-    <Position X="8" Y="6.75" Width="2.5" />
+    <Position X="11.5" Y="7" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Solver\IDynamicSolvedPlugin.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IDynamicSolvedYodiiItem">
-    <Position X="5.25" Y="3.5" Width="3.5" />
+    <Position X="8.5" Y="3.75" Width="3.5" />
     <TypeIdentifier>
       <HashCode>AACEIAAEAAAAAIAAQAAAAAQBAAAAAAEAAAAAAAAAAAA=</HashCode>
       <FileName>Solver\IDynamicSolvedYodiiItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILiveRunCapability">
-    <Position X="10" Y="8.25" Width="3" />
+    <Position X="13.5" Y="8.5" Width="3" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAAAAAgAACAAAgAAQAAAA=</HashCode>
       <FileName>LiveModel\ILiveRunCapability.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IYodiiEngineHost">
-    <Position X="9.25" Y="4.25" Width="3.5" />
+    <Position X="0.5" Y="6.5" Width="3.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAABAAAAAQAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
       <FileName>Host\IYodiiEngineHost.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IYodiiEngineBase">
-    <Position X="0.75" Y="0.5" Width="2.75" />
+    <Position X="2" Y="0.5" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAQAAAAAAAAAAAAAAABAAAAAAAAEJAIkAAAAAAAAAA=</HashCode>
       <FileName>IYodiiEngineBase.cs</FileName>
     </TypeIdentifier>
   </Interface>
+  <Interface Name="Yodii.Model.IYodiiEngineExternal">
+    <Position X="0.5" Y="3.75" Width="3.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAACQAAAAAAAAAAAAgAAAAAIAAA=</HashCode>
+      <FileName>IYodiiEngineExternal.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
   <Enum Name="Yodii.Model.RunningStatus">
-    <Position X="0.5" Y="9.25" Width="1.5" />
+    <Position X="4.5" Y="10.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAIAAAAAAACAAAAAAAAAAAAIAAAAAACAAAA=</HashCode>
       <FileName>LiveModel\RunningStatus.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Yodii.Model.SolvedConfigurationStatus">
-    <Position X="0.5" Y="7.75" Width="2.25" />
+    <Position X="4.5" Y="8.75" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAACAAAAAAAAAAAAKAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\SolvedConfigurationStatus.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Yodii.Model.ConfigurationStatus">
-    <Position X="0.5" Y="6" Width="1.75" />
+    <Position X="4.5" Y="7" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAABAAAAAAAAAAAAAACAAAAAAAAAAAAKAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\ConfigurationStatus.cs</FileName>
