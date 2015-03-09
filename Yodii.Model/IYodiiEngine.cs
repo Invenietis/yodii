@@ -32,7 +32,7 @@ namespace Yodii.Model
     /// This is the internal view of the engine: plugins can interact with it since it can be injected
     /// into the plugin constructor.
     /// <para>
-    /// It offers Start/Stop capabilities and since this is a per plugin view of the engine, the
+    /// It offers Start/Stop capabilities (see the base <see cref="IYodiiEngineBase"/> methods) and since this is a per plugin view of the engine, the
     /// caller key, when not specified (let to null) is automatically set to the plugin full name (see <see cref="IYodiiEngineBase.StartItem"/>).
     /// </para>
     /// <para>

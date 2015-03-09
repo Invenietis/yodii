@@ -49,7 +49,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Starts the engine (that must be stopped), performs all possible resolutions,
-        /// and begins monitoring configuration for changes.
+        /// and starts listening configuration's changes.
         /// </summary>
         /// <param name="persistedCommands">Optional list of commands that will be initialized.</param>
         /// <returns>Engine start result.</returns>
