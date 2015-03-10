@@ -36,14 +36,15 @@ using Yodii.Model;
 namespace Yodii
 {
     [ExcludeFromCodeCoverage]
-    static class TestHelper
+    public static class TestHelper
     {
         static string _testData;
         static string _solutionFolder;
 
         static IActivityMonitor _monitor;
         static ActivityMonitorConsoleClient _console;
-        static IDiscoveredInfo _cachedDiscoveredInfo;
+        static IDiscoveredInfo _cachedExecutingDiscoveredInfo;
+        static IDiscoveredInfo _cachedCallingDiscoveredInfo;
 
 
         static TestHelper()
@@ -56,14 +57,30 @@ namespace Yodii
 
         public static IDiscoveredInfo GetDiscoveredInfoInThisAssembly()
         {
-            if( _cachedDiscoveredInfo == null )
+            if( _cachedExecutingDiscoveredInfo == null )
             {
-                StandardDiscoverer discoverer = new StandardDiscoverer();
-                discoverer.ReadAssembly( Assembly.GetExecutingAssembly().Location );
-                _cachedDiscoveredInfo = discoverer.GetDiscoveredInfo();
-                Assert.That( _cachedDiscoveredInfo.IsValid() );
+                _cachedExecutingDiscoveredInfo = GetDiscoveredInfoInAssembly( Assembly.GetExecutingAssembly() );
             }
-            return _cachedDiscoveredInfo;
+            return _cachedExecutingDiscoveredInfo;
+        }
+
+
+        public static IDiscoveredInfo GetDiscoveredInfoInCallingAssembly()
+        {
+            if( _cachedCallingDiscoveredInfo == null )
+            {
+                _cachedCallingDiscoveredInfo = GetDiscoveredInfoInAssembly( Assembly.GetCallingAssembly() );
+            }
+            return _cachedCallingDiscoveredInfo;
+        }
+
+        public static IDiscoveredInfo GetDiscoveredInfoInAssembly( Assembly a )
+        {
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            discoverer.ReadAssembly( a.Location );
+            IDiscoveredInfo discoveredInfo = discoverer.GetDiscoveredInfo();
+            Assert.That( discoveredInfo.IsValid() );
+            return discoveredInfo;
         }
 
         public static IActivityMonitor ConsoleMonitor
