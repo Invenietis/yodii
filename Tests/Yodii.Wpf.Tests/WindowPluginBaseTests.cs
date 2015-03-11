@@ -13,62 +13,8 @@ using Yodii.Model;
 namespace Yodii.Wpf.Tests
 {
     [TestFixture]
-    public class WpfTests
+    public class WindowPluginBaseTests
     {
-        Thread _appThread;
-
-        [TestFixtureSetUp]
-        public void TestFixtureSetUp()
-        {
-            // Run an empty WPF context if necessary.
-            if( Application.Current == null )
-            {
-                CreateApplicationInNewThread();
-            }
-        }
-
-        void CreateApplicationInNewThread()
-        {
-            Assert.That( Application.Current, Is.Null );
-
-            ManualResetEventSlim ev = new ManualResetEventSlim( false );
-
-            _appThread = new Thread( () =>
-            {
-                Application a = new Application();
-                a.ShutdownMode = ShutdownMode.OnExplicitShutdown; // Don't close when a plugin window closes!
-                a.Startup += ( s, e ) => { ev.Set(); };
-                a.Run(); // Blocks forever
-            } );
-            _appThread.SetApartmentState( ApartmentState.STA );
-            _appThread.Start();
-
-            ev.Wait();
-            Assert.That( Application.Current, Is.Not.Null );
-        }
-
-        void StopApplicationAndThread()
-        {
-            if( _appThread != null )
-            {
-                Application.Current.Dispatcher.Invoke( new Action( () =>
-                {
-                    Application.Current.Shutdown();
-                } ) );
-
-                _appThread.Join( TimeSpan.FromMilliseconds( 100 ) );
-                _appThread = null;
-            }
-        }
-
-
-
-        [TestFixtureTearDown]
-        public void TestFixtureTearDown()
-        {
-            StopApplicationAndThread();
-        }
-
         [Test]
         public void WindowPluginBase_ClosesWindow_WhenStopping()
         {

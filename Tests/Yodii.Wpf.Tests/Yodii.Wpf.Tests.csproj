@@ -51,8 +51,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestWindowPlugin.cs" />
-    <Compile Include="WpfTests.cs" />
+    <Compile Include="Win32Tests.cs" />
+    <Compile Include="WindowPluginBaseTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WpfTestHelper.cs" />
     <Compile Include="YodiiRuntimeTestContext.cs" />
   </ItemGroup>
   <ItemGroup>

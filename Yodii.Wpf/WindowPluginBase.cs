@@ -18,6 +18,7 @@ namespace Yodii.Wpf
         private bool _closingWindow;
         private bool _tryingToClose;
         private bool _running;
+        private bool _closeButtonIsDisabled;
         private Window _window;
 
         private bool _stopPluginWhenWindowCloses;
@@ -42,13 +43,24 @@ namespace Yodii.Wpf
 
         /// <summary>
         /// Gets a value indicating whether to show an error <see cref="MessageBox"/> when trying to close the window
-        /// when this plugin is required by configuration (RunningStatus is RunningLocked).
+        /// when the plugin should stop when the window closes (StopPluginWhenWindowCloses == true),
+        /// and the plugin cannot stop at this time.
         /// </summary>
         /// <value>
         /// <c>true</c> if a <see cref="MessageBox"/> should be shown when trying to close the window
         /// when this plugin is required by configuration; otherwise, <c>false</c>: The Closing event will be silently rejected.
         /// </value>
         protected bool ShowClosingFailedMessageBox { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to disable the Close button (Top right corner of window)
+        /// when the plugin should stop when the window closes (StopPluginWhenWindowCloses == true),
+        /// and the plugin cannot stop at this time.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if automatically disable the close button when the plugin is required; otherwise, <c>false</c>.
+        /// </value>
+        protected bool AutomaticallyDisableCloseButton { get; set; }
 
         /// <summary>
         /// Creates the Main Window associated with the plugin.
@@ -88,20 +100,50 @@ namespace Yodii.Wpf
 
             Application.Current.Dispatcher.Invoke( new Action( () =>
             {
-                ShowWindow();
+                CreateAndShowWindow();
             } ) );
 
             _running = true;
             base.PluginStart( c );
         }
 
-        private void ShowWindow()
+        private void CreateAndShowWindow()
         {
             // Called on the UI thread.
             _window = CreateWindow();
             _window.Closing += _window_Closing;
 
+            if( AutomaticallyDisableCloseButton )
+            {
+                ILivePluginInfo pluginInfo = GetLivePluginInfo();
+                pluginInfo.PropertyChanged += ( s, e ) =>
+                {
+                    if( e.PropertyName == "RunningStatus" )
+                    {
+                        UpdateCloseButton( pluginInfo.RunningStatus );
+                    }
+                };
+                UpdateCloseButton( pluginInfo.RunningStatus );
+            }
+
             _window.Show();
+        }
+
+        void UpdateCloseButton( RunningStatus newStatus )
+        {
+            Debug.Assert( _window != null );
+            bool disableButton = newStatus == RunningStatus.RunningLocked;
+
+            if( disableButton && !_closeButtonIsDisabled )
+            {
+                // DisableButton()
+                _closeButtonIsDisabled = true;
+            }
+            else if( !disableButton && _closeButtonIsDisabled )
+            {
+                // EnableButton()
+                _closeButtonIsDisabled = false;
+            }
         }
 
         protected override void PluginStop( IStopContext c )
