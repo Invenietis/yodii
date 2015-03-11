@@ -70,7 +70,7 @@ namespace Yodii.Wpf.Tests
         }
 
         [Test]
-        public void WindowPluginBase_CanBeStarted_AndStopped()
+        public void WindowPluginBase_ClosesWindow_WhenStopping()
         {
             using( var ctx = new YodiiRuntimeTestContext().StartPlugin<TestWindowPlugin>() )
             {
@@ -79,8 +79,20 @@ namespace Yodii.Wpf.Tests
                 Assert.That( pluginLive, Is.Not.Null );
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
 
-                // Check for a WPF context
                 Assert.That( Application.Current, Is.Not.Null );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    CollectionAssert.IsNotEmpty( Application.Current.Windows, "Window has been created and windows exist in this Application" );
+                } ) );
+
+                IYodiiEngineResult result = ctx.Engine.StopPlugin( typeof( TestWindowPlugin ).FullName );
+                Assert.That( result.Success, Is.True );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been removed and no windows remain in this Application" );
+                } ) );
             }
         }
 
