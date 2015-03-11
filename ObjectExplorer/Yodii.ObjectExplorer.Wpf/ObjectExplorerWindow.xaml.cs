@@ -194,7 +194,6 @@ namespace Yodii.ObjectExplorer.Wpf
         void UpdateStatus()
         {
             bool enable = _objectExplorerLiveInfo != null ? _objectExplorerLiveInfo.Capability.CanStop : false;
-            SetSysMenu( enable );
         }
 
         void GraphArea_RelayoutFinished( object sender, EventArgs e )
@@ -245,18 +244,6 @@ namespace Yodii.ObjectExplorer.Wpf
         {
             _vm.SelectedVertex = null;
         }
-
-        private void SetSysMenu( bool enable )
-        {
-            if( enable )
-            {
-                this.ShowSysMenu();
-            }
-            else
-            {
-                this.HideSysMenu();
-            }
-        }
     }
 
     public class BindingErrorListener : TraceListener
@@ -272,32 +259,5 @@ namespace Yodii.ObjectExplorer.Wpf
         {
             logAction( message );
         }
-    }
-
-    public static class WindowExtensions
-    {
-        #region Win32 imports
-
-        private const int GWL_STYLE = -16;
-        private const int WS_SYSMENU = 0x80000;
-        [DllImport( "user32.dll", SetLastError = true )]
-        private static extern int GetWindowLong( IntPtr hWnd, int nIndex );
-        [DllImport( "user32.dll" )]
-        private static extern int SetWindowLong( IntPtr hWnd, int nIndex, int dwNewLong );
-
-        #endregion
-
-        internal static void HideSysMenu( this Window w )
-        {
-            var hwnd = new WindowInteropHelper( w ).Handle;
-            SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) & ~WS_SYSMENU );
-        }
-
-        internal static void ShowSysMenu( this Window w )
-        {
-            var hwnd = new WindowInteropHelper( w ).Handle;
-            SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) | WS_SYSMENU );
-        }
-
     }
 }
