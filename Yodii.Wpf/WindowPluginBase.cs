@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 using Yodii.Model;
+using Yodii.Wpf.Win32;
 
 namespace Yodii.Wpf
 {
@@ -113,7 +114,7 @@ namespace Yodii.Wpf
             _window = CreateWindow();
             _window.Closing += _window_Closing;
 
-            if( AutomaticallyDisableCloseButton )
+            if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
             {
                 ILivePluginInfo pluginInfo = GetLivePluginInfo();
                 pluginInfo.PropertyChanged += ( s, e ) =>
@@ -136,12 +137,12 @@ namespace Yodii.Wpf
 
             if( disableButton && !_closeButtonIsDisabled )
             {
-                // DisableButton()
+                Application.Current.Dispatcher.Invoke( _window.DisableCloseButton );
                 _closeButtonIsDisabled = true;
             }
             else if( !disableButton && _closeButtonIsDisabled )
             {
-                // EnableButton()
+                Application.Current.Dispatcher.Invoke( _window.EnableCloseButton );
                 _closeButtonIsDisabled = false;
             }
         }

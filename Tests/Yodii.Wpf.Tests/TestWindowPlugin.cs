@@ -13,6 +13,7 @@ namespace Yodii.Wpf.Tests
     {
         public static bool StopPluginWhenWindowClosesConfig { get; set; }
         public static bool ShowClosingFailedMessageBoxConfig { get; set; }
+        public static bool AutomaticallyDisableCloseButtonConfig { get; set; }
 
         public TestWindowPlugin( IYodiiEngineBase injectedEngine )
             : base( injectedEngine )
@@ -21,6 +22,7 @@ namespace Yodii.Wpf.Tests
 
             this.StopPluginWhenWindowCloses = StopPluginWhenWindowClosesConfig;
             this.ShowClosingFailedMessageBox = ShowClosingFailedMessageBoxConfig;
+            this.AutomaticallyDisableCloseButton = AutomaticallyDisableCloseButtonConfig;
         }
 
         protected override Window CreateWindow()
