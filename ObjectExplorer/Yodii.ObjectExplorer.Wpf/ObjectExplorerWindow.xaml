@@ -43,7 +43,7 @@
                 </CollectionViewSource>
                 <CollectionViewSource
                     x:Key="plugins"
-                    Source="{Binding Engine.LiveInfo.Plugins}">
+                    Source="{Binding Path=Engine.(ym:IYodiiEngineBase.LiveInfo).Plugins}">
                     <CollectionViewSource.SortDescriptions>
                         <scm:SortDescription
                             PropertyName="FullName"
@@ -52,7 +52,7 @@
                 </CollectionViewSource>
                 <CollectionViewSource
                     x:Key="services"
-                    Source="{Binding Engine.LiveInfo.Services}">
+                    Source="{Binding Engine.(ym:IYodiiEngineBase.LiveInfo).Services}">
                     <CollectionViewSource.SortDescriptions>
                         <scm:SortDescription
                             PropertyName="FullName"

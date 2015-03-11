@@ -123,6 +123,7 @@ namespace Yodii.Wpf
         void BindOnStatusChange()
         {
             var pluginLiveInfo = GetLivePluginInfo();
+
             if( pluginLiveInfo != null )
             {
                 if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
