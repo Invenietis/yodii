@@ -23,99 +23,179 @@ namespace Yodii.Wpf.Tests
             // Run an empty WPF context if necessary.
             if( Application.Current == null )
             {
-                ManualResetEventSlim ev = new ManualResetEventSlim( false );
-
-                _appThread = new Thread( () =>
-                {
-                    Application a = new Application();
-                    a.ShutdownMode = ShutdownMode.OnExplicitShutdown; // Don't close when a plugin window closes!
-                    a.Startup += ( s, e ) => { ev.Set(); };
-                    a.Run(); // Blocks forever
-                } );
-                _appThread.SetApartmentState( ApartmentState.STA );
-                _appThread.Start();
-
-                ev.Wait();
-                Assert.That( Application.Current, Is.Not.Null );
+                CreateApplicationInNewThread();
             }
         }
 
-        [TestFixtureTearDown]
-        public void TestFixtureTearDown()
+        void CreateApplicationInNewThread()
+        {
+            Assert.That( Application.Current, Is.Null );
+
+            ManualResetEventSlim ev = new ManualResetEventSlim( false );
+
+            _appThread = new Thread( () =>
+            {
+                Application a = new Application();
+                a.ShutdownMode = ShutdownMode.OnExplicitShutdown; // Don't close when a plugin window closes!
+                a.Startup += ( s, e ) => { ev.Set(); };
+                a.Run(); // Blocks forever
+            } );
+            _appThread.SetApartmentState( ApartmentState.STA );
+            _appThread.Start();
+
+            ev.Wait();
+            Assert.That( Application.Current, Is.Not.Null );
+        }
+
+        void StopApplicationAndThread()
         {
             if( _appThread != null )
             {
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
                     Application.Current.Shutdown();
-                    _appThread.Join( TimeSpan.FromSeconds( 1 ) );
+                } ) );
+
+                _appThread.Join( TimeSpan.FromMilliseconds( 100 ) );
+                _appThread = null;
+            }
+        }
+
+
+
+        [TestFixtureTearDown]
+        public void TestFixtureTearDown()
+        {
+            StopApplicationAndThread();
+        }
+
+        [Test]
+        public void WindowPluginBase_CanBeStarted_AndStopped()
+        {
+            using( var ctx = new YodiiRuntimeTestContext().StartPlugin<TestWindowPlugin>() )
+            {
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+
+                Assert.That( pluginLive, Is.Not.Null );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
+
+                // Check for a WPF context
+                Assert.That( Application.Current, Is.Not.Null );
+            }
+        }
+
+        [Test]
+        public void WindowPluginBase_StaysRunning_WhenWindowIsClosed_Without_StopPluginWhenWindowCloses()
+        {
+            // Set config
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = false;
+
+            using( var ctx = new YodiiRuntimeTestContext().StartPlugin<TestWindowPlugin>() )
+            {
+                ManualResetEventSlim ev = new ManualResetEventSlim();
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    w.Closed += ( s, e ) => ev.Set();
+                    w.Close();
+                } ) );
+
+                ev.Wait();
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been closed, no other Windows remain" );
+                } ) );
+
+                // Window closed, but still running
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
+            }
+        }
+
+        [Test]
+        public void WindowPluginBase_Stops_WhenWindowIsClosed_With_StopPluginWhenWindowCloses()
+        {
+            // Set config
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
+
+            using( var ctx = new YodiiRuntimeTestContext().StartPlugin<TestWindowPlugin>() )
+            {
+                ManualResetEventSlim ev = new ManualResetEventSlim();
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    w.Closed += ( s, e ) => ev.Set();
+                    w.Close();
+                } ) );
+
+                ev.Wait();
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been closed, no other Windows remain" );
+                } ) );
+
+                // Window closed, but still running
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
+            }
+        }
+
+        [Test]
+        public void WindowPluginBase_DoesNotAllowClosing_WhenWindowIsClosed_With_PluginRequired_and_StopPluginWhenWindowClosesConfig()
+        {
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
+
+            using( var ctx = new YodiiRuntimeTestContext() )
+            {
+                var result = ctx.Engine.Configuration.Layers.Default.Set( typeof( TestWindowPlugin ).FullName, ConfigurationStatus.Running );
+                Assert.That( result.Success, Is.True, "TestWindowPlugin should be able to be set as Running" );
+
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+                Assert.That( pluginLive, Is.Not.Null, "Plugin should have been set up when config changed" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin should have been started when config changed" );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    w.Close(); // Calls closing...
+                } ) );
+
+                // Wait until Close propagates
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+
+                    Assert.That( w.IsLoaded, Is.True, "Window should not have been closed since plugin is required" );
                 } ) );
             }
         }
 
         [Test]
-        public void WpfBaseTest()
+        public void WindowPluginBase_AllowsClosing_WhenWindowIsClosed_With_PluginRequired_Without_StopPluginWhenWindowClosesConfig()
         {
-            YodiiHost host = new YodiiHost();
-            YodiiEngine engine = new YodiiEngine( host );
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = false;
 
-            engine.Configuration.SetDiscoveredInfo( TestHelper.GetDiscoveredInfoInCallingAssembly() );
-
-            IYodiiEngineResult result = engine.StartEngine();
-            Assert.That( result.Success );
-
-            string pluginName = typeof( TestWindowPlugin ).FullName;
-
-            var pluginLive = engine.LiveInfo.FindPlugin( pluginName );
-            var pluginProxy = host.FindLoadedPlugin( pluginName );
-
-            Assert.That( pluginLive, Is.Not.Null );
-            Assert.That( pluginLive.Capability.CanStart );
-            Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Stopped ) );
-
-            // Check window creation
-
-            IYodiiEngineResult r = engine.StartPlugin( pluginName );
-
-            Assert.That( r.Success, Is.True );
-            Assert.That( Application.Current, Is.Not.Null );
-            Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
-
-            Application.Current.Dispatcher.Invoke( new Action( () =>
+            using( var ctx = new YodiiRuntimeTestContext() )
             {
-                Assert.That( Application.Current.Windows.Count, Is.EqualTo( 1 ) );
+                var result = ctx.Engine.Configuration.Layers.Default.Set( typeof( TestWindowPlugin ).FullName, ConfigurationStatus.Running );
+                Assert.That( result.Success, Is.True, "TestWindowPlugin should be able to be set as Running" );
 
-                Window w = Application.Current.Windows.Cast<Window>().Single();
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+                Assert.That( pluginLive, Is.Not.Null, "Plugin should have been set up when config changed" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin should have been started when config changed" );
 
-                w.Close();
-            } ) );
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    w.Close(); // Calls closing...
 
-            Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
-
-            r = engine.StopPlugin( pluginName );
-            Assert.That( r.Success, Is.True );
-
-            // Do it again!
-
-            r = engine.StartPlugin( pluginName );
-
-            Assert.That( r.Success, Is.True );
-            Assert.That( Application.Current, Is.Not.Null );
-            Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
-
-            Application.Current.Dispatcher.Invoke( new Action( () =>
-            {
-                Assert.That( Application.Current.Windows.Count, Is.EqualTo( 1 ) );
-
-                Window w = Application.Current.Windows.Cast<Window>().Single();
-
-                w.Close();
-            } ) );
-
-            Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
-
-            r = engine.StopPlugin( pluginName );
-            Assert.That( r.Success, Is.True );
+                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been closed, no other Windows remain" );
+                } ) );
+            }
         }
     }
 }

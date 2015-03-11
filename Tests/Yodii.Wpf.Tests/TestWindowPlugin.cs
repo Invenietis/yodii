@@ -11,13 +11,21 @@ namespace Yodii.Wpf.Tests
 {
     public class TestWindowPlugin : WindowPluginBase
     {
+        public static bool StopPluginWhenWindowClosesConfig { get; set; }
+        public static bool ShowClosingFailedMessageBoxConfig { get; set; }
+
         public TestWindowPlugin( IYodiiEngineBase injectedEngine )
             : base( injectedEngine )
         {
             Assert.That( injectedEngine, Is.Not.Null );
 
-            // Defaults check
-            Assert.That( this.StopPluginWhenWindowCloses, Is.False );
+            this.StopPluginWhenWindowCloses = StopPluginWhenWindowClosesConfig;
+            this.ShowClosingFailedMessageBox = ShowClosingFailedMessageBoxConfig;
+        }
+
+        protected override Window CreateWindow()
+        {
+            return new Window();
         }
 
         protected override void PluginPreStart( IPreStartContext c )
@@ -37,14 +45,6 @@ namespace Yodii.Wpf.Tests
         protected override void PluginStop( IStopContext c )
         {
             base.PluginStop( c );
-
-            // Can't assert that: Application.Current is never reset
-            //Assert.That( Application.Current, Is.Null );
-        }
-
-        protected override Window CreateWindow()
-        {
-            return new Window();
         }
     }
 }

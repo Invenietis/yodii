@@ -41,6 +41,16 @@ namespace Yodii.Wpf
         }
 
         /// <summary>
+        /// Gets a value indicating whether to show an error <see cref="MessageBox"/> when trying to close the window
+        /// when this plugin is required by configuration (RunningStatus is RunningLocked).
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if a <see cref="MessageBox"/> should be shown when trying to close the window
+        /// when this plugin is required by configuration; otherwise, <c>false</c>: The Closing event will be silently rejected.
+        /// </value>
+        protected bool ShowClosingFailedMessageBox { get; set; }
+
+        /// <summary>
         /// Creates the Main Window associated with the plugin.
         /// </summary>
         /// <remarks>
@@ -54,6 +64,9 @@ namespace Yodii.Wpf
             if( engine == null ) { throw new ArgumentNullException( "engine" ); }
 
             _engine = engine;
+
+            // Defaults
+            ShowClosingFailedMessageBox = true;
         }
 
         protected override void PluginPreStart( IPreStartContext c )
@@ -86,6 +99,7 @@ namespace Yodii.Wpf
         {
             // Called on the UI thread.
             _window = CreateWindow();
+            _window.Closing += _window_Closing;
 
             _window.Show();
         }
@@ -137,10 +151,16 @@ namespace Yodii.Wpf
                         else
                         {
                             // Can't stop? Check your configuration.
-                            string m = String.Format( "This plugin is required by configuration, and cannot stop itself.\nTo stop it, change the configuration of {0}.", this.GetType().FullName );
-                            MessageBox.Show( _window, m, "Cannot stop",
-                                MessageBoxButton.OK, MessageBoxImage.Stop,
-                                MessageBoxResult.OK, MessageBoxOptions.None );
+                            if( ShowClosingFailedMessageBox )
+                            {
+                                string m = String.Format( "This window cannot be closed: its plugin is required by configuration.\nTo stop it, change the configuration of {0}.", this.GetType().FullName );
+                                string title = "Cannot close window";
+                                MessageBox.Show( _window,
+                                    m,
+                                    title,
+                                    MessageBoxButton.OK, MessageBoxImage.Stop,
+                                    MessageBoxResult.OK, MessageBoxOptions.None );
+                            }
                         }
                     }
                 }
