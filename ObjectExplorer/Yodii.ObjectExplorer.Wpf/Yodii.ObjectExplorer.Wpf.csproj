@@ -168,6 +168,10 @@
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Wpf\Yodii.Wpf.csproj">
+      <Project>{4fd02115-851c-400e-b9c8-486c38c65e1c}</Project>
+      <Name>Yodii.Wpf</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\action_add_16xLG.png" />
@@ -227,4 +231,3 @@
   </Target>
   -->
 </Project>
-

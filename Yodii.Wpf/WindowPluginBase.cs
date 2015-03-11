@@ -104,30 +104,39 @@ namespace Yodii.Wpf
                 CreateAndShowWindow();
             } ) );
 
+            BindOnStatusChange();
+
             _running = true;
             base.PluginStart( c );
         }
 
-        private void CreateAndShowWindow()
+        void CreateAndShowWindow()
         {
             // Called on the UI thread.
+
             _window = CreateWindow();
             _window.Closing += _window_Closing;
 
-            if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
-            {
-                ILivePluginInfo pluginInfo = GetLivePluginInfo();
-                pluginInfo.PropertyChanged += ( s, e ) =>
-                {
-                    if( e.PropertyName == "RunningStatus" )
-                    {
-                        UpdateCloseButton( pluginInfo.RunningStatus );
-                    }
-                };
-                UpdateCloseButton( pluginInfo.RunningStatus );
-            }
-
             _window.Show();
+        }
+
+        void BindOnStatusChange()
+        {
+            var pluginLiveInfo = GetLivePluginInfo();
+            if( pluginLiveInfo != null )
+            {
+                if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
+                {
+                    pluginLiveInfo.PropertyChanged += ( s, e ) =>
+                    {
+                        if( e.PropertyName == "RunningStatus" )
+                        {
+                            UpdateCloseButton( pluginLiveInfo.RunningStatus );
+                        }
+                    };
+                    UpdateCloseButton( pluginLiveInfo.RunningStatus );
+                }
+            }
         }
 
         void UpdateCloseButton( RunningStatus newStatus )
