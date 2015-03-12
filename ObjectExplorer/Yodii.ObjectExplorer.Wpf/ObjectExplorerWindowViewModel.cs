@@ -64,17 +64,10 @@ namespace Yodii.ObjectExplorer.Wpf
 
         readonly ICommand _reorderGraphLayoutCommand;
         readonly ICommand _autoPositionCommand;
-        //readonly ICommand _revokeLastCommand;
-
         readonly ActivityMonitor _activityMonitor;
+        readonly IYodiiEngineBase _engine;
 
-        readonly IYodiiEngineBase _engine; // Loaded from LabStateManager.
         YodiiGraphVertex _selectedVertex;
-
-        bool _hideNotifications = false;
-
-        bool _changedSinceLastSave;
-        string _lastSavePath;
 
         #endregion
 
@@ -100,7 +93,6 @@ namespace Yodii.ObjectExplorer.Wpf
 
         #endregion Constructor
 
-
         #region Command handlers
 
         private void ReorderGraphLayoutExecute( object param )
@@ -122,21 +114,6 @@ namespace Yodii.ObjectExplorer.Wpf
         #endregion Command handlers
 
         #region Properties
-
-        /// <summary>
-        /// Window title.
-        /// </summary>
-        public string WindowTitle
-        {
-            get
-            {
-                return String.Format(
-                    "Yodii.Lab - {0}{1}",
-                    OpenedFilePath != null ? Path.GetFileName( OpenedFilePath ) : "(New file)",
-                    ChangedSinceLastSave == true ? " *" : String.Empty
-                    );
-            }
-        }
 
         public IYodiiEngineBase Engine
         {
@@ -173,46 +150,6 @@ namespace Yodii.ObjectExplorer.Wpf
         }
 
         /// <summary>
-        /// State changed since it was last saved/loaded.
-        /// </summary>
-        public bool ChangedSinceLastSave
-        {
-            get
-            {
-                return _changedSinceLastSave;
-            }
-            private set
-            {
-                if( value != _changedSinceLastSave )
-                {
-                    _changedSinceLastSave = value;
-                    RaisePropertyChanged();
-                    RaisePropertyChanged( "WindowTitle" );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Last path loaded/saved.
-        /// </summary>
-        public string OpenedFilePath
-        {
-            get
-            {
-                return _lastSavePath;
-            }
-            private set
-            {
-                if( value != _lastSavePath )
-                {
-                    _lastSavePath = value;
-                    RaisePropertyChanged();
-                    RaisePropertyChanged( "WindowTitle" );
-                }
-            }
-        }
-
-        /// <summary>
         /// The Yodii ConfigurationManager linked to this Lab.
         /// </summary>
         public IConfigurationManager ConfigurationManager
@@ -224,7 +161,7 @@ namespace Yodii.ObjectExplorer.Wpf
         }
 
         /// <summary>
-        /// The currently selected graph vertex.GraphLayoutAlgorithmType
+        /// The currently selected graph vertex.
         /// </summary>
         public YodiiGraphVertex SelectedVertex
         {
@@ -321,7 +258,6 @@ namespace Yodii.ObjectExplorer.Wpf
 
         private void RaiseNewNotification( Notification n )
         {
-            if( _hideNotifications ) return;
             var h = NewNotification;
             if( h != null ) h( this, new NotificationEventArgs( n ) );
         }
