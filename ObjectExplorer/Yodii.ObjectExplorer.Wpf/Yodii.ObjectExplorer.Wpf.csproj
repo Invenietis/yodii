@@ -95,7 +95,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>-->
     <Compile Include="DebugExtensions\DebugExtensions.cs" />
-    <Compile Include="EngineViewModel.cs" />
     <Compile Include="NotificationEventArgs.cs" />
     <Compile Include="NotificationsHolder\INotificationManager.cs" />
     <Compile Include="NotificationsHolder\Notification.cs" />

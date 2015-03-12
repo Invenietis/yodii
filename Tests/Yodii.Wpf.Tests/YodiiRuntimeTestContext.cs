@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -33,10 +34,21 @@ namespace Yodii.Wpf.Tests
             Assert.That( result.Success );
         }
 
+        public YodiiRuntimeTestContext( Assembly yodiiAssembly )
+            : this( TestHelper.GetDiscoveredInfoInAssembly( yodiiAssembly ) )
+        {
+
+        }
+
         public YodiiRuntimeTestContext()
             : this( TestHelper.GetDiscoveredInfoInCallingAssembly() )
         {
 
+        }
+
+        public static YodiiRuntimeTestContext FromEmptyDiscoveredInfo()
+        {
+            return new YodiiRuntimeTestContext( TestHelper.GetEmptyDiscoveredInfo() );
         }
 
         public void Dispose()

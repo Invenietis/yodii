@@ -83,6 +83,14 @@ namespace Yodii
             return discoveredInfo;
         }
 
+        public static IDiscoveredInfo GetEmptyDiscoveredInfo()
+        {
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            IDiscoveredInfo discoveredInfo = discoverer.GetDiscoveredInfo();
+            Assert.That( discoveredInfo.IsValid() );
+            return discoveredInfo;
+        }
+
         public static IActivityMonitor ConsoleMonitor
         {
             get { return _monitor; }
