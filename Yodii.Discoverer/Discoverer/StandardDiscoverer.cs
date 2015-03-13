@@ -106,7 +106,7 @@ namespace Yodii.Discoverer
             var pathYodiiModel = new Uri( typeof( IYodiiService ).Assembly.CodeBase ).LocalPath;
             _yodiiModel = _resolver.ReadAssembly( pathYodiiModel );
 
-            _tDefIYodiiEngine = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiEngineBase ).FullName );
+            _tDefIYodiiEngine = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiEngine ).FullName );
             _tDefIYodiiService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiService ).FullName );
             _tDefIYodiiPlugin = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiPlugin ).FullName );
 
