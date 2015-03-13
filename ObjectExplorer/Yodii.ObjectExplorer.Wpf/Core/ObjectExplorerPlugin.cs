@@ -40,9 +40,9 @@ namespace Yodii.ObjectExplorer.Wpf
     /// </summary>
     public class ObjectExplorerPlugin : WindowPluginBase
     {
-        IYodiiEngineBase _activeEngine;
+        IYodiiEngine _activeEngine;
 
-        public ObjectExplorerPlugin( IYodiiEngineBase e )
+        public ObjectExplorerPlugin( IYodiiEngine e )
             : base( e )
         {
             if( e == null ) throw new ArgumentNullException( "e" );
