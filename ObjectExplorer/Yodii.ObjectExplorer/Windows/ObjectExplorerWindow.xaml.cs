@@ -22,7 +22,6 @@ namespace Yodii.ObjectExplorer.Windows
         public ObjectExplorerWindow()
         {
             InitializeComponent();
-            this.DataContext = new ViewModels.ObjectExplorerViewModel();
         }
     }
 }

@@ -32,7 +32,7 @@ namespace Yodii.ObjectExplorer.Tests
                 ObjectExplorerViewModel vm = new ObjectExplorerViewModel();
                 vm.PropertyChanged += ( s, e ) => { if( e.PropertyName == "Engine" ) firedCorrectPropertyChanged = true; };
 
-                vm.LoadEngine( ctx.Engine );
+                vm.LoadEngine( ctx.AnonymousInternalEngine );
 
                 Assert.That( firedCorrectPropertyChanged, Is.True );
                 Assert.That( vm.Engine, Is.Not.Null );
@@ -57,8 +57,8 @@ namespace Yodii.ObjectExplorer.Tests
             {
                 ObjectExplorerViewModel vm = new ObjectExplorerViewModel();
 
-                vm.LoadEngine( ctx.Engine );
-                Assert.Throws<InvalidOperationException>( () => vm.LoadEngine( ctx.Engine ) );
+                vm.LoadEngine( ctx.AnonymousInternalEngine );
+                Assert.Throws<InvalidOperationException>( () => vm.LoadEngine( ctx.AnonymousInternalEngine ) );
             }
         }
     }

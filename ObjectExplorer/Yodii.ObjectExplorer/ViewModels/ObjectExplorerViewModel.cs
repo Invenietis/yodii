@@ -16,7 +16,7 @@ namespace Yodii.ObjectExplorer.ViewModels
     public class ObjectExplorerViewModel : EmptyPropertyChangedHandler
     {
         [AllowNull]
-        public IYodiiEngineBase Engine { get; private set; }
+        public IYodiiEngine Engine { get; private set; }
         [AllowNull]
         public EngineViewModel EngineViewModel { get; private set; }
 
@@ -25,7 +25,7 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         }
 
-        public void LoadEngine( IYodiiEngineBase engine )
+        public void LoadEngine( IYodiiEngine engine )
         {
             if( Engine != null ) { throw new InvalidOperationException( "Cannot load an Engine twice." ); }
             Engine = engine;

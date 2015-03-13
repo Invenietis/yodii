@@ -135,9 +135,17 @@
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Wpf\Yodii.Wpf.csproj">
+      <Project>{4fd02115-851c-400e-b9c8-486c38c65e1c}</Project>
+      <Name>Yodii.Wpf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Yodii.ObjectExplorer.Wpf\Yodii.ObjectExplorer.Wpf.csproj">
       <Project>{3f156bfa-610e-4061-bc31-25178b14d499}</Project>
       <Name>Yodii.ObjectExplorer.Wpf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Yodii.ObjectExplorer\Yodii.ObjectExplorer.csproj">
+      <Project>{9447d56a-aebb-4425-b6e9-cb98748c744b}</Project>
+      <Name>Yodii.ObjectExplorer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

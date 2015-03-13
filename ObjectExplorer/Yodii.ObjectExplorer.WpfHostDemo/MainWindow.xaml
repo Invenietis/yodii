@@ -21,11 +21,17 @@
                 Click="Stop_Click"
                 IsEnabled="{Binding Engine.IsRunning}">Stop engine</Button>
             <Button
-                Click="StartOE_Click"
-                IsEnabled="{Binding ObjectExplorerPlugin.IsRunning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=false, TargetNullValue=false}">Start Object Explorer</Button>
+                Click="StartOldOE_Click"
+                IsEnabled="{Binding OldObjectExplorerPlugin.IsRunning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=false, TargetNullValue=false}">Start old Object Explorer</Button>
             <Button
-                Click="StopOE_Click"
-                IsEnabled="{Binding ObjectExplorerPlugin.IsRunning, FallbackValue=false, TargetNullValue=false}">Stop Object Explorer</Button>
+                Click="StopOldOE_Click"
+                IsEnabled="{Binding OldObjectExplorerPlugin.IsRunning, FallbackValue=false, TargetNullValue=false}">Stop old Object Explorer</Button>
+            <Button
+                Click="StartNewOE_Click"
+                IsEnabled="{Binding NewObjectExplorerPlugin.IsRunning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=false, TargetNullValue=false}">Start new Object Explorer</Button>
+            <Button
+                Click="StopNewOE_Click"
+                IsEnabled="{Binding NewObjectExplorerPlugin.IsRunning, FallbackValue=false, TargetNullValue=false}">Stop new Object Explorer</Button>
             <Button
                 Click="ResetConfig_Click">Reset engine configuration</Button>
         </StackPanel>

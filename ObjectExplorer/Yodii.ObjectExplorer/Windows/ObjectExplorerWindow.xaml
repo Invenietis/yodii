@@ -10,17 +10,87 @@
     Title="Object explorer"
     Height="480"
     Width="640">
-    <Grid
-        d:DataContext="{d:DesignInstance Type=mocks:MockObjectExplorerViewModel, IsDesignTimeCreatable=True}">
-        <ListView
-            ItemsSource="{Binding Path=EngineViewModel.Plugins}">
-            <ListView.ItemTemplate>
-                <DataTemplate
-                    DataType="vms:PluginViewModel">
-                    <TextBlock
-                        Text="{Binding Path=Plugin.FullName}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+    <DockPanel
+        LastChildFill="True"
+        d:DataContext="{d:DesignInstance IsDesignTimeCreatable=True, Type={x:Type mocks:MockObjectExplorerViewModel}}">
+        <StackPanel
+            DockPanel.Dock="Left">
+            <GroupBox
+                Header="Plugins">
+                <Grid>
+                    <ListView
+                        Name="PluginsListView"
+                        ItemsSource="{Binding Path=EngineViewModel.Plugins}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate
+                                DataType="vms:PluginViewModel">
+                                <TextBlock
+                                    Text="{Binding Path=Plugin.FullName}" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <TextBlock>
+                        No plugins.
+                        <TextBlock.Style>
+                            <Style
+                                TargetType="TextBlock">
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding ElementName=PluginsListView, Path=HasItems}"
+                                        Value="False">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </GroupBox>
+            <GroupBox
+                Header="Services">
+                <Grid>
+                    <ListView
+                        Name="ServicesListView"
+                        ItemsSource="{Binding Path=EngineViewModel.Services}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate
+                                DataType="vms:ServiceViewModel">
+                                <TextBlock
+                                    Text="{Binding Path=Service.FullName}" />
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock>
+                        No services.
+                        <TextBlock.Style>
+                            <Style
+                                TargetType="TextBlock">
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding ElementName=ServicesListView, Path=HasItems}"
+                                        Value="False">
+                                        <Setter
+                                            Property="Visibility"
+                                            Value="Visible"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+        <Grid>
+
+        </Grid>
+    </DockPanel>
 </Window>

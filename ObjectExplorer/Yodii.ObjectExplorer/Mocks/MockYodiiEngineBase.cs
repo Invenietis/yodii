@@ -6,9 +6,9 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.Mocks
 {
     [ImplementPropertyChanged]
-    public class MockYodiiEngineBase : IYodiiEngineBase
+    public class MockYodiiEngine : IYodiiEngine
     {
-        public MockYodiiEngineBase()
+        public MockYodiiEngine()
         {
             LiveInfo = new MockLiveInfo();
         }
@@ -22,7 +22,7 @@ namespace Yodii.ObjectExplorer.Mocks
 
         ILiveInfo IYodiiEngineBase.LiveInfo
         {
-            get{ return LiveInfo; }
+            get { return LiveInfo; }
         }
 
         public IYodiiEngineResult StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null )
@@ -55,6 +55,18 @@ namespace Yodii.ObjectExplorer.Mocks
             throw new NotImplementedException();
         }
 
+
+        #region IYodiiEngine Members
+
+        public IYodiiEngineExternal ExternalEngine
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
     }
 }
 #endif

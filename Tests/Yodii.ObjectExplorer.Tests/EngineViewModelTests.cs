@@ -39,7 +39,7 @@ namespace Yodii.ObjectExplorer.Tests
 
                 EngineViewModel vm = new EngineViewModel();
 
-                vm.LoadEngine( ctx.Engine );
+                vm.LoadEngine( ctx.AnonymousInternalEngine );
 
                 Assert.That( vm.Engine, Is.Not.Null );
                 CollectionAssert.IsNotEmpty( vm.Plugins );
@@ -62,8 +62,8 @@ namespace Yodii.ObjectExplorer.Tests
             {
                 EngineViewModel vm = new EngineViewModel();
 
-                vm.LoadEngine( ctx.Engine );
-                Assert.Throws<InvalidOperationException>( () => vm.LoadEngine( ctx.Engine ) );
+                vm.LoadEngine( ctx.AnonymousInternalEngine );
+                Assert.Throws<InvalidOperationException>( () => vm.LoadEngine( ctx.AnonymousInternalEngine ) );
             }
         }
 
@@ -78,7 +78,7 @@ namespace Yodii.ObjectExplorer.Tests
                 EngineViewModel vm = new EngineViewModel();
 
                 // Load with empty
-                vm.LoadEngine( ctx.Engine );
+                vm.LoadEngine( ctx.AnonymousInternalEngine );
 
                 CollectionAssert.IsEmpty( vm.Plugins );
                 CollectionAssert.IsEmpty( vm.Services );

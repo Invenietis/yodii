@@ -51,7 +51,8 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         IYodiiEngineExternal _engine;
-        ILivePluginInfo _objectExplorer;
+        ILivePluginInfo _oldObjectExplorer;
+        ILivePluginInfo _newObjectExplorer;
         ObjectExplorerManager _manager;
 
         public MainWindow()
@@ -72,17 +73,28 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
 
         void Plugins_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
         {
-            ObjectExplorerPlugin = _engine.LiveInfo.FindPlugin( "Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin" );
+            OldObjectExplorerPlugin = _engine.LiveInfo.FindPlugin( typeof( Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin ).FullName );
+            NewObjectExplorerPlugin = _engine.LiveInfo.FindPlugin( typeof( Yodii.ObjectExplorer.ObjectExplorerPlugin ).FullName );
         }
 
         public IYodiiEngineExternal Engine { get { return _engine; } }
 
-        public ILivePluginInfo ObjectExplorerPlugin
+        public ILivePluginInfo OldObjectExplorerPlugin
         {
-            get { return _objectExplorer; }
+            get { return _oldObjectExplorer; }
             private set
             {
-                _objectExplorer = value;
+                _oldObjectExplorer = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public ILivePluginInfo NewObjectExplorerPlugin
+        {
+            get { return _newObjectExplorer; }
+            private set
+            {
+                _newObjectExplorer = value;
                 RaisePropertyChanged();
             }
         }
@@ -102,11 +114,11 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             Engine.StopEngine();
         }
 
-        private void StartOE_Click( object sender, RoutedEventArgs e )
+        private void StartOldOE_Click( object sender, RoutedEventArgs e )
         {
-            if( ObjectExplorerPlugin.Capability.CanStart )
+            if( OldObjectExplorerPlugin.Capability.CanStart )
             {
-                Engine.StartItem( ObjectExplorerPlugin, StartDependencyImpact.Unknown );
+                Engine.StartItem( OldObjectExplorerPlugin, StartDependencyImpact.Unknown );
             }
             else
             {
@@ -114,17 +126,43 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
             }
         }
         
-        private void StopOE_Click( object sender, RoutedEventArgs e )
+        private void StopOldOE_Click( object sender, RoutedEventArgs e )
         {
-            if( ObjectExplorerPlugin.Capability.CanStop )
+            if( OldObjectExplorerPlugin.Capability.CanStop )
             {
-                Engine.StopItem( ObjectExplorerPlugin );
+                Engine.StopItem( OldObjectExplorerPlugin );
             }
             else
             {
                 MessageBox.Show( "The Object Explorer is required by configuration and cannot be stopped.", "Cannot stop" );
             }
         }
+
+        private void StartNewOE_Click( object sender, RoutedEventArgs e )
+        {
+            if( NewObjectExplorerPlugin.Capability.CanStart )
+            {
+                Engine.StartItem( NewObjectExplorerPlugin, StartDependencyImpact.Unknown );
+            }
+            else
+            {
+                MessageBox.Show( "The Object Explorer is disabled by configuration and cannot be started.", "Cannot start" );
+            }
+        }
+
+        private void StopNewOE_Click( object sender, RoutedEventArgs e )
+        {
+            if( NewObjectExplorerPlugin.Capability.CanStop )
+            {
+                Engine.StopItem( NewObjectExplorerPlugin );
+            }
+            else
+            {
+                MessageBox.Show( "The Object Explorer is required by configuration and cannot be stopped.", "Cannot stop" );
+            }
+        }
+        
+
         private void ResetConfig_Click( object sender, RoutedEventArgs e )
         {
             _manager.ResetConfiguration();

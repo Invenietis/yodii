@@ -11,15 +11,30 @@ namespace Yodii.ObjectExplorer
 {
     public class ObjectExplorerPlugin : WindowPluginBase
     {
-        public ObjectExplorerPlugin(IYodiiEngineBase e)
+        IYodiiEngine _engine;
+
+        public ObjectExplorerPlugin(IYodiiEngine e)
             : base( e )
         {
+            if( e == null ) { throw new ArgumentNullException( "e" ); }
 
+            this.AutomaticallyDisableCloseButton = true;
+            this.ShowClosingFailedMessageBox = true;
+            this.StopPluginWhenWindowCloses = true;
+
+            _engine = e;
         }
 
         protected override Window CreateWindow()
         {
-            throw new NotImplementedException();
+            Window w = new Windows.ObjectExplorerWindow();
+
+            ViewModels.ObjectExplorerViewModel vm = new ViewModels.ObjectExplorerViewModel();
+            vm.LoadEngine(_engine);
+
+            w.DataContext = vm;
+
+            return w;
         }
     }
 }
