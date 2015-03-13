@@ -20,21 +20,40 @@ namespace Yodii.Wpf.Tests
         public IYodiiEngineExternal Engine { get; private set; }
         public IYodiiEngineHost Host { get; private set; }
 
-        public YodiiRuntimeTestContext( IDiscoveredInfo discoveredInfo )
+        public YodiiRuntimeTestContext( IDiscoveredInfo discoveredInfo, YodiiConfiguration configuration )
         {
             if( discoveredInfo == null ) { throw new ArgumentNullException( "discoveredInfo" ); }
 
             Host = new YodiiHost();
             Engine = new YodiiEngine( Host );
 
-            Engine.Configuration.SetDiscoveredInfo( discoveredInfo );
+            IYodiiEngineResult result = Engine.Configuration.SetDiscoveredInfo( discoveredInfo );
+            Assert.That( result.Success, Is.True );
 
-            IYodiiEngineResult result = Engine.StartEngine();
-            Assert.That( result.Success );
+            if( configuration != null )
+            {
+                result = Engine.Configuration.SetConfiguration( configuration );
+                Assert.That( result.Success, Is.True );
+            }
+
+            result = Engine.StartEngine();
+            Assert.That( result.Success, Is.True );
+        }
+
+        public YodiiRuntimeTestContext( IDiscoveredInfo discoveredInfo )
+            : this( discoveredInfo, null )
+        {
+
+        }
+
+        public YodiiRuntimeTestContext( YodiiConfiguration config )
+            : this( TestHelper.GetDiscoveredInfoInCallingAssembly(), config )
+        {
+
         }
 
         public YodiiRuntimeTestContext()
-            : this( TestHelper.GetDiscoveredInfoInCallingAssembly() )
+            : this( TestHelper.GetDiscoveredInfoInCallingAssembly(), null )
         {
 
         }

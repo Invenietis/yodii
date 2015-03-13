@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;
@@ -104,7 +105,7 @@ namespace Yodii.Wpf
                 CreateAndShowWindow();
             } ) );
 
-            BindOnStatusChange();
+            BindOnOurRunningStatusChange();
 
             _running = true;
             base.PluginStart( c );
@@ -120,7 +121,7 @@ namespace Yodii.Wpf
             _window.Show();
         }
 
-        void BindOnStatusChange()
+        void BindOnOurRunningStatusChange()
         {
             var pluginLiveInfo = GetLivePluginInfo();
             if( pluginLiveInfo != null )
@@ -136,6 +137,33 @@ namespace Yodii.Wpf
                     };
                     UpdateCloseButton( pluginLiveInfo.RunningStatus );
                 }
+            }
+            else
+            {
+                // WORKAROUND:
+                // Our LivePluginInfo does not exist while the engine is starting:
+                // It would be null in case the engine starts up with us (eg. our initial Configuration is Running).
+                // As a workaround, we can wait until the Engine is done loading, and bind us there.
+                Debug.Assert( _engine.ExternalEngine.IsRunning == false, "The engine should not be done starting if our LivePluginInfo is null" );
+
+                PropertyChangedEventHandler onRunning = null;
+                onRunning = ( s, e ) =>
+                {
+                    if( e.PropertyName == "IsRunning" )
+                    {
+                        if( _engine.ExternalEngine.IsRunning == true )
+                        {
+                            // Self-unsubscribe
+                            _engine.ExternalEngine.PropertyChanged -= onRunning;
+                            // Re-bind us
+                            Debug.Assert( _engine.LiveInfo.Plugins.Count > 0, "The engine should have LivePluginInfos when it sets IsRunning at true" );
+                            // Recurse on ourselves
+                            BindOnOurRunningStatusChange();
+                        }
+                    }
+                };
+
+                _engine.ExternalEngine.PropertyChanged += onRunning;
             }
         }
 

@@ -176,5 +176,40 @@ namespace Yodii.Wpf.Tests
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is still alive" );
             }
         }
+
+        [Test]
+        public void WindowPluginBase_DisablesClose_WhenConfiguredToRunOnStartup()
+        {
+            // Uses a workaround. See WindowPluginBase class.
+
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
+            TestWindowPlugin.AutomaticallyDisableCloseButtonConfig = true;
+            TestWindowPlugin.ShowClosingFailedMessageBoxConfig = false;
+
+            YodiiConfiguration runningConfig = new YodiiConfiguration();
+
+            YodiiConfigurationLayer l = new YodiiConfigurationLayer();
+            l.Items.Add( new YodiiConfigurationItem() { ServiceOrPluginFullName = typeof( TestWindowPlugin ).FullName, Status = ConfigurationStatus.Running } );
+
+            runningConfig.Layers.Add( l );
+
+            using( var ctx = new YodiiRuntimeTestContext(runningConfig) )
+            {
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+                Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is correctly set as RunningLocked" );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    Assert.That( w.IsCloseButtonDisabled(), Is.True );
+                    w.Close(); // Calls closing...
+
+                    CollectionAssert.IsNotEmpty( Application.Current.Windows, "Window has not been closed" );
+                } ) );
+
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is still alive" );
+            }
+        }
     }
 }
