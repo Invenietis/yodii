@@ -329,26 +329,17 @@ namespace Yodii.Engine
                 }
             }
 
-            List<IPluginInfo> disabled = new List<IPluginInfo>();
-            List<IPluginInfo> stopped = new List<IPluginInfo>();
-            List<IPluginInfo> running = new List<IPluginInfo>();
-
             foreach( var p in _plugins.Values )
             {
-                if( p.DynamicStatus != null )
-                {
-                    if( p.DynamicStatus.Value == RunningStatus.Disabled ) disabled.Add( p.PluginInfo );
-                    else if( p.DynamicStatus.Value == RunningStatus.Stopped ) stopped.Add( p.PluginInfo );
-                    else running.Add( p.PluginInfo );
-                }
-                else
+                if( !p.DynamicStatus.HasValue )
                 {
                     Debug.Assert( p.Service == null );
                     p.DynamicStopBy( PluginRunningStatusReason.StoppedByFinalDecision );
-                    stopped.Add( p.PluginInfo );
+                    Debug.Assert( p.DynamicStatus.Value == RunningStatus.Stopped );
                 }
             }
-            return new DynamicSolverResult( disabled.AsReadOnlyList(), stopped.AsReadOnlyList(), running.AsReadOnlyList(), commands.AsReadOnlyList() );
+
+            return new DynamicSolverResult( _plugins.Values.Select( p => new KeyValuePair<IPluginInfo,RunningStatus>( p.PluginInfo, p.DynamicStatus.Value ) ).ToReadOnlyList(), commands.AsReadOnlyList() );
         }
 
 

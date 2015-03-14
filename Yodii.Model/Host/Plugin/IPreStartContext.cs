@@ -34,6 +34,11 @@ namespace Yodii.Model
     public interface IPreStartContext
     {
         /// <summary>
+        /// Gets the running status that can be <see cref="RunningStatus.Running"/> or <see cref="RunningStatus.RunningLocked"/>.
+        /// </summary>
+        RunningStatus RunningStatus { get; }
+
+        /// <summary>
         /// Cancels the start with an optional exception and/or message.
         /// </summary>
         /// <param name="message">Reason to not start.</param>

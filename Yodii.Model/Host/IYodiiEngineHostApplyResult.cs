@@ -31,7 +31,8 @@ namespace Yodii.Model
 {
 
     /// <summary>
-    /// Defines the returned result of <see cref="IYodiiEngineHost.Apply"/>.
+    /// Defines the returned result of <see cref="IYodiiEngineHost.Apply"/>: exposes the 
+    /// errors or cancellations if any.
     /// </summary>
     public interface IYodiiEngineHostApplyResult
     {

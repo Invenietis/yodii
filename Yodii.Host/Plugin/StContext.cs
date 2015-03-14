@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yodii.Model;
 
 namespace Yodii.Host
 {
@@ -32,13 +33,20 @@ namespace Yodii.Host
     {
         readonly Dictionary<object, object> _shared;
         CancellationInfo _info;
+        readonly RunningStatus _runningStatus;
 
         public readonly PluginProxy Plugin;
 
-        public StContext( PluginProxy plugin, Dictionary<object, object> shared )
+        public StContext( PluginProxy plugin, RunningStatus status, Dictionary<object, object> shared )
         {
             Plugin = plugin;
             _shared = shared;
+            _runningStatus = status;
+        }
+
+        public RunningStatus RunningStatus
+        {
+            get { return _runningStatus; }
         }
 
         public ServiceManager.Impact ServiceImpact { get; set; }

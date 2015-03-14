@@ -96,7 +96,7 @@
     <Compile Include="ICommandFailureResult.cs" />
     <Compile Include="IYodiiEngineBase.cs" />
     <Compile Include="Host\IYodiiEngineHostApplyResult.cs" />
-    <Compile Include="IYodiiEngine.cs" />
+    <Compile Include="IYodiiEngineProxy.cs" />
     <Compile Include="LiveModel\ILiveRunCapability.cs" />
     <Compile Include="Solver\IDynamicSolvedYodiiItem.cs" />
     <Compile Include="Solver\IStaticSolvedYodiiItem.cs" />

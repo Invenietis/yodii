@@ -40,8 +40,23 @@ namespace Yodii.Model
     /// it should not be used directly except for specific plugins that may need to interact closely with the engine (by stopping it for instance).
     /// </para>
     /// </summary>
-    public interface IYodiiEngine : IYodiiEngineBase
+    public interface IYodiiEngineProxy : IYodiiEngineBase
     {
+        /// <summary>
+        /// Gets the <see cref="IYodiiEngineExternal"/> engine façade.
+        /// </summary>
         IYodiiEngineExternal ExternalEngine { get; }
+
+        /// <summary>
+        /// Fires whenever <see cref="IsRunningLocked"/> changes.
+        /// </summary>
+        event EventHandler IsRunningLockedChanged;
+
+        /// <summary>
+        /// Gets whether the plugin is <see cref="RunningStatus.RunningLocked"/> or only <see cref="RunningStatus.Running"/>.
+        /// This property is updated once the PreStart/Stop phase succeeded, but before Start and Stop methods are called.
+        /// </summary>
+        bool IsRunningLocked { get; }
+
     }
 }

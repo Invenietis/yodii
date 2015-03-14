@@ -384,42 +384,14 @@ namespace Yodii.Lab
             public IReadOnlyList<IPluginHostApplyCancellationInfo> CancellationInfo { get; private set; }
         }
 
-        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> actionCollector )
+        IYodiiEngineHostApplyResult IYodiiEngineHost.Apply( IReadOnlyList<KeyValuePair<IPluginInfo,RunningStatus>> configuration, Action<Action<IYodiiEngineExternal>> actionCollector )
         {
-            List<IPluginHostApplyCancellationInfo> cancellationInfos = new List<IPluginHostApplyCancellationInfo>();
-
-            // TODO
-            Console.WriteLine( "Disabling:" );
-            foreach( var plugin in toDisable )
+            foreach( var k in configuration )
             {
-                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
-                if( _runningPlugins.Contains( plugin ) )
-                {
-                    _runningPlugins.Remove( plugin );
-                }
+                if( k.Value <= RunningStatus.Stopped ) _runningPlugins.Remove( k.Key );
+                else _runningPlugins.Add( k.Key );
             }
-
-            Console.WriteLine( "Stopping:" );
-            foreach( var plugin in toStop )
-            {
-                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
-                if( _runningPlugins.Contains( plugin ) )
-                {
-                    _runningPlugins.Remove( plugin );
-                }
-            }
-
-            Console.WriteLine( "Starting:" );
-            foreach( var plugin in toStart )
-            {
-                Console.WriteLine( String.Format( "- {0}", plugin.PluginFullName ) );
-                if( !_runningPlugins.Contains( plugin ) )
-                {
-                    _runningPlugins.Add( plugin );
-                }
-            }
-
-            return new Result( cancellationInfos.AsReadOnlyList());
+            return new Result( CKReadOnlyListEmpty<IPluginHostApplyCancellationInfo>.Empty );
         }
 
         #endregion

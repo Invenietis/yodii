@@ -34,6 +34,11 @@ namespace Yodii.Model
     public interface IPreStopContext
     {
         /// <summary>
+        /// Gets the running status that can be <see cref="RunningStatus.Stopped"/> or <see cref="RunningStatus.Disabled"/>.
+        /// </summary>
+        RunningStatus RunningStatus { get; }
+
+        /// <summary>
         /// Gets whether the plugin is allowed to refuse the stop (<see cref="Cancel"/> can be called - otherwise an <see cref="InvalidOperationException"/> is theown).
         /// This is false when the engine is stopping.
         /// </summary>

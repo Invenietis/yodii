@@ -33,10 +33,11 @@ using System.Reflection;
 namespace Yodii.Host
 {
 
-    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngine
+    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngineProxy
     {
         readonly IYodiiEngineExternal _engine;
         IActivityMonitor _monitor;
+        bool _isRunningLocked;
 
         public PluginProxy( IYodiiEngineExternal e, IPluginInfo pluginKey )
         {
@@ -68,10 +69,9 @@ namespace Yodii.Host
             return TryLoad( serviceHost, () => pluginCreator( PluginInfo, ctorParameters ), PluginInfo.PluginFullName );
         }
 
-
         #region IYodiiEngine Members
 
-        IYodiiEngineExternal IYodiiEngine.ExternalEngine
+        IYodiiEngineExternal IYodiiEngineProxy.ExternalEngine
         {
             get { return _engine; }
         }
@@ -117,5 +117,23 @@ namespace Yodii.Host
         }
 
         #endregion
+
+        public event EventHandler IsRunningLockedChanged;
+
+        public bool IsRunningLocked
+        {
+            get { return _isRunningLocked; }
+        }
+
+        internal void SetRunningLocked( bool value )
+        {
+            if( _isRunningLocked != value )
+            {
+                _isRunningLocked = value;
+                var h = IsRunningLockedChanged;
+                if( h != null ) h( this, EventArgs.Empty );
+            }
+        }
+
     }
 }

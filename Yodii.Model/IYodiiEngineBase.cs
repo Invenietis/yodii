@@ -32,7 +32,7 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Yodii engine base interface for <see cref="IYodiiEngineExternal"/> and the <see cref="IYodiiEngine"/> avialable to plugins.
+    /// Yodii engine base interface for <see cref="IYodiiEngineExternal"/> and the <see cref="IYodiiEngineProxy"/> avialable to plugins.
     /// It exposes all relevant information to the external or internal world thanks to its <see cref="LiveInfo"/>.
     /// </summary>
     public interface IYodiiEngineBase
