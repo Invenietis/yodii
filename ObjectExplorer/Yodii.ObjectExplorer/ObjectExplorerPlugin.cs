@@ -11,14 +11,17 @@ namespace Yodii.ObjectExplorer
 {
     public class ObjectExplorerPlugin : WindowPluginBase
     {
-        IYodiiEngineProxy _engine;
+        readonly IYodiiEngineProxy _engine;
+
+        ViewModels.ObjectExplorerViewModel _viewModel;
+        Windows.ObjectExplorerWindow _window;
 
         public ObjectExplorerPlugin( IYodiiEngineProxy e )
             : base( e )
         {
             if( e == null ) { throw new ArgumentNullException( "e" ); }
 
-            this.AutomaticallyDisableCloseButton = true;
+            this.AutomaticallyDisableCloseButton = false; // Handle ourselves (we use MahApps.Metro's chrome instead of Win32's one)
             this.ShowClosingFailedMessageBox = true;
             this.StopPluginWhenWindowCloses = true;
 
@@ -27,14 +30,26 @@ namespace Yodii.ObjectExplorer
 
         protected override Window CreateWindow()
         {
-            Window w = new Windows.ObjectExplorerWindow();
+            _window = new Windows.ObjectExplorerWindow();
+            _viewModel = new ViewModels.ObjectExplorerViewModel();
 
-            ViewModels.ObjectExplorerViewModel vm = new ViewModels.ObjectExplorerViewModel();
-            vm.LoadEngine(_engine);
+            _engine.IsRunningLockedChanged += _engine_IsRunningLockedChanged;
+            UpdateWindowCloseButton();
 
-            w.DataContext = vm;
+            _viewModel.LoadEngine( _engine );
+            _window.DataContext = _viewModel;
 
-            return w;
+            return _window;
+        }
+
+        void _engine_IsRunningLockedChanged( object sender, EventArgs e )
+        {
+            _window.Dispatcher.Invoke( UpdateWindowCloseButton );
+        }
+
+        void UpdateWindowCloseButton()
+        {
+            _window.IsCloseButtonEnabled = !_engine.IsRunningLocked;
         }
     }
 }
