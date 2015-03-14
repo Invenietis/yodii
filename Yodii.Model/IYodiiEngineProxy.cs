@@ -43,5 +43,6 @@ namespace Yodii.Model
     public interface IYodiiEngineProxy : IYodiiEngineBase
     {
         IYodiiEngineExternal ExternalEngine { get; }
+
     }
 }

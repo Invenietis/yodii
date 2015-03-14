@@ -42,6 +42,8 @@ namespace Yodii.Host
                 CancellingPreStart = cancellingPreStart;
             }
 
+            public RunningStatus RunningStatus { get { return Model.RunningStatus.Disabled; } }
+
             public bool IsCancellable { get { return false; } }
 
             public void Cancel( string message = null, Exception ex = null )

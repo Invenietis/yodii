@@ -35,8 +35,8 @@ namespace Yodii.Host
     {
         ServiceManager.Impact _swappedImpact;
 
-        public StStartContext( PluginProxy plugin, Dictionary<object, object> shared, bool wasDisabled )
-            : base( plugin, shared )
+        public StStartContext( PluginProxy plugin, RunningStatus status, Dictionary<object, object> shared, bool wasDisabled )
+            : base( plugin, status, shared )
         {
             WasDisabled = wasDisabled;
         }

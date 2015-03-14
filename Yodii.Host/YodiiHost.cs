@@ -208,7 +208,7 @@ namespace Yodii.Host
                         Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
                         if( p.Status != PluginStatus.Null )
                         {
-                            var preStop = new StStopContext( p, sharedMemory, true, p.Status == PluginStatus.Stopped, isEngineStopping );
+                            var preStop = new StStopContext( p, RunningStatus.Disabled, sharedMemory, p.Status == PluginStatus.Stopped, isEngineStopping );
                             if( info.Service != null ) serviceManager.AddToStop( info.Service, preStop );
                             toStop.Add( preStop );
                         }
@@ -229,7 +229,7 @@ namespace Yodii.Host
                         Debug.Assert( p.Status != PluginStatus.Stopping && p.Status != PluginStatus.Starting );
                         if( p.Status == PluginStatus.Started )
                         {
-                            var preStop = new StStopContext( p, sharedMemory, false, false, isEngineStopping );
+                            var preStop = new StStopContext( p, RunningStatus.Stopped, sharedMemory, false, isEngineStopping );
                             if( info.Service != null ) serviceManager.AddToStop( info.Service, preStop );
                             toStop.Add( preStop );
                         }
@@ -272,7 +272,7 @@ namespace Yodii.Host
                                         Debug.Assert( p.Status == PluginStatus.Null );
                                     }
                                 }
-                                var preStart = new StStartContext( p, sharedMemory, p.Status == PluginStatus.Null );
+                                var preStart = new StStartContext( p, kp.Value, sharedMemory, p.Status == PluginStatus.Null );
                                 p.Status = PluginStatus.Stopped;
                                 if( info.Service != null ) serviceManager.AddToStart( info.Service, preStart );
                                 toStart.Add( preStart );
