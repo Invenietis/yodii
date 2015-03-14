@@ -15,7 +15,7 @@ namespace Yodii.Wpf
     /// </summary>
     public abstract class WindowPluginBase : YodiiPluginBase
     {
-        private readonly IYodiiEngine _engine;
+        private readonly IYodiiEngineProxy _engine;
 
         private bool _closingWindow;
         private bool _tryingToClose;
@@ -73,7 +73,7 @@ namespace Yodii.Wpf
         /// <returns>Main window of the plugin.</returns>
         protected abstract Window CreateWindow();
 
-        public WindowPluginBase( IYodiiEngine engine )
+        public WindowPluginBase( IYodiiEngineProxy engine )
         {
             if( engine == null ) { throw new ArgumentNullException( "engine" ); }
 

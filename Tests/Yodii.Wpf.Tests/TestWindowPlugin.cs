@@ -15,7 +15,7 @@ namespace Yodii.Wpf.Tests
         public static bool ShowClosingFailedMessageBoxConfig { get; set; }
         public static bool AutomaticallyDisableCloseButtonConfig { get; set; }
 
-        public TestWindowPlugin( IYodiiEngine injectedEngine )
+        public TestWindowPlugin( IYodiiEngineProxy injectedEngine )
             : base( injectedEngine )
         {
             Assert.That( injectedEngine, Is.Not.Null );

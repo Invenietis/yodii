@@ -97,7 +97,7 @@ namespace Yodii.Engine
             IYodiiEngineHostApplyResult hostResult = null;
             try
             {
-                hostResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running, postActionCollector );
+                hostResult = _host.Apply( dynResult.SolvedConfiguration, postActionCollector );
             }
             catch
             {
@@ -169,7 +169,7 @@ namespace Yodii.Engine
                 {
                     // Stopping the engine disables all plugins.
                     // No post action here: this is the hint for the host that we are stopping.
-                    _host.Apply( _manager.DiscoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>(), null );
+                    _host.Apply( _manager.DiscoveredInfo.PluginInfos.Select( p => new KeyValuePair<IPluginInfo,RunningStatus>( p, RunningStatus.Disabled ) ).ToReadOnlyList(), null );
                 }
                 finally
                 {

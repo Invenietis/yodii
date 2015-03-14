@@ -196,7 +196,7 @@ namespace Yodii.Host {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; appears in more than one list. Lists of plugins to disable, stop end start must be disjoint..
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; appears more than one in configuration list..
         /// </summary>
         internal static string HostApplyPluginMustBeInOneList {
             get {

@@ -33,7 +33,7 @@ using System.Reflection;
 namespace Yodii.Host
 {
 
-    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngine
+    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngineProxy
     {
         readonly IYodiiEngineExternal _engine;
         IActivityMonitor _monitor;
@@ -71,7 +71,7 @@ namespace Yodii.Host
 
         #region IYodiiEngine Members
 
-        IYodiiEngineExternal IYodiiEngine.ExternalEngine
+        IYodiiEngineExternal IYodiiEngineProxy.ExternalEngine
         {
             get { return _engine; }
         }

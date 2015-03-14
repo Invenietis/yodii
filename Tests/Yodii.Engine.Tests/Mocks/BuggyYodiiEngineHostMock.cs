@@ -50,18 +50,16 @@ namespace Yodii.Engine
 
         public Action<IYodiiEngineExternal> PostActionToAdd;
 
-        public IYodiiEngineHostApplyResult Apply( IEnumerable<IPluginInfo> toDisable, IEnumerable<IPluginInfo> toStop, IEnumerable<IPluginInfo> toStart, Action<Action<IYodiiEngineExternal>> actionCollector )
+        public IYodiiEngineHostApplyResult Apply( IReadOnlyList<KeyValuePair<IPluginInfo, RunningStatus>> configuration, Action<Action<IYodiiEngineExternal>> actionCollector )
         {
-            Debug.Assert( toDisable.Any() || toStop.Any() || toStart.Any() );
+            Debug.Assert( configuration.Any() );
 
             List<IPluginHostApplyCancellationInfo> pluginErrors = new List<IPluginHostApplyCancellationInfo>();
             List<Action<IYodiiEngineExternal>> actions = new List<Action<IYodiiEngineExternal>>();
 
-            IEnumerable<IPluginInfo> toCheck = toDisable.Concat( toStop ).Concat( toStart );
-
-            foreach( IPluginInfo plugin in toCheck )
+            foreach( IPluginInfo plugin in configuration.Select( k => k.Key ) )
             {
-                if( plugin.PluginFullName.Contains( "buggy" ) )
+                if( plugin.PluginFullName.Contains( "buggy" ) || plugin.PluginFullName.Contains( "Buggy" ) )
                 {
                     var cancelInfo = new PluginHostApplyCancellationInfo() {
                         Error = new Exception("HostError"),
