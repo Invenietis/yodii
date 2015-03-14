@@ -9,7 +9,7 @@ using Yodii.Wpf;
 
 namespace Yodii.ObjectExplorer
 {
-    public class ObjectExplorerPlugin : WindowPluginBase
+    public class ObjectExplorerPlugin : WindowPluginBase, IObjectExplorerService
     {
         readonly IYodiiEngineProxy _engine;
 

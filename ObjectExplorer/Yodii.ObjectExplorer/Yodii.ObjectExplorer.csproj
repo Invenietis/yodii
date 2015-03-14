@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FodyUtils\NullGuardUtils.cs" />
+    <Compile Include="IObjectExplorerService.cs" />
     <Compile Include="Mocks\MockLiveInfo.cs" />
     <Compile Include="Mocks\MockLivePluginInfo.cs" />
     <Compile Include="Mocks\MockObjectExplorerViewModel.cs" />
