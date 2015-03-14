@@ -62,6 +62,10 @@ namespace Yodii.Wpf
         /// <value>
         /// <c>true</c> if automatically disable the close button when the plugin is required; otherwise, <c>false</c>.
         /// </value>
+        /// <remarks>
+        /// When enabled, will use the Win32 API to disable and enable dynamically the Close button.
+        /// If you are using your own window, you will have to bind yourself and change your own Close button using the EngineProxy.
+        /// </remarks>
         protected bool AutomaticallyDisableCloseButton { get; set; }
 
         /// <summary>
@@ -72,6 +76,14 @@ namespace Yodii.Wpf
         /// </remarks>
         /// <returns>Main window of the plugin.</returns>
         protected abstract Window CreateWindow();
+
+        /// <summary>
+        /// Gets the engine proxy given in the constructor.
+        /// </summary>
+        /// <value>
+        /// The engine proxy.
+        /// </value>
+        protected IYodiiEngineProxy EngineProxy { get { return _engine; } }
 
         public WindowPluginBase( IYodiiEngineProxy engine )
         {
@@ -105,7 +117,10 @@ namespace Yodii.Wpf
                 CreateAndShowWindow();
             } ) );
 
-            BindOnOurRunningStatusChange();
+            if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
+            {
+                DisableCloseButtonOnLocked();
+            }
 
             _running = true;
             base.PluginStart( c );
@@ -121,58 +136,24 @@ namespace Yodii.Wpf
             _window.Show();
         }
 
-        void BindOnOurRunningStatusChange()
+        void DisableCloseButtonOnLocked()
         {
-            var pluginLiveInfo = GetLivePluginInfo();
-
-            if( pluginLiveInfo != null )
-            {
-                if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
-                {
-                    pluginLiveInfo.PropertyChanged += ( s, e ) =>
-                    {
-                        if( e.PropertyName == "RunningStatus" )
-                        {
-                            UpdateCloseButton( pluginLiveInfo.RunningStatus );
-                        }
-                    };
-                    UpdateCloseButton( pluginLiveInfo.RunningStatus );
-                }
-            }
-            else
-            {
-                // WORKAROUND:
-                // Our LivePluginInfo does not exist while the engine is starting:
-                // It would be null in case the engine starts up with us (eg. our initial Configuration is Running).
-                // As a workaround, we can wait until the Engine is done loading, and bind us there.
-                Debug.Assert( _engine.ExternalEngine.IsRunning == false, "The engine should not be done starting if our LivePluginInfo is null" );
-
-                PropertyChangedEventHandler onRunning = null;
-                onRunning = ( s, e ) =>
-                {
-                    if( e.PropertyName == "IsRunning" )
-                    {
-                        if( _engine.ExternalEngine.IsRunning == true )
-                        {
-                            // Self-unsubscribe
-                            _engine.ExternalEngine.PropertyChanged -= onRunning;
-                            // Re-bind us
-                            Debug.Assert( _engine.LiveInfo.Plugins.Count > 0, "The engine should have LivePluginInfos when it sets IsRunning at true" );
-                            // Recurse on ourselves
-                            BindOnOurRunningStatusChange();
-                        }
-                    }
-                };
-
-                _engine.ExternalEngine.PropertyChanged += onRunning;
-            }
+            _engine.IsRunningLockedChanged += DisableCloseButtonOnLockedHandler;
+            UpdateCloseButton();
         }
 
-        void UpdateCloseButton( RunningStatus newStatus )
+        void DisableCloseButtonOnLockedHandler( object sender, EventArgs a )
         {
-            Debug.Assert( _window != null );
-            bool disableButton = newStatus == RunningStatus.RunningLocked;
+            UpdateCloseButton();
+        }
 
+        void UpdateCloseButton()
+        {
+            UpdateCloseButton( _engine.IsRunningLocked );
+        }
+
+        void UpdateCloseButton( bool disableButton )
+        {
             if( disableButton && !_closeButtonIsDisabled )
             {
                 Application.Current.Dispatcher.Invoke( _window.DisableCloseButton );
