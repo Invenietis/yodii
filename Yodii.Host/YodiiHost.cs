@@ -239,6 +239,10 @@ namespace Yodii.Host
                 #endregion
             }
 
+            // This memorizes the plugins that are already running and needs to run but with a 
+            // change in their IsRunningLocked status.
+            List<PluginProxy> alreadyRunningPlugins = null;
+
             // Now, we attempt to activate the plugins that must run: if an error occurs,
             // we leave and return the error since we did not change anything.
             using( _monitor.OpenTrace().Send( "Registering running plugins: " ) )
@@ -276,6 +280,11 @@ namespace Yodii.Host
                                 p.Status = PluginStatus.Stopped;
                                 if( info.Service != null ) serviceManager.AddToStart( info.Service, preStart );
                                 toStart.Add( preStart );
+                            }
+                            else if( (kp.Value == RunningStatus.RunningLocked) != p.IsRunningLocked )
+                            {
+                                if( alreadyRunningPlugins == null ) alreadyRunningPlugins = new List<PluginProxy>();
+                                alreadyRunningPlugins.Add( p );
                             }
                         }
                     }
@@ -386,7 +395,6 @@ namespace Yodii.Host
             // Setting ServiceStatus & sending events: StoppingSwapped, Stopping, StartingSwapped, Starting. 
             SetServiceSatus( postStartActionsCollector, toStop, toStart, true );
 
-
             // Time to call Stop. While Stopping, calling Services is not allowed.
             using( _monitor.OpenTrace().Send( "Calling Stop." ) )
             using( _serviceHost.BlockServiceCall( calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromStop ) ) )
@@ -397,6 +405,7 @@ namespace Yodii.Host
                     if( !stopC.IsDisabledOnly )
                     {
                         Debug.Assert( stopC.Plugin.Status == PluginStatus.Stopping );
+                        stopC.Plugin.SetRunningLocked( false );
                         stopC.Plugin.Status = PluginStatus.Stopped;
                         stopC.Plugin.RealPluginObject.Stop( stopC );
                     }
@@ -421,10 +430,14 @@ namespace Yodii.Host
             // Calling Start must not throw any exceptions: we let the exception buble here.
             foreach( var startC in toStart )
             {
+                startC.Plugin.SetRunningLocked( startC.RunningStatus == RunningStatus.RunningLocked );
                 startC.Plugin.Status = PluginStatus.Started;
                 startC.Plugin.RealPluginObject.Start( startC );
             }
-
+            if( alreadyRunningPlugins != null )
+            {
+                foreach( var p in alreadyRunningPlugins ) p.SetRunningLocked( !p.IsRunningLocked );
+            }
             // Setting services status & sending events...
             SetServiceSatus( postStartActionsCollector, toStop, toStart, false );
 

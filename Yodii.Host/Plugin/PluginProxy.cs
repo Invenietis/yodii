@@ -37,6 +37,7 @@ namespace Yodii.Host
     {
         readonly IYodiiEngineExternal _engine;
         IActivityMonitor _monitor;
+        bool _isRunningLocked;
 
         public PluginProxy( IYodiiEngineExternal e, IPluginInfo pluginKey )
         {
@@ -67,7 +68,6 @@ namespace Yodii.Host
             }
             return TryLoad( serviceHost, () => pluginCreator( PluginInfo, ctorParameters ), PluginInfo.PluginFullName );
         }
-
 
         #region IYodiiEngine Members
 
@@ -117,5 +117,23 @@ namespace Yodii.Host
         }
 
         #endregion
+
+        public event EventHandler IsRunningLockedChanged;
+
+        public bool IsRunningLocked
+        {
+            get { return _isRunningLocked; }
+        }
+
+        internal void SetRunningLocked( bool value )
+        {
+            if( _isRunningLocked != value )
+            {
+                _isRunningLocked = value;
+                var h = IsRunningLockedChanged;
+                if( h != null ) h( this, EventArgs.Empty );
+            }
+        }
+
     }
 }
