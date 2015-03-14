@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using NUnit.Framework;
 
 namespace Yodii.Wpf.Tests
@@ -13,56 +14,56 @@ namespace Yodii.Wpf.Tests
     public class WpfTestHelper
     {
         public static Thread ApplicationThread { get; private set; }
-        public static Application Application { get; private set; }
+        public static Dispatcher Dispatcher { get; private set; }
 
         [SetUp]
         public void SetUp()
         {
-            if( Application.Current == null )
+            if( Dispatcher == null )
             {
-                CreateApplicationInNewThread();
+                CreateDispatcherInNewThread();
             }
         }
 
-        [TearDown]
-        public void TearDown()
+        private void CreateDispatcherInNewThread()
         {
-            //ShutdownApplication();
-        }
-
-        static void CreateApplicationInNewThread()
-        {
-            Assert.That( Application.Current, Is.Null );
+            Assert.That( Dispatcher, Is.Null );
             Assert.That( ApplicationThread, Is.Null );
-            Assert.That( Application.Current, Is.Null );
 
             ManualResetEventSlim ev = new ManualResetEventSlim( false );
 
             ApplicationThread = new Thread( () =>
             {
-                //Application a = Application;
+                Dispatcher = Dispatcher.CurrentDispatcher;
 
-                Application = new Application();
-                Application.ShutdownMode = ShutdownMode.OnExplicitShutdown; // Don't close when a plugin window closes!
-                Application.Startup += ( s, e ) => { ev.Set(); };
+                ev.Set();
 
-                Application.Run(); // Blocks forever
+                Dispatcher.Run(); // Blocks forever
+
             } );
             ApplicationThread.IsBackground = true;
             ApplicationThread.SetApartmentState( ApartmentState.STA );
             ApplicationThread.Start();
 
             ev.Wait();
-            Assert.That( Application.Current, Is.Not.Null );
+
+            Assert.That( Dispatcher, Is.Not.Null );
         }
 
-        static void ShutdownApplication()
+        [TearDown]
+        public void TearDown()
+        {
+            ShutdownDispatcher();
+        }
+
+        static void ShutdownDispatcher()
         {
             if( ApplicationThread != null )
             {
-                Application.Dispatcher.Invoke( new Action( () =>
+                Dispatcher.Invoke( new Action( () =>
                 {
-                    Application.Shutdown();
+                    Dispatcher.ExitAllFrames();
+                    Dispatcher = null;
                 } ) );
 
                 ApplicationThread.Join( TimeSpan.FromMilliseconds( 100 ) );

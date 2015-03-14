@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 using Yodii.Model;
 using Yodii.Wpf.Win32;
 
@@ -11,11 +12,12 @@ namespace Yodii.Wpf
     /// <summary>
     /// Base for Yodii plugins using WPF windows.
     /// Provides support for automatic window closing when plugin starts/ends, etc.
-    /// Requires an existing Application in the current AppDomain (Application.Current).
+    /// Requires either an existing Application in the current AppDomain (Application.Current), or a running Dispatcher capable of dispatching messages on a STA thread.
     /// </summary>
     public abstract class WindowPluginBase : YodiiPluginBase
     {
         private readonly IYodiiEngineProxy _engine;
+        private Dispatcher _appDispatcher;
 
         private bool _closingWindow;
         private bool _tryingToClose;
@@ -85,19 +87,44 @@ namespace Yodii.Wpf
         /// </value>
         protected IYodiiEngineProxy EngineProxy { get { return _engine; } }
 
-        public WindowPluginBase( IYodiiEngineProxy engine )
+        /// <summary>
+        /// Gets the Window created when the plugin starts.
+        /// </summary>
+        protected Window Window { get { return _window; } }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindowPluginBase"/> class with an explicit app dispatcher.
+        /// </summary>
+        /// <param name="engine">The injected Yodii engine proxy.</param>
+        /// <param name="appDispatcher">The application dispatcher used to send UI messages. If null, will use Application.Current's dispatcher when starting the plugin.</param>
+        /// <exception cref="System.ArgumentNullException">engine</exception>
+        public WindowPluginBase( IYodiiEngineProxy engine, Dispatcher appDispatcher )
         {
             if( engine == null ) { throw new ArgumentNullException( "engine" ); }
 
             _engine = engine;
+            _appDispatcher = appDispatcher;
 
             // Defaults
             ShowClosingFailedMessageBox = true;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WindowPluginBase"/> class using Application.Current's dispatcher to send UI messages.
+        /// </summary>
+        /// <param name="engine">The injected Yodii engine proxy.</param>
+        public WindowPluginBase( IYodiiEngineProxy engine ) : this(engine, null)
+        {
+        }
+
         protected override void PluginPreStart( IPreStartContext c )
         {
             base.PluginPreStart( c );
+
+            if( Application.Current == null && _appDispatcher == null )
+            {
+                c.Cancel( "This plugin and its window cannot start without Application.Current, or a given Dispatcher." );
+            }
         }
 
         protected override void PluginPreStop( IPreStopContext c )
@@ -107,15 +134,18 @@ namespace Yodii.Wpf
 
         protected override void PluginStart( IStartContext c )
         {
-            if( Application.Current == null )
+            if( Application.Current == null && _appDispatcher == null )
             {
-                throw new InvalidOperationException( "Cannot start this plugin when no WPF Application exists." );
+                throw new InvalidOperationException( "This plugin and its window cannot start without Application.Current, or a given Dispatcher." );
             }
 
-            Application.Current.Dispatcher.Invoke( new Action( () =>
+            if( _appDispatcher == null )
             {
-                CreateAndShowWindow();
-            } ) );
+                Debug.Assert( Application.Current != null );
+                _appDispatcher = Application.Current.Dispatcher;
+            }
+
+            _appDispatcher.Invoke( CreateAndShowWindow );
 
             if( StopPluginWhenWindowCloses && AutomaticallyDisableCloseButton )
             {
@@ -133,6 +163,10 @@ namespace Yodii.Wpf
             _window = CreateWindow();
             _window.Closing += _window_Closing;
 
+            ShowWindow();
+        }
+
+        protected virtual void ShowWindow() {
             _window.Show();
         }
 
@@ -156,12 +190,12 @@ namespace Yodii.Wpf
         {
             if( disableButton && !_closeButtonIsDisabled )
             {
-                Application.Current.Dispatcher.Invoke( _window.DisableCloseButton );
+                _window.Dispatcher.Invoke( _window.DisableCloseButton );
                 _closeButtonIsDisabled = true;
             }
             else if( !disableButton && _closeButtonIsDisabled )
             {
-                Application.Current.Dispatcher.Invoke( _window.EnableCloseButton );
+                _window.Dispatcher.Invoke( _window.EnableCloseButton );
                 _closeButtonIsDisabled = false;
             }
         }
@@ -236,20 +270,22 @@ namespace Yodii.Wpf
 
         private void CloseWindowOnPluginStop()
         {
-            Debug.Assert( Application.Current != null, "A WPF context (Application.Current) must exist for this plugin." );
-
-            Application.Current.Dispatcher.Invoke( new Action( () =>
+            // _tryingToClose is set when window is trying to Close despite PluginStop() not being called: it's already Closing.
+            // Calling Close() during a Closing does bad things, as you can expect.
+            if( _window != null )
             {
-                // _tryingToClose is set when window is trying to Close despite PluginStop() not being called: it's already Closing.
-                // Calling Close() during a Closing does bad things, as you can expect.
-                if( _window != null && !_tryingToClose )
+                //_tryingToClose and _closingWindow are always on the UI thread
+                _window.Dispatcher.Invoke( () =>
                 {
-                    // Allow the Closing to pass.
-                    _closingWindow = true;
+                    if( !_tryingToClose )
+                    {
+                        // Allow the Closing to pass.
+                        _closingWindow = true;
 
-                    _window.Close();
-                }
-            } ) );
+                        _window.Close();
+                    }
+                } );
+            }
         }
     }
 }

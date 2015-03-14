@@ -16,7 +16,7 @@ namespace Yodii.Wpf.Tests
         public static bool AutomaticallyDisableCloseButtonConfig { get; set; }
 
         public TestWindowPlugin( IYodiiEngineProxy injectedEngine )
-            : base( injectedEngine )
+            : base( injectedEngine, WpfTestHelper.Dispatcher )
         {
             Assert.That( injectedEngine, Is.Not.Null );
 
@@ -52,5 +52,24 @@ namespace Yodii.Wpf.Tests
 
     public class TestPluginWindow : Window
     {
+        public static List<TestPluginWindow> WindowList = new List<TestPluginWindow>();
+
+        public TestPluginWindow() : base()
+        {
+            WindowList.Add( this );
+
+
+            Height = 0;
+            Width = 0;
+            WindowStyle = WindowStyle.None;
+            ShowInTaskbar = false;
+            ShowActivated = false;
+        }
+
+        protected override void OnClosed( EventArgs e )
+        {
+            WindowList.Remove( this );
+            base.OnClosed( e );
+        }
     }
 }

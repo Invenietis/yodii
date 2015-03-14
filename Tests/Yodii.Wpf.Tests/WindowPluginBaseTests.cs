@@ -26,9 +26,7 @@ namespace Yodii.Wpf.Tests
                 Assert.That( pluginLive, Is.Not.Null );
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Running ) );
 
-                Assert.That( Application.Current, Is.Not.Null );
-
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     CollectionAssert.IsNotEmpty( GetApplicationTestPluginWindows(), "Window has been created and windows exist in this Application" );
                 } ) );
@@ -36,7 +34,7 @@ namespace Yodii.Wpf.Tests
                 IYodiiEngineResult result = ctx.Engine.StopPlugin( typeof( TestWindowPlugin ).FullName );
                 Assert.That( result.Success, Is.True );
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been removed and no windows remain in this Application" );
                 } ) );
@@ -54,7 +52,7 @@ namespace Yodii.Wpf.Tests
                 ManualResetEventSlim ev = new ManualResetEventSlim();
                 ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     w.Closed += ( s, e ) => ev.Set();
@@ -63,7 +61,7 @@ namespace Yodii.Wpf.Tests
 
                 ev.Wait();
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been closed, no other Windows remain" );
                 } ) );
@@ -84,7 +82,7 @@ namespace Yodii.Wpf.Tests
                 ManualResetEventSlim ev = new ManualResetEventSlim();
                 ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     w.Closed += ( s, e ) => ev.Set();
@@ -93,7 +91,7 @@ namespace Yodii.Wpf.Tests
 
                 ev.Wait();
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been closed, no other Windows remain" );
                 } ) );
@@ -118,7 +116,7 @@ namespace Yodii.Wpf.Tests
                 Assert.That( pluginLive, Is.Not.Null, "Plugin should have been set up when config changed" );
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin should have been started when config changed" );
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.True );
@@ -126,7 +124,7 @@ namespace Yodii.Wpf.Tests
                 } ) );
 
                 // Wait until Close propagates
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
 
@@ -141,7 +139,7 @@ namespace Yodii.Wpf.Tests
                 result = ctx.Engine.StartPlugin( typeof( TestWindowPlugin ).FullName );
                 Assert.That( result.Success, Is.True, "TestWindowPlugin could be started after being set to Runnable" );
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.False );
@@ -164,7 +162,7 @@ namespace Yodii.Wpf.Tests
                 Assert.That( pluginLive, Is.Not.Null, "Plugin should have been set up when config changed" );
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin should have been started when config changed" );
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.False );
@@ -199,7 +197,7 @@ namespace Yodii.Wpf.Tests
                 Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is correctly set as RunningLocked" );
 
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                WpfTestHelper.Dispatcher.Invoke( new Action( () =>
                 {
                     TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.True );
@@ -214,7 +212,7 @@ namespace Yodii.Wpf.Tests
 
         public IEnumerable<TestPluginWindow> GetApplicationTestPluginWindows()
         {
-            return Application.Current.Windows.Cast<Window>().Where( w => w is TestPluginWindow ).Cast<TestPluginWindow>();
+            return TestPluginWindow.WindowList.Where( w => w is TestPluginWindow ).Cast<TestPluginWindow>();
         }
     }
 }

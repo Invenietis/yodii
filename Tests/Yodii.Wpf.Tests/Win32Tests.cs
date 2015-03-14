@@ -15,8 +15,7 @@ namespace Yodii.Wpf.Tests
         [Test]
         public void Window_SysMenu_IsEnabled_ByDefault()
         {
-            Assert.That( Application.Current, Is.Not.Null );
-            Application.Current.Dispatcher.Invoke( () =>
+            WpfTestHelper.Dispatcher.Invoke( () =>
             {
                 TestPluginWindow w = new TestPluginWindow();
                 w.Show();
@@ -29,8 +28,7 @@ namespace Yodii.Wpf.Tests
         [Test]
         public void Window_CloseMenuItem_IsEnabled_ByDefault()
         {
-            Assert.That( Application.Current, Is.Not.Null );
-            Application.Current.Dispatcher.Invoke( () =>
+            WpfTestHelper.Dispatcher.Invoke( () =>
             {
                 TestPluginWindow w = new TestPluginWindow();
                 w.Show();
@@ -44,8 +42,7 @@ namespace Yodii.Wpf.Tests
         [Test]
         public void Window_SysMenu_CanBeHidden()
         {
-            Assert.That( Application.Current, Is.Not.Null );
-            Application.Current.Dispatcher.Invoke( () =>
+            WpfTestHelper.Dispatcher.Invoke( () =>
             {
                 TestPluginWindow w = new TestPluginWindow();
                 w.Show();
@@ -63,8 +60,7 @@ namespace Yodii.Wpf.Tests
         [Test]
         public void Window_Close_MenuItem_CanBeDisabled()
         {
-            Assert.That( Application.Current, Is.Not.Null );
-            Application.Current.Dispatcher.Invoke( () =>
+            WpfTestHelper.Dispatcher.Invoke( () =>
             {
                 TestPluginWindow w = new TestPluginWindow();
                 w.Show();
