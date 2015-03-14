@@ -17,7 +17,7 @@ namespace Yodii.ObjectExplorer.Windows
     /// <summary>
     /// Interaction logic for ObjectExplorerWindow.xaml
     /// </summary>
-    public partial class ObjectExplorerWindow : Window
+    public partial class ObjectExplorerWindow
     {
         public ObjectExplorerWindow()
         {
