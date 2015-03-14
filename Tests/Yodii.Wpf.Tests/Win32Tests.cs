@@ -9,7 +9,7 @@ using Yodii.Wpf.Win32;
 
 namespace Yodii.Wpf.Tests
 {
-    [TestFixture]
+    [TestFixture, Explicit]
     public class Win32ExtensionTests
     {
         [Test]
@@ -18,7 +18,7 @@ namespace Yodii.Wpf.Tests
             Assert.That( Application.Current, Is.Not.Null );
             Application.Current.Dispatcher.Invoke( () =>
             {
-                Window w = new Window();
+                TestPluginWindow w = new TestPluginWindow();
                 w.Show();
 
                 Assert.That( w.IsSysMenuEnabled(), Is.True );
@@ -32,7 +32,7 @@ namespace Yodii.Wpf.Tests
             Assert.That( Application.Current, Is.Not.Null );
             Application.Current.Dispatcher.Invoke( () =>
             {
-                Window w = new Window();
+                TestPluginWindow w = new TestPluginWindow();
                 w.Show();
 
                 Assert.That( w.IsCloseButtonDisabled(), Is.False );
@@ -47,14 +47,14 @@ namespace Yodii.Wpf.Tests
             Assert.That( Application.Current, Is.Not.Null );
             Application.Current.Dispatcher.Invoke( () =>
             {
-                Window w = new Window();
+                TestPluginWindow w = new TestPluginWindow();
                 w.Show();
 
-                Assert.That( w.IsSysMenuEnabled(), Is.True );
+                Assert.That( w.IsSysMenuEnabled(), Is.True, "Window sysmenu must be enabled by default" );
                 w.HideSysMenu();
-                Assert.That( w.IsSysMenuEnabled(), Is.False );
+                Assert.That( w.IsSysMenuEnabled(), Is.False, "Window sysmenu must be disabled after calling HideSysMenu()" );
                 w.ShowSysMenu();
-                Assert.That( w.IsSysMenuEnabled(), Is.True );
+                Assert.That( w.IsSysMenuEnabled(), Is.True, "Window sysmenu must be enabled after calling ShowSysMenu()" );
 
                 w.CloseAndWaitForClosed();
             } );
@@ -66,14 +66,14 @@ namespace Yodii.Wpf.Tests
             Assert.That( Application.Current, Is.Not.Null );
             Application.Current.Dispatcher.Invoke( () =>
             {
-                Window w = new Window();
+                TestPluginWindow w = new TestPluginWindow();
                 w.Show();
 
-                Assert.That( w.IsCloseButtonDisabled(), Is.False );
+                Assert.That( w.IsCloseButtonDisabled(), Is.False, "Window close button must be enabled by default" );
                 w.DisableCloseButton();
-                Assert.That( w.IsCloseButtonDisabled(), Is.True );
+                Assert.That( w.IsCloseButtonDisabled(), Is.True, "Window close button must be disabled after DisableCloseButton() is called" );
                 w.EnableCloseButton();
-                Assert.That( w.IsCloseButtonDisabled(), Is.False );
+                Assert.That( w.IsCloseButtonDisabled(), Is.False, "Window close button must be enabled after EnableCloseButton() is called" );
 
                 w.CloseAndWaitForClosed();
             } );
