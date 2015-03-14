@@ -20,10 +20,19 @@ namespace Yodii.ObjectExplorer.Windows
     /// </summary>
     public partial class ObjectExplorerWindow
     {
-        public ObjectExplorerWindow()
+        IConfigurationManagerWrapper _configurationManager;
+
+        public ObjectExplorerWindow( IConfigurationManagerWrapper configurationManager )
         {
+            _configurationManager = configurationManager;
+
             BindingErrorListener.Listen( m => MessageBox.Show( m ) );
             InitializeComponent();
+        }
+
+        private void ConfigManagerButton_Click( object sender, RoutedEventArgs e )
+        {
+            _configurationManager.ShowOrActivate();
         }
     }
 

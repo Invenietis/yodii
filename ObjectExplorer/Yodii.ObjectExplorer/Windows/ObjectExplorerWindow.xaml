@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mocks="clr-namespace:Yodii.ObjectExplorer.Mocks"
     Title="Object explorer"
+    WindowStartupLocation="CenterScreen"
     Height="480"
     Width="640">
     <Metro:MetroWindow.Resources>
@@ -28,6 +29,13 @@
         </ResourceDictionary>
 
     </Metro:MetroWindow.Resources>
+    <Metro:MetroWindow.RightWindowCommands>
+        <Metro:WindowCommands>
+            <Button
+                Click="ConfigManagerButton_Click"
+                Content="configuration manager"/>
+        </Metro:WindowCommands>
+    </Metro:MetroWindow.RightWindowCommands>
     <DockPanel
         LastChildFill="True"
         d:DataContext="{d:DesignInstance IsDesignTimeCreatable=True, Type={x:Type mocks:MockObjectExplorerViewModel}}">
