@@ -180,8 +180,6 @@ namespace Yodii.Wpf.Tests
         [Test]
         public void WindowPluginBase_DisablesClose_WhenConfiguredToRunOnStartup()
         {
-            // Uses a workaround. See WindowPluginBase class.
-
             TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
             TestWindowPlugin.AutomaticallyDisableCloseButtonConfig = true;
             TestWindowPlugin.ShowClosingFailedMessageBoxConfig = false;
@@ -193,7 +191,7 @@ namespace Yodii.Wpf.Tests
 
             runningConfig.Layers.Add( l );
 
-            using( var ctx = new YodiiRuntimeTestContext(runningConfig) )
+            using( var ctx = new YodiiRuntimeTestContext( runningConfig ) )
             {
                 ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
                 Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );
@@ -209,6 +207,50 @@ namespace Yodii.Wpf.Tests
                 } ) );
 
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is still alive" );
+            }
+        }
+
+        [Test]
+        public void WindowPluginBase_DisablesClose_WhenStartedTwice()
+        {
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
+            TestWindowPlugin.AutomaticallyDisableCloseButtonConfig = true;
+            TestWindowPlugin.ShowClosingFailedMessageBoxConfig = false;
+
+            YodiiConfiguration runningConfig = new YodiiConfiguration();
+
+            string fullName = typeof( TestWindowPlugin ).FullName;
+
+            YodiiConfigurationLayer l = new YodiiConfigurationLayer();
+            l.Items.Add( new YodiiConfigurationItem() { ServiceOrPluginFullName = fullName, Status = ConfigurationStatus.Running } );
+
+            runningConfig.Layers.Add( l );
+
+            using( var ctx = new YodiiRuntimeTestContext( runningConfig ) )
+            {
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+                Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is correctly set as RunningLocked" );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    Assert.That( w.IsCloseButtonDisabled(), Is.True, "Plugin configured as Running should have its Close button disabled" );
+                } ) );
+
+                IYodiiEngineResult r = ctx.Engine.Configuration.Layers.Default.Set( fullName, ConfigurationStatus.Optional );
+                Assert.That( r.Success, Is.True, "Plugin should be reconfigured from Running to Optional" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Stopped ), "Plugin should have been Stopped after being reconfigured from Running to Optional" );
+
+                r = ctx.Engine.Configuration.Layers.Default.Set( fullName, ConfigurationStatus.Running );
+                Assert.That( r.Success, Is.True, "Plugin should be reconfigured from Optional to Running" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin should have been set to RunningLocked after being reconfigured from Optional to Running" );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    Assert.That( w.IsCloseButtonDisabled(), Is.True, "Plugin configured as Running a second time should have its Close button disabled" );
+                } ) );
             }
         }
     }
