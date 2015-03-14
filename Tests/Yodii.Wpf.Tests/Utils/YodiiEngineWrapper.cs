@@ -7,17 +7,17 @@ using Yodii.Model;
 
 namespace Yodii.Wpf.Tests
 {
-    public class YodiiEngineWrapper : IYodiiEngine
+    public class GenericTestYodiiEngineProxy : IYodiiEngineProxy
     {
         readonly IYodiiEngineExternal _engine;
         readonly string _pluginFullName;
 
-        public YodiiEngineWrapper( IYodiiEngineExternal e, string pluginFullName )
+        public GenericTestYodiiEngineProxy( IYodiiEngineExternal e, string pluginFullName )
         {
             _engine = e;
             _pluginFullName = pluginFullName;
         }
-        public YodiiEngineWrapper( IYodiiEngineExternal e )
+        public GenericTestYodiiEngineProxy( IYodiiEngineExternal e )
             : this( e, String.Empty )
         {
         }
@@ -25,7 +25,7 @@ namespace Yodii.Wpf.Tests
 
         #region IYodiiEngine Members
 
-        IYodiiEngineExternal IYodiiEngine.ExternalEngine
+        IYodiiEngineExternal IYodiiEngineProxy.ExternalEngine
         {
             get { return _engine; }
         }
@@ -68,6 +68,19 @@ namespace Yodii.Wpf.Tests
         IYodiiEngineResult IYodiiEngineBase.StopService( string serviceFullName, string callerKey )
         {
             return _engine.StopService( serviceFullName, callerKey ?? _pluginFullName );
+        }
+
+        #endregion
+
+        #region IYodiiEngineProxy Members
+
+
+        public event EventHandler IsRunningLockedChanged;
+
+        public bool IsRunningLocked
+        {
+            get;
+            set;
         }
 
         #endregion

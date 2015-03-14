@@ -6,7 +6,7 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.Mocks
 {
     [ImplementPropertyChanged]
-    public class MockYodiiEngine : IYodiiEngine
+    public class MockYodiiEngine : IYodiiEngineProxy
     {
         public MockYodiiEngine()
         {
@@ -19,11 +19,6 @@ namespace Yodii.ObjectExplorer.Mocks
         }
 
         public MockLiveInfo LiveInfo { get; private set; }
-
-        ILiveInfo IYodiiEngineBase.LiveInfo
-        {
-            get { return LiveInfo; }
-        }
 
         public IYodiiEngineResult StartItem( ILiveYodiiItem pluginOrService, StartDependencyImpact impact = StartDependencyImpact.Unknown, string callerKey = null )
         {
@@ -64,6 +59,28 @@ namespace Yodii.ObjectExplorer.Mocks
             {
                 throw new NotImplementedException();
             }
+        }
+
+        #endregion
+
+        #region IYodiiEngineProxy Members
+
+
+        public event EventHandler IsRunningLockedChanged;
+
+        public bool IsRunningLocked
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
+
+        #region IYodiiEngineBase Members
+
+
+        ILiveInfo IYodiiEngineBase.LiveInfo
+        {
+            get { return LiveInfo; }
         }
 
         #endregion

@@ -12,7 +12,7 @@ namespace Yodii.ObjectExplorer.ViewModels
     public class EngineViewModel : EmptyPropertyChangedHandler
     {
         [AllowNull]
-        public IYodiiEngine Engine { get; private set; }
+        public IYodiiEngineProxy Engine { get; private set; }
 
         public IObservableReadOnlyCollection<ServiceViewModel> Services { get { return _services; } }
         public IObservableReadOnlyCollection<PluginViewModel> Plugins { get { return _plugins; } }
@@ -26,7 +26,7 @@ namespace Yodii.ObjectExplorer.ViewModels
             _plugins = new CKObservableSortedArrayKeyList<PluginViewModel, string>( x => x.Plugin.FullName, false );
         }
 
-        public void LoadEngine( IYodiiEngine engine )
+        public void LoadEngine( IYodiiEngineProxy engine )
         {
             if( Engine != null ) { throw new InvalidOperationException( "Cannot load an Engine twice." ); }
             Engine = engine;

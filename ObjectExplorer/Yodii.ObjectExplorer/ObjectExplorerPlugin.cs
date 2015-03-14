@@ -11,9 +11,9 @@ namespace Yodii.ObjectExplorer
 {
     public class ObjectExplorerPlugin : WindowPluginBase
     {
-        IYodiiEngine _engine;
+        IYodiiEngineProxy _engine;
 
-        public ObjectExplorerPlugin(IYodiiEngine e)
+        public ObjectExplorerPlugin( IYodiiEngineProxy e )
             : base( e )
         {
             if( e == null ) { throw new ArgumentNullException( "e" ); }

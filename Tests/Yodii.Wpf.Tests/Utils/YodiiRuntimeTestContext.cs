@@ -20,7 +20,7 @@ namespace Yodii.Wpf.Tests
 
         public IYodiiEngineExternal Engine { get; private set; }
         public IYodiiEngineHost Host { get; private set; }
-        public IYodiiEngine AnonymousInternalEngine { get; private set; }
+        public IYodiiEngineProxy GenericEngineProxy { get; private set; }
 
         public YodiiRuntimeTestContext( IDiscoveredInfo discoveredInfo, YodiiConfiguration configuration )
         {
@@ -40,7 +40,7 @@ namespace Yodii.Wpf.Tests
 
             result = Engine.StartEngine();
             Assert.That( result.Success, Is.True );
-            AnonymousInternalEngine = new YodiiEngineWrapper( Engine );
+            GenericEngineProxy = new GenericTestYodiiEngineProxy( Engine );
         }
 
         public YodiiRuntimeTestContext( IDiscoveredInfo discoveredInfo )
