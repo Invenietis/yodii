@@ -50,7 +50,7 @@
     <Preliminary>True</Preliminary>
     <NamingMethod>Guid</NamingMethod>
     <HelpTitle>Yodii</HelpTitle>
-    <CopyrightHref>https://raw.githubusercontent.com/Invenietis/yodii</CopyrightHref>
+    <CopyrightHref>https://github.com/Invenietis/yodii</CopyrightHref>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <CopyrightText>Copyright &amp;#169%3b 2007-2015 Invenietis, IN&amp;#39%3bTECH INFO. All rights reserved. Licenced under the under the terms of the GNU Lesser General Public License.</CopyrightText>
   </PropertyGroup>
