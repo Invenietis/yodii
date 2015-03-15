@@ -26,6 +26,13 @@
       <Argument Key="logoAlignment" Value="left" xmlns="" />
       <Argument Key="maxVersionParts" Value="" xmlns="" />
     </TransformComponentArguments>
+    <DocumentationSources>
+      <DocumentationSource sourceFile="..\..\Yodii.Discoverer\Yodii.Discoverer.csproj" xmlns="" />
+      <DocumentationSource sourceFile="..\..\Yodii.Engine\Yodii.Engine.csproj" xmlns="" />
+      <DocumentationSource sourceFile="..\..\Yodii.Host\Yodii.Host.csproj" xmlns="" />
+      <DocumentationSource sourceFile="..\..\Yodii.Model\Yodii.Model.csproj" xmlns="" />
+      <DocumentationSource sourceFile="..\..\Yodii.Wpf\Yodii.Wpf.csproj" xmlns="" />
+    </DocumentationSources>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
