@@ -15,7 +15,7 @@
     <!-- SHFB properties -->
     <FrameworkVersion>.NET Framework 4.5.1</FrameworkVersion>
     <OutputPath>.\Help\</OutputPath>
-    <HtmlHelpName>Yodii.Documentation.Shfb</HtmlHelpName>
+    <HtmlHelpName>Yodii.Documentation</HtmlHelpName>
     <Language>en-US</Language>
     <TransformComponentArguments>
       <Argument Key="logoFile" Value="Help.png" xmlns="" />
@@ -33,6 +33,26 @@
       <DocumentationSource sourceFile="..\..\Yodii.Model\Yodii.Model.csproj" xmlns="" />
       <DocumentationSource sourceFile="..\..\Yodii.Wpf\Yodii.Wpf.csproj" xmlns="" />
     </DocumentationSources>
+    <BuildAssemblerVerbosity>OnlyWarningsAndErrors</BuildAssemblerVerbosity>
+    <HelpFileFormat>HtmlHelp1, Website</HelpFileFormat>
+    <IndentHtml>False</IndentHtml>
+    <KeepLogFile>True</KeepLogFile>
+    <DisableCodeBlockComponent>False</DisableCodeBlockComponent>
+    <CppCommentsFixup>False</CppCommentsFixup>
+    <CleanIntermediates>True</CleanIntermediates>
+    <MaximumGroupParts>2</MaximumGroupParts>
+    <NamespaceGrouping>False</NamespaceGrouping>
+    <SyntaxFilters>Standard</SyntaxFilters>
+    <SdkLinkTarget>Blank</SdkLinkTarget>
+    <RootNamespaceTitle>Yodii namespace</RootNamespaceTitle>
+    <RootNamespaceContainer>True</RootNamespaceContainer>
+    <PresentationStyle>VS2013</PresentationStyle>
+    <Preliminary>True</Preliminary>
+    <NamingMethod>Guid</NamingMethod>
+    <HelpTitle>Yodii</HelpTitle>
+    <CopyrightHref>https://raw.githubusercontent.com/Invenietis/yodii</CopyrightHref>
+    <ContentPlacement>AboveNamespaces</ContentPlacement>
+    <CopyrightText>Copyright &amp;#169%3b 2007-2015 Invenietis, IN&amp;#39%3bTECH INFO. All rights reserved. Licenced under the under the terms of the GNU Lesser General Public License.</CopyrightText>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
