@@ -13,7 +13,7 @@
     <RootNamespace>Yodii.Documentation.Shfb</RootNamespace>
     <Name>Yodii.Documentation.Shfb</Name>
     <!-- SHFB properties -->
-    <FrameworkVersion>.NET Framework 4.0</FrameworkVersion>
+    <FrameworkVersion>.NET Framework 4.5.1</FrameworkVersion>
     <OutputPath>.\Help\</OutputPath>
     <HtmlHelpName>Yodii.Documentation.Shfb</HtmlHelpName>
     <Language>en-US</Language>

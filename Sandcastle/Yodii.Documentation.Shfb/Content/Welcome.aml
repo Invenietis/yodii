@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <topic id="9f9ebe08-b32d-45b3-8c10-6fd50239f4f3" revisionNumber="1">
 	<developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
-		<introduction>
+		<!--<introduction>
 			<para>This is a sample conceptual topic.  You can use this as a starting point for adding more conceptual
 content to your help project.</para>
 		</introduction>
@@ -46,7 +46,7 @@ in order to be compiled into the help file.</para>
 help file for more information.  See the <legacyBold> Sandcastle MAML Guide</legacyBold> for details on Microsoft
 Assistance Markup Language (MAML) which is used to create these topics.</para>
 			</content>
-		</section>
+		</section>-->
 
 		<relatedTopics>
 			<link xlink:href="14d29205-482b-488c-a3a5-bb92afb836b4" />
