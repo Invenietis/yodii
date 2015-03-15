@@ -41,7 +41,7 @@
     <CppCommentsFixup>False</CppCommentsFixup>
     <CleanIntermediates>True</CleanIntermediates>
     <MaximumGroupParts>2</MaximumGroupParts>
-    <NamespaceGrouping>False</NamespaceGrouping>
+    <NamespaceGrouping>True</NamespaceGrouping>
     <SyntaxFilters>Standard</SyntaxFilters>
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <RootNamespaceTitle>Yodii namespace</RootNamespaceTitle>
@@ -50,9 +50,14 @@
     <Preliminary>True</Preliminary>
     <NamingMethod>Guid</NamingMethod>
     <HelpTitle>Yodii</HelpTitle>
-    <CopyrightHref>https://github.com/Invenietis/yodii</CopyrightHref>
+    <CopyrightHref>
+    </CopyrightHref>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
-    <CopyrightText>Copyright &amp;#169%3b 2007-2015 Invenietis, IN&amp;#39%3bTECH INFO. All rights reserved. Licenced under the under the terms of the GNU Lesser General Public License.</CopyrightText>
+    <CopyrightText>Copyright &amp;#169%3b 2007-2015 Invenietis, IN&amp;#39%3bTECH INFO. All rights reserved.</CopyrightText>
+    <FooterText>&amp;lt%3ba href=&amp;quot%3bhttps://github.com/Invenietis/yodii&amp;quot%3b target=&amp;quot%3b_blank&amp;quot%3b&amp;gt%3bView on GitHub&amp;lt%3b/a&amp;gt%3b - GPL license</FooterText>
+    <HeaderText>Built on {%40BuildDate:MMMM d, yyyy a\t hh:mm tt}</HeaderText>
+    <PlugInConfigurations />
+    <ComponentConfigurations />
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
