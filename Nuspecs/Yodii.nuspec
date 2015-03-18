@@ -15,6 +15,8 @@
     <tags>yodii invenietis intech di plugin plugins service services</tags>
     <dependencies>
       <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="Mono.Cecil" version="0.9.5.4" />
+      
       <dependency id="Yodii.Core" version="$PackageVersion" />
     </dependencies>
   </metadata>
