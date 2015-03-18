@@ -55,6 +55,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Wpf", "Yodii.Wpf\Yodi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Wpf.Tests", "Tests\Yodii.Wpf.Tests\Yodii.Wpf.Tests.csproj", "{C4A7EF2D-3026-4B1E-BC8B-E08783A18341}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuspecs", "Nuspecs", "{069CF373-3550-43E9-A1F6-591211517A34}"
+	ProjectSection(SolutionItems) = preProject
+		Nuspecs\Yodii.Core.nuspec = Nuspecs\Yodii.Core.nuspec
+		Nuspecs\Yodii.nuspec = Nuspecs\Yodii.nuspec
+		Nuspecs\Yodii.Wpf.nuspec = Nuspecs\Yodii.Wpf.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

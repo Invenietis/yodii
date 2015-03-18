@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Yodii.Core</id>
+    <version>$PackageVersion</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis, IN'TECH INFO</owners>
+    <licenseUrl>https://github.com/Invenietis/yodii/blob/master/licenseFileHeader.txt</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/yodii/</projectUrl>
+    <iconUrl>http://www.invenietis.com/content/images/tech.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Yodii's core model assembly, letting you use and create new Yodii services and plugins.</description>
+    <releaseNotes>Development version.</releaseNotes>
+    <copyright>Copyright 2015 Invenietis, IN'TECH INFO</copyright>
+    <tags>yodii invenietis intech di plugin plugins service services</tags>
+    <dependencies>
+      <dependency id="CK.Core" version="4.2.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Yodii.Model\bin\Release\Yodii.Model.dll" target="lib\net451" />
+    <file src="..\Yodii.Model\bin\Release\Yodii.Model.pdb" target="lib\net451" />
+    <file src="..\Yodii.Model\bin\Release\Yodii.Model.xml" target="lib\net451" />
+  </files>
+</package>
