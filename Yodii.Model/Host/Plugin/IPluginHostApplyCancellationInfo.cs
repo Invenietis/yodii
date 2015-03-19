@@ -45,6 +45,13 @@ namespace Yodii.Model
         bool IsLoadError { get; }
 
         /// <summary>
+        /// Gets whether the <see cref="Error"/> is an unhandled exception that has been raised by <see cref="IYodiiPlugin.PreStop"/> or <see cref="IYodiiPlugin.PreStart"/>.
+        /// Note that such exceptions are handled by Yodii only when <see cref="IYodiiEngineHost.CatchPreStartOrPreStopExceptions"/> is set to true.
+        /// When false (that is the default), exceptions in PreStart/Stop bubble up, causing the engine to stop.
+        /// </summary>
+        bool IsPreStartOrStopUnhandledException { get; }
+
+        /// <summary>
         /// Gets whether it is <see cref="IYodiiPlugin.PreStart"/> that failed.
         /// </summary>
         bool IsStartCanceled { get; }

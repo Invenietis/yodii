@@ -35,26 +35,42 @@ namespace Yodii.Host
     /// </summary>
     public class SimpleServiceHostConfiguration : IServiceHostConfiguration, ISimpleServiceHostConfiguration
     {
-        Dictionary<MethodInfo,ServiceLogMethodOptions> _methods;
-        Dictionary<EventInfo,ServiceLogEventOptions> _events;
+        readonly Dictionary<MethodInfo,ServiceLogMethodOptions> _methods;
+        readonly Dictionary<EventInfo,ServiceLogEventOptions> _events;
 
+        /// <summary>
+        /// Initializes a new empty configuration.
+        /// </summary>
         public SimpleServiceHostConfiguration()
         {
             _methods = new Dictionary<MethodInfo, ServiceLogMethodOptions>();
             _events = new Dictionary<EventInfo, ServiceLogEventOptions>();
         }
 
+        /// <summary>
+        /// Clears all configurations.
+        /// </summary>
         public void Clear()
         {
             _methods.Clear();
             _events.Clear();
         }
 
+        /// <summary>
+        /// Configures the behavior on method calls.
+        /// </summary>
+        /// <param name="m">Method to configure.</param>
+        /// <param name="option">Options to set.</param>
         public void SetConfiguration( MethodInfo m, ServiceLogMethodOptions option )
         {
             _methods[m] = option;
         }
 
+        /// <summary>
+        /// Configures the behavior on property calls.
+        /// </summary>
+        /// <param name="p">Property to configure.</param>
+        /// <param name="option">Options to set.</param>
         public void SetConfiguration( PropertyInfo p, ServiceLogMethodOptions option )
         {
             MethodInfo mG = p.GetGetMethod();
@@ -63,11 +79,22 @@ namespace Yodii.Host
             if( mS != null ) SetConfiguration( mS, option );
         }
 
+        /// <summary>
+        /// Configures the behavior on events.
+        /// </summary>
+        /// <param name="e">The <see cref="EventInfo"/> to configure.</param>
+        /// <param name="option">Options to set.</param>
         public void SetConfiguration( EventInfo e, ServiceLogEventOptions option )
         {
             _events[e] = option;
         }
 
+        /// <summary>
+        /// Helper that configures all overloads of a method (a method group) on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="option">Options to set.</param>
         public void SetMethodGroupConfiguration( Type type, string methodName, ServiceLogMethodOptions option )
         {
             foreach( var m in CK.Reflection.ReflectionHelper.GetFlattenMethods( type ).Where( m => m.Name == methodName ) )
@@ -75,7 +102,12 @@ namespace Yodii.Host
                 _methods[m] = option;
             }
         }
-        
+
+        /// <summary>
+        /// Helper that configures all methods on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="option">Options to set.</param>
         public void SetAllMethodsConfiguration( Type type, ServiceLogMethodOptions option )
         {
             foreach( var m in CK.Reflection.ReflectionHelper.GetFlattenMethods( type ).Where( m => !m.IsSpecialName ) )
@@ -84,11 +116,21 @@ namespace Yodii.Host
             }
         }
 
+        /// <summary>
+        /// Helper that configures all properties on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="option">Options to set.</param>
         public void SetAllPropertiesConfiguration( Type type, ServiceLogMethodOptions option )
         {
             foreach( var p in CK.Reflection.ReflectionHelper.GetFlattenProperties( type ) ) SetConfiguration( p, option );
         }
 
+        /// <summary>
+        /// Helper that configures all events on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="option">Options to set.</param>
         public void SetAllEventsConfiguration( Type type, ServiceLogEventOptions option )
         {
             foreach( var e in CK.Reflection.ReflectionHelper.GetFlattenEvents( type ) )

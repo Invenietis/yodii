@@ -107,8 +107,8 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="finalConfiguration">
         /// New FinalConfiguration. 
-        /// When empty <see cref="P:FinalConfigurationChange"/> is set to <see cref="FinalConfigurationChange.Cleared"/>, 
-        /// otherwise it is set to <see cref="FinalConfigurationChange.Set"/>.
+        /// When empty <see cref="P:FinalConfigurationChange"/> is set to <see cref="T:FinalConfigurationChange.Cleared"/>, 
+        /// otherwise it is set to <see cref="T:FinalConfigurationChange.Set"/>.
         /// </param>
         /// <param name="newInfo">Not null if the discovered information is a new one.</param>
         public ConfigurationChangingEventArgs( FinalConfiguration finalConfiguration, IDiscoveredInfo newInfo = null )

@@ -68,6 +68,25 @@ namespace Yodii.Engine
             return layer;
         }
 
+        public IConfigurationLayer FindOneOrCreate( string layerName )
+        {
+            if( String.IsNullOrEmpty( layerName ) ) return _default;
+            bool exists;
+            var layer = GetByKey( layerName, out exists );
+            if( !exists )
+            {
+                layer = new ConfigurationLayer( this, layerName );
+                Add( layer );
+            }
+            return layer;
+        }
+
+        public IConfigurationLayer FindOne( string layerName )
+        {
+            if( String.IsNullOrEmpty( layerName ) ) return _default;
+            return this.GetByKey( layerName );
+        }
+
         public new IYodiiEngineResult Remove( IConfigurationLayer layer )
         {
             if( layer == null ) throw new ArgumentNullException( "layer" );

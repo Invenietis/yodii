@@ -30,8 +30,8 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Failure result during application of dynamic resolution on <see cref="IYodiiEngineHost"/>.
-    /// <seealso cref="IYodiiEngineHost.Apply( IEnumerable{IPluginInfo}, IEnumerable{IPluginInfo}, IEnumerable{IPluginInfo})"/>
     /// </summary>
+    /// <seealso cref="IYodiiEngineHost.Apply"/>
     public interface IDynamicFailureResult
     {
         /// <summary>

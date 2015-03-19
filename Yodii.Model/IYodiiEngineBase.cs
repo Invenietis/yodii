@@ -44,7 +44,8 @@ namespace Yodii.Model
         IConfigurationManager Configuration { get; }
         
         /// <summary>
-        /// Live information about the running services and plugins, when the engine is started.
+        /// Gets live information about the running services and plugins when the engine is started.
+        /// Empty when the engine is not running.
         /// </summary>
         ILiveInfo LiveInfo { get; }
 

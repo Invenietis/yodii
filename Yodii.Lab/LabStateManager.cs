@@ -753,6 +753,9 @@ namespace Yodii.Lab
 
         #endregion
 
+        /// <summary>
+        /// Gets the <see cref="IAssemblyInfo"/>.
+        /// </summary>
         public IReadOnlyList<IAssemblyInfo> AssemblyInfos
         {
             get { throw new NotImplementedException(); }

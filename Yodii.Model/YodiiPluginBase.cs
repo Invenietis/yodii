@@ -59,6 +59,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Called before the actual <see cref="PluginStop"/> method.
+        /// Calls to external Services are allowed.
         /// If this plugin can not be stopped, the transition must 
         /// be canceled by calling <see cref="IPreStopContext.Cancel"/>.
         /// </summary>
@@ -69,6 +70,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Called before the actual <see cref="PluginStart"/> method.
+        /// Calls to external Services are NOT allowed during this phase.
         /// If this plugin can not start, the transition must 
         /// be canceled by calling <see cref="IPreStartContext.Cancel"/> .
         /// </summary>
@@ -79,6 +81,18 @@ namespace Yodii.Model
 
         /// <summary>
         /// Called after successful calls to all <see cref="PluginPreStop"/> and <see cref="PluginPreStart"/>.
+        /// Calls to external Services are NOT allowed during this phase.
+        /// This may also be called to cancel a previous call to <see cref="PluginPreStop"/> if another
+        /// plugin rejected the transition.
+        /// </summary>
+        /// <param name="c">The context to use.</param>
+        protected virtual void PluginStop( IStopContext c )
+        {
+        }
+
+        /// <summary>
+        /// Called after successful calls to all <see cref="PluginPreStop"/> and <see cref="PluginPreStart"/>.
+        /// Calls to external Services are allowed.
         /// This may also be called to cancel a previous call to <see cref="PluginPreStart"/> if another
         /// plugin rejected the transition.
         /// </summary>
@@ -87,14 +101,5 @@ namespace Yodii.Model
         {
         }
 
-        /// <summary>
-        /// Called after successful calls to all <see cref="PluginPreStop"/> and <see cref="PluginPreStart"/>.
-        /// This may also be called to cancel a previous call to <see cref="PluginPreStop"/> if another
-        /// plugin rejected the transition.
-        /// </summary>
-        /// <param name="c">The context to use.</param>
-        protected virtual void PluginStop( IStopContext c )
-        {
-        }
     }
 }

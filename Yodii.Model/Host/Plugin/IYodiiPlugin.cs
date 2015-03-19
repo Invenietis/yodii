@@ -36,6 +36,7 @@ namespace Yodii.Model
     {
         /// <summary>
         /// Called before the actual <see cref="Stop"/> method.
+        /// Calls to external Services are allowed.
         /// Implementations must validate that this plugin can be stoppped: if not, the transition must 
         /// be canceled by calling <see cref="IPreStopContext.Cancel"/>.
         /// </summary>
@@ -44,6 +45,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Called before the actual <see cref="Start"/> method.
+        /// Calls to external Services are NOT allowed during this phase.
         /// Implementations must validate that the start is possible and, if unable 
         /// to start, cancels it by calling <see cref="IPreStartContext.Cancel"/> .
         /// </summary>
@@ -52,6 +54,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Called after successful calls to all <see cref="PreStop"/> and <see cref="PreStart"/>.
+        /// Calls to external Services are NOT allowed during this phase.
         /// This may also be called to cancel a previous call to <see cref="PreStart"/> if another
         /// plugin rejected the transition.
         /// </summary>
@@ -60,6 +63,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Called after successful calls to all <see cref="PreStop"/> and <see cref="PreStart"/>.
+        /// Calls to external Services are allowed.
         /// This may also be called to cancel a previous call to <see cref="PreStop"/> if another
         /// plugin rejected the transition.
         /// </summary>

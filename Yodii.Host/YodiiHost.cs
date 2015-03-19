@@ -32,6 +32,9 @@ using System.Text;
 
 namespace Yodii.Host
 {
+    /// <summary>
+    /// Implementation of <see cref="IYodiiEngineHost"/>.
+    /// </summary>
     public partial class YodiiHost : IYodiiEngineHost
     {
         readonly IActivityMonitor _monitor;
@@ -41,11 +44,20 @@ namespace Yodii.Host
         IYodiiEngineExternal _engine;
         bool _catchPreStartOrPreStopExceptions;
 
+        /// <summary>
+        /// Initializes a new <see cref="YodiiHost"/> with its own <see cref="ActivityMonitor"/> and default behaviors.
+        /// </summary>
         public YodiiHost()
             : this( null, CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
         {
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="YodiiHost"/> bound to an existing <see cref="ActivityMonitor"/> and configurable behavior 
+        /// of the code generation regarding exceptions raised by Services.
+        /// </summary>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="exceptionGeneration">Optional (adavanced) option.</param>
         public YodiiHost( IActivityMonitor monitor, CatchExceptionGeneration exceptionGeneration = CatchExceptionGeneration.HonorIgnoreExceptionAttribute )
         {
             if( monitor == null ) monitor = new ActivityMonitor( "Yodii.Host.YodiiHost");
@@ -111,11 +123,17 @@ namespace Yodii.Host
             set { _pluginCreator = value ?? DefaultPluginCreator; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="IServiceHost"/> that gives low level access to the service proxies.
+        /// </summary>
         public IServiceHost ServiceHost
         {
             get { return _serviceHost; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="ILogCenter"/> that publish host events.
+        /// </summary>
         public ILogCenter LogCenter
         {
             get { return _serviceHost; }
@@ -125,7 +143,7 @@ namespace Yodii.Host
         /// Gets the <see cref="IPluginProxy"/> for the plugin identifier. 
         /// It may find plugins that are currently disabled but have been loaded at least once.
         /// </summary>
-        /// <param name="pluginId">Plugin identifier.</param>
+        /// <param name="pluginFullName">Plugin full name.</param>
         /// <returns>Null if not found.</returns>
         public IPluginProxy FindLoadedPlugin( string pluginFullName )
         {
@@ -147,6 +165,10 @@ namespace Yodii.Host
         /// Attempts to execute a plan.
         /// </summary>
         /// <param name="solvedConfiguration">Configuration to apply.</param>
+        /// <param name="postStartActionsCollector">
+        /// Collector for actions triggered by the start or stop of the plugins.
+        /// Null when the engine is stopping (<paramref name="solvedConfiguration"/> contains all the plugins with a disable state). 
+        /// </param>
         /// <returns>A <see cref="IYodiiEngineHostApplyResult"/> that details the error if any.</returns>
         public IYodiiEngineHostApplyResult Apply(
             IReadOnlyList<KeyValuePair<IPluginInfo, RunningStatus>> solvedConfiguration, 
@@ -176,6 +198,7 @@ namespace Yodii.Host
                 catch( Exception ex )
                 {
                     _monitor.Fatal().Send( ex );
+                    // This is the only call to HardStop...
                     HardStop( sharedMemory );
                     throw;
                 }
@@ -276,7 +299,7 @@ namespace Yodii.Host
                                         Debug.Assert( p.Status == PluginStatus.Null );
                                     }
                                 }
-                                var preStart = new StStartContext( p, kp.Value, sharedMemory, p.Status == PluginStatus.Null );
+                                var preStart = new StStartContext( p, kp.Value, sharedMemory, p.Status == PluginStatus.Null, postStartActionsCollector );
                                 p.Status = PluginStatus.Stopped;
                                 if( info.Service != null ) serviceManager.AddToStart( info.Service, preStart );
                                 toStart.Add( preStart );
@@ -302,7 +325,8 @@ namespace Yodii.Host
 
             // The toStart list of StStartContext is ready (and plugins inside are loaded without error).
             // Now starts the actual PreStop/PreStart/Stop/Start/Disable phase.
-            // Service calls are allowed.
+
+            // Service calls are allowed while calling PreStop.
             using( _monitor.OpenTrace().Send( "Calling PreStop." ) )
             {
                 #region Calling PreStop for all "toStop" plugins: calls to Services are allowed.
@@ -312,7 +336,7 @@ namespace Yodii.Host
                     {
                         using( _monitor.OpenTrace().Send( "Plugin: {0}.", stopC.Plugin.PluginInfo.PluginFullName ) )
                         {
-                            Debug.Assert( stopC.Plugin.Status == PluginStatus.Started );
+                            Debug.Assert( stopC.Plugin.Status == PluginStatus.Started, "When calling PreStop, PluginStatus is 'Started'." );
                             try
                             {
                                 stopC.Plugin.RealPluginObject.PreStop( stopC );
@@ -321,7 +345,7 @@ namespace Yodii.Host
                             {
                                 _monitor.Error().Send( ex );
                                 if( !_catchPreStartOrPreStopExceptions ) throw;
-                                if( postStartActionsCollector != null ) stopC.Cancel( ex.Message, ex );
+                                if( postStartActionsCollector != null ) stopC.CancelByUnhandledExceptionInPreStartOrStop( ex, isPreStart: false );
                             }
                             if( stopC.HandleSuccess( errors, isPreStart: false ) )
                             {
@@ -343,14 +367,14 @@ namespace Yodii.Host
             }
 
             // PreStop has been successfully called: we must now call the PreStart.
-            // Calls to Services are not allowed during PreStart.
+            // Calls to Services are NOT allowed during PreStart.
             using( _monitor.OpenTrace().Send( "Calling PreStart." ) )
             using( _serviceHost.BlockServiceCall( calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromPreStart ) ) )
             {
                 #region Calling PreStart.
                 foreach( var startC in toStart )
                 {
-                    Debug.Assert( startC.Plugin.Status == PluginStatus.Stopped );
+                    Debug.Assert( startC.Plugin.Status == PluginStatus.Stopped, "When calling PreStart, PluginStatus is 'Stopped'." );
                     try
                     {
                         startC.Plugin.RealPluginObject.PreStart( startC );
@@ -359,7 +383,7 @@ namespace Yodii.Host
                     {
                         _monitor.Error().Send( ex );
                         if( !_catchPreStartOrPreStopExceptions ) throw;
-                        startC.Cancel( ex.Message, ex );
+                        startC.CancelByUnhandledExceptionInPreStartOrStop( ex, isPreStart: true );
                     }
                     if( startC.HandleSuccess( errors, true ) )
                     {
@@ -369,7 +393,7 @@ namespace Yodii.Host
                 #endregion
             }
             // If a PreStart failed, we cancel everything and stop.
-            // Calls to Services are not allowed during Stop or rollback actions.
+            // Calls to Services NOT allowed during Stop or rollback actions.
             if( errors.Count > 0 )
             {
                 CancelSuccessfulPreStop( sharedMemory, toStop );
@@ -381,6 +405,7 @@ namespace Yodii.Host
                         if( c.Success )
                         {
                             c.Plugin.Status = PluginStatus.Stopped;
+                            // When calling Stop, PluginStatus is 'Stopped'.
                             var rev = c.RollbackAction;
                             if( rev != null ) rev( cStop );
                             else c.Plugin.RealPluginObject.Stop( cStop );
@@ -395,7 +420,7 @@ namespace Yodii.Host
             // Setting ServiceStatus & sending events: StoppingSwapped, Stopping, StartingSwapped, Starting. 
             SetServiceSatus( postStartActionsCollector, toStop, toStart, true );
 
-            // Time to call Stop. While Stopping, calling Services is not allowed.
+            // Time to call Stop. While Stopping, calling Services is NOT allowed.
             using( _monitor.OpenTrace().Send( "Calling Stop." ) )
             using( _serviceHost.BlockServiceCall( calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromStop ) ) )
             {
@@ -407,6 +432,7 @@ namespace Yodii.Host
                         Debug.Assert( stopC.Plugin.Status == PluginStatus.Stopping );
                         stopC.Plugin.SetRunningLocked( false );
                         stopC.Plugin.Status = PluginStatus.Stopped;
+                        // When calling Stop, PluginStatus is 'Stopped'.
                         stopC.Plugin.RealPluginObject.Stop( stopC );
                     }
                 }
@@ -427,11 +453,13 @@ namespace Yodii.Host
                 }
             }
             // Now that all services are bound, starts the plugin.
+            // Calls to Services is allowed during Start.
             // Calling Start must not throw any exceptions: we let the exception buble here.
             foreach( var startC in toStart )
             {
                 startC.Plugin.SetRunningLocked( startC.RunningStatus == RunningStatus.RunningLocked );
                 startC.Plugin.Status = PluginStatus.Started;
+                // When calling Start, PluginStatus is 'Started'.
                 startC.Plugin.RealPluginObject.Start( startC );
             }
             if( alreadyRunningPlugins != null )
@@ -441,7 +469,7 @@ namespace Yodii.Host
             // Setting services status & sending events...
             SetServiceSatus( postStartActionsCollector, toStop, toStart, false );
 
-            // Disabling plugins that need to.
+            // Disabling plugins that need to be disabled.
             // Calls to services are disabled.
             using( _monitor.OpenTrace().Send( "Disabling plugins (calling Dispose for IDisposable)." ) )
             using( _serviceHost.BlockServiceCall( calledServiceType => new ServiceCallBlockedException( calledServiceType, R.CallingServiceFromDisable ) ) )
@@ -499,6 +527,7 @@ namespace Yodii.Host
                 {
                     c.Plugin.Status = PluginStatus.Started;
                     var rev = c.RollbackAction;
+                    // When calling Start, PluginStatus is 'Started'.
                     if( rev != null ) rev( cStart );
                     else c.Plugin.RealPluginObject.Start( cStart );
                 }
@@ -574,7 +603,7 @@ namespace Yodii.Host
         }
 
         /// <summary>
-        /// Gets or sets the object that sends <see cref="IServiceHost.EventCreating"/> and <see cref="IServiceHost.EventCreated"/>.
+        /// Gets or sets the object that sends <see cref="ILogCenter.EventCreating"/> and <see cref="ILogCenter.EventCreated"/>.
         /// </summary>
         public object EventSender
         {

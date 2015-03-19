@@ -135,5 +135,42 @@ namespace Yodii.Host
             }
         }
 
+        public bool IsSelfLocked 
+        {
+            get
+            {
+                var layer = _engine.Configuration.Layers.FindOne( "Self-Locking" );
+                IConfigurationItem i;
+                return layer != null
+                        && (i = layer.Items[PluginInfo.PluginFullName]) != null
+                        && i.Status == ConfigurationStatus.Running;
+            } 
+        }
+
+        public bool SelfLock()
+        {
+            CheckSelfLockCall();
+            return _engine.Configuration.Layers.FindOneOrCreate( "Self-Locking" ).Set( PluginInfo.PluginFullName, ConfigurationStatus.Running ).Success;
+        }
+
+        public void SelfUnlock()
+        {
+            CheckSelfLockCall();
+            var layer = _engine.Configuration.Layers.FindOne( "Self-Locking" );
+            if( layer != null ) layer.Set( PluginInfo.PluginFullName, ConfigurationStatus.Optional ).ThrowOnError();
+        }
+
+        /// <summary>
+        /// Currently only checks that Status == PluginStatus.Started: the status is Started in Start... but unfortunaltely also
+        /// in PreStop... We do not currently have the information available to detect calls from PreStop method.
+        /// </summary>
+        void CheckSelfLockCall()
+        {
+            if( Status != PluginStatus.Started )
+            {
+                throw new InvalidOperationException( R.SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod );
+            }
+        }
+
     }
 }

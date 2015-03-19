@@ -30,7 +30,7 @@ using System.Reflection;
 namespace Yodii.Host
 {
     /// <summary>
-    /// Base class for log entries emitted by the <see cref="IPluginHost"/>.
+    /// Base class for log entries emitted by the <see cref="ILogCenter"/>.
     /// </summary>
     public abstract class LogHostEventArgs : LogEventArgs, ILogInterceptionEntry
     {

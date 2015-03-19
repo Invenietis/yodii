@@ -26,7 +26,7 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Configuration item data unifies <see cref="IConfigurationItem"/> that is bound to a <see cref="ICinfigurationManager"/> 
+    /// Configuration item data unifies <see cref="IConfigurationItem"/> that is bound to a <see cref="IConfigurationManager"/> 
     /// and the <see cref="YodiiConfigurationItem"/> independent POCO.
     /// </summary>
     public interface IConfigurationItemData

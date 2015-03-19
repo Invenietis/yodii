@@ -56,6 +56,16 @@ namespace Yodii.Host
             _info = new CancellationInfo( Plugin.PluginInfo ) { ErrorMessage = message, Error = ex };
         }
 
+        internal void CancelByUnhandledExceptionInPreStartOrStop( Exception ex, bool isPreStart )
+        {
+            _info = new CancellationInfo( Plugin.PluginInfo ) 
+                        { 
+                            ErrorMessage = "Unhandled exception in Pre" + (isPreStart ? "Start" : "Stop"), 
+                            Error = ex,
+                            IsPreStartOrStopUnhandledException = true
+                        };
+        }
+
         public bool Success
         {
             get { return _info == null; }

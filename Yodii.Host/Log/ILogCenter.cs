@@ -51,6 +51,7 @@ namespace Yodii.Host
 
         /// <summary>
         /// Generates a <see cref="ILogExternalEntry"/> event log.
+        /// The event is raised by <see cref="EventCreated"/>.
         /// </summary>
         /// <param name="message">Event message. Should be localized if possible.</param>
         /// <param name="extraData">Optional extra data associated to the event.</param>

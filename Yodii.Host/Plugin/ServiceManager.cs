@@ -88,12 +88,6 @@ namespace Yodii.Host
                 Implementation = impl;
                 Starting = starting;
             }
-
-            //public override string ToString()
-            //{
-            //    var s = String.Format( "Starting={0}, Implementation={2}, SwappedImplementation={3}", Starting, Implementation, SwappedImplementation );
-            //    return ServiceGeneralization != null ? s + ", Generalization={ " + ServiceGeneralization.ToString() + " }" : s;
-            //}
         }
 
         public ServiceManager( ServiceHost serviceHost )

@@ -46,7 +46,7 @@ namespace Yodii.Host
         
         /// <summary>
         /// Plugin is stopping: <see cref="IYodiiPlugin.PreStop"/> has been called
-        ///  but not <see cref="IYodiiPlugin.Stop"/> yet.
+        /// but not <see cref="IYodiiPlugin.Stop"/> yet.
         /// </summary>
         Stopping = 2,
 
