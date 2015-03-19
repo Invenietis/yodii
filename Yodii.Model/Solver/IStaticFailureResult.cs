@@ -29,29 +29,30 @@ using System.Text;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Failure result during static resolution.
+    /// Exposes detailed information whenever the static resolution failed.
+    /// See the <see cref="IYodiiEngineResult.StaticFailureResult"/> property.
     /// </summary>
     public interface IStaticFailureResult
     {
         /// <summary>
-        /// Solved static configuration. Never null.
+        /// Gets the Solved static configuration. Never null.
         /// </summary>
         IStaticSolvedConfiguration StaticSolvedConfiguration { get; }
 
         /// <summary>
-        /// Plugins or Services that blocked the static resolution.
+        /// Gets the Plugins or Services (see <see cref="IStaticSolvedYodiiItem"/>) that blocked the static resolution.
         /// Never null (but can be empty).
         /// </summary>
         IReadOnlyList<IStaticSolvedYodiiItem> BlockingItems { get; }
 
         /// <summary>
-        /// Services that blocked the static resolution.
+        /// Gets the Services that blocked the static resolution.
         /// Never null (but can be empty).
         /// </summary>
         IReadOnlyList<IStaticSolvedService> BlockingServices { get; }
 
         /// <summary>
-        /// Plugins that blocked the static resolution.
+        /// Gets the Plugins that blocked the static resolution.
         /// Never null (but can be empty).
         /// </summary>
         IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins { get; }

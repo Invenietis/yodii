@@ -41,6 +41,8 @@ namespace Yodii.Host
 
         public bool IsLoadError { get; private set; }
 
+        public bool IsPreStartOrStopUnhandledException { get; set; }
+        
         public bool IsStartCanceled { get; set; }
 
         public bool IsStopCanceled { get { return !IsLoadError && !IsStartCanceled; } }

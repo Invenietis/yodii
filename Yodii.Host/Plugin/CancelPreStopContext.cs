@@ -38,10 +38,16 @@ namespace Yodii.Host
             _shared = shared;
         }
 
+        public RunningStatus RunningStatus { get { return RunningStatus.Disabled; } }
+
         public bool CancellingPreStop { get { return true; } }
 
         public IDictionary<object, object> SharedMemory { get { return _shared; } }
 
         public bool HotSwapping { get { return false; } }
+
+        public void PostAction( Action<IYodiiEngineExternal> delayedAction )
+        {
+        }
     }
 }

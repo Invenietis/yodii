@@ -34,6 +34,11 @@ namespace Yodii.Model
     public interface IStartContext
     {
         /// <summary>
+        /// Gets the running status that can be <see cref="T:RunningStatus.Running"/> or <see cref="T:RunningStatus.RunningLocked"/>.
+        /// </summary>
+        RunningStatus RunningStatus { get; }
+
+        /// <summary>
         /// Gets whether this stop is from a cancelled <see cref="IYodiiPlugin.PreStop"/> rather
         /// than a successful <see cref="IYodiiPlugin.PreStart"/>.
         /// </summary>
@@ -50,5 +55,11 @@ namespace Yodii.Model
         /// Gets whether the plugin silently replaces the <see cref="IPreStartContext.PreviousPlugin"/> if any.
         /// </summary>
         bool HotSwapping { get; }
+
+        /// <summary>
+        /// Posts an action that will be executed once the current phase will be completed.
+        /// </summary>
+        /// <param name="delayedAction">Any action on the Engine.</param>
+        void PostAction( Action<IYodiiEngineExternal> delayedAction );
     }
 }

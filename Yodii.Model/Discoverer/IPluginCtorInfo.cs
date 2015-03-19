@@ -41,7 +41,7 @@ namespace Yodii.Model
 
         /// <summary>
         /// Gets the subset of known parameters.
-        /// This relies on conventions (even services already described in <see cref="IPluginInfo.IServiceReferenceInfo"/> may appear here).
+        /// This relies on conventions (even services already described in <see cref="IPluginInfo.ServiceReferences"/> may appear here).
         /// Standard <see cref="IDiscoverer"/> currently only detects "IActivityMonitor" and "IYodiiEngine" parameters.
         /// </summary>
         IReadOnlyList<IPluginCtorKnownParameterInfo> KnownParameters { get; }

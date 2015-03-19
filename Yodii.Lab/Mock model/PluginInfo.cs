@@ -80,6 +80,9 @@ namespace Yodii.Lab.Mocks
             }
         }
 
+        /// <summary>
+        /// Gets the constructor info that will be called.
+        /// </summary>
         public IPluginCtorInfo ConstructorInfo
         {
             get { return this; }

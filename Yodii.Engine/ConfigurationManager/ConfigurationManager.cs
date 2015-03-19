@@ -100,7 +100,7 @@ namespace Yodii.Engine
         /// Sets the discovery information that describes available plugins and services.
         /// If <see cref="IYodiiEngineExternal.IsRunning"/> is true, this can be rejected: the result will indicate the reason of the failure.
         /// </summary>
-        /// <param name="dicoveredInfo">New discovered information to work with. When null, <see cref="EmptyDiscoveredInfo.Empty"/> is set.</param>
+        /// <param name="info">New discovered information to work with. When null, <see cref="EmptyDiscoveredInfo.Empty"/> is set.</param>
         /// <returns>Engine operation result.</returns>
         public IYodiiEngineResult SetDiscoveredInfo( IDiscoveredInfo info )
         {
@@ -152,6 +152,8 @@ namespace Yodii.Engine
         public IYodiiEngineResult SetConfiguration( YodiiConfiguration configuration, bool mergeLayersWithSameName = true )
         {
             if( configuration == null ) throw new ArgumentNullException( "configuration" );
+
+            CheckReentrancies();
             IDiscoveredInfo newInfo = configuration.DiscoveredInfo ?? EmptyDiscoveredInfo.Empty;
             if( newInfo == _discoveredInfo ) newInfo = null;
 
@@ -258,8 +260,8 @@ namespace Yodii.Engine
         internal IYodiiEngineResult OnConfigurationItemChanging( ConfigurationItem item, FinalConfigurationItem data )
         {
             Debug.Assert( item != null && _finalConfiguration != null && Layers.Count != 0 );
-            if( _currentEventArgs != null ) throw new InvalidOperationException( "Another change is in progress" );
-
+            
+            CheckReentrancies();
             Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
             final.Add( item.ServiceOrPluginFullName, data );
 
@@ -275,6 +277,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationItemAdding( ConfigurationItem newItem )
         {
+            CheckReentrancies();
             Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
             final.Add( newItem.ServiceOrPluginFullName, new FinalConfigurationItem( newItem.ServiceOrPluginFullName, newItem.Status, newItem.Impact ));
           
@@ -286,6 +289,7 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationItemRemoving( ConfigurationItem item )
         {
+            CheckReentrancies();
             Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c != item );
@@ -296,12 +300,26 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult OnConfigurationLayerRemoving( ConfigurationLayer layer )
         {
+            CheckReentrancies();
             Dictionary<string, FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
 
             ConfigurationFailureResult internalResult = FillFromConfiguration( null, final, c => c.Layer != layer );
             Debug.Assert( internalResult.Success, "Removing a configuration layer can not lead to an impossibility." );
 
             return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration( final ), FinalConfigurationChange.LayerRemoved, layer ) );
+        }
+
+        internal IYodiiEngineResult OnConfigurationClearing()
+        {
+            CheckReentrancies();
+            Dictionary<string,FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
+            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration() ) );
+        }
+
+        void CheckReentrancies()
+        {
+            if( _currentEventArgs != null ) throw new InvalidOperationException( "Reentrancy Detection: Another configuration change is in progress." );
+            if( Engine.IsInternalWorking ) throw new InvalidOperationException( "Reentrancy Detection: Engine is currently working." );
         }
 
         IYodiiEngineResult OnConfigurationChanging( ConfigurationChangingEventArgs changingEvent )
@@ -317,24 +335,40 @@ namespace Yodii.Engine
                 }
                 Action infoSetter = null;
                 if( changingEvent.NewDiscoveredInfo != null ) infoSetter = () => DiscoveredInfo = changingEvent.NewDiscoveredInfo;
-                return OnConfigurationChangingForExternalWorld( changingEvent ) ?? Engine.OnConfigurationChanging( t.Item2, infoSetter );
+                IYodiiEngineResult r = OnConfigurationChangingForExternalWorld( changingEvent );
+                if( r == null )
+                {
+                    try 
+                    {
+                        r = Engine.OnConfigurationChanging( t.Item2, infoSetter );
+                        if( !r.Success ) _currentEventArgs = null;
+                    }
+                    catch
+                    {
+                        _currentEventArgs = null;
+                        throw;
+                    }
+                }
+                return r;
             }
             return OnConfigurationChangingForExternalWorld( changingEvent ) ?? Engine.SuccessResult;
-        }
-
-        internal IYodiiEngineResult OnConfigurationClearing()
-        {
-            Dictionary<string,FinalConfigurationItem> final = new Dictionary<string, FinalConfigurationItem>();
-            return OnConfigurationChanging( new ConfigurationChangingEventArgs( new FinalConfiguration() ) );
         }
 
         IYodiiEngineResult OnConfigurationChangingForExternalWorld( ConfigurationChangingEventArgs eventChanging )
         {
             _currentEventArgs = eventChanging;
-            RaiseConfigurationChanging( _currentEventArgs );
-            if( _currentEventArgs.IsCanceled )
+            try
             {
-                return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ), Engine );
+                RaiseConfigurationChanging( _currentEventArgs );
+                if( _currentEventArgs.IsCanceled )
+                {
+                    return new YodiiEngineResult( new ConfigurationFailureResult( _currentEventArgs.FailureExternalReasons ), Engine );
+                }
+            }
+            catch
+            {
+                _currentEventArgs = null;
+                throw;
             }
             return null;
         }
@@ -343,19 +377,25 @@ namespace Yodii.Engine
         {
             Debug.Assert( _currentEventArgs != null );
 
-            FinalConfiguration = _currentEventArgs.FinalConfiguration;
-            if( _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.StatusChanged
-                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemAdded
-                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved
-                || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ImpactChanged)
+            try
             {
-                RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationItemChanged ) );
+                FinalConfiguration = _currentEventArgs.FinalConfiguration;
+                if( _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.StatusChanged
+                    || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemAdded
+                    || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ItemRemoved
+                    || _currentEventArgs.FinalConfigurationChange == FinalConfigurationChange.ImpactChanged)
+                {
+                    RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationItemChanged ) );
+                }
+                else
+                {
+                    RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationLayerChanged, _currentEventArgs.NewDiscoveredInfo ) );
+                }
             }
-            else
+            finally
             {
-                RaiseConfigurationChanged( new ConfigurationChangedEventArgs( FinalConfiguration, _currentEventArgs.FinalConfigurationChange, _currentEventArgs.ConfigurationLayerChanged, _currentEventArgs.NewDiscoveredInfo ) );
+                _currentEventArgs = null;
             }
-            _currentEventArgs = null;
         }
 
         #region INotifyPropertyChanged

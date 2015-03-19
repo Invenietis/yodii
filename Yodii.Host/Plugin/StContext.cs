@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yodii.Model;
 
 namespace Yodii.Host
 {
@@ -32,13 +33,20 @@ namespace Yodii.Host
     {
         readonly Dictionary<object, object> _shared;
         CancellationInfo _info;
+        readonly RunningStatus _runningStatus;
 
         public readonly PluginProxy Plugin;
 
-        public StContext( PluginProxy plugin, Dictionary<object, object> shared )
+        public StContext( PluginProxy plugin, RunningStatus status, Dictionary<object, object> shared )
         {
             Plugin = plugin;
             _shared = shared;
+            _runningStatus = status;
+        }
+
+        public RunningStatus RunningStatus
+        {
+            get { return _runningStatus; }
         }
 
         public ServiceManager.Impact ServiceImpact { get; set; }
@@ -46,6 +54,16 @@ namespace Yodii.Host
         public virtual void Cancel( string message = null, Exception ex = null )
         {
             _info = new CancellationInfo( Plugin.PluginInfo ) { ErrorMessage = message, Error = ex };
+        }
+
+        internal void CancelByUnhandledExceptionInPreStartOrStop( Exception ex, bool isPreStart )
+        {
+            _info = new CancellationInfo( Plugin.PluginInfo ) 
+                        { 
+                            ErrorMessage = "Unhandled exception in Pre" + (isPreStart ? "Start" : "Stop"), 
+                            Error = ex,
+                            IsPreStartOrStopUnhandledException = true
+                        };
         }
 
         public bool Success

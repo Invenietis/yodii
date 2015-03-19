@@ -33,10 +33,11 @@ using System.Reflection;
 namespace Yodii.Host
 {
 
-    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngine
+    sealed class PluginProxy : PluginProxyBase, IPluginProxy, IYodiiEngineProxy
     {
         readonly IYodiiEngineExternal _engine;
         IActivityMonitor _monitor;
+        bool _isRunningLocked;
 
         public PluginProxy( IYodiiEngineExternal e, IPluginInfo pluginKey )
         {
@@ -68,10 +69,9 @@ namespace Yodii.Host
             return TryLoad( serviceHost, () => pluginCreator( PluginInfo, ctorParameters ), PluginInfo.PluginFullName );
         }
 
-
         #region IYodiiEngine Members
 
-        IYodiiEngineExternal IYodiiEngine.ExternalEngine
+        IYodiiEngineExternal IYodiiEngineProxy.ExternalEngine
         {
             get { return _engine; }
         }
@@ -117,5 +117,60 @@ namespace Yodii.Host
         }
 
         #endregion
+
+        public event EventHandler IsRunningLockedChanged;
+
+        public bool IsRunningLocked
+        {
+            get { return _isRunningLocked; }
+        }
+
+        internal void SetRunningLocked( bool value )
+        {
+            if( _isRunningLocked != value )
+            {
+                _isRunningLocked = value;
+                var h = IsRunningLockedChanged;
+                if( h != null ) h( this, EventArgs.Empty );
+            }
+        }
+
+        public bool IsSelfLocked 
+        {
+            get
+            {
+                var layer = _engine.Configuration.Layers.FindOne( "Self-Locking" );
+                IConfigurationItem i;
+                return layer != null
+                        && (i = layer.Items[PluginInfo.PluginFullName]) != null
+                        && i.Status == ConfigurationStatus.Running;
+            } 
+        }
+
+        public bool SelfLock()
+        {
+            CheckSelfLockCall();
+            return _engine.Configuration.Layers.FindOneOrCreate( "Self-Locking" ).Set( PluginInfo.PluginFullName, ConfigurationStatus.Running ).Success;
+        }
+
+        public void SelfUnlock()
+        {
+            CheckSelfLockCall();
+            var layer = _engine.Configuration.Layers.FindOne( "Self-Locking" );
+            if( layer != null ) layer.Set( PluginInfo.PluginFullName, ConfigurationStatus.Optional ).ThrowOnError();
+        }
+
+        /// <summary>
+        /// Currently only checks that Status == PluginStatus.Started: the status is Started in Start... but unfortunaltely also
+        /// in PreStop... We do not currently have the information available to detect calls from PreStop method.
+        /// </summary>
+        void CheckSelfLockCall()
+        {
+            if( Status != PluginStatus.Started )
+            {
+                throw new InvalidOperationException( R.SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod );
+            }
+        }
+
     }
 }

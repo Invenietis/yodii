@@ -44,9 +44,11 @@ namespace Yodii.Engine
         readonly LiveInfo _liveInfo;
         readonly YodiiCommandList _yodiiCommands;
         readonly SuccessYodiiEngineResult _successResult;
+        readonly Queue<Action<IYodiiEngineExternal>> _postActions;
 
         ConfigurationSolver _currentSolver;
-        Queue<Action<IYodiiEngineExternal>> _postActions;
+        bool _isExternalWorking;
+        bool _isInternalWorking;
         bool _isStopping;
 
         /// <summary>
@@ -54,6 +56,10 @@ namespace Yodii.Engine
         /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// Initializes a new <see cref="YodiiEngine"/>.
+        /// </summary>
+        /// <param name="host">The host to use.</param>
         public YodiiEngine( IYodiiEngineHost host )
         {
             if( host == null ) throw new ArgumentNullException( "host" );
@@ -63,6 +69,7 @@ namespace Yodii.Engine
             _manager = new ConfigurationManager( this );
             _yodiiCommands = new YodiiCommandList();
             _liveInfo = new LiveInfo( this );
+            _postActions = new Queue<Action<IYodiiEngineExternal>>();
         }
 
         /// <summary>
@@ -81,77 +88,116 @@ namespace Yodii.Engine
 
         internal IYodiiEngineResult DoDynamicResolution( ConfigurationSolver solver, Func<InternalYodiiCommand, bool> existingCommandFilter, InternalYodiiCommand cmd, Action onPreSuccess = null )
         {
-            bool isRootStart = false;
-            Action<Action<IYodiiEngineExternal>> postActionCollector = null;
-            if( !_isStopping )
-            {
-                if( _postActions == null )
-                {
-                    _postActions = new Queue<Action<IYodiiEngineExternal>>();
-                    isRootStart = true;
-                }
-                postActionCollector = _postActions.Enqueue;
-            }
+            if( _isInternalWorking ) throw new InvalidOperationException( "Reentrancy detected: Engine is currently working." );
+            
+            bool isRootStart = true;
+            if( _isExternalWorking ) isRootStart = false;
+            else IsWorking = true;
 
+            // DynamicResolution MUST NOT fail: let it outside the try.
             var dynResult = solver.DynamicResolution( _yodiiCommands, existingCommandFilter, cmd );
-            IYodiiEngineHostApplyResult hostResult = null;
+            _isInternalWorking = true;
             try
             {
-                hostResult = _host.Apply( dynResult.Disabled, dynResult.Stopped, dynResult.Running, postActionCollector );
+                // 1 - Calling host.
+                //     During this call, _isInternalWorking is set to true: we detect (Pre)Stop/Start attempts to 
+                //     reenter the engine (configuration changes, starting/stopping a plugin or a service).
+                int currentPostActions = _postActions.Count;
+                Action<Action<IYodiiEngineExternal>> postActionCollector = null;
+                if( !_isStopping ) postActionCollector = _postActions.Enqueue;
+                IYodiiEngineHostApplyResult hostResult = _host.Apply( dynResult.SolvedConfiguration, postActionCollector );
+                _isInternalWorking = false;
+                
+                // 2 - Handling host.Apply errors.
+                Debug.Assert( hostResult != null && hostResult.CancellationInfo != null );
+                if( hostResult.CancellationInfo.Any() )
+                {
+                    IYodiiEngineResult result =  solver.CreateDynamicFailureResult( hostResult.CancellationInfo );
+                    _liveInfo.UpdateRuntimeErrors( hostResult.CancellationInfo, solver.FindExistingPlugin );
+                    if( _currentSolver != solver ) _yodiiCommands.ClearBindings();
+                    if( _postActions.Count > currentPostActions )
+                    {
+                        if( currentPostActions == 0 ) _postActions.Clear();
+                        else
+                        {
+                            var initials = _postActions.Take( currentPostActions ).ToList();
+                            _postActions.Clear();
+                            foreach( var a in initials ) _postActions.Enqueue( a );
+                        }
+                    }
+                    if( isRootStart )
+                    {
+                        IsWorking = false;
+                    }
+                    return result;
+                }
+                // 3 - host.Apply succeed:
+                //     - Call the onPreSuccess delegate: this is used to set a new DiscoveredInfo if needed.
+                //       Since we update the Engine's field here, we keep the last one: the last PostStartAction that 
+                //       changes the Discoverer wins.
+                //     - Detect that we are starting to set IsRunning to true.
+                //     - Set the currentSolver: same as before, the last wins.
+                //     - The YodiiCommand are incrementally merged: we don't (and can't) wait to be at the root start to update them. 
+                //     - LiveInfo is updated on each call in order to expose up-to-date informations to post actions.
+                if( onPreSuccess != null ) onPreSuccess();
+                bool wasStopped = _currentSolver == null;
+                Debug.Assert( !wasStopped || isRootStart, "wasStopped => isRootStart" );
+                if( _currentSolver != solver ) _currentSolver = solver;
+                _yodiiCommands.Merge( dynResult.Commands );
+                _liveInfo.UpdateFrom( _currentSolver );
+
+                // On root start, we dump the post actions as long as there are some.
+                // Before 
+                if( isRootStart )
+                {
+                    while( _postActions.Count > 0 )
+                    {
+                        _postActions.Dequeue()( this );
+                    }
+                    IsWorking = false;
+                    if( wasStopped ) RaisePropertyChanged( "IsRunning" );
+                }
+                return _successResult;
             }
             catch
             {
-                _liveInfo.Clear();
-                _currentSolver = null;
-                RaisePropertyChanged( "IsRunning" );
+                _isInternalWorking = false;
+                if( isRootStart )
+                {
+                    _liveInfo.Clear();
+                    _postActions.Clear();
+                    _currentSolver = null;
+                    IsWorking = false;
+                    RaisePropertyChanged( "IsRunning" );
+                }
                 throw;
             }
-
-            Debug.Assert( hostResult != null && hostResult.CancellationInfo != null );
-            if( hostResult.CancellationInfo.Any() )
-            {
-                IYodiiEngineResult result =  solver.CreateDynamicFailureResult( hostResult.CancellationInfo );
-                _liveInfo.UpdateRuntimeErrors( hostResult.CancellationInfo, solver.FindExistingPlugin );
-                if( _currentSolver != solver ) _yodiiCommands.ClearBindings(); 
-                return result;
-            }
-            // Success:
-            if( onPreSuccess != null ) onPreSuccess();
-            bool wasStopped = _currentSolver == null;
-            if( _currentSolver != solver ) _currentSolver = solver;
-
-            _liveInfo.UpdateFrom( _currentSolver );
-
-            _yodiiCommands.Merge( dynResult.Commands );
-            if( wasStopped ) RaisePropertyChanged( "IsRunning" );
-
-            if( isRootStart )
-            {
-                Debug.Assert( _postActions != null );
-                while( _postActions.Count > 0 )
-                {
-                    _postActions.Dequeue()( this );
-                }
-                _postActions = null;
-            }
-            return _successResult;
         }
 
+        /// <summary>
+        /// Gets the <see cref="IConfigurationManager"/>.
+        /// </summary>
         public IConfigurationManager Configuration
         {
             get { return _manager; }
         }
 
+        /// <summary>
+        /// Gets whether this engine is currently running.
+        /// </summary>
         public bool IsRunning
         {
             get { return _currentSolver != null; }
         }
 
+        /// <summary>
+        /// Gets whether this engine is currently stopping.
+        /// </summary>
         public bool IsStopping
         {
             get { return _isStopping; }
-            private set 
-            { 
+            private set
+            {
                 if( _isStopping != value )
                 {
                     _isStopping = value;
@@ -160,21 +206,51 @@ namespace Yodii.Engine
             }
         }
 
+        /// <summary>
+        /// Gets whether this engine is currently working: it is currently applying a configuration change, processing 
+        /// a dynamic command or stopping.
+        /// When true, this engine can not accept any subsequent commands or configuration changes.
+        /// </summary>
+        public bool IsWorking
+        {
+            get { return _isExternalWorking; }
+            private set
+            {
+                if( _isExternalWorking != value )
+                {
+                    _isExternalWorking = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        internal bool IsInternalWorking
+        {
+            get { return _isInternalWorking; }
+        }
+
+        /// <summary>
+        /// Stops the engine: stops all plugins and stops monitoring configuration.
+        /// </summary>
         public void StopEngine()
         {
             if( IsRunning )
             {
                 IsStopping = true;
+                IsWorking = true;
                 try
                 {
                     // Stopping the engine disables all plugins.
                     // No post action here: this is the hint for the host that we are stopping.
-                    _host.Apply( _manager.DiscoveredInfo.PluginInfos, Enumerable.Empty<IPluginInfo>(), Enumerable.Empty<IPluginInfo>(), null );
+                    _isInternalWorking = true;
+                    _host.Apply( _manager.DiscoveredInfo.PluginInfos.Select( p => new KeyValuePair<IPluginInfo,RunningStatus>( p, RunningStatus.Disabled ) ).ToReadOnlyList(), null );
                 }
                 finally
                 {
+                    _isInternalWorking = false;
                     _liveInfo.Clear();
                     _currentSolver = null;
+                    IsWorking = false;
                     IsStopping = false;
                 }
                 RaisePropertyChanged( "IsRunning" );
@@ -246,7 +322,7 @@ namespace Yodii.Engine
         }
         
         /// <summary>
-        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// Triggers the static resolution of the graph (with the current <see cref="Configuration"/> and its <see cref="IConfigurationManager.DiscoveredInfo"/>).
         /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
         /// </summary>
         /// <returns>The result with a potential non null <see cref="IYodiiEngineResult.StaticFailureResult"/> but always an available <see cref="IYodiiEngineStaticOnlyResult.StaticSolvedConfiguration"/>.</returns>
@@ -395,7 +471,7 @@ namespace Yodii.Engine
         #endregion
 
         /// <summary>
-        /// Triggers the static resolution of the graph (with the current <see cref="DiscoveredInfo"/> and <see cref="Configuration"/>).
+        /// Triggers the static resolution of the graph (with the current <see cref="Configuration"/>).
         /// This has no impact on the engine and can be called when <see cref="IsRunning"/> is false.
         /// </summary>
         /// <param name="revertServices">True to revert the list of the services (based on their <see cref="IServiceInfo.ServiceFullName"/>).</param>
@@ -426,11 +502,18 @@ namespace Yodii.Engine
             if( h != null ) h( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
+        /// <summary>
+        /// Gets live information about the running services and plugins when the engine is started.
+        /// Empty when the engine is not running.
+        /// </summary>
         public ILiveInfo LiveInfo
         {
             get { return _liveInfo; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="IYodiiEngineHost"/>.
+        /// </summary>
         public IYodiiEngineHost Host
         {
             get { return _host; }

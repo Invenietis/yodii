@@ -165,7 +165,6 @@ namespace Yodii.Engine
 
         /// <summary>
         /// The direct generalization if any.
-        /// When null, this instance is a <see cref="ServiceRootData"/>.
         /// </summary>
         public readonly ServiceData Generalization;
 

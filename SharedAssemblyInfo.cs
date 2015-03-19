@@ -28,7 +28,7 @@ using System.Reflection;
 [assembly: AssemblyProduct( "Yodii" )]
 [assembly: AssemblyCopyright( "Copyright © Invenietis 2013" )]
 [assembly: AssemblyTrademark( "" )]
-[assembly: AssemblyVersion( "0.0.3" )]
+[assembly: AssemblyVersion( "0.0.4" )]
 
 
 #if DEBUG

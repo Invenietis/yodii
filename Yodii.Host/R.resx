@@ -163,7 +163,7 @@
     <value>Invalid generalization mismatch: 2 plugins implementing the same Service must both stop.</value>
   </data>
   <data name="HostApplyPluginMustBeInOneList" xml:space="preserve">
-    <value>Plugin '{0}' appears in more than one list. Lists of plugins to disable, stop end start must be disjoint.</value>
+    <value>Plugin '{0}' appears more than one in configuration list.</value>
   </data>
   <data name="HostEngineMustBeSetBeforeStartingTheEngine" xml:space="preserve">
     <value>Host.Engine must be set before starting the Engine.</value>
@@ -185,6 +185,9 @@
   </data>
   <data name="PreviousPluginMustNotBeNull" xml:space="preserve">
     <value>Previous plugin must not be null.</value>
+  </data>
+  <data name="SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod" xml:space="preserve">
+    <value>SelfLock must be called only when the Plugin runs or from its Start method.</value>
   </data>
   <data name="ServiceIsAlreadyExternal" xml:space="preserve">
     <value>Service '{0}' is already bound to an external implementation. Plugin '{1}' can not offer it.</value>

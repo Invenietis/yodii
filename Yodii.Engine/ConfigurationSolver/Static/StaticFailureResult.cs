@@ -31,6 +31,10 @@ using CK.Core;
 
 namespace Yodii.Engine
 {
+    /// <summary>
+    /// Implements an immutable <see cref="IStaticFailureResult"/> that exposes detailed information
+    /// whenever the static resolution failed.
+    /// </summary>
     public class StaticFailureResult : IStaticFailureResult
     {
         readonly IReadOnlyList<IStaticSolvedPlugin> _blockingPlugins;
@@ -48,24 +52,40 @@ namespace Yodii.Engine
             _solvedConfiguration = solvedConfiguration;
         }
 
+        /// <summary>
+        /// Gets the Solved static configuration. Never null.
+        /// </summary>
         public IStaticSolvedConfiguration StaticSolvedConfiguration
         {
             get { return _solvedConfiguration; }
         }
-        
+
+        /// <summary>
+        /// Gets the Plugins or Services (see <see cref="IStaticSolvedYodiiItem"/>) that blocked the static resolution.
+        /// Never null (but can be empty).
+        /// </summary>
+        public IReadOnlyList<IStaticSolvedYodiiItem> BlockingItems
+        {
+            get { return _blockingItems; }
+        }
+
+        /// <summary>
+        /// Gets the Services that blocked the static resolution.
+        /// Never null (but can be empty).
+        /// </summary>
+        public IReadOnlyList<IStaticSolvedService> BlockingServices
+        {
+            get { return _blockingServices; }
+        }
+
+        /// <summary>
+        /// Gets the Plugins that blocked the static resolution.
+        /// Never null (but can be empty).
+        /// </summary>
         public IReadOnlyList<IStaticSolvedPlugin> BlockingPlugins
         {
             get { return _blockingPlugins; }
         }
 
-        public IReadOnlyList<IStaticSolvedService> BlockingServices
-        {
-            get { return _blockingServices; }
-        }
-        
-        public IReadOnlyList<IStaticSolvedYodiiItem> BlockingItems
-        {
-            get { return _blockingItems; }
-        }
     }
 }

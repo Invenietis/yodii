@@ -31,16 +31,12 @@ namespace Yodii.Engine
 {
     class DynamicSolverResult
     {
-        public readonly IReadOnlyList<IPluginInfo> Disabled;
-        public readonly IReadOnlyList<IPluginInfo> Stopped;
-        public readonly IReadOnlyList<IPluginInfo> Running;
+        public readonly IReadOnlyList<KeyValuePair<IPluginInfo,RunningStatus>> SolvedConfiguration;
         public readonly IReadOnlyList<InternalYodiiCommand> Commands;
 
-        public DynamicSolverResult( IReadOnlyList<IPluginInfo> disabled, IReadOnlyList<IPluginInfo> stopped, IReadOnlyList<IPluginInfo> running, IReadOnlyList<InternalYodiiCommand> commands )
+        public DynamicSolverResult( IReadOnlyList<KeyValuePair<IPluginInfo, RunningStatus>> solvedConfiguration, IReadOnlyList<InternalYodiiCommand> commands )
         {
-            Disabled = disabled;
-            Stopped = stopped;
-            Running = running;
+            SolvedConfiguration = solvedConfiguration;
             Commands = commands;
         }
     }

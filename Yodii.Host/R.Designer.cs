@@ -196,7 +196,7 @@ namespace Yodii.Host {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; appears in more than one list. Lists of plugins to disable, stop end start must be disjoint..
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; appears more than one in configuration list..
         /// </summary>
         internal static string HostApplyPluginMustBeInOneList {
             get {
@@ -264,6 +264,15 @@ namespace Yodii.Host {
         internal static string PreviousPluginMustNotBeNull {
             get {
                 return ResourceManager.GetString("PreviousPluginMustNotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SelfLock must be called only when the Plugin runs or from its Start method..
+        /// </summary>
+        internal static string SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod {
+            get {
+                return ResourceManager.GetString("SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod", resourceCulture);
             }
         }
         

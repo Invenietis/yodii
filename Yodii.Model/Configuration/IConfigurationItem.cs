@@ -36,7 +36,7 @@ namespace Yodii.Model
         IConfigurationLayer Layer { get; }
 
         /// <summary>
-        /// Attempts to change the required <see cref="Status"/> of this item.
+        /// Attempts to change the required <see cref="IConfigurationItemData.Status">Status</see> of this item.
         /// </summary>
         /// <param name="newStatus">New status for this item.</param>
         /// <param name="newDescription">Optional description to set. When null, current description is preserved.</param>
@@ -44,7 +44,7 @@ namespace Yodii.Model
         IYodiiEngineResult Set( ConfigurationStatus newStatus, string newDescription = null );
         
         /// <summary>
-        /// Attempts to change the required <see cref="Impact"/> of this item.
+        /// Attempts to change the required <see cref="IConfigurationItemData.Impact">Impact</see> of this item.
         /// </summary>
         /// <param name="newImpact">New impact for this item.</param>
         /// <param name="newDescription">Optional description to set. When null, current description is preserved.</param>
@@ -52,7 +52,7 @@ namespace Yodii.Model
         IYodiiEngineResult Set( StartDependencyImpact newImpact, string newDescription = null );
 
         /// <summary>
-        /// Attempts to change the <see cref="Status"/> and the <see cref="Impact"/> and optionaly sets the description.
+        /// Attempts to change the <see cref="IConfigurationItemData.Status">Status</see> and the <see cref="IConfigurationItemData.Impact">Impact</see> and optionaly sets the description.
         /// </summary>
         /// <param name="newStatus">New status for this item.</param>
         /// <param name="newImpact">New impact for this item.</param>

@@ -42,6 +42,8 @@ namespace Yodii.Host
                 CancellingPreStart = cancellingPreStart;
             }
 
+            public RunningStatus RunningStatus { get { return Model.RunningStatus.Disabled; } }
+
             public bool IsCancellable { get { return false; } }
 
             public void Cancel( string message = null, Exception ex = null )
@@ -76,6 +78,7 @@ namespace Yodii.Host
                     {
                         try
                         {
+                            // When calling PreStop, PluginStatus is 'Started'.
                             p.RealPluginObject.PreStop( commonStarted );
                         }
                         catch( Exception ex )
@@ -88,13 +91,14 @@ namespace Yodii.Host
                     {
                         try
                         {
+                            p.Status = PluginStatus.Stopped;
+                            // When calling Stop, PluginStatus is 'Stopped'.
                             p.RealPluginObject.Stop( commonStarting );
                         }
                         catch( Exception ex )
                         {
                             _monitor.Error().Send( ex );
                         }
-                        p.Status = PluginStatus.Stopped;
                     }
                 }
                 foreach( PluginProxy p in _plugins.Values )
@@ -103,13 +107,14 @@ namespace Yodii.Host
                     {
                         try
                         {
+                            p.Status = PluginStatus.Stopped;
+                            // When calling Stop, PluginStatus is 'Stopped'.
                             p.RealPluginObject.Stop( commonStarted );
                         }
                         catch( Exception ex )
                         {
                             _monitor.Error().Send( ex );
                         }
-                        p.Status = PluginStatus.Stopped;
                         p.Disable( _monitor, setToNull: true );
                     }
                 }

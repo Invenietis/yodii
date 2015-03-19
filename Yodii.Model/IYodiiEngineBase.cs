@@ -32,7 +32,7 @@ using System.ComponentModel;
 namespace Yodii.Model
 {
     /// <summary>
-    /// Yodii engine base interface for <see cref="IYodiiEngineExternal"/> and the <see cref="IYodiiEngine"/> avialable to plugins.
+    /// Yodii engine base interface for <see cref="IYodiiEngineExternal"/> and the <see cref="IYodiiEngineProxy"/> avialable to plugins.
     /// It exposes all relevant information to the external or internal world thanks to its <see cref="LiveInfo"/>.
     /// </summary>
     public interface IYodiiEngineBase
@@ -44,7 +44,8 @@ namespace Yodii.Model
         IConfigurationManager Configuration { get; }
         
         /// <summary>
-        /// Live information about the running services and plugins, when the engine is started.
+        /// Gets live information about the running services and plugins when the engine is started.
+        /// Empty when the engine is not running.
         /// </summary>
         ILiveInfo LiveInfo { get; }
 

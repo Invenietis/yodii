@@ -93,6 +93,11 @@ namespace Yodii.Discoverer
         readonly CustomAssemblyResolver _resolver;
         readonly ReaderParameters _readerParameters;
 
+        /// <summary>
+        /// Initializes a new <see cref="StandardDiscoverer"/> with an optional list of directories
+        /// that may be searched for assemblies.
+        /// </summary>
+        /// <param name="directories">Optional list of directories.</param>
         public StandardDiscoverer( params string[] directories )
         {
             _assemblies = new Dictionary<string, CachedAssemblyInfo>();
@@ -106,7 +111,7 @@ namespace Yodii.Discoverer
             var pathYodiiModel = new Uri( typeof( IYodiiService ).Assembly.CodeBase ).LocalPath;
             _yodiiModel = _resolver.ReadAssembly( pathYodiiModel );
 
-            _tDefIYodiiEngine = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiEngine ).FullName );
+            _tDefIYodiiEngine = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiEngineProxy ).FullName );
             _tDefIYodiiService = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiService ).FullName );
             _tDefIYodiiPlugin = _yodiiModel.MainModule.Types.First( t => t.FullName == typeof( IYodiiPlugin ).FullName );
 
