@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Yodii</id>
+    <version>$PackageVersion</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis, IN'TECH INFO</owners>
+    <licenseUrl>https://github.com/Invenietis/yodii/blob/master/licenseFileHeader.txt</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/yodii/</projectUrl>
+    <iconUrl>http://www.invenietis.com/content/images/tech.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A .NET DI engine in that aims to support more dynamic scenarii than classical DI approaches. This packages regroups all assemblies required to create a fully-functional Yodii host.</description>
+    <releaseNotes>Development version.</releaseNotes>
+    <copyright>Copyright 2015 Invenietis, IN'TECH INFO</copyright>
+    <tags>yodii invenietis intech di plugin plugins service services</tags>
+    <dependencies>
+      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="Mono.Cecil" version="0.9.5.4" />
+      
+      <dependency id="Yodii.Core" version="$PackageVersion" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Yodii.Engine\bin\Release\Yodii.Engine.dll" target="lib\net451" />
+    <file src="..\Yodii.Engine\bin\Release\Yodii.Engine.pdb" target="lib\net451" />
+    <file src="..\Yodii.Engine\bin\Release\Yodii.Engine.xml" target="lib\net451" />
+
+    <file src="..\Yodii.Discoverer\bin\Release\Yodii.Discoverer.dll" target="lib\net451" />
+    <file src="..\Yodii.Discoverer\bin\Release\Yodii.Discoverer.pdb" target="lib\net451" />
+    <file src="..\Yodii.Discoverer\bin\Release\Yodii.Discoverer.xml" target="lib\net451" />
+
+    <file src="..\Yodii.Host\bin\Release\Yodii.Host.dll" target="lib\net451" />
+    <file src="..\Yodii.Host\bin\Release\Yodii.Host.pdb" target="lib\net451" />
+    <file src="..\Yodii.Host\bin\Release\Yodii.Host.xml" target="lib\net451" />
+  </files>
+</package>

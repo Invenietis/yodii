@@ -1,3 +1,6 @@
+# Output folder
+/Build/
+
 # Build Folders
 [Bb]in/
 [Oo]bj/

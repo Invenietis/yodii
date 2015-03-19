@@ -13,6 +13,7 @@ namespace Yodii.Wpf.Tests
     public class WpfTestHelper
     {
         public static Thread ApplicationThread { get; private set; }
+        public static Application Application { get; private set; }
 
         [SetUp]
         public void SetUp()
@@ -26,23 +27,28 @@ namespace Yodii.Wpf.Tests
         [TearDown]
         public void TearDown()
         {
-            ShutdownApplication();
+            //ShutdownApplication();
         }
 
         static void CreateApplicationInNewThread()
         {
             Assert.That( Application.Current, Is.Null );
             Assert.That( ApplicationThread, Is.Null );
+            Assert.That( Application.Current, Is.Null );
 
             ManualResetEventSlim ev = new ManualResetEventSlim( false );
 
             ApplicationThread = new Thread( () =>
             {
-                Application a = new Application();
-                a.ShutdownMode = ShutdownMode.OnExplicitShutdown; // Don't close when a plugin window closes!
-                a.Startup += ( s, e ) => { ev.Set(); };
-                a.Run(); // Blocks forever
+                //Application a = Application;
+
+                Application = new Application();
+                Application.ShutdownMode = ShutdownMode.OnExplicitShutdown; // Don't close when a plugin window closes!
+                Application.Startup += ( s, e ) => { ev.Set(); };
+
+                Application.Run(); // Blocks forever
             } );
+            ApplicationThread.IsBackground = true;
             ApplicationThread.SetApartmentState( ApartmentState.STA );
             ApplicationThread.Start();
 
@@ -52,12 +58,11 @@ namespace Yodii.Wpf.Tests
 
         static void ShutdownApplication()
         {
-
             if( ApplicationThread != null )
             {
-                Application.Current.Dispatcher.Invoke( new Action( () =>
+                Application.Dispatcher.Invoke( new Action( () =>
                 {
-                    Application.Current.Shutdown();
+                    Application.Shutdown();
                 } ) );
 
                 ApplicationThread.Join( TimeSpan.FromMilliseconds( 100 ) );

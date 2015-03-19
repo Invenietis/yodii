@@ -43,6 +43,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Yodii.Discoverer.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CK.Core, Version=4.2.0.0, Culture=neutral, PublicKeyToken=edfa2f62fc978217, processorArchitecture=MSIL">
@@ -90,4 +91,3 @@
   </Target>
   -->
 </Project>
-
