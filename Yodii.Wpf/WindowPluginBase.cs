@@ -154,12 +154,12 @@ namespace Yodii.Wpf
 
         void UpdateCloseButton( bool disableButton )
         {
-            if( disableButton && !_closeButtonIsDisabled )
+            if( _window != null && disableButton && !_closeButtonIsDisabled )
             {
                 Application.Current.Dispatcher.Invoke( _window.DisableCloseButton );
                 _closeButtonIsDisabled = true;
             }
-            else if( !disableButton && _closeButtonIsDisabled )
+            else if( _window != null && !disableButton && _closeButtonIsDisabled )
             {
                 Application.Current.Dispatcher.Invoke( _window.EnableCloseButton );
                 _closeButtonIsDisabled = false;
@@ -250,6 +250,10 @@ namespace Yodii.Wpf
                     _window.Close();
                 }
             } ) );
+
+            _window.Closing -= _window_Closing;
+            _engine.IsRunningLockedChanged -= DisableCloseButtonOnLockedHandler;
+            _window = null;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Yodii.Wpf.Tests
 
         protected override Window CreateWindow()
         {
-            return new Window();
+            return new TestPluginWindow();
         }
 
         protected override void PluginPreStart( IPreStartContext c )
@@ -48,5 +48,9 @@ namespace Yodii.Wpf.Tests
         {
             base.PluginStop( c );
         }
+    }
+
+    public class TestPluginWindow : Window
+    {
     }
 }

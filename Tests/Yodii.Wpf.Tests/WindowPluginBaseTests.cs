@@ -13,7 +13,7 @@ using Yodii.Wpf.Win32;
 
 namespace Yodii.Wpf.Tests
 {
-    [TestFixture]
+    [TestFixture, Explicit]
     public class WindowPluginBaseTests
     {
         [Test]
@@ -30,7 +30,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    CollectionAssert.IsNotEmpty( Application.Current.Windows, "Window has been created and windows exist in this Application" );
+                    CollectionAssert.IsNotEmpty( GetApplicationTestPluginWindows(), "Window has been created and windows exist in this Application" );
                 } ) );
 
                 IYodiiEngineResult result = ctx.Engine.StopPlugin( typeof( TestWindowPlugin ).FullName );
@@ -38,7 +38,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been removed and no windows remain in this Application" );
+                    CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been removed and no windows remain in this Application" );
                 } ) );
             }
         }
@@ -56,7 +56,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     w.Closed += ( s, e ) => ev.Set();
                     w.Close();
                 } ) );
@@ -65,7 +65,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been closed, no other Windows remain" );
+                    CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been closed, no other Windows remain" );
                 } ) );
 
                 // Window closed, but still running
@@ -86,7 +86,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     w.Closed += ( s, e ) => ev.Set();
                     w.Close();
                 } ) );
@@ -95,7 +95,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been closed, no other Windows remain" );
+                    CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been closed, no other Windows remain" );
                 } ) );
 
                 // Window closed, but still running
@@ -120,7 +120,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.True );
                     w.Close(); // Calls closing...
                 } ) );
@@ -128,7 +128,7 @@ namespace Yodii.Wpf.Tests
                 // Wait until Close propagates
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
 
                     Assert.That( w.IsLoaded, Is.True, "Window should not have been closed since plugin is required" );
                 } ) );
@@ -143,7 +143,7 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.False );
                 } ) );
             }
@@ -166,11 +166,11 @@ namespace Yodii.Wpf.Tests
 
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
-                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
                     Assert.That( w.IsCloseButtonDisabled(), Is.False );
                     w.Close(); // Calls closing...
 
-                    CollectionAssert.IsEmpty( Application.Current.Windows, "Window has been closed, no other Windows remain" );
+                    CollectionAssert.IsEmpty( GetApplicationTestPluginWindows(), "Window has been closed, no other Windows remain" );
                 } ) );
 
                 Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is still alive" );
@@ -180,8 +180,6 @@ namespace Yodii.Wpf.Tests
         [Test]
         public void WindowPluginBase_DisablesClose_WhenConfiguredToRunOnStartup()
         {
-            // Uses a workaround. See WindowPluginBase class.
-
             TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
             TestWindowPlugin.AutomaticallyDisableCloseButtonConfig = true;
             TestWindowPlugin.ShowClosingFailedMessageBoxConfig = false;
@@ -193,7 +191,42 @@ namespace Yodii.Wpf.Tests
 
             runningConfig.Layers.Add( l );
 
-            using( var ctx = new YodiiRuntimeTestContext(runningConfig) )
+            using( var ctx = new YodiiRuntimeTestContext( runningConfig ) )
+            {
+                ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
+                Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is correctly set as RunningLocked" );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    TestPluginWindow w = GetApplicationTestPluginWindows().Single();
+                    Assert.That( w.IsCloseButtonDisabled(), Is.True );
+                    w.Close(); // Calls closing...
+
+                    CollectionAssert.IsNotEmpty( GetApplicationTestPluginWindows(), "Window has not been closed" );
+                } ) );
+
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is still alive" );
+            }
+        }
+
+        [Test]
+        public void WindowPluginBase_DisablesClose_WhenStartedTwice()
+        {
+            TestWindowPlugin.StopPluginWhenWindowClosesConfig = true;
+            TestWindowPlugin.AutomaticallyDisableCloseButtonConfig = true;
+            TestWindowPlugin.ShowClosingFailedMessageBoxConfig = false;
+
+            YodiiConfiguration runningConfig = new YodiiConfiguration();
+
+            string fullName = typeof( TestWindowPlugin ).FullName;
+
+            YodiiConfigurationLayer l = new YodiiConfigurationLayer();
+            l.Items.Add( new YodiiConfigurationItem() { ServiceOrPluginFullName = fullName, Status = ConfigurationStatus.Running } );
+
+            runningConfig.Layers.Add( l );
+
+            using( var ctx = new YodiiRuntimeTestContext( runningConfig ) )
             {
                 ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
                 Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );
@@ -202,14 +235,28 @@ namespace Yodii.Wpf.Tests
                 Application.Current.Dispatcher.Invoke( new Action( () =>
                 {
                     Window w = Application.Current.Windows.Cast<Window>().Single();
-                    Assert.That( w.IsCloseButtonDisabled(), Is.True );
-                    w.Close(); // Calls closing...
-
-                    CollectionAssert.IsNotEmpty( Application.Current.Windows, "Window has not been closed" );
+                    Assert.That( w.IsCloseButtonDisabled(), Is.True, "Plugin configured as Running should have its Close button disabled" );
                 } ) );
 
-                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin is still alive" );
+                IYodiiEngineResult r = ctx.Engine.Configuration.Layers.Default.Set( fullName, ConfigurationStatus.Optional );
+                Assert.That( r.Success, Is.True, "Plugin should be reconfigured from Running to Optional" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.Stopped ), "Plugin should have been Stopped after being reconfigured from Running to Optional" );
+
+                r = ctx.Engine.Configuration.Layers.Default.Set( fullName, ConfigurationStatus.Running );
+                Assert.That( r.Success, Is.True, "Plugin should be reconfigured from Optional to Running" );
+                Assert.That( pluginLive.RunningStatus, Is.EqualTo( RunningStatus.RunningLocked ), "Plugin should have been set to RunningLocked after being reconfigured from Optional to Running" );
+
+                Application.Current.Dispatcher.Invoke( new Action( () =>
+                {
+                    Window w = Application.Current.Windows.Cast<Window>().Single();
+                    Assert.That( w.IsCloseButtonDisabled(), Is.True, "Plugin configured as Running a second time should have its Close button disabled" );
+                } ) );
             }
+        }
+
+        public IEnumerable<TestPluginWindow> GetApplicationTestPluginWindows()
+        {
+            return Application.Current.Windows.Cast<Window>().Where( w => w is TestPluginWindow ).Cast<TestPluginWindow>();
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -73,7 +75,7 @@ namespace Yodii.Wpf.Win32
         /// <remarks>
         /// See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx
         /// </remarks>
-        [DllImport( "user32.dll" )]
+        [DllImport( "user32.dll", SetLastError = true )]
         private static extern int SetWindowLong( IntPtr hWnd, int nIndex, int dwNewLong );
 
         /// <summary>
@@ -85,8 +87,8 @@ namespace Yodii.Wpf.Win32
         /// <remarks>
         /// See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms647636(v=vs.85).aspx
         /// </remarks>
-        [DllImport( "user32.dll" )]
-        private static extern bool EnableMenuItem( IntPtr hMenu, uint uIDEnableItem, uint uEnable );
+        [DllImport( "user32.dll", SetLastError = true )]
+        private static extern int EnableMenuItem( IntPtr hMenu, uint uIDEnableItem, uint uEnable );
 
         /// <summary>
         /// </summary>
@@ -96,7 +98,7 @@ namespace Yodii.Wpf.Win32
         /// <remarks>
         /// See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms647985(v=vs.85).aspx
         /// </remarks>
-        [DllImport( "user32.dll" )]
+        [DllImport( "user32.dll", SetLastError = true )]
         private static extern IntPtr GetSystemMenu( IntPtr hWnd, bool bRevert );
 
         /// <summary>
@@ -109,7 +111,7 @@ namespace Yodii.Wpf.Win32
         /// <remarks>
         /// See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms647980(v=vs.85).aspx
         /// </remarks>
-        [DllImport( "user32.dll" )]
+        [DllImport( "user32.dll", SetLastError = true )]
         private static extern bool GetMenuItemInfo( IntPtr hMenu, uint uItem, bool fByPosition, ref MENUITEMINFO lpmii );
 
         #endregion
@@ -121,7 +123,9 @@ namespace Yodii.Wpf.Win32
         public static void HideSysMenu( this Window w )
         {
             IntPtr hwnd = new WindowInteropHelper( w ).Handle;
-            SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) & ~WS_SYSMENU );
+            Debug.Assert( hwnd != IntPtr.Zero, "Window should have a handle" );
+            int v = SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) & ~WS_SYSMENU );
+            if( v == 0 ) { throw new Win32Exception( Marshal.GetLastWin32Error() ); }
         }
 
         /// <summary>
@@ -131,40 +135,68 @@ namespace Yodii.Wpf.Win32
         public static void ShowSysMenu( this Window w )
         {
             IntPtr hwnd = new WindowInteropHelper( w ).Handle;
-            SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) | WS_SYSMENU );
+            Debug.Assert( hwnd != IntPtr.Zero, "Window should have a handle" );
+            int v = SetWindowLong( hwnd, GWL_STYLE, GetWindowLong( hwnd, GWL_STYLE ) | WS_SYSMENU );
+            if( v == 0 ) { throw new Win32Exception( Marshal.GetLastWin32Error() ); }
         }
 
         public static bool IsSysMenuEnabled( this Window w )
         {
             IntPtr hwnd = new WindowInteropHelper( w ).Handle;
-            return (GetWindowLong( hwnd, GWL_STYLE ) & WS_SYSMENU) == WS_SYSMENU;
+            Debug.Assert( hwnd != IntPtr.Zero, "Window should have a handle" );
+            int lng = GetWindowLong( hwnd, GWL_STYLE );
+            if( lng == 0 ) { throw new Win32Exception( Marshal.GetLastWin32Error() ); }
+
+            return (lng & WS_SYSMENU) == WS_SYSMENU;
         }
 
         public static void DisableCloseButton( this Window w )
         {
             IntPtr hwnd = new WindowInteropHelper( w ).Handle;
-            EnableMenuItem( GetSystemMenu( hwnd, false ), SC_CLOSE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED );
+            Debug.Assert( hwnd != IntPtr.Zero, "Window should have a handle" );
+            IntPtr hmnu = GetSystemMenu( hwnd, false );
+
+            int r = EnableMenuItem( hmnu, SC_CLOSE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED );
+            if( r == -1 )
+            {
+                int e = Marshal.GetLastWin32Error();
+                throw new Win32Exception( e );
+            }
         }
 
         public static void EnableCloseButton( this Window w )
         {
             IntPtr hwnd = new WindowInteropHelper( w ).Handle;
-            EnableMenuItem( GetSystemMenu( hwnd, false ), SC_CLOSE, MF_BYCOMMAND | MF_ENABLED );
+            Debug.Assert( hwnd != IntPtr.Zero, "Window should have a handle" );
+            IntPtr hmnu = GetSystemMenu( hwnd, false );
+
+            int r = EnableMenuItem( hmnu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED );
+            if( r == -1 )
+            {
+                int e = Marshal.GetLastWin32Error();
+                throw new Win32Exception( e );
+            }
         }
 
         public static bool IsCloseButtonDisabled( this Window w )
         {
             IntPtr hwnd = new WindowInteropHelper( w ).Handle;
+            Debug.Assert( hwnd != IntPtr.Zero, "Window should have a handle" );
 
             IntPtr hMenu = GetSystemMenu( hwnd, false );
 
             MENUITEMINFO mif = new MENUITEMINFO();
-            mif.cbSize = (uint)Marshal.SizeOf( typeof( MENUITEMINFO ) );
+            mif.cbSize = MENUITEMINFO.sizeOf;
             mif.fMask = MIIM_STATE;
             mif.fType = 0;
             mif.dwTypeData = null;
 
             bool a = GetMenuItemInfo( hMenu, SC_CLOSE, false, ref mif );
+            if( a == false )
+            {
+                int e = Marshal.GetLastWin32Error();
+                throw new Win32Exception( e );
+            }
 
             return (mif.fState & MFS_DISABLED) == MFS_DISABLED;
         }
@@ -174,20 +206,24 @@ namespace Yodii.Wpf.Win32
 
     // See: https://msdn.microsoft.com/en-us/library/windows/desktop/ms647578(v=vs.85).aspx
     [StructLayout( LayoutKind.Sequential )]
-    internal struct MENUITEMINFO
+    struct MENUITEMINFO
     {
         public uint cbSize;
         public uint fMask;
         public uint fType;
         public uint fState;
-        public int wID;
-        public int hSubMenu;
-        public int hbmpChecked;
-        public int hbmpUnchecked;
-        public int dwItemData;
+        public uint wID;
+        public IntPtr hSubMenu;
+        public IntPtr hbmpChecked;
+        public IntPtr hbmpUnchecked;
+        public IntPtr dwItemData;
         public string dwTypeData;
         public uint cch;
-        public int hbmpItem;
+        public IntPtr hbmpItem;
 
+        public static uint sizeOf
+        {
+            get { return (uint)Marshal.SizeOf( typeof( MENUITEMINFO ) ); }
+        }
     }
 }
