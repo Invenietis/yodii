@@ -56,6 +56,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Attributes\YodiiPluginAttribute.cs" />
+    <Compile Include="Attributes\YodiiServiceAttribute.cs" />
     <Compile Include="Configuration\ConfigurationChangedEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationChangingEventArgs.cs" />
     <Compile Include="Configuration\ConfigurationExtensions.cs" />
@@ -68,6 +70,7 @@
     <Compile Include="Configuration\IConfigurationLayer.cs" />
     <Compile Include="Configuration\IConfigurationLayerCollection.cs" />
     <Compile Include="Configuration\IConfigurationManager.cs" />
+    <Compile Include="Attributes\YodiiElementBaseAttribute.cs" />
     <Compile Include="YodiiConfiguration\YodiiConfiguration.cs" />
     <Compile Include="YodiiConfiguration\YodiiConfigurationItem.cs" />
     <Compile Include="YodiiConfiguration\YodiiConfigurationLayer.cs" />
