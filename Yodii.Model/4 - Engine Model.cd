@@ -14,13 +14,6 @@
       <FileName>LiveModel\YodiiCommand.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Interface Name="Yodii.Model.IYodiiEngine">
-    <Position X="4" Y="3.75" Width="3.25" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
-      <FileName>IYodiiEngine.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
   <Interface Name="Yodii.Model.ILiveInfo">
     <Position X="6" Y="0.5" Width="3.75" />
     <TypeIdentifier>
@@ -90,7 +83,7 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IYodiiEngineHost">
-    <Position X="0.5" Y="6.5" Width="3.5" />
+    <Position X="0.5" Y="7" Width="3.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAABAAAAAQAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
       <FileName>Host\IYodiiEngineHost.cs</FileName>
@@ -106,8 +99,15 @@
   <Interface Name="Yodii.Model.IYodiiEngineExternal">
     <Position X="0.5" Y="3.75" Width="3.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAIAAAAAAAAAAAAACQAAAAAAAAAAAAgAAAAAIAAA=</HashCode>
+      <HashCode>AAAAAIAAAAAAAAAAAAACQAAAAAAACAAAAgAAAAAIABA=</HashCode>
       <FileName>IYodiiEngineExternal.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Yodii.Model.IYodiiEngineProxy">
+    <Position X="4.25" Y="3.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAEAAAEAgAAAAAAAAAAAAAAAAAAIAAgAAAAA=</HashCode>
+      <FileName>IYodiiEngineProxy.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Enum Name="Yodii.Model.RunningStatus">

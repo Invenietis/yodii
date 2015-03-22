@@ -34,7 +34,7 @@ namespace Yodii.Model
     public interface IStopContext
     {
         /// <summary>
-        /// Gets the running status that can be <see cref="RunningStatus.Stopped"/> or <see cref="RunningStatus.Disabled"/>.
+        /// Gets the running status that can be <see cref="T:RunningStatus.Stopped"/> or <see cref="T:RunningStatus.Disabled"/>.
         /// </summary>
         RunningStatus RunningStatus { get; }
 

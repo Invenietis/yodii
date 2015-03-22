@@ -58,5 +58,41 @@ namespace Yodii.Model
         /// </summary>
         bool IsRunningLocked { get; }
 
+        /// <summary>
+        /// Gets whether the plugin has locked itself in running mode. See <see cref="SelfLock"/> and <see cref="SelfUnlock"/>.
+        /// </summary>
+        bool IsSelfLocked { get; }
+
+        /// <summary>
+        /// Locks the plugin in <see cref="RunningStatus.RunningLocked"/> mode by adding a <see cref="ConfigurationStatus.Running"/> configuration
+        /// to the "Self-Locking" configuration layer of the engine.
+        /// This can be call at any moment by the running plugin but MUST NOT be called from its <see cref="IYodiiPlugin.Start"/>, 
+        /// <see cref="IYodiiPlugin.PreStart"/>, <see cref="IYodiiPlugin.PreStop"/> or <see cref="IYodiiPlugin.Stop"/> methods
+        /// otherwise an <see cref="InvalidOperationException"/> is thrown. See remarks.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This method fails if and only if the <see cref="IConfigurationManager.ConfigurationChanging"/> event has been canceled.
+        /// </para>
+        /// <para>
+        /// Currently it can not be called from the <see cref="IYodiiPlugin.Start"/> method of the plugin. However, it would be great... but 
+        /// this is a very special case of reentrancy (from host to configuration back to configuration and to the host) that has yet to be handled.
+        /// If a plugin needs to lock itself directly from its Start method, it can use the <see cref="IStartContext.PostAction"/> to call this SelfLock method.
+        /// </para>
+        /// </remarks>
+        /// <returns>
+        /// True on success, false on failure: since the plugin is actually running, this can only be 
+        /// rejected by the <see cref="IConfigurationManager.ConfigurationChanging"/> event.
+        /// </returns>
+        bool SelfLock();
+
+        /// <summary>
+        /// Unlocks the plugin (see <see cref="SelfLock"/>) by removing the configuration.
+        /// This can be call at any moment by the running plugin and also from its <see cref="IYodiiPlugin.Start"/> method.
+        /// This MUST NOT be called from <see cref="IYodiiPlugin.PreStart"/>, <see cref="IYodiiPlugin.PreStop"/> or <see cref="IYodiiPlugin.Stop"/> methods
+        /// otherwise an <see cref="InvalidOperationException"/> is thrown.
+        /// </summary>
+        void SelfUnlock();
+
     }
 }

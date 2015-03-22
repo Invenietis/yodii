@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Yodii.Wpf</id>
+    <version>$PackageVersion</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis, IN'TECH INFO</owners>
+    <licenseUrl>https://github.com/Invenietis/yodii/blob/master/licenseFileHeader.txt</licenseUrl>
+    <projectUrl>https://github.com/Invenietis/yodii/</projectUrl>
+    <iconUrl>http://www.invenietis.com/content/images/tech.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Utilities to help develop plugins using WPF windows.</description>
+    <releaseNotes>Development version.</releaseNotes>
+    <copyright>Copyright 2015 Invenietis, IN'TECH INFO</copyright>
+    <tags>yodii invenietis intech di plugin plugins service services wpf</tags>
+    <dependencies>
+      <dependency id="CK.Core" version="4.2.0" />
+      <dependency id="Yodii.Core" version="$PackageVersion" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Yodii.Wpf\bin\Release\Yodii.Wpf.dll" target="lib\net451" />
+    <file src="..\Yodii.Wpf\bin\Release\Yodii.Wpf.pdb" target="lib\net451" />
+    <file src="..\Yodii.Wpf\bin\Release\Yodii.Wpf.xml" target="lib\net451" />
+  </files>
+</package>

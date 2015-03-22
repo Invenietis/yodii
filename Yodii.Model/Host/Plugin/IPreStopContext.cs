@@ -30,11 +30,13 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Transition context for <see cref="IYodiiPlugin.PreStop"/>.
+    /// Unlike <see cref="IPreStartContext.Cancel"/>, this <see cref="Cancel"/> method can not always be called from a 
+    /// plugin PresStop method: when <see cref="IsCancellable"/> is false, the stop can not be canceled.
     /// </summary>
     public interface IPreStopContext
     {
         /// <summary>
-        /// Gets the running status that can be <see cref="RunningStatus.Stopped"/> or <see cref="RunningStatus.Disabled"/>.
+        /// Gets the running status that can be <see cref="T:RunningStatus.Stopped"/> or <see cref="T:RunningStatus.Disabled"/>.
         /// </summary>
         RunningStatus RunningStatus { get; }
 

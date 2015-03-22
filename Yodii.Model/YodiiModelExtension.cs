@@ -23,9 +23,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CK.Core;
 
 namespace Yodii.Model
 {
@@ -156,5 +159,95 @@ namespace Yodii.Model
             @this.TryStart( serviceOrPluginFullName, StartDependencyImpact.Unknown, onSuccess, onError );
         }
 
+
+        /// <summary>
+        /// Throws a <see cref="CKException"/> that describes a failed <see cref="IYodiiEngineResult"/>.
+        /// Does nothing if <see cref="IYodiiEngineResult.Success"/> is true.
+        /// </summary>
+        /// <param name="this">This engine result.</param>
+        /// <param name="message">Optional message that will appear before the error details.</param>
+        public static void ThrowOnError( this IYodiiEngineResult @this, string message = null )
+        {
+            if( !@this.Success )
+            {
+                StringWriter w = new StringWriter();
+                if( message != null )
+                {
+                    w.Write( message );
+                    w.Write( " - " );
+                }
+                if( @this.ConfigurationFailureResult != null )
+                {
+                    w.WriteLine( "[Configuration Error]" );
+                    foreach( var m in @this.ConfigurationFailureResult.FailureReasons )
+                    {
+                        w.Write( " - " );
+                        w.WriteLine( m );
+                    }
+                }
+                if( @this.StaticFailureResult != null )
+                {
+                    w.WriteLine( "[Static Resolution Error] - {0} Plugin(s) and {1} Service(s) blocking:", @this.StaticFailureResult.BlockingPlugins.Count, @this.StaticFailureResult.BlockingServices.Count );
+                    foreach( var p in @this.StaticFailureResult.BlockingPlugins )
+                    {
+                        w.WriteLine( " - {0}: Wanted={1}, DisabledReason={2}.", p.FullName, p.WantedConfigSolvedStatus, p.DisabledReason );
+                    }
+                    foreach( var s in @this.StaticFailureResult.BlockingServices )
+                    {
+                        w.WriteLine( " - {0}: Wanted={1}, DisabledReason={2}.", s.FullName, s.WantedConfigSolvedStatus, s.DisabledReason );
+                    }
+                }
+                if( @this.HostFailureResult != null )
+                {
+                    w.WriteLine( "[Host Error] - {0} culprit Plugins:", @this.HostFailureResult.ErrorPlugins.Count );
+                    foreach( var p in @this.HostFailureResult.ErrorPlugins )
+                    {
+                        Exception ex = p.CancellationInfo.Error;
+                        if( p.CancellationInfo.IsLoadError )
+                        {
+                            w.WriteLine( " - Unable to load '{0}' instance: {1}.", p.Plugin.FullName, p.CancellationInfo.ErrorMessage );
+                        }
+                        else if( p.CancellationInfo.IsStartCanceled )
+                        {
+                            if( p.CancellationInfo.IsPreStartOrStopUnhandledException )
+                            {
+                                w.WriteLine( " - Unhandled exception in Plugin '{0}' PreStart: {1}.", p.Plugin.FullName, p.CancellationInfo.ErrorMessage );
+                            }
+                            else w.WriteLine( " - Plugin '{0}' canceled its PreStart: {1}.", p.Plugin.FullName, p.CancellationInfo.ErrorMessage );
+                        }
+                        else if( p.CancellationInfo.IsStopCanceled )
+                        {
+                            if( p.CancellationInfo.IsPreStartOrStopUnhandledException )
+                            {
+                                w.WriteLine( " - Unhandled exception in Plugin '{0}' PreStop: {1}.", p.Plugin.FullName, p.CancellationInfo.ErrorMessage );
+                            }
+                            else w.WriteLine( " - Plugin '{0}' canceled its PreStop: {1}.", p.Plugin.FullName, p.CancellationInfo.ErrorMessage );
+                        }
+                        if( ex != null )
+                        { 
+                            w.WriteLine( ex.ToString() ); 
+                        }
+                    }
+
+                }
+                if( @this.CommandFailureResult != null )
+                {
+                    w.Write( "[Dynamic Command Error] - Plugin or Service '{0}': ", @this.CommandFailureResult.PluginOrServiceFullName );
+                    if( @this.CommandFailureResult.UnapplicableCommand )
+                    {
+                        w.WriteLine( "Unapplicable dynamic command. ILiveInfo.Capabilities must be tested before." );
+                    }
+                    else if( @this.CommandFailureResult.UnexistingItem )
+                    {
+                        w.WriteLine( "Unexisting item." );
+                    }
+                    else
+                    {
+                        Debug.Fail( "Unhandled case." );
+                    }
+                }
+                throw new CKException( w.ToString() );
+            }
+        }
     }
 }

@@ -102,6 +102,9 @@ namespace Yodii.Engine
             public string ErrorMessage { get; internal set; }
 
             public Exception Error { get; internal set; }
+
+            public bool IsPreStartOrStopUnhandledException { get; internal set; }
+
         }
 
     }

@@ -32,13 +32,59 @@ namespace Yodii.Host
     /// </summary>
     public interface ISimpleServiceHostConfiguration : IServiceHostConfiguration
     {
+        /// <summary>
+        /// Clears all configurations.
+        /// </summary>
         void Clear();
+
+        /// <summary>
+        /// Configures the behavior on events.
+        /// </summary>
+        /// <param name="e">The <see cref="EventInfo"/> to configure.</param>
+        /// <param name="option">Options to set.</param>
         void SetConfiguration( EventInfo e, ServiceLogEventOptions option );
+
+        /// <summary>
+        /// Configures the behavior on method calls.
+        /// </summary>
+        /// <param name="m">Method to configure.</param>
+        /// <param name="option">Options to set.</param>
         void SetConfiguration( MethodInfo m, ServiceLogMethodOptions option );
+
+        /// <summary>
+        /// Configures the behavior on property calls.
+        /// </summary>
+        /// <param name="p">Property to configure.</param>
+        /// <param name="option">Options to set.</param>
         void SetConfiguration( PropertyInfo p, ServiceLogMethodOptions option );
+
+        /// <summary>
+        /// Helper that configures all events on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="option">Options to set.</param>
         void SetAllEventsConfiguration( Type type, ServiceLogEventOptions option );
+
+        /// <summary>
+        /// Helper that configures all methods on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="option">Options to set.</param>
         void SetAllMethodsConfiguration( Type type, ServiceLogMethodOptions option );
+
+        /// <summary>
+        /// Helper that configures all properties on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="option">Options to set.</param>
         void SetAllPropertiesConfiguration( Type type, ServiceLogMethodOptions option );
+
+        /// <summary>
+        /// Helper that configures all overloads of a method (a method group) on a service.
+        /// </summary>
+        /// <param name="type">Type of the service.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="option">Options to set.</param>
         void SetMethodGroupConfiguration( Type type, string methodName, ServiceLogMethodOptions option );
     }
 }

@@ -45,5 +45,9 @@ namespace Yodii.Host
         public IDictionary<object, object> SharedMemory { get { return _shared; } }
 
         public bool HotSwapping { get { return false; } }
+
+        public void PostAction( Action<IYodiiEngineExternal> delayedAction )
+        {
+        }
     }
 }

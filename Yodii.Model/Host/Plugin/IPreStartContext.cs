@@ -30,11 +30,12 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Transition context for <see cref="IYodiiPlugin.PreStart"/>.
+    /// <see cref="Cancel"/> can always been called by the plugin PrsStart method if running conditions are not met.
     /// </summary>
     public interface IPreStartContext
     {
         /// <summary>
-        /// Gets the running status that can be <see cref="RunningStatus.Running"/> or <see cref="RunningStatus.RunningLocked"/>.
+        /// Gets the running status that can be <see cref="T:RunningStatus.Running"/> or <see cref="T:RunningStatus.RunningLocked"/>.
         /// </summary>
         RunningStatus RunningStatus { get; }
 

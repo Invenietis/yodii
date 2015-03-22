@@ -35,7 +35,7 @@ namespace Yodii.Host
             : base( plugin, status, shared )
         {
             IsDisabledOnly = disableOnly;
-            IsCancellable = engineStopping;
+            IsCancellable = !engineStopping;
         }
 
         internal readonly bool IsDisabledOnly;
@@ -55,7 +55,7 @@ namespace Yodii.Host
 
         public override void Cancel( string message = null, Exception ex = null )
         {
-            if( IsCancellable ) throw new InvalidOperationException( R.CannotCancelSinceEngineIsStopping );
+            if( !IsCancellable ) throw new InvalidOperationException( R.CannotCancelSinceEngineIsStopping );
             base.Cancel( message, ex );
         }
 

@@ -29,6 +29,9 @@ namespace Yodii.Model
 {
     /// <summary>
     /// Collection of configuration layers contained in a <see cref="IConfigurationManager"/>.
+    /// <see cref="IConfigurationLayer.LayerName">Layer's name</see> is not an identifier: except for 
+    /// the default layer for which name is <see cref="String.Empty"/>
+    /// and that is necessarily unique, multiple layers can have the same name.
     /// </summary>
     public interface IConfigurationLayerCollection : ICKObservableReadOnlyList<IConfigurationLayer>
     {
@@ -36,8 +39,23 @@ namespace Yodii.Model
         /// Creates an empty layer in the collection.
         /// </summary>
         /// <param name="layerName">Display name of the new layer. Can not be null nor empty.</param>
-        /// <returns>Created layer</returns>
+        /// <returns>Created layer.</returns>
         IConfigurationLayer Create( string layerName );
+
+        /// <summary>
+        /// Finds an existing layer from its name or creates an empty layer in the collection.
+        /// </summary>
+        /// <param name="layerName">Display name of the layer. When null or empty, the <see cref="Default"/> layer is returned.</param>
+        /// <returns>Found or created layer.</returns>
+        IConfigurationLayer FindOneOrCreate( string layerName );
+
+        /// <summary>
+        /// Finds an existing layer from its name in the collection. When more than one layer exist with this name,
+        /// one of them is returned that is not necessarily the first one.
+        /// </summary>
+        /// <param name="layerName">Display name of the layer. When null or empty, the <see cref="Default"/> layer is returned.</param>
+        /// <returns>One of the layer with the name or null if not found.</returns>
+        IConfigurationLayer FindOne( string layerName );
 
         /// <summary>
         /// Default configuration layer has an empty <see cref="IConfigurationLayer.LayerName"/>.
@@ -49,6 +67,11 @@ namespace Yodii.Model
         /// </summary>
         /// <param name="layer">IConfigurationLayer to remove</param>
         /// <returns>Yodii engine change result.</returns>
+        /// <remarks>
+        /// Since removing a layer removes constraints on the system, it seems obvious that this method can never fail.
+        /// However, this method returns a <see cref="IYodiiEngineResult"/> because of <see cref="IConfigurationManager.ConfigurationChanging"/> 
+        /// event that may reject the removal.
+        /// </remarks>
         IYodiiEngineResult Remove( IConfigurationLayer layer );
 
         /// <summary>

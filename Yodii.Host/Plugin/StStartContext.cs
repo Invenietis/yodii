@@ -34,11 +34,14 @@ namespace Yodii.Host
     class StStartContext : StContext, IPreStartContext, IStartContext
     {
         ServiceManager.Impact _swappedImpact;
+        Action<Action<IYodiiEngineExternal>> _actionCollector;
 
-        public StStartContext( PluginProxy plugin, RunningStatus status, Dictionary<object, object> shared, bool wasDisabled )
+        public StStartContext( PluginProxy plugin, RunningStatus status, Dictionary<object, object> shared, bool wasDisabled, Action<Action<IYodiiEngineExternal>> actionCollector )
             : base( plugin, status, shared )
         {
+            Debug.Assert( actionCollector != null );
             WasDisabled = wasDisabled;
+            _actionCollector = actionCollector;
         }
 
         public readonly bool WasDisabled;
@@ -88,6 +91,13 @@ namespace Yodii.Host
         {
             get { return Status == StStatus.StartingHotSwap; }
         }
+
+        public void PostAction( Action<IYodiiEngineExternal> delayedAction )
+        {
+            if( delayedAction == null ) throw new ArgumentNullException( "delayedAction" );
+            _actionCollector( delayedAction );
+        }
+
 
         public override string ToString()
         {

@@ -55,7 +55,7 @@ namespace Yodii.Model
         /// <param name="solvedConfiguration">List of plugins with their state to apply.</param>
         /// <param name="postActionsCollector">
         /// Collector for actions triggered by the start or stop of the plugins.
-        /// Null when the engine is stopping (<paramref name="toDisable"/> contains all the plugins in this case). 
+        /// Null when the engine is stopping (<paramref name="solvedConfiguration"/> contains all the plugins with a disable state). 
         /// </param>
         /// <returns>List of exceptions encountered while each plugin changed state.</returns>
         IYodiiEngineHostApplyResult Apply( IReadOnlyList<KeyValuePair<IPluginInfo,RunningStatus>> solvedConfiguration, Action<Action<IYodiiEngineExternal>> postActionsCollector ); 

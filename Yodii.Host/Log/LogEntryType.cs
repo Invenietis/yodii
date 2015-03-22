@@ -54,12 +54,12 @@ namespace Yodii.Host
         MethodError,
 
         /// <summary>
-        /// The log entry is a <see cref="ILogExternal"/>.
+        /// The log entry is a <see cref="ILogExternalEntry"/>.
         /// </summary>
         External,
         
         /// <summary>
-        /// The log entry is a <see cref="ILogExternalError"/>.
+        /// The log entry is a <see cref="ILogExternalErrorEntry"/>.
         /// </summary>
         ExternalError
     }

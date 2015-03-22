@@ -83,7 +83,7 @@ namespace Yodii.Host
         /// <summary>
         /// Ensures that a proxy exists for a dynamic service. The <see cref="IService{T}"/>.
         /// </summary>
-        /// <param name="interfaceType">Type of the service (it can be a wrapped <see cref="IService{T}"/>).</param>
+        /// <typeparam name="T">Type of the service.</typeparam>
         /// <returns>The proxy to the service or null if it does not exist.</returns>
         IService<T> EnsureProxyForDynamicService<T>() where T : IYodiiService;
 

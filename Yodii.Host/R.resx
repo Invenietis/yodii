@@ -186,6 +186,9 @@
   <data name="PreviousPluginMustNotBeNull" xml:space="preserve">
     <value>Previous plugin must not be null.</value>
   </data>
+  <data name="SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod" xml:space="preserve">
+    <value>SelfLock must be called only when the Plugin runs or from its Start method.</value>
+  </data>
   <data name="ServiceIsAlreadyExternal" xml:space="preserve">
     <value>Service '{0}' is already bound to an external implementation. Plugin '{1}' can not offer it.</value>
   </data>

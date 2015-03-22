@@ -21,20 +21,18 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Yodii.Model
 {
     /// <summary>
     /// Failure result during Engine configuration.
+    /// This is exposed by <see cref="IYodiiEngineResult.ConfigurationFailureResult"/> property.
     /// </summary>
     public interface IConfigurationFailureResult
     {
         /// <summary>
-        /// Reasons for failure.
+        /// Gets the reasons for failure.
         /// </summary>
         IReadOnlyList<string> FailureReasons { get; }
     }

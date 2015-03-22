@@ -268,6 +268,15 @@ namespace Yodii.Host {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SelfLock must be called only when the Plugin runs or from its Start method..
+        /// </summary>
+        internal static string SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod {
+            get {
+                return ResourceManager.GetString("SelfLockOrUnlockMustBeCalledOnlyWhenThePluginRunsOrFromStartMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Service &apos;{0}&apos; is already bound to an external implementation. Plugin &apos;{1}&apos; can not offer it..
         /// </summary>
         internal static string ServiceIsAlreadyExternal {
