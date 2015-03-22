@@ -84,5 +84,25 @@ namespace Yodii.Wpf.Tests
         }
 
         #endregion
+
+        #region IYodiiEngineProxy Members
+
+
+        public bool IsSelfLocked
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public bool SelfLock()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SelfUnlock()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }
