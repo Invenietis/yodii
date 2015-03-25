@@ -74,8 +74,8 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
         {
             _engine.Configuration.Layers.Clear();
             IConfigurationLayer cl = _engine.Configuration.Layers.Create( "ObjectExplorerManager" );
-            cl.Items.Set( typeof( Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin ).FullName, ConfigurationStatus.Running );
-            cl.Items.Set( typeof( Yodii.ObjectExplorer.ObjectExplorerPlugin ).FullName, ConfigurationStatus.Runnable );
+            cl.Items.Set( typeof( Yodii.ObjectExplorer.Wpf.ObjectExplorerPlugin ).FullName, ConfigurationStatus.Runnable );
+            cl.Items.Set( typeof( Yodii.ObjectExplorer.ObjectExplorerPlugin ).FullName, ConfigurationStatus.Running );
         }
     }
 }

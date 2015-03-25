@@ -34,90 +34,120 @@
         <Metro:WindowCommands>
             <Button
                 Click="ConfigManagerButton_Click"
-                Content="configuration manager"/>
+                Content="configuration manager" />
         </Metro:WindowCommands>
     </Metro:MetroWindow.RightWindowCommands>
     <DockPanel
         LastChildFill="True"
         d:DataContext="{d:DesignInstance IsDesignTimeCreatable=True, Type={x:Type mocks:MockObjectExplorerViewModel}}">
-        <StackPanel
-            DockPanel.Dock="Left">
-            <GroupBox
-                Header="Plugins">
-                <Grid>
-                    <ListView
-                        Name="PluginsListView"
-                        ItemsSource="{Binding Path=EngineViewModel.Plugins}">
-                        <ListView.ItemTemplate>
-                            <DataTemplate
-                                DataType="vms:PluginViewModel">
-                                <TextBlock
-                                    Text="{Binding Path=Plugin.FullName}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-
-                    <TextBlock>
-                        No plugins.
-                        <TextBlock.Style>
-                            <Style
-                                TargetType="TextBlock">
-                                <Setter
-                                    Property="Visibility"
-                                    Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger
-                                        Binding="{Binding ElementName=PluginsListView, Path=HasItems}"
-                                        Value="False">
-                                        <Setter
-                                            Property="Visibility"
-                                            Value="Visible"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Grid>
-            </GroupBox>
-            <GroupBox
-                Header="Services">
-                <Grid>
-                    <ListView
-                        Name="ServicesListView"
-                        ItemsSource="{Binding Path=EngineViewModel.Services}">
-                        <ListView.ItemTemplate>
-                            <DataTemplate
-                                DataType="vms:ServiceViewModel">
-                                <TextBlock
-                                    Text="{Binding Path=Service.FullName}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                    <TextBlock>
-                        No services.
-                        <TextBlock.Style>
-                            <Style
-                                TargetType="TextBlock">
-                                <Setter
-                                    Property="Visibility"
-                                    Value="Collapsed" />
-                                <Style.Triggers>
-                                    <DataTrigger
-                                        Binding="{Binding ElementName=ServicesListView, Path=HasItems}"
-                                        Value="False">
-                                        <Setter
-                                            Property="Visibility"
-                                            Value="Visible"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Grid>
-            </GroupBox>
-        </StackPanel>
         <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition
+                    MinWidth="10"
+                    Width="1*" />
+                <ColumnDefinition
+                    MinWidth="10"
+                    Width="Auto" />
+                <ColumnDefinition
+                    MinWidth="10"
+                    Width="3*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel
+                HorizontalAlignment="Stretch"
+                Grid.Column="0">
+                <Expander
+                    Header="Plugins">
+                    <Grid>
+                        <ListView
+                            Name="PluginsListView"
+                            ItemsSource="{Binding Path=EngineViewModel.Plugins}"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            BorderThickness="0,0,0,0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate
+                                    DataType="vms:PluginViewModel">
+                                    <TextBlock
+                                        TextTrimming="WordEllipsis"
+                                        VerticalAlignment="Center"
+                                        Text="{Binding Path=DisplayName}" />
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
 
+                        <TextBlock>
+                        No plugins.
+                            <TextBlock.Style>
+                                <Style
+                                    TargetType="TextBlock">
+                                    <Setter
+                                        Property="Visibility"
+                                        Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding ElementName=PluginsListView, Path=HasItems}"
+                                            Value="False">
+                                            <Setter
+                                                Property="Visibility"
+                                                Value="Visible"></Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Expander>
+                <Expander
+                    Header="Services">
+                    <Grid>
+                        <ListView
+                            BorderThickness="0,0,0,0"
+                            Name="ServicesListView"
+                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            ItemsSource="{Binding Path=EngineViewModel.Services}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate
+                                    DataType="vms:ServiceViewModel">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        TextTrimming="WordEllipsis"
+                                        Text="{Binding Path=DisplayName}" />
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                        <TextBlock>
+                        No services.
+                            <TextBlock.Style>
+                                <Style
+                                    TargetType="TextBlock">
+                                    <Setter
+                                        Property="Visibility"
+                                        Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding ElementName=ServicesListView, Path=HasItems}"
+                                            Value="False">
+                                            <Setter
+                                                Property="Visibility"
+                                                Value="Visible"></Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </Expander>
+            </StackPanel>
+            <GridSplitter
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Width="5"
+                ResizeDirection="Columns"
+                Grid.Column="1" />
+            <Grid
+                Grid.Column="2"
+                >
+                
+            </Grid>
         </Grid>
     </DockPanel>
 </Metro:MetroWindow>
