@@ -84,6 +84,26 @@ namespace Yodii.ObjectExplorer.Mocks
         }
 
         #endregion
+
+        #region IYodiiEngineProxy Members
+
+
+        public bool IsSelfLocked
+        {
+            get { return false; }
+        }
+
+        public bool SelfLock()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SelfUnlock()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }
 #endif

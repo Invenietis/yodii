@@ -31,6 +31,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.ObjectExplorer.Wpf", "ObjectExplorer\Yodii.ObjectExplorer.Wpf\Yodii.ObjectExplorer.Wpf.csproj", "{3F156BFA-610E-4061-BC31-25178B14D499}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.ObjectExplorer.WpfHostDemo", "ObjectExplorer\Yodii.ObjectExplorer.WpfHostDemo\Yodii.ObjectExplorer.WpfHostDemo.csproj", "{063F10F2-55BB-40AA-91BA-7D967EAF6795}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9447D56A-AEBB-4425-B6E9-CB98748C744B} = {9447D56A-AEBB-4425-B6E9-CB98748C744B}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{ADEFD822-62DB-4057-8571-B28BAB1F0F92}"
 EndProject
@@ -56,6 +59,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.Wpf.Tests", "Tests\Yodii.Wpf.Tests\Yodii.Wpf.Tests.csproj", "{C4A7EF2D-3026-4B1E-BC8B-E08783A18341}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.ObjectExplorer", "ObjectExplorer\Yodii.ObjectExplorer\Yodii.ObjectExplorer.csproj", "{9447D56A-AEBB-4425-B6E9-CB98748C744B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81629A9C-1D0D-4D65-9E6B-2E171D81E038} = {81629A9C-1D0D-4D65-9E6B-2E171D81E038}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yodii.ObjectExplorer.Tests", "Tests\Yodii.ObjectExplorer.Tests\Yodii.ObjectExplorer.Tests.csproj", "{BE406F5E-1FA4-45CB-A20C-B36E2CCB670C}"
 EndProject
