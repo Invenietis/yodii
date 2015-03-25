@@ -10,13 +10,12 @@ namespace Yodii.ObjectExplorer.Mocks
 #if DEBUG
         public IYodiiEngineHost Host { get; private set; }
 
-        public MockObjectExplorerViewModel() : base()
+        public MockObjectExplorerViewModel()
+            : base()
         {
-            MockYodiiEngine engineMock = new MockYodiiEngine();
-            engineMock.LiveInfo.Plugins.Add( new MockLivePluginInfo() { FullName = "Yodii.ObjectExplorer.Mocks.Plugin1" } );
-            engineMock.LiveInfo.Plugins.Add( new MockLivePluginInfo() { FullName = "Yodii.ObjectExplorer.Mocks.Plugin2" } );
+            MockEngineHelper.StartDesignTimeYodiiEngine();
 
-            this.LoadEngine( engineMock );
+            this.LoadEngine( new MockYodiiEngineProxy( MockEngineHelper.Engine ) );
         }
 #endif
     }

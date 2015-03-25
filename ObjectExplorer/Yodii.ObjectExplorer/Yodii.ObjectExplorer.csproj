@@ -63,10 +63,11 @@
   <ItemGroup>
     <Compile Include="FodyUtils\NullGuardUtils.cs" />
     <Compile Include="IObjectExplorerService.cs" />
+    <Compile Include="Mocks\MockEngineHelper.cs" />
     <Compile Include="Mocks\MockLiveInfo.cs" />
     <Compile Include="Mocks\MockLivePluginInfo.cs" />
     <Compile Include="Mocks\MockObjectExplorerViewModel.cs" />
-    <Compile Include="Mocks\MockYodiiEngineBase.cs" />
+    <Compile Include="Mocks\MockYodiiEngineProxy.cs" />
     <Compile Include="ObjectExplorerPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FodyUtils\PropertyChangedUtils.cs" />
@@ -80,6 +81,18 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Yodii.Discoverer\Yodii.Discoverer.csproj">
+      <Project>{38efbe67-f0c8-4896-a7d0-606f663aa931}</Project>
+      <Name>Yodii.Discoverer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Engine\Yodii.Engine.csproj" Condition="'$(Configuration)'=='Debug'">
+      <Project>{a11642d8-cda7-4044-ad8a-03ed61a71bc3}</Project>
+      <Name>Yodii.Engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Yodii.Host\Yodii.Host.csproj" Condition="'$(Configuration)'=='Debug'">
+      <Project>{c9fcbf26-371b-48c2-aa78-06292ee30b9d}</Project>
+      <Name>Yodii.Host</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Yodii.Model\Yodii.Model.csproj">
       <Project>{db68716f-9883-433a-928d-aa597d377c9c}</Project>
       <Name>Yodii.Model</Name>
@@ -88,7 +101,7 @@
       <Project>{4fd02115-851c-400e-b9c8-486c38c65e1c}</Project>
       <Name>Yodii.Wpf</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.ConfigurationManager\Yodii.ConfigurationManager.csproj">
+    <ProjectReference Include="..\Yodii.ConfigurationManager\Yodii.ConfigurationManager.csproj" Condition="'$(Configuration)'=='Debug'">
       <Project>{81629a9c-1d0d-4d65-9e6b-2e171d81e038}</Project>
       <Name>Yodii.ConfigurationManager</Name>
     </ProjectReference>

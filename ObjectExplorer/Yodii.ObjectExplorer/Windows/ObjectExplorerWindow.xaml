@@ -8,6 +8,7 @@
     mc:Ignorable="d mocks"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mocks="clr-namespace:Yodii.ObjectExplorer.Mocks"
+    xmlns:ckcore="clr-namespace:CK.Core;assembly=CK.Core"
     Title="Object explorer"
     WindowStartupLocation="CenterScreen"
     Height="480"
