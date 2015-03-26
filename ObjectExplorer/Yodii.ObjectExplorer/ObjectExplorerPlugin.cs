@@ -11,6 +11,7 @@ using Yodii.Wpf;
 
 namespace Yodii.ObjectExplorer
 {
+    [YodiiPlugin( DisplayName = "Object explorer", Description = "Yodii object explorer." )]
     public class ObjectExplorerPlugin : WindowPluginBase, IObjectExplorerService
     {
         readonly IYodiiEngineProxy _engine;
