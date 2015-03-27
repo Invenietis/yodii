@@ -62,6 +62,7 @@
                         <ListView
                             Name="PluginsListView"
                             ItemsSource="{Binding Path=EngineViewModel.Plugins}"
+                            SelectedItem="{Binding Path=EngineViewModel.SelectedPlugin}"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                             BorderThickness="0,0,0,0">
                             <ListView.ItemTemplate>
@@ -102,6 +103,7 @@
                             BorderThickness="0,0,0,0"
                             Name="ServicesListView"
                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                            SelectedItem="{Binding Path=EngineViewModel.SelectedService}"
                             ItemsSource="{Binding Path=EngineViewModel.Services}">
                             <ListView.ItemTemplate>
                                 <DataTemplate
@@ -141,9 +143,90 @@
                 ResizeDirection="Columns"
                 Grid.Column="1" />
             <Grid
-                Grid.Column="2"
-                >
-                
+                Grid.Column="2">
+                <StackPanel
+                    Orientation="Vertical">
+                    <TextBlock
+                        Text="{Binding Path=EngineViewModel.SelectedItem.DisplayName, FallbackValue=(DisplayName), TargetNullValue=''}"
+                        FontSize="18pt"
+                        FontWeight="Light" />
+                    <TextBlock
+                        FontFamily="Consolas, Courier New"
+                        FontWeight="Light"
+                        Text="{Binding Path=EngineViewModel.SelectedItem.FullName, FallbackValue=(FullName)}"
+                        FontSize="8pt" />
+                    <TextBlock
+                        Margin="0,10"
+                        Text="{Binding Path=EngineViewModel.SelectedItem.Description, FallbackValue=(Desc), TargetNullValue=''}"
+                        />
+                    <Button Margin="10" MinHeight="30">
+                        <Button.Style>
+                            <Style
+                                TargetType="Button">
+                                <Setter
+                                    Property="Content">
+                                    <Setter.Value>
+                                        Toggle
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Value="Disabled">
+                                        <Setter
+                                            Property="Content">
+                                            <Setter.Value>
+                                                Can't start (disabled)
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter
+                                            Property="Command"
+                                            Value="{Binding Path=EngineViewModel.SelectedItem.StartItemCommand}" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Value="Stopped">
+                                        <Setter
+                                            Property="Content">
+                                            <Setter.Value>
+                                                Start
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter
+                                            Property="Command"
+                                            Value="{Binding Path=EngineViewModel.SelectedItem.StartItemCommand}" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Value="Running">
+                                        <Setter
+                                            Property="Content">
+                                            <Setter.Value>
+                                                Stop
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter
+                                            Property="Command"
+                                            Value="{Binding Path=EngineViewModel.SelectedItem.StopItemCommand}" />
+                                    </DataTrigger>
+                                    <DataTrigger
+                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Value="RunningLocked">
+                                        <Setter
+                                            Property="Content">
+                                            <Setter.Value>
+                                                Can't stop (locked)
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter
+                                            Property="Command"
+                                            Value="{Binding Path=EngineViewModel.SelectedItem.StopItemCommand}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Grid>
     </DockPanel>

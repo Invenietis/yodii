@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.Core;
+using GalaSoft.MvvmLight;
 using NullGuard;
 using PropertyChanged;
 using Yodii.Model;
@@ -13,10 +14,11 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.ViewModels
 {
     [ImplementPropertyChanged]
-    public class ObjectExplorerViewModel : EmptyPropertyChangedHandler
+    public class ObjectExplorerViewModel : ViewModelBase
     {
         [AllowNull]
         public IYodiiEngineProxy Engine { get; private set; }
+
         [AllowNull]
         public EngineViewModel EngineViewModel { get; private set; }
 

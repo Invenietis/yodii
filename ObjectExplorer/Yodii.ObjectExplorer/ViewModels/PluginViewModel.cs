@@ -19,9 +19,12 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         }
 
-        protected override Assembly GetItemAssembly()
+        public override IAssemblyInfo AssemblyInfo
         {
-            return Assembly.Load( Plugin.PluginInfo.AssemblyInfo.AssemblyName );
+            get
+            {
+                return Plugin.PluginInfo.AssemblyInfo;
+            }
         }
     }
 }

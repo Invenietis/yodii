@@ -17,10 +17,12 @@ namespace Yodii.ObjectExplorer.ViewModels
         {
 
         }
-
-        protected override Assembly GetItemAssembly()
+        public override IAssemblyInfo AssemblyInfo
         {
-            return Assembly.Load( Service.ServiceInfo.AssemblyInfo.AssemblyName );
+            get
+            {
+                return Service.ServiceInfo.AssemblyInfo;
+            }
         }
     }
 }

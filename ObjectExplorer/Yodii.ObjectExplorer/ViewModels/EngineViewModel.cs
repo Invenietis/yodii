@@ -5,11 +5,14 @@ using NullGuard;
 using PropertyChanged;
 using Yodii.Model;
 using System.Linq;
+using GalaSoft.MvvmLight;
+using System.Windows.Input;
+using GalaSoft.MvvmLight.Command;
 
 namespace Yodii.ObjectExplorer.ViewModels
 {
     [ImplementPropertyChanged]
-    public class EngineViewModel : EmptyPropertyChangedHandler
+    public class EngineViewModel : ViewModelBase
     {
         [AllowNull]
         public IYodiiEngineProxy Engine { get; private set; }
@@ -20,10 +23,48 @@ namespace Yodii.ObjectExplorer.ViewModels
         readonly CKObservableSortedArrayKeyList<ServiceViewModel, string> _services;
         readonly CKObservableSortedArrayKeyList<PluginViewModel, string> _plugins;
 
+
+
+        [AllowNull]
+        public PluginViewModel SelectedPlugin { get; set; }
+
+        [AllowNull]
+        public ServiceViewModel SelectedService { get; set; }
+
+        [AllowNull]
+        public YodiiItemViewModelBase SelectedItem { get; set; }
+
+        bool _changingSelect;
+        public void OnSelectedPluginChanged()
+        {
+            if( !_changingSelect )
+            {
+                _changingSelect = true;
+
+                SelectedItem = SelectedPlugin;
+                SelectedService = null;
+
+                _changingSelect = false;
+            }
+        }
+        public void OnSelectedServiceChanged()
+        {
+            if( !_changingSelect )
+            {
+                _changingSelect = true;
+
+                SelectedItem = SelectedService;
+                SelectedPlugin = null;
+
+                _changingSelect = false;
+            }
+        }
+
         public EngineViewModel()
         {
             _services = new CKObservableSortedArrayKeyList<ServiceViewModel, string>( x => x.Service.FullName, false );
             _plugins = new CKObservableSortedArrayKeyList<PluginViewModel, string>( x => x.Plugin.FullName, false );
+
         }
 
         public void LoadEngine( IYodiiEngineProxy engine )
@@ -124,14 +165,14 @@ namespace Yodii.ObjectExplorer.ViewModels
         void CreateAndAddPluginViewModel( ILivePluginInfo livePlugin )
         {
             PluginViewModel vm = new PluginViewModel();
-            vm.LoadLiveItem( livePlugin );
+            vm.LoadLiveItem( Engine, livePlugin );
             _plugins.Add( vm );
         }
 
         void CreateAndAddServiceViewModel( ILiveServiceInfo liveService )
         {
             ServiceViewModel vm = new ServiceViewModel();
-            vm.LoadLiveItem( liveService );
+            vm.LoadLiveItem( Engine, liveService );
             _services.Add( vm );
         }
     }

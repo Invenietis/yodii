@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Input;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.CommandWpf;
 using NullGuard;
 using PropertyChanged;
 using Yodii.Model;
@@ -10,7 +13,7 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.ViewModels
 {
     [ImplementPropertyChanged]
-    public abstract class YodiiItemViewModelBase : EmptyPropertyChangedHandler
+    public abstract class YodiiItemViewModelBase : ViewModelBase
     {
         [AllowNull]
         public string DisplayName { get; private set; }
@@ -20,6 +23,15 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         [AllowNull]
         public ILiveYodiiItem LiveItem { get; private set; }
+
+        public bool IsPlugin { get; private set; }
+
+        public bool IsService { get; private set; }
+
+        IYodiiEngineProxy _parentEngine;
+
+        public ICommand StartItemCommand { get; private set; }
+        public ICommand StopItemCommand { get; private set; }
 
         public string FullName
         {
@@ -32,21 +44,50 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         public YodiiItemViewModelBase()
         {
+            StartItemCommand = new RelayCommand( () =>
+            {
+                if( _parentEngine != null )
+                {
+                    _parentEngine.StartItem( LiveItem );
+                }
+            }, () =>
+            {
+                return LiveItem != null && LiveItem.Capability.CanStart;
+            } );
 
+            StopItemCommand = new RelayCommand( () =>
+            {
+                if( _parentEngine != null )
+                {
+                    _parentEngine.StopItem( LiveItem );
+                }
+            }, () =>
+            {
+                return LiveItem != null && LiveItem.Capability.CanStop;
+            } );
         }
 
-        public void LoadLiveItem( ILiveYodiiItem item )
+        public void LoadLiveItem( IYodiiEngineProxy parentEngine, ILiveYodiiItem item )
         {
+            if( parentEngine == null ) throw new ArgumentNullException( "parentEngine" );
+            if( item == null ) throw new ArgumentNullException( "item" );
+
             if( LiveItem != null ) { throw new InvalidOperationException( "Cannot load an item twice." ); }
+
+            _parentEngine = parentEngine;
             LiveItem = item;
+
+            IsPlugin = item is ILivePluginInfo;
+            IsService = item is ILiveServiceInfo;
+
             LoadTypeData();
         }
 
-        protected abstract Assembly GetItemAssembly();
+        public abstract IAssemblyInfo AssemblyInfo { get; }
 
         void LoadTypeData()
         {
-            Assembly pluginAssembly = GetItemAssembly();
+            Assembly pluginAssembly = Assembly.Load( AssemblyInfo.AssemblyName );
 
             Type pluginType = pluginAssembly.GetType( LiveItem.FullName, true );
 
