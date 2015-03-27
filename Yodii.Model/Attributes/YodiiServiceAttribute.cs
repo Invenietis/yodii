@@ -8,7 +8,7 @@ namespace Yodii.Model
     /// in utilities providing information on Yodii itself, like the ObjectExplorer.
     /// </summary>
     [AttributeUsage( AttributeTargets.Interface, Inherited = false, AllowMultiple = false )]
-    public class YodiiServiceAttribute : YodiiElementBaseAttribute
+    public class YodiiServiceAttribute : YodiiItemBaseAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="YodiiServiceAttribute"/> class.

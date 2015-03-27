@@ -8,7 +8,7 @@ using Yodii.Model;
 
 namespace Yodii.ObjectExplorer.Tests.TestYodiiObjects
 {
-    [YodiiPlugin( DisplayName = "Yodii plugin (with display attribute)", Description = "Some test plugin with a name and description." )]
+    [YodiiPlugin( DisplayName = "Yodii item (with display attribute)", Description = "Some test item with a name and description." )]
     public class PluginWithDisplayAttribute : YodiiPluginBase, IMyYodiiService
     {
         public void HelloWorld()

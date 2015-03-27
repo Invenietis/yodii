@@ -31,7 +31,7 @@ namespace Yodii.ObjectExplorer.Tests
                 ILivePluginInfo s = ctx.Engine.LiveInfo.Plugins.First();
 
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLivePlugin( s );
+                vm.LoadLiveItem( s );
                 Assert.That( vm.Plugin, Is.Not.Null );
             }
         }
@@ -45,8 +45,8 @@ namespace Yodii.ObjectExplorer.Tests
                 ILivePluginInfo s = ctx.Engine.LiveInfo.Plugins.First();
 
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLivePlugin( s );
-                Assert.Throws<InvalidOperationException>( () => vm.LoadLivePlugin( s ) );
+                vm.LoadLiveItem( s );
+                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveItem( s ) );
             }
         }
 
@@ -59,11 +59,11 @@ namespace Yodii.ObjectExplorer.Tests
                 Assert.That( s, Is.Not.Null );
 
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLivePlugin( s );
+                vm.LoadLiveItem( s );
 
-                Assert.That( vm.DisplayName, Is.EqualTo( "Yodii plugin (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
-                Assert.That( vm.Description, Is.EqualTo( "Some test plugin with a name and description." ), "Description should be retrieved from Display attribute" );
-                Assert.That( vm.FullName, Is.EqualTo( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.PluginWithDisplayAttribute" ), "FullName is equal to the plugin's FullName" );
+                Assert.That( vm.DisplayName, Is.EqualTo( "Yodii item (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
+                Assert.That( vm.Description, Is.EqualTo( "Some test item with a name and description." ), "Description should be retrieved from Display attribute" );
+                Assert.That( vm.FullName, Is.EqualTo( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.PluginWithDisplayAttribute" ), "FullName is equal to the item's FullName" );
             }
         }
         [Test]
@@ -75,11 +75,11 @@ namespace Yodii.ObjectExplorer.Tests
                 Assert.That( s, Is.Not.Null );
 
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLivePlugin( s );
+                vm.LoadLiveItem( s );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "MyYodiiPlugin" ), "DisplayName should be the class name without namespace when Display attribute's Name property is not used" );
                 Assert.That( vm.Description, Is.EqualTo( String.Empty ), "Description should be empty when Display's Description is unused" );
-                Assert.That( vm.FullName, Is.EqualTo( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.MyYodiiPlugin" ), "FullName is equal to the plugin's FullName" );
+                Assert.That( vm.FullName, Is.EqualTo( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.MyYodiiPlugin" ), "FullName is equal to the item's FullName" );
             }
         }
     }

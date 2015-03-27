@@ -60,7 +60,7 @@ namespace Yodii.ObjectExplorer.WpfHostDemo
         /// </summary>
         internal void SetDiscoveredInfo()
         {
-            // Load plugin.service assemblies
+            // Load item.service assemblies
             _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.Wpf.dll" ) );
             _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.dll" ) );
             _discoverer.ReadAssembly( Path.GetFullPath( "Yodii.ObjectExplorer.WpfHostDemo.exe" ) );

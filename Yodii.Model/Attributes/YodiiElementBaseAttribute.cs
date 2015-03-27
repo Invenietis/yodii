@@ -11,7 +11,7 @@ namespace Yodii.Model
     /// Not necessary to create a plugin or service, but can be used to provide information
     /// in utilities providing information on Yodii itself, like the ObjectExplorer.
     /// </summary>
-    public abstract class YodiiElementBaseAttribute : Attribute
+    public abstract class YodiiItemBaseAttribute : Attribute
     {
         /// <summary>
         /// Gets or sets the display name of the plugin or service.

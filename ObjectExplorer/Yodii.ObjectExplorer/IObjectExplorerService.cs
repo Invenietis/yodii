@@ -9,7 +9,7 @@ namespace Yodii.ObjectExplorer
 {
     /// <summary>
     /// Object Explorer service interface marker.
-    /// It should open when plugin starts, and close when plugin stops.
+    /// It should open when item starts, and close when item stops.
     /// </summary>
     public interface IObjectExplorerService : IYodiiService
     {

@@ -31,7 +31,7 @@ namespace Yodii.ObjectExplorer.Tests
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.Services.First();
 
                 ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveService( s );
+                vm.LoadLiveItem( s );
                 Assert.That( vm.Service, Is.Not.Null );
             }
         }
@@ -45,8 +45,8 @@ namespace Yodii.ObjectExplorer.Tests
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.Services.First();
 
                 ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveService( s );
-                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveService( s ) );
+                vm.LoadLiveItem( s );
+                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveItem( s ) );
             }
         }
 
@@ -59,7 +59,7 @@ namespace Yodii.ObjectExplorer.Tests
                 Assert.That( s, Is.Not.Null );
 
                 ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveService( s );
+                vm.LoadLiveItem( s );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "My service (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
                 Assert.That( vm.Description, Is.EqualTo( "A service with a display attribute." ), "Description should be retrieved from Display attribute" );
@@ -75,7 +75,7 @@ namespace Yodii.ObjectExplorer.Tests
                 Assert.That( s, Is.Not.Null );
 
                 ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveService( s );
+                vm.LoadLiveItem( s );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "IMyYodiiService" ), "DisplayName should be the interface name without namespace when Display attribute's Name property is not used" );
                 Assert.That( vm.Description, Is.EqualTo( String.Empty ), "Description should be empty when Display's Description is unused" );

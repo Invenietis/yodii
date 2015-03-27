@@ -74,6 +74,7 @@
     <Compile Include="ViewModels\EmptyPropertyChangedHandler.cs" />
     <Compile Include="ViewModels\EngineViewModel.cs" />
     <Compile Include="ViewModels\ObjectExplorerViewModel.cs" />
+    <Compile Include="ViewModels\YodiiElementViewModelBase.cs" />
     <Compile Include="ViewModels\PluginViewModel.cs" />
     <Compile Include="ViewModels\ServiceViewModel.cs" />
     <Compile Include="Windows\ObjectExplorerWindow.xaml.cs">

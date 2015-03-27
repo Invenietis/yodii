@@ -124,14 +124,14 @@ namespace Yodii.ObjectExplorer.ViewModels
         void CreateAndAddPluginViewModel( ILivePluginInfo livePlugin )
         {
             PluginViewModel vm = new PluginViewModel();
-            vm.LoadLivePlugin( livePlugin );
+            vm.LoadLiveItem( livePlugin );
             _plugins.Add( vm );
         }
 
         void CreateAndAddServiceViewModel( ILiveServiceInfo liveService )
         {
             ServiceViewModel vm = new ServiceViewModel();
-            vm.LoadLiveService( liveService );
+            vm.LoadLiveItem( liveService );
             _services.Add( vm );
         }
     }
