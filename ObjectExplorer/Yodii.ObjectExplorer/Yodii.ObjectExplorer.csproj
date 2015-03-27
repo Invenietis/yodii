@@ -101,7 +101,7 @@
       <Project>{4fd02115-851c-400e-b9c8-486c38c65e1c}</Project>
       <Name>Yodii.Wpf</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yodii.ConfigurationManager\Yodii.ConfigurationManager.csproj" Condition="'$(Configuration)'=='Debug'">
+    <ProjectReference Include="..\Yodii.ConfigurationManager\Yodii.ConfigurationManager.csproj">
       <Project>{81629a9c-1d0d-4d65-9e6b-2e171d81e038}</Project>
       <Name>Yodii.ConfigurationManager</Name>
     </ProjectReference>
