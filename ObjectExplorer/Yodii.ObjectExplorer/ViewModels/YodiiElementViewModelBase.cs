@@ -10,8 +10,7 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.ViewModels
 {
     [ImplementPropertyChanged]
-    public abstract class YodiiItemViewModelBase<T> : EmptyPropertyChangedHandler
-        where T : ILiveYodiiItem
+    public abstract class YodiiItemViewModelBase : EmptyPropertyChangedHandler
     {
         [AllowNull]
         public string DisplayName { get; private set; }
@@ -20,13 +19,13 @@ namespace Yodii.ObjectExplorer.ViewModels
         public string Description { get; private set; }
 
         [AllowNull]
-        public T YodiiItem { get; private set; }
+        public ILiveYodiiItem LiveItem { get; private set; }
 
         public string FullName
         {
             get
             {
-                if( YodiiItem != null ) return YodiiItem.FullName;
+                if( LiveItem != null ) return LiveItem.FullName;
                 else return null;
             }
         }
@@ -36,10 +35,10 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         }
 
-        public void LoadLiveItem( T item )
+        public void LoadLiveItem( ILiveYodiiItem item )
         {
-            if( YodiiItem != null ) { throw new InvalidOperationException( "Cannot load an item twice." ); }
-            YodiiItem = item;
+            if( LiveItem != null ) { throw new InvalidOperationException( "Cannot load an item twice." ); }
+            LiveItem = item;
             LoadTypeData();
         }
 
@@ -49,7 +48,7 @@ namespace Yodii.ObjectExplorer.ViewModels
         {
             Assembly pluginAssembly = GetItemAssembly();
 
-            Type pluginType = pluginAssembly.GetType( YodiiItem.FullName, true );
+            Type pluginType = pluginAssembly.GetType( LiveItem.FullName, true );
 
             Debug.Assert( pluginType != null, "Item Type must exist, since it sits in current AppDomain with loaded assembly" );
 

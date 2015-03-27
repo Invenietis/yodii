@@ -8,10 +8,10 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.ViewModels
 {
     [ImplementPropertyChanged]
-    public class ServiceViewModel : YodiiItemViewModelBase<ILiveServiceInfo>
+    public class ServiceViewModel : YodiiItemViewModelBase
     {
         [AllowNull]
-        public ILiveServiceInfo Service { get { return YodiiItem; } }
+        public ILiveServiceInfo Service { get { return (ILiveServiceInfo)LiveItem; } }
 
         public ServiceViewModel()
         {

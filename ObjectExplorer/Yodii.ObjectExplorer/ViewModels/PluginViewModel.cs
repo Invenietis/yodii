@@ -9,10 +9,10 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.ViewModels
 {
     [ImplementPropertyChanged]
-    public class PluginViewModel : YodiiItemViewModelBase<ILivePluginInfo>
+    public class PluginViewModel : YodiiItemViewModelBase
     {
         [AllowNull]
-        public ILivePluginInfo Plugin { get { return YodiiItem; } }
+        public ILivePluginInfo Plugin { get { return (ILivePluginInfo)LiveItem; } }
 
         public PluginViewModel()
         {

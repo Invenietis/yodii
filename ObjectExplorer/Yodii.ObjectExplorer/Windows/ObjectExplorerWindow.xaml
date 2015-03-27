@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mocks="clr-namespace:Yodii.ObjectExplorer.Mocks"
     xmlns:ckcore="clr-namespace:CK.Core;assembly=CK.Core"
+    xmlns:Controls="clr-namespace:Yodii.ObjectExplorer.Controls"
     Title="Object explorer"
     WindowStartupLocation="CenterScreen"
     Height="480"
@@ -66,10 +67,8 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate
                                     DataType="vms:PluginViewModel">
-                                    <TextBlock
-                                        TextTrimming="WordEllipsis"
-                                        VerticalAlignment="Center"
-                                        Text="{Binding Path=DisplayName}" />
+                                    <Controls:YodiiLiveItemControl
+                                        LiveItemViewModel="{Binding}" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
@@ -107,10 +106,8 @@
                             <ListView.ItemTemplate>
                                 <DataTemplate
                                     DataType="vms:ServiceViewModel">
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        TextTrimming="WordEllipsis"
-                                        Text="{Binding Path=DisplayName}" />
+                                    <Controls:YodiiLiveItemControl
+                                        LiveItemViewModel="{Binding}" />
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
