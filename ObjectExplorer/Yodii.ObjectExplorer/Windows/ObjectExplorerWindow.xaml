@@ -155,13 +155,14 @@
                 Grid.Column="1" />
             <Grid
                 Grid.Column="2">
-                <!-- Main content / selected service or plugin -->
+                <!-- Main content / no selection -->
                 <StackPanel
                     Orientation="Vertical"
                     Visibility="{Binding Path=EngineViewModel.SelectedItem, Converter={StaticResource ResourceKey=NullToVisibilityConverter}, ConverterParameter=true}">
 
                     <TextBlock
                         FontSize="18pt"
+                        TextWrapping="Wrap"
                         FontWeight="Light">
                         Select a service or plugin to see its properties.
                     </TextBlock>

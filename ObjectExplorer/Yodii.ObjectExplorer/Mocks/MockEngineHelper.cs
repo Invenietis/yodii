@@ -1,10 +1,12 @@
 ﻿#if DEBUG
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using CK.Core;
 using Yodii.Discoverer;
 using Yodii.Engine;
 using Yodii.Host;
@@ -21,9 +23,13 @@ namespace Yodii.ObjectExplorer.Mocks
         internal static StandardDiscoverer Discoverer { get; private set; }
         internal static YodiiHost Host { get; private set; }
 
+        static IActivityMonitor _m;
+
         internal static void StartDesignTimeYodiiEngine()
         {
-            Host = new YodiiHost();
+            _m = new ActivityMonitor();
+
+            Host = new YodiiHost( _m );
             Engine = new YodiiEngine( Host );
 
             // At design time, assemblies are copied somewhere in AppData\Local\Microsoft\VisualStudio\12.0\Designer\ShadowCache.
@@ -32,8 +38,13 @@ namespace Yodii.ObjectExplorer.Mocks
 
             Discoverer = new StandardDiscoverer( binPaths );
 
-            foreach( var ap in GetYodiiAssemblyPaths() )
+            string[] paths = GetYodiiAssemblyPaths();
+
+            //MessageBox.Show( String.Format( "Loading assemblies:\n\n{0}", String.Join( "\n", paths ) ) );
+
+            foreach( string ap in paths )
             {
+                _m.Trace().Send( "Opening {0}", ap );
                 Discoverer.ReadAssembly( ap );
             }
 
@@ -43,6 +54,7 @@ namespace Yodii.ObjectExplorer.Mocks
             IYodiiEngineResult result = Engine.StartEngine();
             if( result.Success == false )
             {
+                _m.Error().Send( "Failed to start design-time engine." );
                 MessageBox.Show( "Couldn't start engine." );
             }
             else
@@ -53,18 +65,36 @@ namespace Yodii.ObjectExplorer.Mocks
 
         internal static string GetAssemblyDirectory( Assembly a )
         {
-            string codeBase = a.CodeBase;
-            UriBuilder uri = new UriBuilder( codeBase );
-            string path = Uri.UnescapeDataString( uri.Path );
-            return Path.GetDirectoryName( path );
+            try
+            {
+                string codeBase = a.CodeBase;
+                UriBuilder uri = new UriBuilder( codeBase );
+                string path = Uri.UnescapeDataString( uri.Path );
+                return Path.GetDirectoryName( path );
+            }
+            catch( Exception e )
+            {
+                _m.Error().Send( e, "Error while getting Assembly Directory of {0}.", a.FullName );
+            }
+
+            return String.Empty;
         }
 
         internal static string GetAssemblyPath( Assembly a )
         {
-            string codeBase = a.CodeBase;
-            UriBuilder uri = new UriBuilder( codeBase );
-            string path = Uri.UnescapeDataString( uri.Path );
-            return Path.GetFullPath( path );
+            try
+            {
+                string codeBase = a.CodeBase;
+                UriBuilder uri = new UriBuilder( codeBase );
+                string path = Uri.UnescapeDataString( uri.Path );
+                return Path.GetFullPath( path );
+            }
+            catch( Exception e )
+            {
+                _m.Error().Send( e, "Error while getting Assembly Path of {0}.", a.FullName );
+            }
+
+            return null;
         }
 
         internal static string[] GetBinPaths()
@@ -95,13 +125,56 @@ namespace Yodii.ObjectExplorer.Mocks
         internal static string[] GetYodiiAssemblyPaths()
         {
             string[] binPaths =
-                AppDomain.CurrentDomain.GetAssemblies()
-                    .Where( x => x.FullName.StartsWith( "Yodii" ) )
+                BuildAssemblyMapFromAppDomain().Values
+                    .Where( x => x.FullName.StartsWith( "Yodii.ObjectExplorer" ) )
                     .Select( x => GetAssemblyPath( x ) )
                     .Distinct()
                     .ToArray();
 
             return binPaths;
+        }
+
+        /// <summary>
+        /// Builds an assembly map containing only the most recent assemblies (by file creation date) for each FullName from application domain.
+        /// </summary>
+        /// <returns>Dictionary mapping FullName to Assembly.</returns>
+        internal static IDictionary<string, Assembly> BuildAssemblyMapFromAppDomain()
+        {
+            Dictionary<string, Assembly> map = new Dictionary<string, Assembly>();
+            Dictionary<string, FileInfo> fileMap = new Dictionary<string, FileInfo>();
+
+            foreach( Assembly a in AppDomain.CurrentDomain.GetAssemblies() )
+            {
+                Assembly existingAssembly;
+                if( map.TryGetValue( a.FullName, out existingAssembly ) )
+                {
+                    FileInfo existingFile = fileMap[a.FullName];
+
+                    string path = GetAssemblyPath( a );
+                    if( path != null )
+                    {
+                        FileInfo newAssemblyFile = new FileInfo( path );
+
+                        if( newAssemblyFile.LastWriteTimeUtc > existingFile.LastWriteTimeUtc )
+                        {
+                            map[a.FullName] = a;
+                            fileMap[a.FullName] = newAssemblyFile;
+                        }
+                    }
+                }
+                else
+                {
+                    string path = GetAssemblyPath( a );
+                    if( path != null )
+                    {
+                        FileInfo newAssemblyFile = new FileInfo( path );
+                        map[a.FullName] = a;
+                        fileMap[a.FullName] = newAssemblyFile;
+                    }
+                }
+            }
+
+            return map;
         }
 
     }

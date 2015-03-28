@@ -84,6 +84,7 @@
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="FodyUtils\NullGuardUtils.cs" />
     <Compile Include="IObjectExplorerService.cs" />
+    <Compile Include="Mocks\ActivityMonitorMessageBoxClient.cs" />
     <Compile Include="Mocks\MockEngineHelper.cs" />
     <Compile Include="Mocks\MockLiveInfo.cs" />
     <Compile Include="Mocks\MockLivePluginInfo.cs" />
