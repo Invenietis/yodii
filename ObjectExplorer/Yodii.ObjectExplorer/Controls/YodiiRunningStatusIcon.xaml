@@ -1,0 +1,97 @@
+﻿<UserControl
+    x:Class="Yodii.ObjectExplorer.Controls.YodiiRunningStatusIcon"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    x:Name="UserControl">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary
+                    Source="../Resources/IconsResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Viewbox>
+        <!-- Icon grid -->
+        <Grid
+            Width="24"
+            Height="24">
+            <ContentControl
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch">
+                <ContentControl.Style>
+                    <Style
+                        BasedOn="{StaticResource icon}"
+                        TargetType="ContentControl">
+                        <Setter
+                            Property="Content"
+                            Value="{StaticResource icon_play}" />
+                        <Style.Triggers>
+                            <DataTrigger
+                                Binding="{Binding ElementName=UserControl, Path=RunningStatus}"
+                                Value="Running">
+                                <Setter
+                                    Property="Content"
+                                    Value="{StaticResource icon_play}" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding ElementName=UserControl, Path=RunningStatus}"
+                                Value="RunningLocked">
+                                <Setter
+                                    Property="Content"
+                                    Value="{StaticResource icon_play}" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding ElementName=UserControl, Path=RunningStatus}"
+                                Value="Stopped">
+                                <Setter
+                                    Property="Content"
+                                    Value="{StaticResource icon_pause}" />
+                            </DataTrigger>
+                            <DataTrigger
+                                Binding="{Binding ElementName=UserControl, Path=RunningStatus}"
+                                Value="Disabled">
+                                <Setter
+                                    Property="Content"
+                                    Value="{StaticResource icon_stop}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+
+            <ContentControl
+                Width="6"
+                Content="{StaticResource icon_lock}"
+                Margin="0,0,3,3"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom">
+                <ContentControl.Style>
+                    <Style
+                        BasedOn="{StaticResource icon}"
+                        TargetType="ContentControl">
+                        <Setter
+                            Property="Visibility"
+                            Value="Collapsed"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger
+                                Binding="{Binding ElementName=UserControl, Path=RunningStatus}"
+                                Value="RunningLocked">
+                                <Setter
+                                    Property="Visibility"
+                                    Value="Visible"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+
+            </ContentControl>
+        </Grid>
+
+    </Viewbox>
+</UserControl>

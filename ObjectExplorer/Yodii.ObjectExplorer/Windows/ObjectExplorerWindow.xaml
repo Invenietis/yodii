@@ -10,6 +10,7 @@
     xmlns:mocks="clr-namespace:Yodii.ObjectExplorer.Mocks"
     xmlns:ckcore="clr-namespace:CK.Core;assembly=CK.Core"
     xmlns:Controls="clr-namespace:Yodii.ObjectExplorer.Controls"
+    xmlns:Converters="clr-namespace:Yodii.ObjectExplorer.Converters"
     Title="Object explorer"
     WindowStartupLocation="CenterScreen"
     Height="480"
@@ -27,6 +28,8 @@
                     Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
                 <ResourceDictionary
                     Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+                <ResourceDictionary
+                    Source="../Resources/Converters.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 
@@ -53,10 +56,17 @@
                     MinWidth="10"
                     Width="3*" />
             </Grid.ColumnDefinitions>
-            <StackPanel
+            <Grid
                 HorizontalAlignment="Stretch"
                 Grid.Column="0">
-                <Expander
+                <Grid.RowDefinitions>
+                    <RowDefinition
+                        Height="1*" />
+                    <RowDefinition
+                        Height="1*" />
+                </Grid.RowDefinitions>
+                <GroupBox
+                    Grid.Row="1"
                     Header="Plugins">
                     <Grid>
                         <ListView
@@ -95,8 +105,9 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
-                </Expander>
-                <Expander
+                </GroupBox>
+                <GroupBox
+                    Grid.Row="0"
                     Header="Services">
                     <Grid>
                         <ListView
@@ -134,8 +145,8 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
-                </Expander>
-            </StackPanel>
+                </GroupBox>
+            </Grid>
             <GridSplitter
                 VerticalAlignment="Stretch"
                 HorizontalAlignment="Stretch"
@@ -144,12 +155,34 @@
                 Grid.Column="1" />
             <Grid
                 Grid.Column="2">
+                <!-- Main content / selected service or plugin -->
                 <StackPanel
-                    Orientation="Vertical">
+                    Orientation="Vertical"
+                    Visibility="{Binding Path=EngineViewModel.SelectedItem, Converter={StaticResource ResourceKey=NullToVisibilityConverter}, ConverterParameter=true}">
+
                     <TextBlock
-                        Text="{Binding Path=EngineViewModel.SelectedItem.DisplayName, FallbackValue=(DisplayName), TargetNullValue=''}"
                         FontSize="18pt"
-                        FontWeight="Light" />
+                        FontWeight="Light">
+                        Select a service or plugin to see its properties.
+                    </TextBlock>
+                </StackPanel>
+                <!-- Main content / selected service or plugin -->
+                <StackPanel
+                    Orientation="Vertical"
+                    Visibility="{Binding Path=EngineViewModel.SelectedItem, Converter={StaticResource ResourceKey=NullToVisibilityConverter}}">
+                    <StackPanel
+                        Orientation="Horizontal">
+                        <Controls:YodiiRunningStatusIcon
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            Width="32"
+                            Height="32"
+                            RunningStatus="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}" />
+                        <TextBlock
+                            Text="{Binding Path=EngineViewModel.SelectedItem.DisplayName, FallbackValue=(DisplayName), TargetNullValue=''}"
+                            FontSize="18pt"
+                            FontWeight="Light" />
+                    </StackPanel>
                     <TextBlock
                         FontFamily="Consolas, Courier New"
                         FontWeight="Light"
@@ -157,9 +190,10 @@
                         FontSize="8pt" />
                     <TextBlock
                         Margin="0,10"
-                        Text="{Binding Path=EngineViewModel.SelectedItem.Description, FallbackValue=(Desc), TargetNullValue=''}"
-                        />
-                    <Button Margin="10" MinHeight="30">
+                        Text="{Binding Path=EngineViewModel.SelectedItem.Description, FallbackValue=(Desc), TargetNullValue=''}" />
+                    <Button
+                        Margin="10"
+                        MinHeight="30">
                         <Button.Style>
                             <Style
                                 TargetType="Button">

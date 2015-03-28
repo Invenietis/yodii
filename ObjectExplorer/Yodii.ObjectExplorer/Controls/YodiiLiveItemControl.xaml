@@ -4,8 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:Controls="clr-namespace:Yodii.ObjectExplorer.Controls"
     mc:Ignorable="d"
-    
     x:Name="UserControl">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -22,96 +22,10 @@
             <ColumnDefinition
                 Width="*" />
         </Grid.ColumnDefinitions>
-        <!-- Icon grid -->
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition
-                    Height="1*" />
-                <RowDefinition
-                    Height="1*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition
-                    Width="*" />
-                <ColumnDefinition
-                    Width="*" />
-            </Grid.ColumnDefinitions>
 
-            <ContentControl
-                MaxHeight="18"
-                Grid.Row="0"
-                Grid.Column="0"
-                Grid.RowSpan="2"
-                Grid.ColumnSpan="2">
-                <ContentControl.Style>
-                    <Style
-                        BasedOn="{StaticResource icon}"
-                        TargetType="ContentControl">
-                        <Setter
-                            Property="Content"
-                            Value="{StaticResource icon_play}" />
-                        <Style.Triggers>
-                            <DataTrigger
-                                Binding="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}"
-                                Value="Running">
-                                <Setter
-                                    Property="Content"
-                                    Value="{StaticResource icon_play}" />
-                            </DataTrigger>
-                            <DataTrigger
-                                Binding="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}"
-                                Value="RunningLocked">
-                                <Setter
-                                    Property="Content"
-                                    Value="{StaticResource icon_play}" />
-                            </DataTrigger>
-                            <DataTrigger
-                                Binding="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}"
-                                Value="Stopped">
-                                <Setter
-                                    Property="Content"
-                                    Value="{StaticResource icon_pause}" />
-                            </DataTrigger>
-                            <DataTrigger
-                                Binding="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}"
-                                Value="Disabled">
-                                <Setter
-                                    Property="Content"
-                                    Value="{StaticResource icon_stop}" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ContentControl.Style>
-            </ContentControl>
+        <Controls:YodiiRunningStatusIcon
+            RunningStatus="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}" />
 
-            <ContentControl
-                Grid.Column="1"
-                Grid.Row="1"
-                Width="6"
-                Content="{StaticResource icon_lock}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <ContentControl.Style>
-                    <Style
-                        BasedOn="{StaticResource icon}"
-                        TargetType="ContentControl">
-                        <Setter
-                            Property="Visibility"
-                            Value="Collapsed"></Setter>
-                        <Style.Triggers>
-                            <DataTrigger
-                                Binding="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}"
-                                Value="RunningLocked">
-                                <Setter
-                                    Property="Visibility"
-                                    Value="Visible"></Setter>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ContentControl.Style>
-
-            </ContentControl>
-        </Grid>
         <TextBlock
             TextTrimming="WordEllipsis"
             VerticalAlignment="Center"

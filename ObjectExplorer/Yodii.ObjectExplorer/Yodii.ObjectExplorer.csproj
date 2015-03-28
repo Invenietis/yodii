@@ -75,9 +75,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\YodiiRunningStatusIcon.xaml.cs">
+      <DependentUpon>YodiiRunningStatusIcon.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\YodiiLiveItemControl.xaml.cs">
       <DependentUpon>YodiiLiveItemControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="FodyUtils\NullGuardUtils.cs" />
     <Compile Include="IObjectExplorerService.cs" />
     <Compile Include="Mocks\MockEngineHelper.cs" />
@@ -132,7 +136,15 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Page Include="Controls\YodiiRunningStatusIcon.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Controls\YodiiLiveItemControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Converters.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
