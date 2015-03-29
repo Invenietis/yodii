@@ -93,6 +93,7 @@
     <Compile Include="ObjectExplorerPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FodyUtils\PropertyChangedUtils.cs" />
+    <Compile Include="Controls\TreeViewItemCollection.cs" />
     <Compile Include="ViewModels\EmptyPropertyChangedHandler.cs" />
     <Compile Include="ViewModels\EngineViewModel.cs" />
     <Compile Include="ViewModels\ObjectExplorerViewModel.cs" />

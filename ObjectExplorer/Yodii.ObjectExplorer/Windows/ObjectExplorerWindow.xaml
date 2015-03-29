@@ -37,6 +37,37 @@
                         <Controls:YodiiLiveItemControl
                             LiveItemViewModel="{Binding}" />
                     </DataTemplate>
+                    <Controls:TreeViewItemCollection
+                        x:Key="StandardItemCollection">
+                        <TreeViewItem
+                            Header="Services"
+                            ItemsSource="{Binding Path=EngineViewModel.Services}"
+                            IsExpanded="True"
+                            ItemTemplate="{StaticResource ResourceKey=YodiiItemViewModelBaseTreeViewDataTemplate}">
+                            <TreeViewItem.ItemContainerStyle>
+                                <Style
+                                    TargetType="TreeViewItem">
+                                    <Setter
+                                        Property="IsSelected"
+                                        Value="{Binding Path=IsSelected}" />
+                                </Style>
+                            </TreeViewItem.ItemContainerStyle>
+                        </TreeViewItem>
+                        <TreeViewItem
+                            Header="Plugins"
+                            ItemsSource="{Binding Path=EngineViewModel.Plugins}"
+                            IsExpanded="True"
+                            ItemTemplate="{StaticResource ResourceKey=YodiiItemViewModelBaseTreeViewDataTemplate}">
+                            <TreeViewItem.ItemContainerStyle>
+                                <Style
+                                    TargetType="TreeViewItem">
+                                    <Setter
+                                        Property="IsSelected"
+                                        Value="{Binding Path=IsSelected}" />
+                                </Style>
+                            </TreeViewItem.ItemContainerStyle>
+                        </TreeViewItem>
+                    </Controls:TreeViewItemCollection>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -69,119 +100,10 @@
                 <GroupBox
                     Header="Yodii objects">
                     <TreeView
-                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                        >
-                        <TreeViewItem
-                            Header="Services"
-                            ItemsSource="{Binding Path=EngineViewModel.Services}"
-                            IsExpanded="True"
-                            ItemTemplate="{StaticResource ResourceKey=YodiiItemViewModelBaseTreeViewDataTemplate}">
-                            <TreeViewItem.ItemContainerStyle>
-                                <Style
-                                    TargetType="TreeViewItem">
-                                    <Setter
-                                        Property="IsSelected"
-                                        Value="{Binding Path=IsSelected}" />
-                                </Style>
-                            </TreeViewItem.ItemContainerStyle>
-                        </TreeViewItem>
-                        <TreeViewItem
-                            Header="Plugins"
-                            ItemsSource="{Binding Path=EngineViewModel.Plugins}"
-                            IsExpanded="True"
-                            ItemTemplate="{StaticResource ResourceKey=YodiiItemViewModelBaseTreeViewDataTemplate}">
-                            <TreeViewItem.ItemContainerStyle>
-                                <Style
-                                    TargetType="TreeViewItem">
-                                    <Setter
-                                        Property="IsSelected"
-                                        Value="{Binding Path=IsSelected}" />
-                                </Style>
-                            </TreeViewItem.ItemContainerStyle>
-                        </TreeViewItem>
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ItemsSource="{StaticResource ResourceKey=StandardItemCollection}">
                     </TreeView>
                 </GroupBox>
-                <!--<GroupBox
-                    Grid.Row="1"
-                    Header="Plugins">
-                    <Grid>
-                        <ListView
-                            Name="PluginsListView"
-                            ItemsSource="{Binding Path=EngineViewModel.Plugins}"
-                            SelectedItem="{Binding Path=EngineViewModel.SelectedPlugin}"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            BorderThickness="0,0,0,0">
-                            <ListView.ItemTemplate>
-                                <DataTemplate
-                                    DataType="vms:PluginViewModel">
-                                    <Controls:YodiiLiveItemControl
-                                        LiveItemViewModel="{Binding}" />
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-
-                        <TextBlock>
-                        No plugins.
-                            <TextBlock.Style>
-                                <Style
-                                    TargetType="TextBlock">
-                                    <Setter
-                                        Property="Visibility"
-                                        Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding ElementName=PluginsListView, Path=HasItems}"
-                                            Value="False">
-                                            <Setter
-                                                Property="Visibility"
-                                                Value="Visible"></Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
-                </GroupBox>
-                <GroupBox
-                    Grid.Row="0"
-                    Header="Services">
-                    <Grid>
-                        <ListView
-                            BorderThickness="0,0,0,0"
-                            Name="ServicesListView"
-                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                            SelectedItem="{Binding Path=EngineViewModel.SelectedService}"
-                            ItemsSource="{Binding Path=EngineViewModel.Services}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate
-                                    DataType="vms:ServiceViewModel">
-                                    <Controls:YodiiLiveItemControl
-                                        LiveItemViewModel="{Binding}" />
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                        <TextBlock>
-                        No services.
-                            <TextBlock.Style>
-                                <Style
-                                    TargetType="TextBlock">
-                                    <Setter
-                                        Property="Visibility"
-                                        Value="Collapsed" />
-                                    <Style.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding ElementName=ServicesListView, Path=HasItems}"
-                                            Value="False">
-                                            <Setter
-                                                Property="Visibility"
-                                                Value="Visible"></Setter>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
-                </GroupBox>-->
             </Grid>
             <GridSplitter
                 VerticalAlignment="Stretch"

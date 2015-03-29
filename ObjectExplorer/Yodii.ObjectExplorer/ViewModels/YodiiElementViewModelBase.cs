@@ -107,6 +107,16 @@ namespace Yodii.ObjectExplorer.ViewModels
             IsService = item is ILiveServiceInfo;
 
             LoadTypeData();
+
+            _parentEngine.PropertyChanged += _parentEngine_PropertyChanged;
+        }
+
+        void _parentEngine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+        {
+            if( e.PropertyName == "SelectedItem" )
+            {
+                RaisePropertyChanged( "IsSelected" );
+            }
         }
 
         public abstract IAssemblyInfo AssemblyInfo { get; }
