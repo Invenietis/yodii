@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace Yodii.ObjectExplorer.Controls
     /// <summary>
     /// Control that displays an icon corresponding to the running status of a Yodii live item.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public partial class YodiiRunningStatusIcon : UserControl
     {
         /// <summary>

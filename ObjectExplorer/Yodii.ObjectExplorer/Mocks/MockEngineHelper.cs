@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,6 +18,7 @@ namespace Yodii.ObjectExplorer.Mocks
     /// <summary>
     /// Helper utility used to start and handle a Yodii Engine at design time.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     static class MockEngineHelper
     {
         internal static YodiiEngine Engine { get; private set; }

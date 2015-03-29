@@ -23,8 +23,6 @@ namespace Yodii.ObjectExplorer.ViewModels
         readonly CKObservableSortedArrayKeyList<ServiceViewModel, string> _services;
         readonly CKObservableSortedArrayKeyList<PluginViewModel, string> _plugins;
 
-
-
         [AllowNull]
         public PluginViewModel SelectedPlugin { get; set; }
 
@@ -101,8 +99,8 @@ namespace Yodii.ObjectExplorer.ViewModels
             _plugins.Clear();
 
             BindCollectionChanges();
-            ResetPluginsFromEngine();
-            ResetServicesFromEngine();
+            CreatePluginsFromEngine();
+            CreateServicesFromEngine();
         }
 
         void BindCollectionChanges()
@@ -118,13 +116,13 @@ namespace Yodii.ObjectExplorer.ViewModels
                 case NotifyCollectionChangedAction.Add:
                     foreach( ILivePluginInfo p in e.NewItems.Cast<ILivePluginInfo>() )
                     {
-                        CreateAndAddPluginViewModel( p );
+                        FindOrCreatePlugin( p );
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach( ILivePluginInfo p in e.OldItems.Cast<ILivePluginInfo>() )
                     {
-                        _plugins.Remove( p.FullName );
+                        Remove( p );
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
@@ -143,13 +141,13 @@ namespace Yodii.ObjectExplorer.ViewModels
                 case NotifyCollectionChangedAction.Add:
                     foreach( ILiveServiceInfo s in e.NewItems.Cast<ILiveServiceInfo>() )
                     {
-                        CreateAndAddServiceViewModel( s );
+                        FindOrCreateService( s );
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     foreach( ILiveServiceInfo s in e.OldItems.Cast<ILiveServiceInfo>() )
                     {
-                        _services.Remove( s.FullName );
+                        Remove( s );
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
@@ -161,54 +159,120 @@ namespace Yodii.ObjectExplorer.ViewModels
             }
         }
 
-        void ResetPluginsFromEngine()
+        void CreatePluginsFromEngine()
         {
-            _plugins.Clear();
-
             if( Engine != null )
             {
                 foreach( ILivePluginInfo livePlugin in Engine.LiveInfo.Plugins )
                 {
-                    CreateAndAddPluginViewModel( livePlugin );
+                    FindOrCreatePlugin( livePlugin );
                 }
             }
         }
 
-        void ResetServicesFromEngine()
+        void CreateServicesFromEngine()
         {
-            _services.Clear();
-
             if( Engine != null )
             {
                 foreach( ILiveServiceInfo liveService in Engine.LiveInfo.Services )
                 {
-                    CreateAndAddServiceViewModel( liveService );
+                    FindOrCreateService( liveService );
                 }
             }
         }
 
-        void CreateAndAddPluginViewModel( ILivePluginInfo livePlugin )
+        PluginViewModel CreateAndAddPluginViewModel( ILivePluginInfo livePlugin )
         {
+            ServiceViewModel parentService = FindOrCreateService( livePlugin.Service );
+
             PluginViewModel vm = new PluginViewModel();
             vm.LoadLiveItem( this, livePlugin );
+
+            vm.Service = parentService;
+            if( parentService != null ) parentService.Children.Add( vm );
+
             _plugins.Add( vm );
+            return vm;
         }
 
-        void CreateAndAddServiceViewModel( ILiveServiceInfo liveService )
+        ServiceViewModel CreateAndAddServiceViewModel( ILiveServiceInfo liveService )
         {
+            ServiceViewModel parentGeneralization = FindOrCreateService( liveService.Generalization );
+
             ServiceViewModel vm = new ServiceViewModel();
             vm.LoadLiveItem( this, liveService );
+
+            vm.Generalization = parentGeneralization;
+            if( parentGeneralization != null ) parentGeneralization.Children.Add( vm );
+
             _services.Add( vm );
+            return vm;
         }
 
+        void Remove( ILiveServiceInfo s )
+        {
+            var vm = FindService( s.FullName );
+            if( vm != null )
+            {
+                if( vm.Generalization != null )
+                {
+                    vm.Generalization.Children.Remove( vm );
+                }
+
+                _services.Remove( s.FullName );
+            }
+        }
+
+        void Remove( ILivePluginInfo p )
+        {
+            var vm = FindPlugin( p.FullName );
+            if( vm != null )
+            {
+                if( vm.Service != null )
+                {
+                    vm.Service.Children.Remove( vm );
+                }
+
+                _plugins.Remove( p.FullName );
+            }
+        }
+
+        [return: AllowNull]
         public ServiceViewModel FindService( string serviceFullName )
         {
             return Services.SingleOrDefault( x => x.FullName == serviceFullName );
         }
 
+        ServiceViewModel FindOrCreateService( ILiveServiceInfo serviceInfo )
+        {
+            ServiceViewModel s = null;
+            if( serviceInfo != null )
+            {
+                s = FindService( serviceInfo.FullName );
+
+                if( s == null ) s = CreateAndAddServiceViewModel( serviceInfo );
+            }
+            return s;
+        }
+
+        [return: AllowNull]
         public PluginViewModel FindPlugin( string pluginFullName )
         {
             return Plugins.SingleOrDefault( x => x.FullName == pluginFullName );
         }
+
+        PluginViewModel FindOrCreatePlugin( ILivePluginInfo pluginInfo )
+        {
+            PluginViewModel p = null;
+            if( pluginInfo != null )
+            {
+                p = FindPlugin( pluginInfo.FullName );
+
+                if( p == null ) p = CreateAndAddPluginViewModel( pluginInfo );
+            }
+            return p;
+        }
+
+
     }
 }

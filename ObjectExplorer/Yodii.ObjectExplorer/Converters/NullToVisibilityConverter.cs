@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Yodii.ObjectExplorer.Converters
     /// <summary>
     /// Converts a Null value to Visibility.Collapsed, and a non-null value to Visibility.Visible.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class NullToVisibilityConverter : System.Windows.Data.IValueConverter
     {
         #region IValueConverter Members

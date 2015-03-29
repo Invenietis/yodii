@@ -71,6 +71,9 @@
     <Compile Include="TestYodiiObjects\IMyYodiiService.cs" />
     <Compile Include="TestYodiiObjects\PluginWithDisplayAttribute.cs" />
     <Compile Include="TestYodiiObjects\MyYodiiPlugin.cs" />
+    <Compile Include="TestYodiiObjects\PluginWithoutService.cs" />
+    <Compile Include="TestYodiiObjects\ISubService.cs" />
+    <Compile Include="TestYodiiObjects\SubServicePlugin.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

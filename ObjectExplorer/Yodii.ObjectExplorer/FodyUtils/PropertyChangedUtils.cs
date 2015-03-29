@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 /// <summary>
 /// These marker attributes are usually present in PropertyChanged.Fody (PropertyChanged.dll).
@@ -8,6 +9,7 @@
 namespace PropertyChanged
 {
     [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false )]
+    [ExcludeFromCodeCoverage]
     public class AlsoNotifyForAttribute : Attribute
     {
         public AlsoNotifyForAttribute( string property ) { }
@@ -15,11 +17,13 @@ namespace PropertyChanged
     }
 
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false )]
+    [ExcludeFromCodeCoverage]
     public class DoNotNotifyAttribute : Attribute
     {
     }
 
     [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false )]
+    [ExcludeFromCodeCoverage]
     public class DependsOnAttribute : Attribute
     {
         public DependsOnAttribute( string dependency ) { }
@@ -27,11 +31,13 @@ namespace PropertyChanged
     }
 
     [AttributeUsage( AttributeTargets.Property | AttributeTargets.Field )]
+    [ExcludeFromCodeCoverage]
     public class DoNotCheckEqualityAttribute : Attribute
     {
     }
 
     [AttributeUsage( AttributeTargets.Class, Inherited = false )]
+    [ExcludeFromCodeCoverage]
     public class ImplementPropertyChangedAttribute : Attribute
     {
     }

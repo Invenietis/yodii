@@ -1,5 +1,6 @@
 #if DEBUG
 using System;
+using System.Diagnostics.CodeAnalysis;
 using PropertyChanged;
 using Yodii.Engine;
 using Yodii.Model;
@@ -7,6 +8,7 @@ using Yodii.Model;
 namespace Yodii.ObjectExplorer.Mocks
 {
     [ImplementPropertyChanged]
+    [ExcludeFromCodeCoverage]
     public class MockYodiiEngineProxy : IYodiiEngineProxy
     {
         private YodiiEngine Engine { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using PropertyChanged;
 using Yodii.Model;
@@ -8,6 +9,7 @@ using Yodii.ObjectExplorer.ViewModels;
 namespace Yodii.ObjectExplorer.Mocks
 {
     [ImplementPropertyChanged]
+    [ExcludeFromCodeCoverage]
     public class MockObjectExplorerViewModel : ObjectExplorerViewModel
     {
 #if DEBUG

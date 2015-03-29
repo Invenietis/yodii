@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Yodii.ObjectExplorer.Windows
     /// <summary>
     /// Interaction logic for ObjectExplorerWindow.xaml
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public partial class ObjectExplorerWindow
     {
         IConfigurationManagerWrapper _configurationManager;
@@ -36,6 +38,7 @@ namespace Yodii.ObjectExplorer.Windows
         }
     }
 
+    [ExcludeFromCodeCoverage]
     public class BindingErrorListener : TraceListener
     {
         private Action<string> logAction;

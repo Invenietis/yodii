@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
@@ -56,6 +57,8 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         EngineViewModel _parentEngine;
 
+        protected EngineViewModel EngineViewModel { get { return _parentEngine; } }
+
         public ICommand StartItemCommand { get; private set; }
         public ICommand StopItemCommand { get; private set; }
 
@@ -109,6 +112,8 @@ namespace Yodii.ObjectExplorer.ViewModels
             LoadTypeData();
 
             _parentEngine.PropertyChanged += _parentEngine_PropertyChanged;
+
+            OnLoaded();
         }
 
         void _parentEngine_PropertyChanged( object sender, System.ComponentModel.PropertyChangedEventArgs e )
@@ -120,6 +125,14 @@ namespace Yodii.ObjectExplorer.ViewModels
         }
 
         public abstract IAssemblyInfo AssemblyInfo { get; }
+
+        public abstract YodiiItemViewModelBase Parent { get; }
+
+        public abstract ObservableCollection<YodiiItemViewModelBase> Children { get; }
+
+        protected virtual void OnLoaded()
+        {
+        }
 
         void LoadTypeData()
         {

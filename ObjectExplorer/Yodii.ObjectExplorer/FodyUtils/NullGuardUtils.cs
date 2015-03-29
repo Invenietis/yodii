@@ -1,11 +1,13 @@
 ﻿
 using System;
+using System.Diagnostics.CodeAnalysis;
 namespace NullGuard
 {
     /// <summary>
     /// Prevents the injection of null checking.
     /// </summary>
     [AttributeUsage( AttributeTargets.Parameter | AttributeTargets.ReturnValue | AttributeTargets.Property )]
+    [ExcludeFromCodeCoverage]
     public class AllowNullAttribute : Attribute
     {
     }
@@ -13,6 +15,7 @@ namespace NullGuard
     /// <summary>
     /// Allow specific categories of members to be targeted for injection. <seealso cref="ValidationFlags"/>
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [AttributeUsage( AttributeTargets.Assembly | AttributeTargets.Class )]
     public class NullGuardAttribute : Attribute
     {

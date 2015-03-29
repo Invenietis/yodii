@@ -110,7 +110,7 @@ namespace Yodii.ObjectExplorer.Tests
             }
         }
         [Test]
-        public void ServiceViewModel_IsSelected_CorrectlyChanges_EngineViewModel_SelectedItem()
+        public void EngineViewModel_CorrectlyChanges_SelectedItem()
         {
             using( var ctx = new YodiiRuntimeTestContext( Assembly.GetExecutingAssembly() ) )
             {
@@ -125,6 +125,8 @@ namespace Yodii.ObjectExplorer.Tests
 
                 ServiceViewModel svm = evm.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
                 PluginViewModel pvm = evm.FindPlugin( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.PluginWithDisplayAttribute" );
+
+                // Test SelectedItem
 
                 Assert.That( evm.SelectedItem, Is.Null, "SelectedItem starts null" );
                 Assert.That( evm.SelectedPlugin, Is.Null, "SelectedPlugin starts null" );
@@ -191,6 +193,59 @@ namespace Yodii.ObjectExplorer.Tests
                 Assert.That( evm.SelectedService, Is.Null );
                 Assert.That( svm.IsSelected, Is.False );
                 Assert.That( pvm.IsSelected, Is.True );
+
+                // Test SelectedPlugin and SelectedService
+                // Plugin is currently selected
+                evm.SelectedService = null; // No change (service wasn't selected anyway)
+                Assert.That( evm.SelectedItem, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedPlugin, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.True );
+
+                evm.SelectedPlugin = null;
+                Assert.That( evm.SelectedItem, Is.Null );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                evm.SelectedPlugin = pvm;
+                Assert.That( evm.SelectedItem, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedPlugin, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.True );
+
+                evm.SelectedService = svm;
+                Assert.That( evm.SelectedItem, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedService, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.True );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                evm.SelectedPlugin = pvm;
+                Assert.That( evm.SelectedItem, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedPlugin, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.True );
+
+                evm.SelectedService = svm;
+                Assert.That( evm.SelectedItem, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedService, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.True );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                evm.SelectedPlugin = null; // No change (plugin wasn't selected)
+                Assert.That( evm.SelectedItem, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedService, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.True );
+                Assert.That( pvm.IsSelected, Is.False );
+
+
             }
         }
     }
