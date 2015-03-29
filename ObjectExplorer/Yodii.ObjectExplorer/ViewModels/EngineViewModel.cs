@@ -32,6 +32,8 @@ namespace Yodii.ObjectExplorer.ViewModels
         [AllowNull]
         public YodiiItemViewModelBase SelectedItem { get; set; }
 
+        public ICommand SelectItemCommand { get; private set; }
+
         bool _changingSelect;
         public void OnSelectedPluginChanged()
         {
@@ -88,6 +90,13 @@ namespace Yodii.ObjectExplorer.ViewModels
             _services = new CKObservableSortedArrayKeyList<ServiceViewModel, string>( x => x.Service.FullName, false );
             _plugins = new CKObservableSortedArrayKeyList<PluginViewModel, string>( x => x.Plugin.FullName, false );
 
+            SelectItemCommand = new RelayCommand<YodiiItemViewModelBase>( ( vm ) =>
+            {
+                SelectedItem = vm;
+            }, ( vm ) =>
+            {
+                return true;
+            } );
         }
 
         public void LoadEngine( IYodiiEngineProxy engine )

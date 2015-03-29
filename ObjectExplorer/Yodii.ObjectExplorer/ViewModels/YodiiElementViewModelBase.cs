@@ -61,6 +61,7 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         public ICommand StartItemCommand { get; private set; }
         public ICommand StopItemCommand { get; private set; }
+        public ICommand SelectItemCommand { get; private set; }
 
         public string FullName
         {
@@ -68,6 +69,24 @@ namespace Yodii.ObjectExplorer.ViewModels
             {
                 if( LiveItem != null ) return LiveItem.FullName;
                 else return null;
+            }
+        }
+
+        [AllowNull]
+        public ServiceViewModel AsService
+        {
+            get
+            {
+                return this as ServiceViewModel;
+            }
+        }
+
+        [AllowNull]
+        public PluginViewModel AsPlugin
+        {
+            get
+            {
+                return this as PluginViewModel;
             }
         }
 
@@ -112,6 +131,8 @@ namespace Yodii.ObjectExplorer.ViewModels
             LoadTypeData();
 
             _parentEngine.PropertyChanged += _parentEngine_PropertyChanged;
+
+            SelectItemCommand = _parentEngine.SelectItemCommand;
 
             OnLoaded();
         }

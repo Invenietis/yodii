@@ -127,8 +127,9 @@
                 </StackPanel>
                 <!-- Main content / selected service or plugin -->
                 <StackPanel
+                    DataContext="{Binding Path=EngineViewModel.SelectedItem}"
                     Orientation="Vertical"
-                    Visibility="{Binding Path=EngineViewModel.SelectedItem, Converter={StaticResource ResourceKey=NullToVisibilityConverter}}">
+                    Visibility="{Binding Converter={StaticResource ResourceKey=NullToVisibilityConverter}}">
                     <StackPanel
                         Orientation="Horizontal">
                         <Controls:YodiiRunningStatusIcon
@@ -136,20 +137,34 @@
                             VerticalContentAlignment="Stretch"
                             Width="32"
                             Height="32"
-                            RunningStatus="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}" />
+                            RunningStatus="{Binding Path=LiveItem.RunningStatus}" />
                         <TextBlock
-                            Text="{Binding Path=EngineViewModel.SelectedItem.DisplayName, FallbackValue=(DisplayName), TargetNullValue=''}"
+                            Text="{Binding Path=DisplayName, FallbackValue=(DisplayName), TargetNullValue=''}"
                             FontSize="18pt"
                             FontWeight="Light" />
                     </StackPanel>
                     <TextBlock
                         FontFamily="Consolas, Courier New"
                         FontWeight="Light"
-                        Text="{Binding Path=EngineViewModel.SelectedItem.FullName, FallbackValue=(FullName)}"
+                        Text="{Binding Path=FullName, FallbackValue=(FullName), Mode=OneWay}"
                         FontSize="8pt" />
                     <TextBlock
+                        DataContext="{Binding AsPlugin, Mode=OneWay}"
+                        Visibility="{Binding Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                        Yodii plugin.
+                        <TextBlock
+                            Visibility="{Binding Service, Converter={StaticResource NullToVisibilityConverter}, Mode=OneWay}">
+                            Implements
+                            <Hyperlink Command="{Binding SelectItemCommand}" CommandParameter="{Binding Service}">
+                                <Run
+                                    Text="{Binding Service.DisplayName, Mode=OneWay}" />
+                            </Hyperlink>
+                        </TextBlock>
+                    
+                    </TextBlock>
+                    <TextBlock
                         Margin="0,10"
-                        Text="{Binding Path=EngineViewModel.SelectedItem.Description, FallbackValue=(Desc), TargetNullValue=''}" />
+                        Text="{Binding Path=Description, FallbackValue=(Desc), TargetNullValue=''}" />
                     <Button
                         Margin="10"
                         MinHeight="30">
@@ -164,7 +179,7 @@
                                 </Setter>
                                 <Style.Triggers>
                                     <DataTrigger
-                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Binding="{Binding Path=LiveItem.RunningStatus}"
                                         Value="Disabled">
                                         <Setter
                                             Property="Content">
@@ -174,10 +189,10 @@
                                         </Setter>
                                         <Setter
                                             Property="Command"
-                                            Value="{Binding Path=EngineViewModel.SelectedItem.StartItemCommand}" />
+                                            Value="{Binding Path=StartItemCommand}" />
                                     </DataTrigger>
                                     <DataTrigger
-                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Binding="{Binding Path=LiveItem.RunningStatus}"
                                         Value="Stopped">
                                         <Setter
                                             Property="Content">
@@ -187,10 +202,10 @@
                                         </Setter>
                                         <Setter
                                             Property="Command"
-                                            Value="{Binding Path=EngineViewModel.SelectedItem.StartItemCommand}" />
+                                            Value="{Binding Path=StartItemCommand}" />
                                     </DataTrigger>
                                     <DataTrigger
-                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Binding="{Binding Path=LiveItem.RunningStatus}"
                                         Value="Running">
                                         <Setter
                                             Property="Content">
@@ -200,10 +215,10 @@
                                         </Setter>
                                         <Setter
                                             Property="Command"
-                                            Value="{Binding Path=EngineViewModel.SelectedItem.StopItemCommand}" />
+                                            Value="{Binding Path=StopItemCommand}" />
                                     </DataTrigger>
                                     <DataTrigger
-                                        Binding="{Binding Path=EngineViewModel.SelectedItem.LiveItem.RunningStatus}"
+                                        Binding="{Binding Path=LiveItem.RunningStatus}"
                                         Value="RunningLocked">
                                         <Setter
                                             Property="Content">
@@ -213,7 +228,7 @@
                                         </Setter>
                                         <Setter
                                             Property="Command"
-                                            Value="{Binding Path=EngineViewModel.SelectedItem.StopItemCommand}" />
+                                            Value="{Binding Path=StopItemCommand}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

@@ -3,4 +3,6 @@
                     xmlns:Converters="clr-namespace:Yodii.ObjectExplorer.Converters">
     <Converters:NullToVisibilityConverter
         x:Key="NullToVisibilityConverter" />
+    <BooleanToVisibilityConverter
+        x:Key="BooleanToVisibilityConverter" />
 </ResourceDictionary>
