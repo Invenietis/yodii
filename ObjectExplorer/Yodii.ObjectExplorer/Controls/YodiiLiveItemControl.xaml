@@ -27,7 +27,7 @@
             RunningStatus="{Binding ElementName=UserControl, Path=LiveItemViewModel.LiveItem.RunningStatus}" />
 
         <TextBlock
-            TextTrimming="WordEllipsis"
+            TextTrimming="CharacterEllipsis"
             VerticalAlignment="Center"
             Grid.Column="1"
             Text="{Binding ElementName=UserControl, Path=LiveItemViewModel.DisplayName, TargetNullValue=(DisplayName), FallbackValue=(DisplayName)}" />

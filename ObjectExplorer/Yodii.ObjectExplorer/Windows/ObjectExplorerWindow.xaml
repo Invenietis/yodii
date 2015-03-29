@@ -30,9 +30,16 @@
                     Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
                 <ResourceDictionary
                     Source="../Resources/Converters.xaml"></ResourceDictionary>
+                <ResourceDictionary>
+                    <DataTemplate
+                        DataType="vms:YodiiItemViewModelBase"
+                        x:Key="YodiiItemViewModelBaseTreeViewDataTemplate">
+                        <Controls:YodiiLiveItemControl
+                            LiveItemViewModel="{Binding}" />
+                    </DataTemplate>
+                </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-
     </Metro:MetroWindow.Resources>
     <Metro:MetroWindow.RightWindowCommands>
         <Metro:WindowCommands>
@@ -48,24 +55,53 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition
                     MinWidth="10"
-                    Width="1*" />
+                    Width="200" />
                 <ColumnDefinition
                     MinWidth="10"
                     Width="Auto" />
                 <ColumnDefinition
                     MinWidth="10"
-                    Width="3*" />
+                    Width="2*" />
             </Grid.ColumnDefinitions>
             <Grid
                 HorizontalAlignment="Stretch"
                 Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition
-                        Height="1*" />
-                    <RowDefinition
-                        Height="1*" />
-                </Grid.RowDefinitions>
                 <GroupBox
+                    Header="Yodii objects">
+                    <TreeView
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        >
+                        <TreeViewItem
+                            Header="Services"
+                            ItemsSource="{Binding Path=EngineViewModel.Services}"
+                            IsExpanded="True"
+                            ItemTemplate="{StaticResource ResourceKey=YodiiItemViewModelBaseTreeViewDataTemplate}">
+                            <TreeViewItem.ItemContainerStyle>
+                                <Style
+                                    TargetType="TreeViewItem">
+                                    <Setter
+                                        Property="IsSelected"
+                                        Value="{Binding Path=IsSelected}" />
+                                </Style>
+                            </TreeViewItem.ItemContainerStyle>
+                        </TreeViewItem>
+                        <TreeViewItem
+                            Header="Plugins"
+                            ItemsSource="{Binding Path=EngineViewModel.Plugins}"
+                            IsExpanded="True"
+                            ItemTemplate="{StaticResource ResourceKey=YodiiItemViewModelBaseTreeViewDataTemplate}">
+                            <TreeViewItem.ItemContainerStyle>
+                                <Style
+                                    TargetType="TreeViewItem">
+                                    <Setter
+                                        Property="IsSelected"
+                                        Value="{Binding Path=IsSelected}" />
+                                </Style>
+                            </TreeViewItem.ItemContainerStyle>
+                        </TreeViewItem>
+                    </TreeView>
+                </GroupBox>
+                <!--<GroupBox
                     Grid.Row="1"
                     Header="Plugins">
                     <Grid>
@@ -145,7 +181,7 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
-                </GroupBox>
+                </GroupBox>-->
             </Grid>
             <GridSplitter
                 VerticalAlignment="Stretch"

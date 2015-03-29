@@ -28,7 +28,33 @@ namespace Yodii.ObjectExplorer.ViewModels
 
         public bool IsService { get; private set; }
 
-        IYodiiEngineProxy _parentEngine;
+        public bool IsSelected
+        {
+            get
+            {
+                if( _parentEngine != null )
+                {
+                    return _parentEngine.SelectedItem == this;
+                }
+                return false;
+            }
+            set
+            {
+                if( _parentEngine != null )
+                {
+                    if( value == true )
+                    {
+                        _parentEngine.SelectedItem = this;
+                    }
+                    else if( _parentEngine.SelectedItem == this )
+                    {
+                        _parentEngine.SelectedItem = null;
+                    }
+                }
+            }
+        }
+
+        EngineViewModel _parentEngine;
 
         public ICommand StartItemCommand { get; private set; }
         public ICommand StopItemCommand { get; private set; }
@@ -48,7 +74,7 @@ namespace Yodii.ObjectExplorer.ViewModels
             {
                 if( _parentEngine != null )
                 {
-                    _parentEngine.StartItem( LiveItem );
+                    _parentEngine.Engine.StartItem( LiveItem );
                 }
             }, () =>
             {
@@ -59,7 +85,7 @@ namespace Yodii.ObjectExplorer.ViewModels
             {
                 if( _parentEngine != null )
                 {
-                    _parentEngine.StopItem( LiveItem );
+                    _parentEngine.Engine.StopItem( LiveItem );
                 }
             }, () =>
             {
@@ -67,7 +93,7 @@ namespace Yodii.ObjectExplorer.ViewModels
             } );
         }
 
-        public void LoadLiveItem( IYodiiEngineProxy parentEngine, ILiveYodiiItem item )
+        public void LoadLiveItem( EngineViewModel parentEngine, ILiveYodiiItem item )
         {
             if( parentEngine == null ) throw new ArgumentNullException( "parentEngine" );
             if( item == null ) throw new ArgumentNullException( "item" );

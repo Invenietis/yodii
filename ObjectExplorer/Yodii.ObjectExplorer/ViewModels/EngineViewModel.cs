@@ -59,6 +59,31 @@ namespace Yodii.ObjectExplorer.ViewModels
                 _changingSelect = false;
             }
         }
+        public void OnSelectedItemChanged()
+        {
+            if( !_changingSelect )
+            {
+                _changingSelect = true;
+
+                if( SelectedItem is ServiceViewModel )
+                {
+                    SelectedService = (ServiceViewModel)SelectedItem;
+                    SelectedPlugin = null;
+                }
+                else if( SelectedItem is PluginViewModel )
+                {
+                    SelectedPlugin = (PluginViewModel)SelectedItem;
+                    SelectedService = null;
+                }
+                else
+                {
+                    SelectedPlugin = null;
+                    SelectedService = null;
+                }
+
+                _changingSelect = false;
+            }
+        }
 
         public EngineViewModel()
         {
@@ -116,7 +141,7 @@ namespace Yodii.ObjectExplorer.ViewModels
             switch( e.Action )
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach( ILiveServiceInfo s in e.NewItems.Cast<ILiveServiceInfo>())
+                    foreach( ILiveServiceInfo s in e.NewItems.Cast<ILiveServiceInfo>() )
                     {
                         CreateAndAddServiceViewModel( s );
                     }
@@ -165,15 +190,25 @@ namespace Yodii.ObjectExplorer.ViewModels
         void CreateAndAddPluginViewModel( ILivePluginInfo livePlugin )
         {
             PluginViewModel vm = new PluginViewModel();
-            vm.LoadLiveItem( Engine, livePlugin );
+            vm.LoadLiveItem( this, livePlugin );
             _plugins.Add( vm );
         }
 
         void CreateAndAddServiceViewModel( ILiveServiceInfo liveService )
         {
             ServiceViewModel vm = new ServiceViewModel();
-            vm.LoadLiveItem( Engine, liveService );
+            vm.LoadLiveItem( this, liveService );
             _services.Add( vm );
+        }
+
+        public ServiceViewModel FindService( string serviceFullName )
+        {
+            return Services.SingleOrDefault( x => x.FullName == serviceFullName );
+        }
+
+        public PluginViewModel FindPlugin( string pluginFullName )
+        {
+            return Plugins.SingleOrDefault( x => x.FullName == pluginFullName );
         }
     }
 }

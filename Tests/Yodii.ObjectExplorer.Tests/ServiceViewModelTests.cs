@@ -30,8 +30,11 @@ namespace Yodii.ObjectExplorer.Tests
                 CollectionAssert.IsNotEmpty( ctx.Engine.LiveInfo.Services );
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.Services.First();
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                vm.LoadLiveItem( evm, s );
                 Assert.That( vm.Service, Is.Not.Null );
             }
         }
@@ -44,9 +47,12 @@ namespace Yodii.ObjectExplorer.Tests
                 CollectionAssert.IsNotEmpty( ctx.Engine.LiveInfo.Services );
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.Services.First();
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
-                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveItem( ctx.GenericEngineProxy, s ) );
+                vm.LoadLiveItem( evm, s );
+                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveItem( evm, s ) );
             }
         }
 
@@ -58,8 +64,10 @@ namespace Yodii.ObjectExplorer.Tests
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IServiceWithDisplayAttribute" );
                 Assert.That( s, Is.Not.Null );
 
-                ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
+                ServiceViewModel vm = evm.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IServiceWithDisplayAttribute" );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "My service (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
                 Assert.That( vm.Description, Is.EqualTo( "A service with a display attribute." ), "Description should be retrieved from Display attribute" );
@@ -74,8 +82,10 @@ namespace Yodii.ObjectExplorer.Tests
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
                 Assert.That( s, Is.Not.Null );
 
-                ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
+                ServiceViewModel vm = evm.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "IMyYodiiService" ), "DisplayName should be the interface name without namespace when Display attribute's Name property is not used" );
                 Assert.That( vm.Description, Is.EqualTo( String.Empty ), "Description should be empty when Display's Description is unused" );
@@ -90,11 +100,97 @@ namespace Yodii.ObjectExplorer.Tests
                 ILiveServiceInfo s = ctx.Engine.LiveInfo.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
                 Assert.That( s, Is.Not.Null );
 
-                ServiceViewModel vm = new ServiceViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
+                ServiceViewModel vm = evm.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
 
                 Assert.That( vm.LiveItem, Is.EqualTo( s ), "Live item should be the loaded live info" );
                 Assert.That( vm.AssemblyInfo, Is.EqualTo( s.ServiceInfo.AssemblyInfo ), "AssemblyInfo should be the live items's assembly info" );
+            }
+        }
+        [Test]
+        public void ServiceViewModel_IsSelected_CorrectlyChanges_EngineViewModel_SelectedItem()
+        {
+            using( var ctx = new YodiiRuntimeTestContext( Assembly.GetExecutingAssembly() ) )
+            {
+                ILiveServiceInfo s = ctx.Engine.LiveInfo.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
+                Assert.That( s, Is.Not.Null );
+
+                ILivePluginInfo p = ctx.Engine.LiveInfo.FindPlugin( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.PluginWithDisplayAttribute" );
+                Assert.That( p, Is.Not.Null );
+
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
+                ServiceViewModel svm = evm.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IMyYodiiService" );
+                PluginViewModel pvm = evm.FindPlugin( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.PluginWithDisplayAttribute" );
+
+                Assert.That( evm.SelectedItem, Is.Null, "SelectedItem starts null" );
+                Assert.That( evm.SelectedPlugin, Is.Null, "SelectedPlugin starts null" );
+                Assert.That( evm.SelectedService, Is.Null, "SelectedService starts null" );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                evm.SelectedItem = pvm;
+                Assert.That( evm.SelectedItem, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedPlugin, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.True );
+
+                evm.SelectedItem = svm;
+                Assert.That( evm.SelectedItem, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedService, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.True );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                evm.SelectedItem = null;
+                Assert.That( evm.SelectedItem, Is.Null );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                pvm.IsSelected = true;
+                Assert.That( evm.SelectedItem, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedPlugin, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.True );
+
+                pvm.IsSelected = false;
+                Assert.That( evm.SelectedItem, Is.Null );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                pvm.IsSelected = true;
+                svm.IsSelected = true;
+                pvm.IsSelected = false;
+                Assert.That( evm.SelectedItem, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedService, Is.EqualTo( svm ) );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.True );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                svm.IsSelected = false;
+                Assert.That( evm.SelectedItem, Is.Null );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( evm.SelectedPlugin, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.False );
+
+                svm.IsSelected = true;
+                pvm.IsSelected = true;
+                svm.IsSelected = false;
+                Assert.That( evm.SelectedItem, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedPlugin, Is.EqualTo( pvm ) );
+                Assert.That( evm.SelectedService, Is.Null );
+                Assert.That( svm.IsSelected, Is.False );
+                Assert.That( pvm.IsSelected, Is.True );
             }
         }
     }

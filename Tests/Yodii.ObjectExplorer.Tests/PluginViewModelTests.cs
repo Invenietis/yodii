@@ -30,8 +30,11 @@ namespace Yodii.ObjectExplorer.Tests
                 CollectionAssert.IsNotEmpty( ctx.Engine.LiveInfo.Plugins );
                 ILivePluginInfo s = ctx.Engine.LiveInfo.Plugins.First();
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                vm.LoadLiveItem( evm, s );
                 Assert.That( vm.Plugin, Is.Not.Null );
             }
         }
@@ -44,9 +47,12 @@ namespace Yodii.ObjectExplorer.Tests
                 CollectionAssert.IsNotEmpty( ctx.Engine.LiveInfo.Plugins );
                 ILivePluginInfo s = ctx.Engine.LiveInfo.Plugins.First();
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
-                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveItem( ctx.GenericEngineProxy, s ) );
+                vm.LoadLiveItem( evm, s );
+                Assert.Throws<InvalidOperationException>( () => vm.LoadLiveItem( evm, s ) );
             }
         }
 
@@ -58,8 +64,11 @@ namespace Yodii.ObjectExplorer.Tests
                 ILivePluginInfo s = ctx.Engine.LiveInfo.FindPlugin( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.PluginWithDisplayAttribute" );
                 Assert.That( s, Is.Not.Null );
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                vm.LoadLiveItem( evm, s );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "Yodii item (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
                 Assert.That( vm.Description, Is.EqualTo( "Some test item with a name and description." ), "Description should be retrieved from Display attribute" );
@@ -75,8 +84,11 @@ namespace Yodii.ObjectExplorer.Tests
                 ILivePluginInfo s = ctx.Engine.LiveInfo.FindPlugin( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.MyYodiiPlugin" );
                 Assert.That( s, Is.Not.Null );
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                vm.LoadLiveItem( evm, s );
 
                 Assert.That( vm.DisplayName, Is.EqualTo( "MyYodiiPlugin" ), "DisplayName should be the class name without namespace when Display attribute's Name property is not used" );
                 Assert.That( vm.Description, Is.EqualTo( String.Empty ), "Description should be empty when Display's Description is unused" );
@@ -92,8 +104,11 @@ namespace Yodii.ObjectExplorer.Tests
                 ILivePluginInfo s = ctx.Engine.LiveInfo.FindPlugin( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.MyYodiiPlugin" );
                 Assert.That( s, Is.Not.Null );
 
+                EngineViewModel evm = new EngineViewModel();
+                evm.LoadEngine( ctx.GenericEngineProxy );
+
                 PluginViewModel vm = new PluginViewModel();
-                vm.LoadLiveItem( ctx.GenericEngineProxy, s );
+                vm.LoadLiveItem( evm, s );
 
                 Assert.That( vm.LiveItem, Is.EqualTo( s ), "Live item should be the loaded live info" );
                 Assert.That( vm.AssemblyInfo, Is.EqualTo( s.PluginInfo.AssemblyInfo ), "AssemblyInfo should be the live items's assembly info" );
