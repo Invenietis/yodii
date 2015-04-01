@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
@@ -163,35 +164,31 @@ namespace Yodii.ObjectExplorer.ViewModels
 
             Debug.Assert( pluginType != null, "Item Type must exist, since it sits in current AppDomain with loaded assembly" );
 
-            Attribute a = Attribute.GetCustomAttributes( pluginType )
-                .Where( attr => attr is YodiiItemBaseAttribute )
+            DisplayNameAttribute displayNameAttribute = Attribute.GetCustomAttributes( pluginType )
+                .Where( attr => attr is DisplayNameAttribute )
+                .Cast<DisplayNameAttribute>()
                 .SingleOrDefault();
 
-            if( a != null )
+            if( displayNameAttribute != null && !String.IsNullOrWhiteSpace( displayNameAttribute.DisplayName ) )
             {
-                YodiiItemBaseAttribute da = (YodiiItemBaseAttribute)a;
-
-                if( !String.IsNullOrWhiteSpace( da.DisplayName ) )
-                {
-                    DisplayName = da.DisplayName;
-                }
-                else
-                {
-                    DisplayName = pluginType.Name;
-                }
-
-                if( !String.IsNullOrWhiteSpace( da.Description ) )
-                {
-                    Description = da.Description;
-                }
-                else
-                {
-                    Description = String.Empty;
-                }
+                DisplayName = displayNameAttribute.DisplayName;
             }
             else
             {
                 DisplayName = pluginType.Name;
+            }
+
+            DescriptionAttribute descriptionAttribute = Attribute.GetCustomAttributes( pluginType )
+                .Where( attr => attr is DescriptionAttribute )
+                .Cast<DescriptionAttribute>()
+                .SingleOrDefault();
+
+            if( descriptionAttribute != null && !String.IsNullOrWhiteSpace( descriptionAttribute.Description ) )
+            {
+                Description = descriptionAttribute.Description;
+            }
+            else
+            {
                 Description = String.Empty;
             }
         }

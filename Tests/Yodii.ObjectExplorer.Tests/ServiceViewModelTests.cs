@@ -69,7 +69,8 @@ namespace Yodii.ObjectExplorer.Tests
 
                 ServiceViewModel vm = evm.FindService( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IServiceWithDisplayAttribute" );
 
-                Assert.That( vm.DisplayName, Is.EqualTo( "My service (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
+                //Assert.That( vm.DisplayName, Is.EqualTo( "My service (with display attribute)" ), "DisplayName should be retrieved from Display attribute's Name property" );
+                Assert.That( vm.DisplayName, Is.EqualTo( "IServiceWithDisplayAttribute" ), "DisplayName is not supported by interfaces and cannot be set for a service." );
                 Assert.That( vm.Description, Is.EqualTo( "A service with a display attribute." ), "Description should be retrieved from Display attribute" );
                 Assert.That( vm.FullName, Is.EqualTo( "Yodii.ObjectExplorer.Tests.TestYodiiObjects.IServiceWithDisplayAttribute" ), "FullName is equal to the service's FullName" );
             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,8 @@ using Yodii.Wpf;
 
 namespace Yodii.ObjectExplorer
 {
-    [YodiiPlugin( DisplayName = "Object explorer", Description = "Yodii object explorer." )]
+    [DisplayName( "Object explorer" )]
+    [Description( "Yodii object explorer." )]
     public class ObjectExplorerPlugin : WindowPluginBase, IObjectExplorerService
     {
         readonly IYodiiEngineProxy _engine;

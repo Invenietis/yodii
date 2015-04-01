@@ -34,6 +34,7 @@ namespace Yodii.ObjectExplorer.ViewModels
             internal set;
         }
 
+        [AllowNull]
         public override YodiiItemViewModelBase Parent
         {
             get
