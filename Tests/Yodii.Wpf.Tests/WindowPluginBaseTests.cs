@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using NUnit.Framework;
 using Yodii.Engine;
+using Yodii.Engine.Tests;
 using Yodii.Host;
 using Yodii.Model;
 using Yodii.Wpf.Win32;
@@ -193,7 +194,7 @@ namespace Yodii.Wpf.Tests
 
             runningConfig.Layers.Add( l );
 
-            using( var ctx = new YodiiRuntimeTestContext(runningConfig) )
+            using( var ctx = new YodiiRuntimeTestContext( runningConfig ) )
             {
                 ILivePluginInfo pluginLive = ctx.FindLivePlugin<TestWindowPlugin>();
                 Assert.That( pluginLive, Is.Not.Null, "Plugin should exist" );

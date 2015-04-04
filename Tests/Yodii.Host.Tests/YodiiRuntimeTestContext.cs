@@ -8,7 +8,7 @@ using Yodii.Engine;
 using Yodii.Host;
 using Yodii.Model;
 
-namespace Yodii.Wpf.Tests
+namespace Yodii.Engine.Tests
 {
     /// <summary>
     /// Wraps and starts a Yodii engine, which is then stopped on Dispose.
@@ -93,6 +93,28 @@ namespace Yodii.Wpf.Tests
         public static ILivePluginInfo FindLivePlugin<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiPlugin
         {
             return @this.Engine.LiveInfo.FindPlugin( typeof( T ).FullName );
+        }
+
+        public static YodiiRuntimeTestContext StartService( this YodiiRuntimeTestContext @this, string serviceFullName )
+        {
+            var result = @this.Engine.StartService( serviceFullName );
+
+            Assert.That( result.Success, Is.True, String.Format( "Service {0} failed to start.", serviceFullName ) );
+
+            return @this;
+        }
+        public static YodiiRuntimeTestContext StartService<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiService
+        {
+            return @this.StartService( typeof( T ).FullName );
+        }
+
+        public static ILiveServiceInfo FindLiveService( this YodiiRuntimeTestContext @this, string serviceFullName )
+        {
+            return @this.Engine.LiveInfo.FindService( serviceFullName );
+        }
+        public static ILiveServiceInfo FindLiveService<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiService
+        {
+            return @this.Engine.LiveInfo.FindService( typeof( T ).FullName );
         }
     }
 }
