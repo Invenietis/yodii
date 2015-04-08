@@ -99,40 +99,6 @@ namespace Yodii.Model
         }
 
         /// <summary>
-        /// Appends a set of strings with an internal separator.
-        /// </summary>
-        /// <param name="this">The <see cref="StringBuilder"/> to append to.</param>
-        /// <param name="strings">Set of strings.</param>
-        /// <param name="separator">The separator string.</param>
-        /// <returns>The builder itself.</returns>
-        public static StringBuilder Append( this StringBuilder @this, IEnumerable<string> strings, string separator = ", " )
-        {
-            using( var e = strings.GetEnumerator() )
-            {
-                if( e.MoveNext() )
-                {
-                    @this.Append( e.Current );
-                    while( e.MoveNext() )
-                    {
-                        @this.Append( separator ).Append( e.Current );
-                    }
-                }
-            }
-            return @this;
-        }
-
-        /// <summary>
-        /// Concatenates multiple strings with an internal separator.
-        /// </summary>
-        /// <param name="this">Set of strings.</param>
-        /// <param name="separator">The separator string.</param>
-        /// <returns>The joined string.</returns>
-        public static string Concatenate( this IEnumerable<string> @this, string separator = ", " )
-        {
-            return new StringBuilder().Append( @this, separator ).ToString();
-        }
-
-        /// <summary>
         /// This method can be used to dynamically start a service.
         /// There is no guaranty of success here: this is a deffered action that may not be applicable.
         /// </summary>
