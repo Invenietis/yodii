@@ -43,7 +43,7 @@ namespace Yodii.Updater.Impl
                 string basePath = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
 
                 Assembly entryAssembly = Assembly.GetEntryAssembly();
-                if( entryAssembly == null ) { throw new InvalidOperationException( "No entry assembly was found. Cannot guess package location." ); }
+                if( entryAssembly == null ) { throw new InvalidOperationException( String.Format( "No entry assembly was found, and {0} AppSettings was not set. Cannot guess local package repository location.", AppSettingsMainDirectoryKey ) ); }
 
                 path = Path.Combine( basePath, entryAssembly.FullName );
             }
@@ -134,6 +134,8 @@ namespace Yodii.Updater.Impl
                 _packageManager.UninstallPackage( packageName );
 
                 progressReporter.Report( new UpdaterTaskProgress( String.Format( "Installed {0}", packageName ), 1.0 ) );
+
+                
 
                 return new UpdaterTaskResult( UpdaterTaskStatus.Complete );
             }

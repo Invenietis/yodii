@@ -83,6 +83,24 @@ namespace Yodii
             return discoveredInfo;
         }
 
+        public static IDiscoveredInfo GetDiscoveredInfoFromAppDomainAssemblies()
+        {
+            StandardDiscoverer discoverer = new StandardDiscoverer();
+            Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach( Assembly a in loadedAssemblies )
+            {
+                if( !a.IsDynamic )
+                {
+                    discoverer.ReadAssembly( a.Location );
+                }
+            }
+
+            IDiscoveredInfo discoveredInfo = discoverer.GetDiscoveredInfo();
+            Assert.That( discoveredInfo.IsValid() );
+            return discoveredInfo;
+        }
+
         public static IActivityMonitor ConsoleMonitor
         {
             get { return _monitor; }

@@ -81,19 +81,64 @@ namespace Yodii.Engine.Tests
 
             return @this;
         }
+
         public static YodiiRuntimeTestContext StartPlugin<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiPlugin
         {
             return @this.StartPlugin( typeof( T ).FullName );
         }
 
+
         public static ILivePluginInfo FindLivePlugin( this YodiiRuntimeTestContext @this, string pluginFullName )
         {
             return @this.Engine.LiveInfo.FindPlugin( pluginFullName );
         }
+
         public static ILivePluginInfo FindLivePlugin<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiPlugin
         {
             return @this.Engine.LiveInfo.FindPlugin( typeof( T ).FullName );
         }
+
+        public static T InteractWithPluginDirectly<T>( this YodiiRuntimeTestContext @this ) where T : class, IYodiiPlugin
+        {
+            object pluginObject = @this.InteractWithPluginDirectly( typeof( T ).FullName );
+
+            Assert.That( pluginObject, Is.InstanceOf<T>(), "RealPluginObject must be castable as IYodiiPlugin class." );
+
+            return (T)pluginObject;
+        }
+
+        static IYodiiPlugin InteractWithPluginDirectly( this YodiiRuntimeTestContext @this, string pluginFullName )
+        {
+            ILivePluginInfo pluginInfo = @this.Engine.LiveInfo.FindPlugin( pluginFullName );
+
+            if( pluginInfo == null ) return null;
+
+            /*
+             * Warning!
+             * 
+             * Interacting directly with Yodii plugins is potentially dangerous.
+             * Yodii provides failsafe proxies that you don't get with direct interactions,
+             * which can at worst break your application.
+             * 
+             * If you wish to directly interact with the outside world, use your own plugin
+             * and communication methods.
+             * 
+             * This shouldn't be done outside tests or debugging.
+             */
+
+            Assert.That( @this.Host, Is.InstanceOf<YodiiHost>(), "Cannot interact with plugins directly without using the supported Yodii host." );
+
+            YodiiHost h = (YodiiHost)@this.Host;
+
+            IPluginProxy px = h.FindLoadedPlugin( pluginInfo.FullName );
+
+            Assert.That( px, Is.Not.Null, "Host mustn't give a null proxy is plugin is already loaded." );
+
+            return px.RealPluginObject;
+        }
+
+
+
 
         public static YodiiRuntimeTestContext StartService( this YodiiRuntimeTestContext @this, string serviceFullName )
         {
@@ -103,18 +148,34 @@ namespace Yodii.Engine.Tests
 
             return @this;
         }
+
         public static YodiiRuntimeTestContext StartService<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiService
         {
             return @this.StartService( typeof( T ).FullName );
         }
 
+
         public static ILiveServiceInfo FindLiveService( this YodiiRuntimeTestContext @this, string serviceFullName )
         {
             return @this.Engine.LiveInfo.FindService( serviceFullName );
         }
+
         public static ILiveServiceInfo FindLiveService<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiService
         {
             return @this.Engine.LiveInfo.FindService( typeof( T ).FullName );
+        }
+
+        public static T InteractWithServiceDirectly<T>( this YodiiRuntimeTestContext @this ) where T : IYodiiService
+        {
+            ILiveServiceInfo serviceInfo = @this.Engine.LiveInfo.FindService( typeof( T ).FullName );
+
+            if( serviceInfo == null ) return default( T );
+
+            object pluginObject = @this.InteractWithPluginDirectly( serviceInfo.RunningPlugin.FullName );
+
+            Assert.That( pluginObject, Is.InstanceOf<T>(), "RealPluginObject must be castable as IYodiiService class." );
+
+            return (T)pluginObject;
         }
     }
 }
