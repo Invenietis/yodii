@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,11 +21,14 @@ namespace Yodii.Updater.Impl
         public static readonly string FallbackPackageSource = @"https://www.nuget.org/api/v2/";
 
         readonly string _mainDirectoryPath;
+        readonly IYodiiEngineProxy _engineProxy;
 
         PackageManager _packageManager;
 
-        public YodiiUpdaterPlugin()
+        public YodiiUpdaterPlugin(IYodiiEngineProxy engineProxy)
         {
+            _engineProxy = engineProxy;
+
             _mainDirectoryPath = GetMainDirectoryPath();
 
             IPackageRepository sourceRepo = PackageRepositoryFactory.Default.CreateRepository( GetPackageSource().Source );
@@ -39,7 +43,7 @@ namespace Yodii.Updater.Impl
             if( String.IsNullOrWhiteSpace( path ) )
             {
                 // Use %APPDATA% with a default path corresponding
-                // to the executing assembly qualified name
+                // to the entry assembly's qualified name
                 string basePath = Environment.GetFolderPath( Environment.SpecialFolder.ApplicationData );
 
                 Assembly entryAssembly = Assembly.GetEntryAssembly();
@@ -53,6 +57,16 @@ namespace Yodii.Updater.Impl
             }
 
             return path;
+        }
+
+        string GetHostDirectory()
+        {
+            return GetAssemblyDirectory( GetHostAssembly() );
+        }
+
+        Assembly GetHostAssembly()
+        {
+            return _engineProxy.ExternalEngine.Host.GetType().Assembly;
         }
 
         PackageSource GetPackageSource()
@@ -72,13 +86,6 @@ namespace Yodii.Updater.Impl
             }
 
             return packageSource;
-        }
-
-
-        class InternalTask
-        {
-            internal CancellationTokenSource CancellationTokenSource;
-            internal Task Task;
         }
 
         public Task<IUpdaterTaskResult> InstallPackage( string packageName, IProgress<IUpdaterTaskProgress> progressReporter, CancellationToken cancellationToken )
@@ -188,6 +195,30 @@ namespace Yodii.Updater.Impl
 
 
             return _packageManager.LocalRepository.FindPackage( packageName ) != null;
+        }
+
+        IEnumerable<string> GetAssemblyFilesFromInstalledPackages()
+        {
+            List<string> filePaths = new List<string>();
+            FrameworkName frameworkName = GetCurrentFrameworkName();
+
+            return _packageManager.LocalRepository.GetPackages()
+                .Where( p => p.GetSupportedFrameworks().Contains( frameworkName ) )
+                .SelectMany( p => p.AssemblyReferences.Where( ar => ar.SupportedFrameworks.Contains( frameworkName ) ) )
+                .Select( ar => ar.Path );
+        }
+
+        FrameworkName GetCurrentFrameworkName()
+        {
+            return new FrameworkName( AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName );
+        }
+
+        static string GetAssemblyDirectory( Assembly assembly )
+        {
+            string codeBase = assembly.CodeBase;
+            UriBuilder uri = new UriBuilder( codeBase );
+            string path = Uri.UnescapeDataString( uri.Path );
+            return Path.GetDirectoryName( path );
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,10 @@ using NUnit.Framework;
 using Yodii.Engine.Tests;
 using Yodii.Model;
 using Yodii.Updater.Impl;
+using CK.Core;
+using System.Xml.Linq;
+using NuGet;
+using NuGet.Runtime;
 
 namespace Yodii.Updater.Tests
 {
@@ -80,6 +85,62 @@ namespace Yodii.Updater.Tests
             Assert.That( _updater, Is.Not.Null );
 
             Assert.That( _updater, Is.InstanceOf<YodiiUpdaterPlugin>() );
+        }
+
+        [Test]
+        public void FrameworkName_CanBeGuessed_FromAppDomainSetup()
+        {
+            Assert.That( AppDomain.CurrentDomain.SetupInformation, Is.Not.Null );
+            Assert.That( AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName, Is.Not.Null.Or.Empty );
+
+            FrameworkName name = GetAppDomainFramework();
+
+            TestHelper.ConsoleMonitor.Info().Send( "AppDomain framework name: {0}", name );
+
+        }
+
+        [Test]
+        public void ConfigurationFile_CanBeGuessed_FromAppDomainSetup()
+        {
+            Assert.That( AppDomain.CurrentDomain.SetupInformation, Is.Not.Null );
+            Assert.That( AppDomain.CurrentDomain.SetupInformation.ConfigurationFile, Is.Not.Null.Or.Empty );
+
+            TestHelper.ConsoleMonitor.Info().Send( "AppDomain ConfigurationFile {0}", AppDomain.CurrentDomain.SetupInformation.ConfigurationFile );
+            XDocument d = XDocument.Load( AppDomain.CurrentDomain.SetupInformation.ConfigurationFile );
+        }
+
+        static FrameworkName GetAppDomainFramework()
+        {
+            return new FrameworkName( AppDomain.CurrentDomain.SetupInformation.TargetFrameworkName );
+        }
+
+        [Test]
+        public void NuGet_Core_CanUse_ConfigurationFile_For_BindingRedirects()
+        {
+            Assume.That( AppDomain.CurrentDomain.SetupInformation.ConfigurationFile, Is.Not.Null.Or.Empty );
+
+            AppDomainSetup appSetup = new AppDomainSetup()
+            {
+                ApplicationName = "TestDomain",
+                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+            };
+
+            AppDomain appDomain = AppDomain.CreateDomain( "TestDomain", null, appSetup );
+
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+                .Where( a => !a.IsDynamic )
+                .Select( a => a.Location );
+
+            var redirects = BindingRedirectResolver.GetBindingRedirects( assemblies, appDomain );
+
+            BindingRedirectManager brm = new BindingRedirectManager(
+                new PhysicalFileSystem( GetTestDataDirectory() ),
+                AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
+                );
+
+            brm.AddBindingRedirects( redirects );
+
+
         }
 
         void SetTestDataDirectoryInAppSettings()
