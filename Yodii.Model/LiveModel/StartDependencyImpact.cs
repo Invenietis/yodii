@@ -32,7 +32,7 @@ namespace Yodii.Model
     /// Impact of a plugin or service start on its dependencies.
     /// </summary>
     /// <remarks>
-    /// Defines whether the plugin starting will also attempt to start everything it has references to,
+    /// Defines whether the plugin or service starting will also attempt to start some of its references,
     /// or only the minimum required services.
     /// </remarks>
     [Flags]

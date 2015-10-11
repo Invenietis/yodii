@@ -374,27 +374,29 @@ namespace Yodii.Engine
         // 
         // Following this idea leads to a structure where each Item I can be associated to a 
         // description of its requirement regarding other items:
-        //  - Items that when I is running must run (MustRunWith): this contains at least Running dependencies to Services and this generalizes the code above.
-        //  - A set of sets ("CanRunWith" items): each of them contains a set of items that must be able to run while I is running.
+        //  - Items that when I is running must run (MustRunWith): this contains at least Running dependencies to Services and this generalizes 
+        //    the code above (that is current DetectInvalidLoop() implementation).
+        //  - A set of sets ("EnsureCanRunWith" items): each of them contains a set of items that must be able to run while I is running.
         //    These sets must be combined to the MustRunWith set and each of them must be satisfied.
         // 
-        // Thess "CanRunWith" sets can be defined with an attribute (AllowMultiple = true) on the Plugin:
-        // [CanRunWith( typeof(IService1), typeof(IService2) )]
-        // [CanRunWith( typeof(IService1), typeof(IService3), typeof(IService4) )]
-        // [CanRunWith( typeof(IService5) )]
+        // These "EnsureCanRunWith" sets can be defined with an attribute (AllowMultiple = true) on the Plugin:
+        // [EnsureCanRunWith( typeof(IService1), typeof(IService2) )]
+        // [EnsureCanRunWith( typeof(IService1), typeof(IService3), typeof(IService4) )]
+        // [EnsureCanRunWith( typeof(IService5) )]
         // 
-        // For runnables and optionals, if we want to prevent the suicide of P, we can now automatically consider that a CanRunWith( S ) exists for each dependency.
-        // This could be the default, but I'm not sure that it is a good idea. I'd rather let the suicicide be the default otherwise we would need a 
+        // For runnables and optionals, if we want to prevent the suicide of P, we can now automatically consider that a EnsureCanRunWith( S ) exists for each dependency.
+        // This could be the default, but I'm not sure that it is a good idea. I'd rather let the suicide be the default otherwise we would need a 
         // kind of AllowSuicideWhenStarting(S) declaration that will not be really easy to understand.
         // 
         // This has an impact on the dynamic phase: to handle this we must "boost" the command that has started P (if it exists, ie. if it is not running by configuration).
-        // When P starts S, we start S, and right after we must start P otherwise there is no guaranty that another command leads to the fact that P can no more be running.
+        // When P starts S, we start S, and right after we must start P (ie. we must "lift" the starting command of P in the command stack)
+        // otherwise there is no guaranty that another command leads to the fact that P can no more be running.
         // For multiple "CanRunWith", should we also boost the commands that started the other services that are actually running?
         // If yes, which set should we consider? Considering the previous examples:
         //   - We must start the dependency IService3.
         //   - We have already running dependencies: IService1 and IService2.
         // Nothing prevents the start of IService3 to stop IService2. That is understandable. But IService1 must be kept alive since it belongs to the second set: we start it 
-        // right after. But what if IService3 also belongs to another set: [CanRunWith( typeof(IService2), typeof(IService3) )] ?
+        // right after. But what if IService3 also belongs to another set: [EnsureCanRunWith( typeof(IService2), typeof(IService3) )] ?
         // We then need to also start IService2. Can the start of IService1 have led IService2 to be stopped? No since the CanRunWith has been statically statisfied.
         // 
         // All this seems to be logically consistent. To be implemented this definitely requires the "launcher" to be known. 
@@ -405,6 +407,71 @@ namespace Yodii.Engine
         // 2015-10-01: Start/Stop have been moved away from ILive info objects to IYodiiEngine. Live info can now be exposed directly to plugins, they do not
         // have to be per-plugin.
         // 
+        /*
+        public interface IService1 : IYodiiService { }
+        public interface IService2 : IYodiiService { }
+        public interface IService3 : IYodiiService { }
+        public interface IService4 : IYodiiService { }
+        public interface IService5 : IYodiiService { }
+        [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+        [CLSCompliant(false)]
+        public class EnsureCanRunWithAttribute: Attribute
+        {
+            public EnsureCanRunWithAttribute( params Type[] types )
+            {
+
+            }
+        }
+
+
+        [EnsureCanRunWith( typeof( IService1 ), typeof( IService2 ) )]
+        [EnsureCanRunWith( typeof( IService1 ), typeof( IService3 ), typeof( IService4 ) )]
+        [EnsureCanRunWith( typeof( IService5 ) )]
+        public class MyPlugin : IYodiiPlugin
+        {
+            readonly IService<IService1> _s1;
+            readonly IService<IService2> _s2;
+            readonly IService<IService3> _s3;
+            readonly IService<IService4> _s4;
+            readonly IService<IService5> _s5;
+
+            public MyPlugin( 
+                IOptionalService<IService1> s1, 
+                IRunnableRecommendedService<IService2> s2, 
+                IRunnableService<IService3> s3, 
+                IOptionalRecommendedService<IService4> s4,
+                IOptionalService<IService5> s5 )
+            {
+                _s1 = s1;
+                _s2 = s2;
+                _s3 = s3;
+                _s4 = s4;
+                _s5 = s5;
+            }
+
+            #region ...
+            public void PreStart( IPreStartContext c )
+            {
+                throw new NotImplementedException();
+            }
+
+            public void PreStop( IPreStopContext c )
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Start( IStartContext c )
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Stop( IStopContext c )
+            {
+                throw new NotImplementedException();
+            }
+            #endregion
+        }
+        */
         //
         //    return true;
         //}

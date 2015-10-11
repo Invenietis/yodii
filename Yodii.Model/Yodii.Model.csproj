@@ -137,6 +137,7 @@
     <Compile Include="YodiiPluginBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="3.1 - Configuration POCO.cd" />
     <None Include="4 - Engine Model.cd" />
     <None Include="3 - Configuration Model.cd" />
     <None Include="app.config" />

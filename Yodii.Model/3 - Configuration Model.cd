@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
   <Class Name="Yodii.Model.FinalConfiguration">
-    <Position X="6.5" Y="0.5" Width="3.25" />
+    <Position X="6.25" Y="0.5" Width="3.25" />
     <Members>
       <Field Name="_items" Hidden="true" />
     </Members>
     <AssociationLine Name="Items" Type="Yodii.Model.FinalConfigurationItem">
       <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
-        <Position X="0.151" Y="0.06" Height="0.182" Width="0.798" />
+        <Position X="0.199" Y="0.06" Height="0.182" Width="0.75" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
@@ -18,43 +18,8 @@
       <Property Name="Items" />
     </ShowAsCollectionAssociation>
   </Class>
-  <Class Name="Yodii.Model.YodiiConfiguration">
-    <Position X="0.75" Y="11.75" Width="2.75" />
-    <Members>
-      <Field Name="_discoveredInfo" Hidden="true" />
-      <Field Name="_layers" Hidden="true" />
-    </Members>
-    <TypeIdentifier>
-      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAACAAAgEAAAAAAAAEAA=</HashCode>
-      <FileName>YodiiConfiguration\YodiiConfiguration.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="Yodii.Model.YodiiConfigurationItem">
-    <Position X="7.25" Y="11.75" Width="2.75" />
-    <Members>
-      <Field Name="_description" Hidden="true" />
-      <Field Name="_name" Hidden="true" />
-    </Members>
-    <TypeIdentifier>
-      <HashCode>AAAAIAAEAAAgAAAEAAAAEAAAAABAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>YodiiConfiguration\YodiiConfigurationItem.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
-  <Class Name="Yodii.Model.YodiiConfigurationLayer">
-    <Position X="4" Y="11.75" Width="2.75" />
-    <Members>
-      <Field Name="_items" Hidden="true" />
-      <Field Name="_name" Hidden="true" />
-    </Members>
-    <TypeIdentifier>
-      <HashCode>AAAAIQAAAAAACAAAAAAAAAQAABAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>YodiiConfiguration\YodiiConfigurationLayer.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Struct Name="Yodii.Model.FinalConfigurationItem">
-    <Position X="10.75" Y="0.75" Width="3.5" />
+    <Position X="10.5" Y="0.75" Width="2.5" />
     <Members>
       <Field Name="_impact" Hidden="true" />
       <Field Name="_serviceOrPluginFullName" Hidden="true" />
@@ -67,9 +32,14 @@
   </Struct>
   <Interface Name="Yodii.Model.IConfigurationManager">
     <Position X="0.5" Y="0.5" Width="4.5" />
+    <AssociationLine Name="FinalConfiguration" Type="Yodii.Model.FinalConfiguration">
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.086" Y="0.052" />
+      </MemberNameLabel>
+    </AssociationLine>
     <AssociationLine Name="Layers" Type="Yodii.Model.IConfigurationLayerCollection">
       <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
-        <Position X="0.31" Y="0.079" Height="0.162" Width="0.628" />
+        <Position X="0.188" Y="0.315" Height="0.162" Width="0.628" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
@@ -82,7 +52,12 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayer">
-    <Position X="4.75" Y="5.75" Width="3.25" />
+    <Position X="5" Y="5" Width="3.25" />
+    <AssociationLine Name="Items" Type="Yodii.Model.IConfigurationItemCollection">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.071" Y="0.178" Height="0.162" Width="0.7" />
+      </MemberNameLabel>
+    </AssociationLine>
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAEDAAAAAAABAAAAAAAABAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayer.cs</FileName>
@@ -92,38 +67,38 @@
     </ShowAsAssociation>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationLayerCollection">
-    <Position X="0.75" Y="4" Width="3.5" />
+    <Position X="1" Y="3.75" Width="3.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAACAAAJAAAAAAAAEAAAAAAAABAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAACIAAJAAAAAAAAEQAAAAAAABAAAA=</HashCode>
       <FileName>Configuration\IConfigurationLayerCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItemCollection">
-    <Position X="7.5" Y="8.25" Width="3" />
+    <Position X="7.25" Y="7.5" Width="3" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAQAAABAAACAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItemCollection.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationItem">
-    <Position X="11" Y="8.75" Width="2.25" />
+    <Position X="10.5" Y="7.75" Width="2.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAgBAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\IConfigurationItem.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IConfigurationFailureResult">
-    <Position X="4.25" Y="10" Width="2.75" />
+    <Position X="4.25" Y="9" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>IConfigurationManagerFailureResult.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.IYodiiEngineResult">
-    <Position X="0.75" Y="7.5" Width="3.25" />
+    <Position X="0.75" Y="6.75" Width="3.25" />
     <AssociationLine Name="ConfigurationFailureResult" Type="Yodii.Model.IConfigurationFailureResult">
-      <MemberNameLabel ManuallyPlaced="true">
-        <Position X="0.185" Y="0.152" />
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.006" Y="0.195" Height="0.162" Width="1.782" />
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
@@ -135,7 +110,7 @@
     </ShowAsAssociation>
   </Interface>
   <Enum Name="Yodii.Model.ConfigurationStatus">
-    <Position X="7" Y="3.25" Width="1.75" />
+    <Position X="6" Y="3" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAABAAAAAAAAAAAAAACAAAAAAAAAAAAKAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\ConfigurationStatus.cs</FileName>

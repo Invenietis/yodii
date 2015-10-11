@@ -115,7 +115,5 @@ namespace Yodii.Discoverer
             get { return _errorMessage; }
         }
 
-
-
     }
 }
