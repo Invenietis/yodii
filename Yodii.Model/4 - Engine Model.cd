@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
   <Class Name="Yodii.Model.YodiiCommand">
-    <Position X="10.75" Y="0.5" Width="2.5" />
+    <Position X="10.25" Y="0.5" Width="2.5" />
     <Members>
       <Field Name="_callerKey" Hidden="true" />
       <Field Name="_fullName" Hidden="true" />
@@ -15,18 +15,18 @@
     </TypeIdentifier>
   </Class>
   <Interface Name="Yodii.Model.ILiveInfo">
-    <Position X="6" Y="0.5" Width="3.75" />
+    <Position X="5.75" Y="0.5" Width="3.75" />
     <TypeIdentifier>
       <HashCode>gEAAQAAAAAAAAAAAAAAAAAAAAgAAAQAAAgAAAAgAAAA=</HashCode>
       <FileName>LiveModel\ILiveInfo.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILivePluginInfo">
-    <Position X="10.5" Y="10" Width="2.5" />
-    <InheritanceLine Type="Yodii.Model.IDynamicSolvedPlugin" FixedFromPoint="true" FixedToPoint="true">
+    <Position X="10" Y="10" Width="3" />
+    <InheritanceLine Type="Yodii.Model.IDynamicSolvedPlugin" ManuallyRouted="true" FixedToPoint="true">
       <Path>
-        <Point X="12.25" Y="8.233" />
-        <Point X="12.25" Y="10" />
+        <Point X="12.75" Y="8.233" />
+        <Point X="12.75" Y="10" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
@@ -76,7 +76,7 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="Yodii.Model.ILiveRunCapability">
-    <Position X="13.5" Y="8.5" Width="3" />
+    <Position X="13.25" Y="8.5" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAAAAAgAACAAAgAAQAAAA=</HashCode>
       <FileName>LiveModel\ILiveRunCapability.cs</FileName>
@@ -111,21 +111,21 @@
     </TypeIdentifier>
   </Interface>
   <Enum Name="Yodii.Model.RunningStatus">
-    <Position X="4.5" Y="10.25" Width="1.5" />
+    <Position X="4.5" Y="10" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAIAAAAAAACAAAAAAAAAAAAIAAAAAACAAAA=</HashCode>
       <FileName>LiveModel\RunningStatus.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Yodii.Model.SolvedConfigurationStatus">
-    <Position X="4.5" Y="8.75" Width="2.25" />
+    <Position X="4.5" Y="8.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAACAAAAAAAAAAAAKAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\SolvedConfigurationStatus.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Yodii.Model.ConfigurationStatus">
-    <Position X="4.5" Y="7" Width="1.75" />
+    <Position X="4.5" Y="6.75" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAABAAAAAAAAAAAAAACAAAAAAAAAAAAKAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\ConfigurationStatus.cs</FileName>

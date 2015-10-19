@@ -71,34 +71,6 @@
       <FileName>Host\Plugin\IYodiiPlugin.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="Yodii.Model.IPreStartContext">
-    <Position X="4" Y="6" Width="3" />
-    <TypeIdentifier>
-      <HashCode>ACAAgAAAQAAAAAAAAAACAAAABIAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Host\Plugin\IPreStartContext.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Yodii.Model.IPreStopContext">
-    <Position X="0.75" Y="6" Width="3" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAQAAAAAAAAAACAAAAAIAAAAAAQAAAAAAAAAA=</HashCode>
-      <FileName>Host\Plugin\IPreStopContext.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Yodii.Model.IStartContext">
-    <Position X="7.25" Y="6" Width="3" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAABIAACAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Host\Plugin\IStartContext.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Yodii.Model.IStopContext">
-    <Position X="10.5" Y="6" Width="2.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAgAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Host\Plugin\IStopContext.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
   <Interface Name="Yodii.Model.IServiceUntyped">
     <Position X="5" Y="0.5" Width="4.5" />
     <TypeIdentifier>
